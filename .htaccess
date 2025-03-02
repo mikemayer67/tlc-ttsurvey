@@ -22,24 +22,24 @@ Options All -Indexes
 #   either at the host's root (/) directory or in some subdirectory named identically
 #   with the git respository (i.e. tlc-ttsurvey).  
 #
-#   - It sets the environment variable BASE_DIR to point to the location of the 
+#   - It sets the environment variable BASE_URI to point to the location of the 
 #     web app on the host (/ or /.../tlc-ttsurvey/)
 #
 #   - It sets up the redirects for the 403 and 404 error handling (as described above).
 
 # Case where web app is in the tlc-ttsurvey subfolder of the host
 #   There may be a better way to do this... (I'm all ears).
-#   I used a SetEnvIf so that I could capture the BASE_DIR from the regex
-#   I could not figure out how to then trun around and use BASE_DIR in the
+#   I used a SetEnvIf so that I could capture the BASE_URI from the regex
+#   I could not figure out how to then trun around and use BASE_URI in the
 #     if clause... so essentially had to repeat the same regex
-SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_DIR=$0
+SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_URI=$0
 <If "%{REQUEST_URI} =~ /tlc-ttsurvey/">
-  ErrorDocument 403 /%{ENV:BASE_DIR}index.php
-  ErrorDocument 404 /%{ENV:BASE_DIR}index.php
+  ErrorDocument 403 /%{ENV:BASE_URI}index.php
+  ErrorDocument 404 /%{ENV:BASE_URI}index.php
 </If>
 # Case where web app is in the host's root folder
 <Else>
-  SetEnv BASE_DIR /
+  SetEnv BASE_URI /
   ErrorDocument 403 /index.php
   ErrorDocument 404 /index.php
 </Else>
