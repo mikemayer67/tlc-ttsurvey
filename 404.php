@@ -1,6 +1,6 @@
 <?php
 require_once("./include/fix_env.php");
-$base_dir = $_SERVER['BASE_DIR']
+$base_dir = rtrim($_SERVER['BASE_DIR'],'/');
 ?>
 
 <html>
@@ -15,3 +15,4 @@ $base_dir = $_SERVER['BASE_DIR']
     </div>
   </body>
 </html>
+

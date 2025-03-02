@@ -1,21 +1,47 @@
+# Disallow requests for directory listings
 Options All -Indexes
 
-<If "%{SERVER_NAME} =~ /^localhost$/">
-  ErrorDocument 403 /tlc-ttsurvey/404.php
-  ErrorDocument 404 /tlc-ttsurvey/404.php
+# One of the key factors in the configuration of this .htaccess file is to prevent
+#   malicient agents from probing its directory/file structure.  It does this through
+#   a couple means:
+#
+#   - requests for directory listings are denied (see above)
+#
+#   - Both 404 (missing resource) and 403 (forbidden resource) errors are intercepted
+#     and the redirected to the web app's landing page.  This prevents the agent from
+#     being able to discern between non-existent resources and resources which exist
+#     but are being hidden.   (Note that this will also allow URIs that are structured
+#     based on functionality rather than host resources.)
+#
+#   - To furthern obfuscate things, any URI that doesn't conform to the web app's API
+#     will be redirected to a "pseudo-404" page with an HTTP status set to 405 (method
+#     not allowed).  This is an error code that provides no information about the
+#     file structure, only the failure of the URI to comply with the API.
+
+# The If/Else block that follows is intended to support installation of this web app
+#   either at the host's root (/) directory or in some subdirectory named identically
+#   with the git respository (i.e. tlc-ttsurvey).  
+#
+#   - It sets the environment variable BASE_DIR to point to the locatoin of the 
+#     web app on the host (/ or /.../tlc-ttsurvey/)
+#
+#   - It sets up the redirects for the 403 and 404 error handling (as described above).
+<If "%{REQUEST_URI} !~ /tlc-ttsurvey/">
+  SetEnv BASE_DIR /
+  ErrorDocument 403 /index.php
+  ErrorDocument 404 /index.php
 </If>
 <Else>
-  ErrorDocument 403 /404.php
-  ErrorDocument 404 /404.php
+  SetEnv BASE_DIR /tlc-ttsurvey/
+  ErrorDocument 403 /tlc-ttsurvey/index.php
+  ErrorDocument 404 /tlc-ttsurvey/index.php
 </Else>
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
-RewriteCond %{REQUEST_URI} ^/([^/]+)/
-RewriteRule .* - [E=BASE_DIR:/%1]
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule . %{ENV:BASE_DIR}/index.php [L]
+RewriteRule .* - [R=404]
 </IfModule>
 
 <FilesMatch "^\.">
