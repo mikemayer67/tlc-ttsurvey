@@ -15,4 +15,3 @@ $base_dir = rtrim($_SERVER['BASE_DIR'],'/');
     </div>
   </body>
 </html>
-
