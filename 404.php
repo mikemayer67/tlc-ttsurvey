@@ -23,6 +23,7 @@ echo "  <body>";
 if(empty($base_uri)) {
   echo("You appear lost...");
 } else {
+  $base_uri = rtrim($base_uri,'/');
   echo "    <div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>";
   echo "      <a href='$base_uri/index.php'>";
   echo "        <img src='$base_uri/img/404.png' alt='Click here to return to the survey' style='width:100%;'>";
