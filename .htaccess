@@ -53,8 +53,6 @@ RewriteRule (.*) %1/index.php [L]
 RewriteCond %{REQUEST_URI} (^|.*tlc-ttsurvey)/index.php$ [OR]
 RewriteCond %{REQUEST_URI} (^|.*tlc-ttsurvey)/[45]\d\d.php$
 RewriteRule (.*) - [L]
-RewriteCond %{REQUEST_URI} ^(.*/)([^/]*\.(php|htm|html)(/.*)?)
-RewriteRule (.*) - [L,R=403]
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteCond %{REQUEST_URI} (.*tlc-ttsurvey/)(.*)
@@ -75,7 +73,7 @@ RewriteRule (.*) /index.php?extra2=$1 [L]
 </FilesMatch>
 
 # Disallow access to all php or sql files (but see below)
-<FilesMatch "\.(php|sql)$">
+<FilesMatch "\.(php|sql|htm|html)$">
   Order deny,allow
   Deny from all
 </FilesMatch>
