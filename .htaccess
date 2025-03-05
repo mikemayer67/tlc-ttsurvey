@@ -32,25 +32,36 @@ Options All -Indexes
 #   I used a SetEnvIf so that I could capture the BASE_URI from the regex
 #   I could not figure out how to then trun around and use BASE_URI in the
 #     if clause... so essentially had to repeat the same regex
-SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_URI=$0
 <If "%{REQUEST_URI} =~ /tlc-ttsurvey/">
-  ErrorDocument 403 /%{ENV:BASE_URI}index.php
-  ErrorDocument 404 /%{ENV:BASE_URI}index.php
+  SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_URI=$0
+  ErrorDocument 403 /%{ENV:BASE_URI}404.php
+  ErrorDocument 404 /%{ENV:BASE_URI}404.php
 </If>
 # Case where web app is in the host's root folder
 <Else>
   SetEnv BASE_URI /
-  ErrorDocument 403 /index.php
-  ErrorDocument 404 /index.php
+  ErrorDocument 403 /404.php
+  ErrorDocument 404 /404.php
 </Else>
 
 
 # Return a 404 failure if the URI requested either a non-existant file OR an existant directory
 <IfModule mod_rewrite.c>
 RewriteEngine On
+RewriteCond %{REQUEST_URI} (^|.*tlc-ttsurvey)/?$
+RewriteRule (.*) %1/index.php [L]
+RewriteCond %{REQUEST_URI} (^|.*tlc-ttsurvey)/index.php$ [OR]
+RewriteCond %{REQUEST_URI} (^|.*tlc-ttsurvey)/[45]\d\d.php$
+RewriteRule (.*) - [L]
+RewriteCond %{REQUEST_URI} ^(.*/)([^/]*\.(php|htm|html)(/.*)?)
+RewriteRule (.*) - [L,R=403]
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule .* - [R=404]
+RewriteCond %{REQUEST_URI} (.*tlc-ttsurvey/)(.*)
+RewriteRule (.*) %1index.php?extra1=%2 [L]
+RewriteCond %{REQUEST_FILENAME} !-f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule (.*) /index.php?extra2=$1 [L]
 </IfModule>
 
 # Disallow access to all dot files
@@ -74,3 +85,4 @@ RewriteRule .* - [R=404]
   Order deny,allow
   Allow from all
 </FilesMatch>
+
