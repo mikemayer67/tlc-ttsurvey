@@ -5,7 +5,7 @@ function api_die()
 {
   http_response_code(405);
   echo "<h2>API_DIE</h2>";
-  require("./404.php");
+  require("./api_err.php");
   die; 
 }
 
