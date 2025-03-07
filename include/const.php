@@ -5,14 +5,31 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 const APP_NAME = 'tlc-ttsurvey';
 
+// Admin Settings
 const SETTINGS_FILE = "admin/settings.json";
 const LOG_LEVEL_KEY = "log_level";
-const TIMEZONE_KEY = "timezone";
 
-const LOGGER_FILE = "tlc-ttsurvey.log";
-const LOGGER_PREFIX = array( "ERROR", "WARNING", "INFO", "DEV" );
-const LOGGER_ERR  = 0;
-const LOGGER_WARN = 1;
-const LOGGER_INFO = 2;
-const LOGGER_DEV  = 3;
+function load_config() {
+  $config = parse_ini_file(APP_DIR."/tlc-ttsurvey.ini",true);
+
+  define('MYSQL_USERID',  $config['mysql']['userid']);
+  define('MYSQL_PASSWORD',$config['mysql']['password']);
+  define('MYSQL_SCHEMA',  $config['mysql']['schema']);
+  define('MYSQL_HOST',    $config['mysql']['host']);
+  define('MYSQL_CHARSET', $config['mysql']['charset'] ?? 'utf8');
+
+  define('LOGGER_FILE',   $config['logging']['log_file'] ?? null);
+  define('LOGGER_TZ',     $config['logging']['log_tz'] ?? 'UTC');
+
+  define('ADMIN_NAME',    $config['admin']['name'] ?? "the survey admin");
+  define('ADMIN_EMAIL',   $config['admin']['email'] ?? null);
+  define('ADMIN_PRONOUN', $config['admin']['pronoun'] ?? "them");
+};
+load_config();
+
+if(ADMIN_EMAIL) {
+  define('ADMIN_CONTACT', sprintf("<a href='mailto:%s'>%s</a>",ADMIN_EMAIL,ADMIN_NAME));
+} else {
+  define('ADMIN_CONTACT', ADMIN_NAME);
+}
 

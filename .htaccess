@@ -5,14 +5,14 @@
 #   - requests for directory listings are denied
 #
 #   - Both 404 (missing resource) and 403 (forbidden resource) errors are intercepted
-#     and the redirected to the same api_err.php script.  This prevents the agent from
+#     and the redirected to the same 405.php script.  This prevents the agent from
 #     being able to discern between non-existent resources and resources which exist
 #     but are being hidden.
 #
 #   - To furthern obfuscate things, any URI that doesn't conform to the web app's API
-#     will be processed through the same api_err.php script.
+#     will be processed through the same 405.php script.
 #
-#   - In both cases, the api_err.php script will return with an HTTP status code of 
+#   - In both cases, the 405.php script will return with an HTTP status code of 
 #     405 (method not allowed), indicating an invalid invocation of the app's API.
 
 # Deny listing of directory contents
@@ -29,13 +29,13 @@ Options All -Indexes
 #    I would welcome the input.
 <If "%{REQUEST_URI} =~ /tlc-ttsurvey/">
   SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_URI=$0
-  ErrorDocument 403 /%{ENV:BASE_URI}api_err.php
-  ErrorDocument 404 /%{ENV:BASE_URI}api_err.php
+  ErrorDocument 403 /%{ENV:BASE_URI}405.php
+  ErrorDocument 404 /%{ENV:BASE_URI}405.php
 </If>
 # Case where web app is in the host's root folder
 <Else>
-  ErrorDocument 403 /api_err.php
-  ErrorDocument 404 /api_err.php
+  ErrorDocument 403 /405.php
+  ErrorDocument 404 /405.php
 </Else>
 
 
@@ -47,10 +47,11 @@ RewriteEngine On
 #   ends with /tlc-ttsurvey/, simply redirect to the app's index.php
 RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/?$
 RewriteRule (.*) %1/index.php [L]
-# If the request URI is already /index.php or /api_err.php or ends with
-#   /tlc-ttsurvey/ followed by /index.php or api_err.php, no redirect is necessary
+# If the request URI is already /index.php, /405.php, /505.php or if it
+#   contains /tlc-ttsurvey/ followed by one of these, no redirect is necessary
 RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/index.php$ [OR]
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/app_err.php$
+RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/405.php$
+RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/500.php$
 RewriteRule (.*) - [L]
 # If the request URI indicates a non-existent file OR an existing directory
 #   on the server and includes /tlc-ttsurvey/ recirect to the app's index.php
@@ -70,8 +71,8 @@ RewriteRule (.*) /index.php?extra=$1 [L]
 </IfModule>
 
 # At this point, any request URI that points to a file that exists on the 
-#   server will not have been redirected.  (This includes index.php and
-#   api_err.php, for which the rewrite rule was "don't rewrite".)  We will
+#   server will not have been redirected.  (This includes index.php, 405.php,
+#   ant 500.php, for which the rewrite rule was "don't rewrite".)  We will
 #   handle these via Allow/Deny in a sequence of FilesMatch directives
 
 # Disallow access to all dot files
@@ -90,8 +91,8 @@ RewriteRule (.*) /index.php?extra=$1 [L]
   Deny from all
 </FilesMatch>
 
-# But, DO allow access to index.php and api_err.php scripts
-<FilesMatch '(index|api_err).php$'>
+# But, DO allow access to index.php, 405.php, and 500.php scripts
+<FilesMatch '(index|405|500).php$'>
   Order deny,allow
   Allow from all
 </FilesMatch>
