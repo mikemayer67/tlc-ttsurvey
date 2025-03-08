@@ -45,7 +45,7 @@ Options All -Indexes
 RewriteEngine On
 # If the request URI (everything after the host URL) is simply / or if it
 #   ends with /tlc-ttsurvey/, simply redirect to the app's tt.php
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)(/tt)/?$
+RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)(/tt)?/?$
 RewriteRule (.*) %1/tt.php [L]
 # If the request URI is already /tt.php, /405.php, /505.php or if it
 #   contains /tlc-ttsurvey/ followed by one of these, no redirect is necessary
