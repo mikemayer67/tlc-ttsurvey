@@ -29,7 +29,7 @@ if(isset($errid)) {
       </a>
     </div>
     <div style='margin-top:10px; font-size:large; text-align:center;'>
-      Please contact <?=$contact?> and let <?=$pronoun?> something is amiss.
+      Please contact <?=$contact?> and let <?=$pronoun?> know something is amiss.
     </div>
 <?php if(isset($errid)) { ?>
     <div style='margin-top:8px; color:#202020; text-align:center;'>
