@@ -6,6 +6,15 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 
 $dir = preg_replace("/\/[^\/]+\.php$/", "", $_SERVER['SCRIPT_NAME']);
+$contact = ADMIN_CONTACT;
+$pronoun = ADMIN_PRONOUN;
+if(isset($errid)) {
+  log_info($contact);
+  log_info($pronoun);
+  $contact = preg_replace("/'>/","?subject=Survey Error #$errid'>", $contact);
+  log_info($contact);
+}
+ 
 ?>
 
 <html>
@@ -20,7 +29,7 @@ $dir = preg_replace("/\/[^\/]+\.php$/", "", $_SERVER['SCRIPT_NAME']);
       </a>
     </div>
     <div style='margin-top:10px; font-size:large; text-align:center;'>
-      Please contact <?=ADMIN_CONTACT?> and let <?=ADMIN_PRONOUN?> something is amiss.
+      Please contact <?=$contact?> and let <?=$pronoun?> something is amiss.
     </div>
 <?php if(isset($errid)) { ?>
     <div style='margin-top:8px; color:#202020; text-align:center;'>

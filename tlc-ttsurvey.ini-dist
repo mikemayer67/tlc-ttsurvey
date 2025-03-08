@@ -20,9 +20,9 @@ charset = "utf8mb4"
 
 [admin]
 ; contact information for the person who should be notified if there are issues using this app
-;name = "[fill this in"
+;name = "[fill this in]"
 ; email may be left blank
-;email = "[fill this in"
+;email = "[fill this in]"
 ; prononun (this is not "woke", it avoids having to guess gender from name)
-;pronoun = "[fill this in"
+;pronoun = "[fill this in]"
 
