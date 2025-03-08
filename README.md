@@ -1,5 +1,24 @@
 # tlc-ttsurvey
 
+This repository contains web app used for the annual Time & Talent survey used by
+Trinity Lutheran Church of North Potomac, MD (https://trinityelca.org).  
+
+While it is was designed for and around a particular congregation, it is made 
+available to anyone who feels it may be of use to them (with or without modification).
+To that end, while the prefix ```tlc``` is used extensively through the code and
+database, every effort was made to allow the front end to be customized so as to
+not include "Trinity Lutheran" or any of its members or staff in the survey.
+
+I welcome pull issues and pull requests from anyone who wishes to contribute to
+this projects.  I will accept pull requests that add features or increase generality
+in it usage.  I will not accept pull requests that add specificity to any partiular
+user of the app (including changes specific to Trinity).
+
+## Uage Overview
+
+(still to come)
+
+
 ## Setup Notes:
 
 ### database
