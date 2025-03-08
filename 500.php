@@ -9,10 +9,7 @@ $dir = preg_replace("/\/[^\/]+\.php$/", "", $_SERVER['SCRIPT_NAME']);
 $contact = ADMIN_CONTACT;
 $pronoun = ADMIN_PRONOUN;
 if(isset($errid)) {
-  log_info($contact);
-  log_info($pronoun);
   $contact = preg_replace("/'>/","?subject=Survey Error #$errid'>", $contact);
-  log_info($contact);
 }
  
 ?>

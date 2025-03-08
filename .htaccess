@@ -40,38 +40,38 @@ Options All -Indexes
 
 
 # The goal of all of these rewrites is to funnel all URIs consistent
-#   with the app's API through the index.php script
+#   with the app's API through the tt.php script
 <IfModule mod_rewrite.c>
 RewriteEngine On
 # If the request URI (everything after the host URL) is simply / or if it
-#   ends with /tlc-ttsurvey/, simply redirect to the app's index.php
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/?$
-RewriteRule (.*) %1/index.php [L]
-# If the request URI is already /index.php, /405.php, /505.php or if it
+#   ends with /tlc-ttsurvey/, simply redirect to the app's tt.php
+RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)(/tt)/?$
+RewriteRule (.*) %1/tt.php [L]
+# If the request URI is already /tt.php, /405.php, /505.php or if it
 #   contains /tlc-ttsurvey/ followed by one of these, no redirect is necessary
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/index.php$ [OR]
+RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/tt.php$ [OR]
 RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/405.php$
 RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/500.php$
 RewriteRule (.*) - [L]
 # If the request URI indicates a non-existent file OR an existing directory
-#   on the server and includes /tlc-ttsurvey/ recirect to the app's index.php
+#   on the server and includes /tlc-ttsurvey/ recirect to the app's tt.php
 #   and append everything after /tlc-ttsurvey/ in the URI to the redirection URI
-#   via the "extra" query parameter
+#   via the "action" query parameter
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteCond %{REQUEST_URI} (.*/tlc-ttsurvey/)(.*)
-RewriteRule (.*) %1index.php?extra=%2 [L]
+RewriteRule (.*) %1tt.php?action=%2 [L]
 # If the request URI indicates a non-existent file OR an existing directory
 #   on the server and that does not include /tlc-ttsurvey/ recirect to the 
-#   app's index.php and append the entire request URI to the redirection URI
-#   via the "extra" query parameter
+#   app's tt.php and append the entire request URI to the redirection URI
+#   via the "action" query parameter
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule (.*) /index.php?extra=$1 [L]
+RewriteRule (.*) /tt.php?action=$1 [L]
 </IfModule>
 
 # At this point, any request URI that points to a file that exists on the 
-#   server will not have been redirected.  (This includes index.php, 405.php,
+#   server will not have been redirected.  (This includes tt.php, 405.php,
 #   ant 500.php, for which the rewrite rule was "don't rewrite".)  We will
 #   handle these via Allow/Deny in a sequence of FilesMatch directives
 
@@ -91,8 +91,8 @@ RewriteRule (.*) /index.php?extra=$1 [L]
   Deny from all
 </FilesMatch>
 
-# But, DO allow access to index.php, 405.php, and 500.php scripts
-<FilesMatch '(index|405|500).php$'>
+# But, DO allow access to tt.php, 405.php, and 500.php scripts
+<FilesMatch '(tt|405|500).php$'>
   Order deny,allow
   Allow from all
 </FilesMatch>
