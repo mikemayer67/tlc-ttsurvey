@@ -26,10 +26,21 @@ require_once(app_file('include/logger.php'));
 try
 {
   log_dev("-------------- Start of TT --------------");
-  print("<pre>" . print_r($_GET,true)     . "</pre>");
-  print("<pre>" . print_r($_POST,true)    . "</pre>");
-  print("<pre>" . print_r($_REQUEST,true) . "</pre>");
-  print("<pre>" . print_r($_SERVER,true)  . "</pre>");
+
+  if( isset($_REQUEST['action']) ) {
+    todo("Make action only callable via POST");
+    $action = strtolower($_REQUEST['action']);
+    print("<h1>$action</h1>");
+  } else {
+    require(app_file('user/login.php'));
+    print("<pre>" . print_r($_GET,true)     . "</pre>");
+    print("<pre>" . print_r($_POST,true)    . "</pre>");
+    print("<pre>" . print_r($_REQUEST,true) . "</pre>");
+    print("<pre>" . print_r($_SERVER,true)  . "</pre>");
+  }
+
+
+
 }
 catch (\Exception $e)
 {
