@@ -1,0 +1,28 @@
+[logging]
+; app specific log file
+;   used for logging errors, warnings, informational comments, and developer probes
+;   if not specified, only error logging (to the php error log) will be provided
+log_file = "tlc-ttsurvey.log"
+
+; timezone to show in the logging
+;   for list of posible values, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+;   if not specified, defaults to UTC
+;log_tz = "America/New_York"
+
+[mysql]
+; defines the connection to the MySQL database schema used by this app
+;   if charset is not specified, defaults to "utf8"
+userid = "[fill this is]"
+password = "[fill this is]"
+schema = "[fill this is]"
+host = "[fill this is]"
+charset = "utf8mb4"
+
+[admin]
+; contact information for the person who should be notified if there are issues using this app
+;name = "[fill this in]"
+; email may be left blank
+;email = "[fill this in]"
+; prononun (this is not "woke", it avoids having to guess gender from name)
+;pronoun = "[fill this in]"
+

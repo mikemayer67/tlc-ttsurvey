@@ -8,8 +8,12 @@ require_once(app_file('include/const.php'));
 function get_settings()
 {
   $settings_file = app_file(SETTINGS_FILE);
-  $json = file_get_contents($settings_file);
-  $settings = json_decode($json,true);
+  if( file_exists($settings_file) ) {
+    $json = file_get_contents($settings_file);
+    $settings = json_decode($json,true);
+  } else {
+    $settings = array();
+  }
   return $settings;
 }
 

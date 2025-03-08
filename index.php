@@ -23,11 +23,11 @@ require_once(APP_DIR."/include/init.php");
 
 require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
-log_warning("I am a teapot");
-set_log_level(LOGGER_WARN);
-log_warning("I am a spoon");
-set_log_level(LOGGER_DEV);
 
+set_log_level(3);
+
+require_once(app_file('include/db.php'));
+$db = new MySQLConnection();
 ?>
 
 <h1>You are in the right place (<?=APP_DIR?>)</h1>
