@@ -41,3 +41,7 @@ function clear_setting($key)
 {
   update_setting($key,NULL);
 }
+
+function is_dev()    { return get_setting("dev");   }
+function start_dev() { update_setting("dev",true);  }
+function stop_dev()  { update_setting("dev",false); }
