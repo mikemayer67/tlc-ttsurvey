@@ -12,9 +12,6 @@ const LOG_LEVEL_KEY = "log_level";
 function load_config() {
   $config = parse_ini_file(APP_DIR."/tlc-ttsurvey.ini",true);
 
-  define('APP_TITLE',     $config['content']['app_title'] ?? "Time and Talent Survey");
-  define('APP_TITLE_YEAR' $config['content']['app_title_year'] ?? true);
-
   define('MYSQL_USERID',  $config['mysql']['userid']);
   define('MYSQL_PASSWORD',$config['mysql']['password']);
   define('MYSQL_SCHEMA',  $config['mysql']['schema']);

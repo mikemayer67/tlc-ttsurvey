@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/const.php'));
 require_once(app_file('include/settings.php'));
+require_once(app_file('include/db.php'));
 
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
@@ -30,7 +31,9 @@ function start_page($flavor)
   print "<meta charset='UTF-8'>\n";
   print "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
 
-  print "<title class=tlc-title>".APP_TITLE."</title>\n";
+  $title = active_survey_title() ?? "Time and Talent Survey";
+
+  print "<title class=tlc-title>$title</title>\n";
 
   // don't include css or javascript in pages that are displayed for printing purposes
   if($flavor == 'print') {
@@ -50,11 +53,12 @@ function start_page($flavor)
     "crossorigin='anonymous'></script>\n"
   );
 
+  print "<link rel='stylesheet' type='text/css' href='css/w3.css?v=$v'>\n";
   print "<link rel='stylesheet' type='text/css' href='css/tt.css?v=$v'>\n";
 
-  switch($page) {
+  switch($flavor) {
   case 'login':
-    print "<link rel rel='stylesheet' type='text/css' href='css/login.css?v=$v\n";
+    print "<link rel='stylesheet' type='text/css' href='css/login.css?v=$v'>\n";
     break;
   default:
     break;
@@ -68,4 +72,5 @@ function end_page()
 {
   // close the body and html elements
   print("</body></html>\n");
+}
 

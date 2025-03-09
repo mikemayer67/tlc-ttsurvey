@@ -1,11 +1,3 @@
-[content]
-; title to display for the survey
-;   if not specified, defaults to "Time and Talent Survey"
-app_title = "Time and Talent Survey"
-; whether or not to prepend the current year to the title
-;   if not specified, defaults to true
-app_title_add_year = true
-
 [logging]
 ; app specific log file
 ;   used for logging errors, warnings, informational comments, and developer probes

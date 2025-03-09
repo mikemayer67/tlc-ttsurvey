@@ -56,16 +56,11 @@ class MySQLConnection {
   }
 
   // Executes the query on the mysql server and returns the result.
-  //   If the query fails, there are two possible responses, based on the $failable parameter:
-  //      true: a value of false is returned to indicate failure
-  //     false: the app terminates immediately via the internal_error function. 
-  public function query($sql,$failable=false)
+  public function query($sql)
   {
     $result = $this->db->query($sql);
     if( ! $result ) 
     { 
-      if($failable) { return null; }
-
       $sql = preg_replace('/\s+/',' ',$sql);
       $sql = preg_replace('/^\s/','',$sql);
       $sql = preg_replace('/\s$/','',$sql);
@@ -99,16 +94,49 @@ class MySQLConnection {
 
 //////////////////////////////
 // Survey Status
-//   There is an implicit assumption inthe current design of the ttsurvey app
-//     that the survey is an annual event and can be uniquely identified by 
-//     year.  (There is an enhancement issue on github to consider moving away
-//     from this assumption... but that's not implemented.)
-//
-//   The survey database can contain data from multiple survey years.  Each of
-//   these d
 //////////////////////////////
 
-// The active year is the one for which the survey is in the active state.
-//   Tha
-function active_survey_year(
+// returns the id of the active (not draft or closed) survey
+//   terminates the app via internal_error if more than one active survey
+function active_survey_id()
+{
+  $db = new MySQLConnection();
+  $result = $db->query("select id from tlc_tt_active_surveys");
+  $result = $result->fetch_all();
+
+  $ids = array();
+  foreach($result as $id) { $ids[] = $id[0]; }
+
+  switch(count($ids)) {
+  case 0: return null;    break;
+  case 1: return $ids[0]; break;
+  default:
+    internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
+    break;
+  }
+}
+
+function active_survey_title()
+{
+  $id = active_survey_id();
+  if(!isset($id)) { return "Time and Talent Survey"; }
+
+  $db = new MySQLConnection();
+  $result = $db->query("select title from tlc_tt_active_surveys where id=$id");
+  $result = $result->fetch_row();
+  return $result[0];
+}
+
+// returns the ids of all draft surveys
+function draft_survey_ids()
+{
+  $db = new MySQLConnection();
+  $result = $db->query("select id from tlc_tt_draft_surveys");
+  $result = $result->fetch_all();
+
+  $ids = array();
+  foreach($result as $id) { $ids[] = $id[0]; }
+
+  return $ids;
+}
 

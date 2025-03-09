@@ -22,6 +22,7 @@ define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR."/include/init.php");
 require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
+require_once(app_file('common/page_elements.php'));
 
 try
 {
@@ -30,7 +31,11 @@ try
   if( isset($_REQUEST['action']) ) {
     todo("Make action only callable via POST");
     $action = strtolower($_REQUEST['action']);
+
+    start_page('login');
     print("<h1>$action</h1>");
+    end_page();
+
   } else {
     require(app_file('user/login.php'));
     print("<pre>" . print_r($_GET,true)     . "</pre>");
