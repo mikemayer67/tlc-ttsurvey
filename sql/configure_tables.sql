@@ -89,13 +89,14 @@ IF version < 1 THEN
 --   a purpose other than the tlc-ttsurvey app.  Therefore, we do not use
 --   the "if not exists" clause in any of the create statements below.
 
-  CREATE TABLE tlc_tt_settings (
-    name  varchar(32)  NOT NULL,
-    year  int          DEFAULT NULL,
-    value varchar(100) NOT NULL
-    );
-  ALTER TABLE tlc_tt_settings
-    ADD UNIQUE KEY tlc_tt_settings_index (name,year);
+  CREATE TABLE tlc_tt_surveys (
+    id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title    varchar(100) NOT NULL,
+    created  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active   DATETIME     NULL DEFAULT NULL,
+    closed   DATETIME     NULL DEFAULT NULL,
+    download VARCHAR(150) NULL DEFAULT NULL COMMENT 'URL to download a printable survey'
+  );
 
   CREATE TABLE tlc_tt_userids (
     id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -104,24 +105,30 @@ IF version < 1 THEN
     email    varchar(45)  DEFAULT NULL,
     token    varchar(45)  NOT NULL ,
     password varchar(64)  NOT NULL,
-    admin    tinyint      NOT NULL DEFAULT 0
+    admin    tinyint      NOT NULL DEFAULT 0 COMMENT 'has admin permission'
     );
 
   CREATE TABLE tlc_tt_roles (
-    user_id int     NOT NULL,
-    year    int     NOT NULL,
-    poc     tinyint NOT NULL DEFAULT 0,
-    tech    tinyint NOT NULL DEFAULT 0
+    user_id   int     NOT NULL,
+    survey_id int     NOT NULL,
+    poc       tinyint NOT NULL DEFAULT 0,
+    tech      tinyint NOT NULL DEFAULT 0
     );
   ALTER TABLE tlc_tt_roles
-    ADD INDEX tlc_tt_roles_idx (user_id)
-    ;
+    ADD INDEX tlc_tt_roles_idx (user_id,survey_id) ;
   ALTER TABLE tlc_tt_roles 
-    ADD CONSTRAINT tlc_tt_roles_fk
+    ADD CONSTRAINT tlc_tt_roles_user_fk
     FOREIGN KEY (user_id)
     REFERENCES tlc_tt_userids (id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT;
+  ALTER TABLE tlc_tt_roles 
+    ADD CONSTRAINT tlc_tt_roles_survey_fk
+    FOREIGN KEY (survey_id)
+    REFERENCES tlc_tt_surveys (id)
+    ON DELETE CASCADE
+    ON UPDATE RESTRICT;
+
 
 -- Add version 1 to the history and increment current version
   INSERT INTO tlc_tt_version_history (description) values ("Initial Setup");
