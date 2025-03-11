@@ -129,6 +129,20 @@ IF version < 1 THEN
     ON DELETE CASCADE
     ON UPDATE RESTRICT;
 
+  CREATE OR REPLACE VIEW tlc_tt_draft_surveys
+    AS SELECT id, title 
+         FROM tlc_tt_surveys 
+        WHERE active is NULL;
+
+  CREATE OR REPLACE VIEW tlc_tt_active_surveys
+    AS SELECT id, title 
+         FROM tlc_tt_surveys 
+        WHERE active is not NULL and closed is NULL;
+
+  CREATE OR REPLACE VIEW tlc_tt_closed_surveys
+    AS SELECT id, title 
+         FROM tlc_tt_surveys 
+        WHERE closed is not NULL;
 
 -- Add version 1 to the history and increment current version
   INSERT INTO tlc_tt_version_history (description) values ("Initial Setup");

@@ -1,0 +1,59 @@
+/* common color palette */
+
+* {
+  --navbar-color:white;
+}
+
+/* navigation bar */
+
+div.tt-navbar {
+  position: fixed;
+  top: 0;
+  width:100%;
+  min-height:50px;
+  z-index:1;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  background-color:var(--navbar-color);
+  padding: 5px 10px;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 10px;
+
+  font-family: Garamond Sans-serif;
+}
+
+div.tt-navbar .tt-title {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 10px;
+}
+
+div.tt-navbar .tt-title {
+  font-size: x-large;
+  margin-right: auto;
+}
+
+div.tt-navbar .tt-logo {
+  height:40px;
+}
+
+@media only screen and (max-width: 768px)
+{
+  div.tt-navbar .tt-title { font-size: large; }
+  div.tt-navbar .tt-logo { height: 30px; }
+}
+
+@media only screen and (max-width: 600px)
+{
+  div.tt-navbar { flex-flow: column nowrap; }
+}
+
+@media only screen and (max-width: 400px)
+{
+  div.tt-navbar .tt-title {font-size: medium; }
+  div.tt-navbar .tt-logo { height: 25px; }
+}
+

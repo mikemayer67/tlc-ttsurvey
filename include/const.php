@@ -12,6 +12,8 @@ const LOG_LEVEL_KEY = "log_level";
 function load_config() {
   $config = parse_ini_file(APP_DIR."/tlc-ttsurvey.ini",true);
 
+  define('NAVBAR_LOGO',   $config['content']['navbar_logo'] ?? null);
+
   define('MYSQL_USERID',  $config['mysql']['userid']);
   define('MYSQL_PASSWORD',$config['mysql']['password']);
   define('MYSQL_SCHEMA',  $config['mysql']['schema']);
