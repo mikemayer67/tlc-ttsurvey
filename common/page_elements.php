@@ -46,6 +46,9 @@ function start_page($flavor)
   // in a development environment.
   $v = is_dev() ? rand() : 0;
 
+  $title_len = strlen($title);
+  print("<style> *{--n-title-chars:$title_len}</style>");
+
   print (
     "<script src='https://code.jquery.com/jquery-3.7.1.min.js' " .
     "integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' " .
@@ -79,7 +82,7 @@ function navbar($menu_cb=null)
   $title = active_survey_title();
   print("<!-- Navbar -->\n");
   print("<div class='tt-navbar'>\n");
-  print("<span class='tt-title'>");
+  print("<span class='tt-title-box'>");
   if(NAVBAR_LOGO) {
     print("<img class='tt-logo' src='img/" . NAVBAR_LOGO . "'>");
   }

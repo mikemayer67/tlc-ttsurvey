@@ -24,16 +24,20 @@ div.tt-navbar {
   font-family: Garamond Sans-serif;
 }
 
-div.tt-navbar .tt-title {
+div.tt-navbar .tt-title-box {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   gap: 10px;
 }
 
-div.tt-navbar .tt-title {
-  font-size: x-large;
+div.tt-navbar .tt-title-box {
   margin-right: auto;
+}
+
+div.tt-navbar .tt-title
+{
+  font-size: clamp(10px,calc(100vw / var(--n-title-chars)),35px);
 }
 
 div.tt-navbar .tt-logo {
@@ -42,18 +46,22 @@ div.tt-navbar .tt-logo {
 
 @media only screen and (max-width: 768px)
 {
-  div.tt-navbar .tt-title { font-size: large; }
   div.tt-navbar .tt-logo { height: 30px; }
 }
 
 @media only screen and (max-width: 600px)
 {
   div.tt-navbar { flex-flow: column nowrap; }
+  div.tt-navbar .tt-title {
+    font-size: clamp(10px,calc(160vw / var(--n-title-chars)),35px);
+  }
 }
 
 @media only screen and (max-width: 400px)
 {
-  div.tt-navbar .tt-title {font-size: medium; }
   div.tt-navbar .tt-logo { height: 25px; }
+  div.tt-navbar .tt-title {
+    font-size: clamp(10px,calc(140vw / var(--n-title-chars)),35px);
+  }
 }
 
