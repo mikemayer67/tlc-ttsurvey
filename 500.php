@@ -19,7 +19,7 @@ navbar();
 ?>
 
 <div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>
-  <a href='<?=$dir?>/'>
+  <a href='<?=$dir?>'>
     <img src='<?=$dir?>img/500.png' alt='Something went terribly wrong' style='width:100%;'>
   </a>
 </div>
