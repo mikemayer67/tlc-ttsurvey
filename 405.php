@@ -10,6 +10,7 @@ require_once(app_file('common/page_elements.php'));
 
 $url = dirname($_SERVER['SCRIPT_NAME']);
 $img = "$url/img/405.png";
+$img = preg_replace('#//#','/',$img);
 
 
 start_page('400');
