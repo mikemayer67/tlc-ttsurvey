@@ -6,7 +6,8 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('common/page_elements.php'));
 
-$dir = preg_replace("/\/[^\/]+\.php$/", "", $_SERVER['SCRIPT_NAME']);
+$dir = dir_name($_SERVER['SCRIPT_NAME']);
+
 $contact = ADMIN_CONTACT;
 $pronoun = ADMIN_PRONOUN;
 if(isset($errid)) {
@@ -19,7 +20,7 @@ navbar();
 
 <div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>
   <a href='<?=$dir?>/'>
-    <img src='<?=$dir?>/img/500.png' alt='Something went terribly wrong' style='width:100%;'>
+    <img src='<?=$dir?>img/500.png' alt='Something went terribly wrong' style='width:100%;'>
   </a>
 </div>
 
