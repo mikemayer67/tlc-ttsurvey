@@ -32,7 +32,14 @@ try
     todo("Make action only callable via POST");
     $action = strtolower($_REQUEST['action']);
 
+    $junk_cb = function() {
+      print("<span class='ttright'>[Menu1]</span>");
+      print("<span class='ttright'>[Menu2]</span>");
+      print("<span class='ttright'>[Menu3]</span>");
+    };
+
     start_page('login');
+    navbar($junk_cb);
     print("<h1>$action</h1>");
     end_page();
 

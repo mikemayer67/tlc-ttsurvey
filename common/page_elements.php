@@ -32,7 +32,6 @@ function start_page($flavor)
   print "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
 
   $title = active_survey_title() ?? "Time and Talent Survey";
-
   print "<title class=tlc-title>$title</title>\n";
 
   // don't include css or javascript in pages that are displayed for printing purposes
@@ -72,5 +71,23 @@ function end_page()
 {
   // close the body and html elements
   print("</body></html>\n");
+}
+
+
+function navbar($menu_cb=null)
+{
+  $title = active_survey_title();
+  print("<!-- Navbar -->\n");
+  print("<div class='tt-navbar'>\n");
+  print("<span class='tt-left'>");
+  log_dev(NAVBAR_LOGO);
+  if(NAVBAR_LOGO) {
+    print("<img class='tt-logo' src='img/" . NAVBAR_LOGO . "'>");
+  }
+  print("<span class='tt-title'>$title</span>");
+
+  print("</span>\n");
+  if($menu_cb) { $menu_cb(); }
+  print("</div>\n\n");
 }
 
