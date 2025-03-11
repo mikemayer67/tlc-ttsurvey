@@ -7,7 +7,7 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('common/page_elements.php'));
 
 $dir = dir_name($_SERVER['SCRIPT_NAME']);
-$img = "$url/img/500.png";
+$img = preg_replace('#//#','/', "$url/img/405.png");
 
 $contact = ADMIN_CONTACT;
 $pronoun = ADMIN_PRONOUN;

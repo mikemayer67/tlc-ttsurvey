@@ -32,6 +32,10 @@ try
     todo("Make action only callable via POST");
     $action = strtolower($_REQUEST['action']);
 
+    if($action == "err") {
+      internal_error("just testing");
+    }
+
     $junk_cb = function() {
       print("<span>[Menu1]</span>");
       print("<span>[Menu2]</span>");

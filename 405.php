@@ -9,9 +9,7 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('common/page_elements.php'));
 
 $url = dirname($_SERVER['SCRIPT_NAME']);
-$img = "$url/img/405.png";
-$img = preg_replace('#//#','/',$img);
-
+$img = preg_replace('#//#','/', "$url/img/405.png");
 
 start_page('400');
 navbar();
@@ -25,11 +23,5 @@ navbar();
 </div>
 
 <?php
-
-print("<pre>");
-print_r($url);
-print("</pre><pre>");
-print_r($img);
-print("</pre>");
 
 end_page();
