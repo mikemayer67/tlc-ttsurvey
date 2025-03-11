@@ -79,7 +79,7 @@ function navbar($menu_cb=null)
   $title = active_survey_title();
   print("<!-- Navbar -->\n");
   print("<div class='tt-navbar'>\n");
-  print("<span class='tt-left'>");
+  print("<span class='tt-title'>");
   if(NAVBAR_LOGO) {
     print("<img class='tt-logo' src='img/" . NAVBAR_LOGO . "'>");
   }
