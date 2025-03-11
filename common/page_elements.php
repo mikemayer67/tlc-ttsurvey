@@ -80,7 +80,6 @@ function navbar($menu_cb=null)
   print("<!-- Navbar -->\n");
   print("<div class='tt-navbar'>\n");
   print("<span class='tt-left'>");
-  log_dev(NAVBAR_LOGO);
   if(NAVBAR_LOGO) {
     print("<img class='tt-logo' src='img/" . NAVBAR_LOGO . "'>");
   }

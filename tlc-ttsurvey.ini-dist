@@ -1,3 +1,9 @@
+[content]
+; Logo to place in the navbar.  If not specified, no logo is added.
+;   If a filename is given, the path must be relative to /img
+; navbar_logo = "[fill this in]"
+
+
 [logging]
 ; app specific log file
 ;   used for logging errors, warnings, informational comments, and developer probes
@@ -12,10 +18,10 @@ log_file = "tlc-ttsurvey.log"
 [mysql]
 ; defines the connection to the MySQL database schema used by this app
 ;   if charset is not specified, defaults to "utf8"
-userid = "[fill this is]"
-password = "[fill this is]"
-schema = "[fill this is]"
-host = "[fill this is]"
+userid = "[fill this in]"
+password = "[fill this in]"
+schema = "[fill this in]"
+host = "[fill this in]"
 charset = "utf8mb4"
 
 [admin]
