@@ -53,15 +53,12 @@ div.tt-navbar .tt-logo {
 {
   div.tt-navbar { flex-flow: column nowrap; }
   div.tt-navbar .tt-title {
-    font-size: clamp(10px,calc(160vw / var(--n-title-chars)),35px);
+    font-size: clamp(10px,calc(180vw / var(--n-title-chars)),35px);
   }
 }
 
 @media only screen and (max-width: 400px)
 {
   div.tt-navbar .tt-logo { height: 25px; }
-  div.tt-navbar .tt-title {
-    font-size: clamp(10px,calc(140vw / var(--n-title-chars)),35px);
-  }
 }
 
