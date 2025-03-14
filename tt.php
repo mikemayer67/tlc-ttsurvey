@@ -50,7 +50,8 @@ try
   } else {
     require(app_file('user/login.php'));
     require_once(app_file('include/users.php'));
-    User::create("someont1y9","Somone Special","Try me is this ok");
+    $user = create_new_user("newtests5","Somone Special","Try me is this ok");
+    print_r($user);
     User::from_userid('someone105');
     User::from_userid('someone104');
 

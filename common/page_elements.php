@@ -5,7 +5,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/const.php'));
 require_once(app_file('include/settings.php'));
-require_once(app_file('include/db.php'));
+require_once(app_file('include/surveys.php'));
 
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
