@@ -67,7 +67,7 @@ class User {
 
   private function __construct($user_data)
   {
-    log_dev("construct new user: ".print_r($user_data,true));
+    log_info("construct new user: ".print_r($user_data,true));
     // user_data input is expected to be an associative array
     //
     // The data in this array must have been validated/sanitized
@@ -80,8 +80,6 @@ class User {
     $this->_token    = $user_data['token'];
     $this->_password = $user_data['password'];
     $this->_admin    = $user_data['admin'] ?? false;
-    
-    log_dev("User: ".print_r($this,true));
   }
 
 
@@ -89,7 +87,6 @@ class User {
   {
     log_dev("User::from_userid($userid)");
     $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
-    log_dev("User::from_userid query: ".print_r($r,true));
     if($r) { return new User($r); }
     else   { return false; }
   }
@@ -98,7 +95,6 @@ class User {
 
 function create_new_user($userid,$fullname,$password,$email=null)
 {
-  log_dev("create_new_user($userid,$fullname,$password,$email)");
   // inputs should be validated before calling this function... but as
   //   we're about to add this to the database, we'll validate them
   //   one last time.  If there is an issue, then there is an internal

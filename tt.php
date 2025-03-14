@@ -49,17 +49,6 @@ try
 
   } else {
     require(app_file('user/login.php'));
-    require_once(app_file('include/users.php'));
-    $user = create_new_user("newtests5","Somone Special","Try me is this ok");
-    print_r($user);
-    User::from_userid('someone105');
-    User::from_userid('someone104');
-
-
-    print("<pre>" . print_r($_GET,true)     . "</pre>");
-    print("<pre>" . print_r($_POST,true)    . "</pre>");
-    print("<pre>" . print_r($_REQUEST,true) . "</pre>");
-    print("<pre>" . print_r($_SERVER,true)  . "</pre>");
   }
 
 }

@@ -57,17 +57,13 @@ function MySQLExecute($query,$types=null,...$params)
   $conn = MySQLConnection();
 
   if($types) {
-    log_dev("MySQLExecute:: prepared statement");
     $stmt = $conn->prepare($query);
     $stmt->bind_param($types, ...$params);
     if( $stmt->execute() ) {
-      log_dev("MySQLExecute:: executed successfully");
       return $stmt->affected_rows;
     }
   } else {
-    log_dev("MySQLExecute:: direct query");
     if($conn->query($query)) {
-      log_dev("MySQLExecute:: success");
       return $conn->affected_rows;
     }
   }
@@ -77,12 +73,7 @@ function MySQLExecute($query,$types=null,...$params)
 
 function MySQLSelect($all,$mode,$query,$types=null,$params=[])
 {
-  log_dev("MySQLSelect::");
-  log_dev("   all: $all");
-  log_dev("   mode: $mode");
-  log_dev("   query: $query");
-  log_dev("   types: $types");
-  log_dev("   params: ".print_r($params,true));
+  log_dev("MySQLSelect($all,$mode,$query,$types,[".implode(",",$params)."])");
 
   if(! preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for non-select queries");
@@ -91,28 +82,23 @@ function MySQLSelect($all,$mode,$query,$types=null,$params=[])
   $conn = MySQLConnection();
 
   if($types) {
-    log_dev("MySQLSelect:: prepared statement");
     $stmt = $conn->prepare($query);
     $stmt->bind_param($types, ...$params);
     if( $stmt->execute() ) {
-      log_dev("MySQLSelect:: executed successfully");
       $result = $stmt->get_result();
     }
   } else {
-    log_dev("MySQLSelect:: direct query");
     $result = $conn->query($query);
   }
 
   if($result) {
     if($all) {
-      log_dev("MySQLSelect return fetched rows");
       return $result->fetch_all($mode);
     } else {
-      log_dev("MySQLSelect return first fetched row");
       return $result->fetch_array($mode);
     }
   }
-  log_dev("MySQLSelectRows: failed");
+  log_dev("MySQLSelect: failed");
   return false;
 }
 

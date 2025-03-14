@@ -31,7 +31,7 @@ function start_page($flavor)
   print "<meta charset='UTF-8'>\n";
   print "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
 
-  $title = active_survey_title() ?? "Time and Talent Survey";
+  $title = active_survey_title() ?? DEFAULT_TITLE;
   print "<title class=tlc-title>$title</title>\n";
 
   // don't include css or javascript in pages that are displayed for printing purposes
@@ -79,7 +79,7 @@ function end_page()
 
 function navbar($menu_cb=null)
 {
-  $title = active_survey_title();
+  $title = active_survey_title() ?? DEFAULT_TITLE;
   print("<!-- Navbar -->\n");
   print("<div class='tt-navbar'>\n");
   print("<span class='tt-title-box'>");

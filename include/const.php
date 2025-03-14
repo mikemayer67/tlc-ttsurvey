@@ -13,6 +13,7 @@ function load_config() {
   $config = parse_ini_file(APP_DIR."/tlc-ttsurvey.ini",true);
 
   define('NAVBAR_LOGO',   $config['content']['navbar_logo'] ?? null);
+  define('DEFAULT_TITLE', $config['content']['default_title'] ?? "Time and Talent Survey");
 
   define('MYSQL_USERID',  $config['mysql']['userid']);
   define('MYSQL_PASSWORD',$config['mysql']['password']);
