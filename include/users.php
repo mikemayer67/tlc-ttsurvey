@@ -67,6 +67,7 @@ class User {
 
   private function __construct($user_data)
   {
+    log_dev("construct new user: ".print_r($user_data,true));
     // user_data input is expected to be an associative array
     //
     // The data in this array must have been validated/sanitized
@@ -79,47 +80,62 @@ class User {
     $this->_token    = $user_data['token'];
     $this->_password = $user_data['password'];
     $this->_admin    = $user_data['admin'] ?? false;
+    
+    log_dev("User: ".print_r($this,true));
   }
 
-
-  public static function create($userid,$fullname,$password,$email=null)
-  {
-    log_dev("User::create($userid,$fullname,$password,$email)");
-    // inputs should be validated before calling this function... but as
-    //   we're about to add this to the database, we'll validate them
-    //   one last time.  If there is an issue, then there is an internal
-    //   error in the app... so die
-    $error = '';
-    if(!adjust_and_validate_user_input('userid',$userid,$error)) {
-      internal_error("Error while creating new user: userid $error");
-    }
-    if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
-      internal_error("Error while creating new user: fullname $error");
-    }
-    if(!adjust_and_validate_user_input('password',$password,$error)) {
-      internal_error("Error while creating new user: password $error");
-    }
-    if(!adjust_and_validate_user_input('email',$email,$error)) {
-      internal_error("Error while creating new user: email $error");
-    }
-    $token = gen_access_token();
-
-    db_add_user($userid,$fullname,$email,$token,$password,false);
-  }
 
   public static function from_userid($userid)
   {
     log_dev("User::from_userid($userid)");
-    $r = db_get_all_from_userid($userid);
-    log_dev("User::from_userid result: ".print_r($r,true));
-  }
-
-  public static function drop($userid)
-  {
-    log_dev("User::drop($userid)");
-    db_drop_user($userid);
+    $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
+    log_dev("User::from_userid query: ".print_r($r,true));
+    if($r) { return new User($r); }
+    else   { return false; }
   }
 }
+
+
+function create_new_user($userid,$fullname,$password,$email=null)
+{
+  log_dev("create_new_user($userid,$fullname,$password,$email)");
+  // inputs should be validated before calling this function... but as
+  //   we're about to add this to the database, we'll validate them
+  //   one last time.  If there is an issue, then there is an internal
+  //   error in the app... so die
+  $error = '';
+  if(!adjust_and_validate_user_input('userid',$userid,$error)) {
+    internal_error("Error while creating new user: userid $error");
+  }
+  if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
+    internal_error("Error while creating new user: fullname $error");
+  }
+  if(!adjust_and_validate_user_input('password',$password,$error)) {
+    internal_error("Error while creating new user: password $error");
+  }
+  if(!adjust_and_validate_user_input('email',$email,$error)) {
+    internal_error("Error while creating new user: email $error");
+  }
+
+  $token    = gen_access_token();
+  $password = password_hash($password,PASSWORD_DEFAULT);
+
+  if($email) {
+    $r = MySQLExecute(
+      "insert into tlc_tt_userids (userid,fullname,email,token,password,admin) values (?,?,?,?,?,0)",
+      "sssss",
+      $userid,$fullname,$email,$token,$password
+    );
+  } else {
+    $r = MySQLExecute(
+      "insert into tlc_tt_userids (userid,fullname,token,password,admin) values (?,?,?,?,0)",
+      "ssss",
+      $userid,$fullname,$token,$password
+    );
+  }
+  return $r;
+}
+
 
 function gen_access_token($token_length=25)
 {
