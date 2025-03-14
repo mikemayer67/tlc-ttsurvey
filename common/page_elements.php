@@ -91,5 +91,6 @@ function navbar($menu_cb=null)
   print("</span>\n");
   if($menu_cb) { $menu_cb(); }
   print("</div>\n\n");
+  print("<div class='tt-navbar-pad'></div>");
 }
 

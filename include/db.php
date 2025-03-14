@@ -81,7 +81,43 @@ class MySQLConnection {
   {
     return $this->db->real_escape_string($value);
   }
+
+  public function connection() { return $this->db; }
 };
+
+function MySQLQuery($query,$types=null,...$params)
+{
+  log_dev("MySQLQuery($query,$types,".print_r($params,true).")");
+  $db = new MySQLConnection();
+  $conn = $db->connection();
+
+  if($types) {
+    log_dev("MySQLQuery:: prepared statement");
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param($types, ...$params);
+    if( $stmt->execute() ) {
+      log_dev("MySQLQuery:: executed successfully");
+      $result = $stmt->get_result();
+      log_dev("MySQLQuery result: ". print_r($result,true));
+      if($result === false) {
+        log_dev("MySQLQuery return affected rows");
+        return $stmt->affected_rows;
+      } else {
+        log_dev("MySQLQuery return fetched rows");
+        return $result->fetch_all(MYSQLI_ASSOC);
+      }
+    }
+  } else {
+    log_dev("MySQLQuery:: direct query");
+    $result = $conn->query($query);
+    if($result) {
+      log_dev("MySQLQuery:: success");
+      return $result->fetch_all(MYSQLI_ASSOC);
+    }
+  }
+  log_dev("MySQLQuery: failed");
+  return false;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -121,10 +157,8 @@ function active_survey_title()
   $id = active_survey_id();
   if(!isset($id)) { return "Time and Talent Survey"; }
 
-  $db = new MySQLConnection();
-  $result = $db->query("select title from tlc_tt_active_surveys where id=$id");
-  $result = $result->fetch_row();
-  return $result[0];
+  $result = MySQLQuery( "select title from  tlc_tt_active_surveys where id=?",'i',$id);
+  return $result[0]['title'];
 }
 
 // returns the ids of all draft surveys
@@ -138,5 +172,47 @@ function draft_survey_ids()
   foreach($result as $id) { $ids[] = $id[0]; }
 
   return $ids;
+}
+
+//////////////////////////////
+// Userids
+//////////////////////////////
+
+function db_add_user($userid,$fullname,$email,$token,$password,$admin=false)
+{
+  log_dev("db_add_user($userid,$fullname,$email,$token,$password,$admin)");
+  $password = password_hash($password,PASSWORD_DEFAULT);
+  $admin    = $admin ? 1 : 0;
+
+  if($email) {
+    log_dev("db_add_user:: has email");
+    $r = MySQLQuery(
+      "insert into tlc_tt_userids (userid,fullname,email,token,password,admin) values (?,?,?,?,?,?)",
+      "sssssi",
+      $userid,$fullname,$email,$token,$password,$admin
+    );
+  } else {
+    log_dev("db_add_user:: no email");
+    $r = MySQLQuery(
+      "insert into tlc_tt_userids (userid,fullname,token,password,admin) values (?,?,?,?,?)",
+      "ssssi",
+      $userid,$fullname,$token,$password,$admin
+    );
+  }
+  log_dev("db_add_user result: ".print_r($r,true));
+}
+
+function db_get_all_from_userid($userid)
+{
+  log_dev("db_get_all_from_userid($userid)");
+  $r = MySQLQuery("select * from tlc_tt_userids where userid=?","s",$userid);
+  log_dev("db_get_all_from_userid result: ".print_r($r,true));
+}
+
+function db_drop_user($userid)
+{
+  log_dev("db_drop_user($userid)");
+  $r = MySQLQuery("delete  from tlc_tt_userids where userid=?","s",$userid);
+  log_dev("db_drop_user result: ".print_r($r,true));
 }
 

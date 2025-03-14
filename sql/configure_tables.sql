@@ -108,6 +108,12 @@ IF version < 1 THEN
     admin    tinyint      NOT NULL DEFAULT 0 COMMENT 'has admin permission'
     );
 
+  CREATE TABLE tlc_tt_anonids (
+    id        int         NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    anonid    varchar(24) NOT NULL UNIQUE,
+    user_hash varchar(64) NOT NULL COMMENT 'password hash of anonid+userid'
+  );
+
   CREATE TABLE tlc_tt_roles (
     user_id   int     NOT NULL,
     survey_id int     NOT NULL,

@@ -23,6 +23,9 @@ div.tt-navbar {
 
   font-family: Garamond Sans-serif;
 }
+div.tt-navbar-pad {
+  height:50px;
+}
 
 div.tt-navbar .tt-title-box {
   display: flex;
