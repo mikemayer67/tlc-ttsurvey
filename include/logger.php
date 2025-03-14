@@ -37,6 +37,12 @@ function logger($create=true)
   return $_logger_fp;
 }
 
+function log_array($x)
+{
+  return json_encode($x);
+
+}
+
 function clear_logger()
 {
   global $_logger_fp;

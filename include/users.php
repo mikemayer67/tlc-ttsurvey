@@ -82,13 +82,24 @@ class User {
     $this->_admin    = $user_data['admin'] ?? false;
   }
 
-
   public static function from_userid($userid)
   {
     log_dev("User::from_userid($userid)");
     $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
     if($r) { return new User($r); }
     else   { return false; }
+  }
+
+  public static function from_email($email)
+  {
+    log_dev("User::from_email($email)");
+    $result = MySQLSelectRows('select * from tlc_tt_userids where email=?','s',$email);
+
+    $users = array();
+    foreach($result as $user_data) {
+      $users[] = new User($user_data);
+    }
+    return $users;
   }
 }
 

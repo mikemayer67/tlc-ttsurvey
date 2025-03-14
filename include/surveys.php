@@ -9,36 +9,25 @@ require_once(app_file('include/logger.php'));
 
 function active_survey_id()
 {
-  $ids = MySQLSelectArrays("select id from tlc_tt_active_surveys");
-
-  switch(count($ids)) {
-  case 0: return null;    break;
-  case 1: return $ids[0][0]; break;
-  default:
+  $ids = MySQLSelectValues("select id from tlc_tt_active_surveys");
+  if(count($ids)>1) {
     internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
-    break;
   }
+  return $ids[0] ?? false;
 }
 
 function active_survey_title()
 {
-  $id = active_survey_id();
-  if(isset($id)) { 
-    $result = MySQLSelectArray( "select title from  tlc_tt_active_surveys where id=?",'i',$id);
-    log_dev("active_survey_title: ".print_r($result,true));
-    $title = $result[0] ?? null;
+  $titles = MySQLSelectValues("select title from tlc_tt_active_surveys");
+  if(count($titles)>1) {
+    internal_error("Multiple active surveys found in the database: ".implode(', ',$titles));
   }
-  return $title ?? null;
+  return $titles[0] ?? null;
 }
 
 // returns the ids of all draft surveys
 function draft_survey_ids()
 {
-  $result = MySQLSelectArrays("select id from tlc_tt_draft_surveys");
-
-  $ids = array();
-  foreach($result as $id) { $ids[] = $id[0]; }
-
-  return $ids;
+  return MySQLSelectValues("select id from tlc_tt_draft_surveys");
 }
 

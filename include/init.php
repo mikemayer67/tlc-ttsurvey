@@ -13,6 +13,9 @@ function api_die()
 
 function internal_error($msg)
 {
+  // avoid recursion if internal error occurred while rendering 500.php
+  if(defined('RENDERING_500_PHP')) { return; }
+
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]: $msg");

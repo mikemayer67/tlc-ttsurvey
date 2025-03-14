@@ -6,6 +6,8 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('common/page_elements.php'));
 
+define('RENDERING_500_PHP',true);
+
 $url = dirname($_SERVER['SCRIPT_NAME']);
 $img = preg_replace('#//#','/', "$url/img/500.png");
 

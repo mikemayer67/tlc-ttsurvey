@@ -48,10 +48,10 @@ function MySQLConnection()
 
 function MySQLExecute($query,$types=null,...$params)
 {
-  log_dev("MySQLExecute($query,$types,".print_r($params,true).")");
+  log_dev("MySQLExecute($query,$types,".log_array($params).")");
 
   if(preg_match("/^\s*select/i",$query)) {
-    internal_error("Use MySQLExecute for non-select queries");
+    internal_error("Use MySQLSelect for select queries");
   }
 
   $conn = MySQLConnection();
@@ -73,7 +73,7 @@ function MySQLExecute($query,$types=null,...$params)
 
 function MySQLSelect($all,$mode,$query,$types=null,$params=[])
 {
-  log_dev("MySQLSelect($all,$mode,$query,$types,[".implode(",",$params)."])");
+  log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
 
   if(! preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for non-select queries");
@@ -124,5 +124,20 @@ function MySQLSelectArrays($query,$types=null,...$params)
 function MySQLSelectArray($query,$types=null,...$params)
 {
   return MySQLSelect(false,MYSQLI_NUM,$query,$types,$params);
+}
+
+// return first value in first row
+function MySQLSelectValue($query,$types=null,...$params)
+{
+  $row = MySQLSelectArray($query,$types,$params);
+  return $row[0] ?? null;
+}
+// return first value in all rows 
+function MySQLSelectValues($query,$types=null,...$params)
+{
+  $rows = MySQLSelectArrays($query,$types,...$params);
+  $values = array();
+  foreach($rows as $row) { $values[] = $row[0]; }
+  return $values;
 }
 

@@ -32,20 +32,22 @@ try
     todo("Make action only callable via POST");
     $action = strtolower($_REQUEST['action']);
 
-    if($action == "err") {
-      internal_error("just testing");
+    if($action == "dev") {
+      require(app_file('dev.php'));
     }
+    else
+    {
+      $junk_cb = function() {
+        print("<span>[Menu1]</span>");
+        print("<span>[Menu2]</span>");
+        print("<span>[Menu3]</span>");
+      };
 
-    $junk_cb = function() {
-      print("<span>[Menu1]</span>");
-      print("<span>[Menu2]</span>");
-      print("<span>[Menu3]</span>");
-    };
-
-    start_page('login');
-    navbar($junk_cb);
-    print("<h1>$action</h1>");
-    end_page();
+      start_page('junk');
+      navbar($junk_cb);
+      print("<h1>$action</h1>");
+      end_page();
+    }
 
   } else {
     require(app_file('user/login.php'));
