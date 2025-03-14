@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 require_once(app_file("include/db.php"));
 require_once(app_file("include/validation.php"));
 
+
 /**
  * The survey participant information is stored in two mysql tables
  *   tlc_tt_userids: details for each survey participant
@@ -82,6 +83,18 @@ class User {
     $this->_admin    = $user_data['admin'] ?? false;
   }
 
+  public function userid()   { return $this->_userid; }
+  public function fullname() { return $this->_fullname; }
+  public function email()    { return $this->_email ?? null; }
+  public function token()    { return $this->_token; }
+  public function admin()    { return $this->_admin; }
+
+  public function validate_password($password)
+  {
+    return \password_verify($password,$this->_password);
+
+  }
+
   public static function from_userid($userid)
   {
     log_dev("User::from_userid($userid)");
@@ -100,6 +113,86 @@ class User {
       $users[] = new User($user_data);
     }
     return $users;
+  }
+
+  public function set_admin($value)
+  {
+    $value = ($value ? 1 : 0);
+    log_warning("Changing admin permissions for ".$this->_userid." to $value");
+    $result = MySQLExecute("update tlc_tt_userids set admin=$value where userid=?",'s',$this->_userid);
+    if($result) { 
+      // only update this instance if the database was updated
+      $this->_admin = $value;
+    }
+    return $result;
+  }
+
+  public function get_password_reset_token()
+  {
+    // Only one active reset request at a time
+    MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
+    $token = gen_access_token(10);
+    log_dev("get_password_reset_token: token = $token");
+    $expires = time() + PW_RESET_TIMEOUT;
+    log_dev("get_password_reset_expires: expires = $expires");
+    $expires = gmdate('Y-m-d H:i:s', $expires);
+    log_dev("get_password_reset_expires: expires = $expires");
+    $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
+    log_dev("get_password_reset_expires: result = ".print_r($r,true));
+
+    return $r ? $token : null;
+  }
+
+  public function update_password($token,$password,&$error=null)
+  {
+    $sql = "select token,expires from tlc_tt_user_reset_tokens where userid=?";
+    $result = MySQLSelectRow($sql,'s', $this->_userid);
+    log_dev("update_password:: current_reset: ".print_r($result,true));
+    if(!$result) {
+      $error = "No current password reset request";
+      return false;
+    }
+    // You only get one chance per reset request
+    MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
+    if( $token !== $result['token'] ) {
+      $error = "Invalid reset request";
+      return false;
+    }
+    $expires = strtotime($result['expires'].' UTC');
+    $now = time();
+    log_dev("update_password:: expires:$expires vs now=$now  diff=".($expires-$now));
+    if($now > $expires) {
+      $error = "Password reset request has expired";
+      return false;
+    }
+    log_dev("update_password:: ok to reset");
+
+    return $this->set_password($password,$error);
+  }
+
+  public function set_password($password,&$error=null)
+  {
+    if(!adjust_and_validate_user_input('password',$password) ) {
+      $error = "invalid password";
+      log_warning("Cannot update password for $this->_userid: invalid password");
+      return false;
+    }
+    $password = password_hash($password,PASSWORD_DEFAULT);
+    log_dev("set_password: hashed=$password");
+
+    $result = MySQLExecute('update tlc_tt_userids set password=? where userid=?',
+      'ss', $password, $this->_userid
+    );
+    log_dev("set_password: sql result=".print_r($result,true));
+    
+
+    $email = $this->email();
+    if($email) {
+      require_once app_file('include/sendmail.php');
+      sendmail_profile($email, $this->userid(), 'password', '(undisclosed)', '(undisclosed)');
+    }
+
+    return true;
   }
 }
 

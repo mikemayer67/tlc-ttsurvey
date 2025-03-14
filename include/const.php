@@ -15,6 +15,8 @@ function load_config() {
   define('NAVBAR_LOGO',   $config['content']['navbar_logo'] ?? null);
   define('DEFAULT_TITLE', $config['content']['default_title'] ?? "Time and Talent Survey");
 
+  define('PW_RESET_TIMEOUT', $config['security']['pw_reset_timeout']);
+
   define('MYSQL_USERID',  $config['mysql']['userid']);
   define('MYSQL_PASSWORD',$config['mysql']['password']);
   define('MYSQL_SCHEMA',  $config['mysql']['schema']);
