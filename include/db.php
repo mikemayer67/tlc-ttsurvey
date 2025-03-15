@@ -48,7 +48,7 @@ function MySQLConnection()
 
 function MySQLExecute($query,$types=null,...$params)
 {
-  log_dev("MySQLExecute($query,$types,".log_array($params).")");
+  // log_dev("MySQLExecute($query,$types,".log_array($params).")");
 
   if(preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for select queries");
@@ -67,13 +67,14 @@ function MySQLExecute($query,$types=null,...$params)
       return $conn->affected_rows;
     }
   }
+  log_dev("MySQLExecute($query,$types,".log_array($params).")");
   log_dev("MySQLExecute: failed");
   return false;
 }
 
 function MySQLSelect($all,$mode,$query,$types=null,$params=[])
 {
-  log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
+  // log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
 
   if(! preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for non-select queries");
@@ -98,6 +99,7 @@ function MySQLSelect($all,$mode,$query,$types=null,$params=[])
       return $result->fetch_array($mode);
     }
   }
+  log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
   log_dev("MySQLSelect: failed");
   return false;
 }

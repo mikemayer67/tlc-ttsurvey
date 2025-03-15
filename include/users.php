@@ -83,17 +83,11 @@ class User {
     $this->_admin    = $user_data['admin'] ?? false;
   }
 
-  public function userid()   { return $this->_userid; }
-  public function fullname() { return $this->_fullname; }
-  public function email()    { return $this->_email ?? null; }
-  public function token()    { return $this->_token; }
-  public function admin()    { return $this->_admin; }
-
-  public function validate_password($password)
-  {
-    return \password_verify($password,$this->_password);
-
-  }
+  public function userid()       { return $this->_userid; }
+  public function fullname()     { return $this->_fullname; }
+  public function email()        { return $this->_email ?? null; }
+  public function access_token() { return $this->_token; }
+  public function admin()        { return $this->_admin; }
 
   public static function from_userid($userid)
   {
@@ -115,16 +109,70 @@ class User {
     return $users;
   }
 
-  public function set_admin($value)
+  // Full Name
+  
+  public function set_fullname($fullname,&$error=0)
   {
-    $value = ($value ? 1 : 0);
-    log_warning("Changing admin permissions for ".$this->_userid." to $value");
-    $result = MySQLExecute("update tlc_tt_userids set admin=$value where userid=?",'s',$this->_userid);
-    if($result) { 
-      // only update this instance if the database was updated
-      $this->_admin = $value;
+    $error = null;
+    if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
+      log_warning("Cannot update full name for $this->_userid: invalid name ($fullname)");
+      return false;
     }
-    return $result;
+    $old_fullname = $this->_fullname;
+    $result = MySQLExecute('update tlc_tt_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
+    if(!$result) { return false; }
+
+    $this->_fullname = $fullname;
+
+    $email = $this->email();
+    if($email) {
+      require_once app_file('include/sendmail.php');
+      sendmail_profile($email, $this->userid(), 'name', $old_fullname, $fullname);
+    }
+    return true;
+  }
+
+  // Email
+
+  public function set_email($email,&$error=0)
+  {
+    $error = null;
+    if(!adjust_and_validate_user_input('email',$email,$error)) {
+      log_warning("Cannot update email for $this->_userid: invalid email ($email)");
+      return false;
+    }
+    $old_email = $this->_email;
+    if($email) {
+      $result = MySQLExecute('update tlc_tt_userids set email=? where userid=?','ss',$email,$this->_userid);
+    } else {
+      $result = MySQLExecute('update tlc_tt_userids set email=NULL where userid=?','s',$this->_userid);
+    }
+    if(!$result) { return false; }
+
+    $this->_email = $fullname;
+
+    if($email) {
+      log_info("Sent updated email address to new address: $email");
+      require_once app_file('include/sendmail.php');
+      sendmail_profile($email, $this->userid(), 'email', $old_email, $email);
+    }
+    if($old_email) {
+      log_info("Sent updated email address to old address: $old_email");
+      require_once app_file('include/sendmail.php');
+      sendmail_profile($old_email, $this->userid(), 'email', $old_email, $email);
+    }
+    return true;
+  }
+
+  public function clear_email() { return $this->set_email(null); }
+
+  
+
+  // Password
+
+  public function validate_password($password)
+  {
+    return \password_verify($password,$this->_password);
   }
 
   public function get_password_reset_token()
@@ -145,6 +193,7 @@ class User {
 
   public function update_password($token,$password,&$error=null)
   {
+    $error = null;
     $sql = "select token,expires from tlc_tt_user_reset_tokens where userid=?";
     $result = MySQLSelectRow($sql,'s', $this->_userid);
     log_dev("update_password:: current_reset: ".print_r($result,true));
@@ -170,28 +219,61 @@ class User {
     return $this->set_password($password,$error);
   }
 
-  public function set_password($password,&$error=null)
+  public function set_password($password,&$error=0)
   {
+    $error = null;
     if(!adjust_and_validate_user_input('password',$password) ) {
-      $error = "invalid password";
-      log_warning("Cannot update password for $this->_userid: invalid password");
+      log_info("Cannot update password for $this->_userid: invalid password");
+      $error = 'invalid password';
       return false;
     }
     $password = password_hash($password,PASSWORD_DEFAULT);
-    log_dev("set_password: hashed=$password");
 
-    $result = MySQLExecute('update tlc_tt_userids set password=? where userid=?',
-      'ss', $password, $this->_userid
-    );
-    log_dev("set_password: sql result=".print_r($result,true));
-    
+    $result = MySQLExecute('update tlc_tt_userids set password=? where userid=?', 'ss', $password, $this->_userid);
+    if(!$result) { return false; }
+    $this->_password = $password;
 
     $email = $this->email();
     if($email) {
       require_once app_file('include/sendmail.php');
       sendmail_profile($email, $this->userid(), 'password', '(undisclosed)', '(undisclosed)');
     }
+    return true;
+  }
 
+  // Access Token
+
+  public function validate_access_token($token)
+  {
+    return $token === $this->_token;
+  }
+
+  public function regenerate_access_token()
+  {
+    $new_token = gen_access_token();
+    $result = MySQLExecute('update tlc_tt_userids set token=? where userid=?', 'ss', $new_token, $this->_userid);
+    if(!$result) { return false; }
+    $this->_token = $new_token;
+    return $new_token;
+  }
+
+  // Admin 
+
+  public function make_admin()
+  {
+    $result = MySQLExecute("update tlc_tt_userids set admin=1 where userid=?",'s',$this->_userid);
+    if(!$result) { return false; }
+    log_warning("Making ".$this->_userid." an admin");
+    $this->_admin = true;
+    return true;
+  }
+
+  public function revoke_admin()
+  {
+    $result = MySQLExecute("update tlc_tt_userids set admin=0 where userid=?",'s',$this->_userid);
+    if(!$result) { return false; }
+    log_warning("Removing ".$this->_userid." an admin");
+    $this->_admin = false;
     return true;
   }
 }
@@ -236,7 +318,6 @@ function create_new_user($userid,$fullname,$password,$email=null)
   return $r;
 }
 
-
 function gen_access_token($token_length=25)
 {
   $access_token = '';
@@ -248,5 +329,23 @@ function gen_access_token($token_length=25)
   return $access_token;
 }
 
-  
+function validate_user_password($userid,$password)
+{
+  $user = User::from_userid($userid);
+  if(!$user) {
+    log_info("Failed to validate password for $userid (invalid userid)");
+    return false;
+  }
+  if(!$user->validate_password($password)) {
+    log_info("Failed to validate password for $userid (invalid password)");
+    return false;
+  }
+  return true;
+}
 
+function validate_user_access_token($userid,$token)
+{
+  $user = User::from_userid($userid);
+  if(!$user) { return false; }
+  return $user->validate_access_token($token);
+}

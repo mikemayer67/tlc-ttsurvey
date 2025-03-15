@@ -48,8 +48,8 @@ function validate_user_input($key,$value,&$error=null)
     elseif(preg_match("/([$invalid_end])(?:$|\s)/",$value,$m)) {
       $error = "names cannot end with $m[1]";
     }
-    elseif(strlen($value)<2) {
-      $error = "no initials, please";
+    elseif(strlen($value)<3) {
+      $error = "too short";
     }
     elseif(!str_contains($value,' ')) {
       $error = "full name, please";
