@@ -23,74 +23,10 @@ Options All -Indexes
 #   OR in a subdirectory named tls-ttsurvey somewhere within the website's
 #   file structure.
 
-# I couldn't figure out how to make the tlc-ttsurvey version work without
-#    the use of an environment variable.  If anyone would like to help
-#    me figure out how to setup and use a regex capture in the If directive,
-#    I would welcome the input.
-<If "%{REQUEST_URI} =~ /tlc-ttsurvey/">
-  SetEnvIf REQUEST_URI "^((.*/)?tlc-ttsurvey/)" BASE_URI=$0
-  ErrorDocument 403 /%{ENV:BASE_URI}405.php
-  ErrorDocument 404 /%{ENV:BASE_URI}405.php
-</If>
-# Case where web app is in the host's root folder
-<Else>
-  ErrorDocument 403 /405.php
-  ErrorDocument 404 /405.php
-</Else>
-
-
 # The goal of all of these rewrites is to funnel all URIs consistent
 #   with the app's API through the tt.php script
-<IfModule mod_rewrite.c>
 RewriteEngine On
-# If the request URI (everything after the host URL) is simply / or if it
-#   ends with /tlc-ttsurvey/, simply redirect to the app's tt.php
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)(/tt)?/?$
-RewriteRule (.*) %1/tt.php [L]
-# If the request URI is already /tt.php, /405.php, /505.php or if it
-#   contains /tlc-ttsurvey/ followed by one of these, no redirect is necessary
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/tt.php$ [OR]
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/405.php$
-RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/500.php$
+RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$
+RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule (.*) - [L]
-# If the request URI indicates a non-existent file OR an existing directory
-#   on the server and includes /tlc-ttsurvey/ redirect to the app's tt.php
-#   and strip everything after the base URI
-RewriteCond %{REQUEST_FILENAME} !-f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteCond %{REQUEST_URI} (.*/tlc-ttsurvey/)
-RewriteRule (.*) %1tt.php [L]
-# If the request URI indicates a non-existent file OR an existing directory
-#   on the server and that does not include /tlc-ttsurvey/ redirect to the 
-#   app's tt.php and strip everything after the base URI
-#   via the "action" query parameter
-RewriteCond %{REQUEST_FILENAME} !-f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule (.*) /tt.php [L]
-</IfModule>
-
-# At this point, any request URI that points to a file that exists on the 
-#   server will not have been redirected.  (This includes tt.php, 405.php,
-#   ant 500.php, for which the rewrite rule was "don't rewrite".)  We will
-#   handle these via Allow/Deny in a sequence of FilesMatch directives
-
-#order deny,allow
-#deny from all
-
-<FilesMatch '.*'>
-  Order deny,allow
-  Deny from all
-</FilesMatch>
-
-# allow access to javascript, css, and graphics files
-<FilesMatch '\.(png|jpg|js|css)$'>
-  Order deny,allow
-  Allow from all
-</FilesMatch>
-
-# do allow access to the valid entry points
-<FilesMatch '(tt|405|500).php$'>
-  Order deny,allow
-  Allow from all
-</FilesMatch>
-
+RewriteRule (.*) tt.php [L]
