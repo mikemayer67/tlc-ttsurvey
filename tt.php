@@ -17,10 +17,12 @@ namespace tlc\tts;
 //   api_die() will be called to immediately terminate the invocation of this app.
 
 
-print("<PRE>".print_r($_SERVER,true)."</pre>");
-die();
-
 define('APP_DIR',dirname(__FILE__));
+
+require_once(APP_DIR.'/include/init.php');
+
+print("<pre>".$_SERVER['REQUEST_URI']."</pre>");
+die();
 
 // Let's kick this off by initializing the constants and variables needed by this app
 require_once(APP_DIR."/include/init.php");
