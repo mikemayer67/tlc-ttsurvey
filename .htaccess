@@ -54,20 +54,19 @@ RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/405.php$
 RewriteCond %{REQUEST_URI} (^|.*/tlc-ttsurvey)/500.php$
 RewriteRule (.*) - [L]
 # If the request URI indicates a non-existent file OR an existing directory
-#   on the server and includes /tlc-ttsurvey/ recirect to the app's tt.php
-#   and append everything after /tlc-ttsurvey/ in the URI to the redirection URI
-#   via the "action" query parameter
+#   on the server and includes /tlc-ttsurvey/ redirect to the app's tt.php
+#   and strip everything after the base URI
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteCond %{REQUEST_URI} (.*/tlc-ttsurvey/)(.*)
-RewriteRule (.*) %1tt.php?action=%2 [L]
+RewriteCond %{REQUEST_URI} (.*/tlc-ttsurvey/)
+RewriteRule (.*) %1tt.php [L]
 # If the request URI indicates a non-existent file OR an existing directory
-#   on the server and that does not include /tlc-ttsurvey/ recirect to the 
-#   app's tt.php and append the entire request URI to the redirection URI
+#   on the server and that does not include /tlc-ttsurvey/ redirect to the 
+#   app's tt.php and strip everything after the base URI
 #   via the "action" query parameter
 RewriteCond %{REQUEST_FILENAME} !-f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule (.*) /tt.php?action=$1 [L]
+RewriteRule (.*) /tt.php [L]
 </IfModule>
 
 # At this point, any request URI that points to a file that exists on the 
@@ -75,23 +74,21 @@ RewriteRule (.*) /tt.php?action=$1 [L]
 #   ant 500.php, for which the rewrite rule was "don't rewrite".)  We will
 #   handle these via Allow/Deny in a sequence of FilesMatch directives
 
-# Disallow access to all dot files
-<FilesMatch "^\.">
-  Deny from all
-</FilesMatch>
+#order deny,allow
+#deny from all
 
-# Disallow access to all vim backup files
-<FilesMatch "~$">
-  Deny from all
-</FilesMatch>
-
-# Disallow access to all php, sql, html, and htm files (but see below)
-<FilesMatch "\.(php|sql|htm|html)$">
+<FilesMatch '.*'>
   Order deny,allow
   Deny from all
 </FilesMatch>
 
-# But, DO allow access to tt.php, 405.php, and 500.php scripts
+# allow access to javascript, css, and graphics files
+<FilesMatch '\.(png|jpg|js|css)$'>
+  Order deny,allow
+  Allow from all
+</FilesMatch>
+
+# do allow access to the valid entry points
 <FilesMatch '(tt|405|500).php$'>
   Order deny,allow
   Allow from all

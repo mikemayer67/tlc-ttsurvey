@@ -16,6 +16,10 @@ namespace tlc\tts;
 //   is somehow invoked directly (i.e. the .htaccess has failed to properly redirect), then 
 //   api_die() will be called to immediately terminate the invocation of this app.
 
+
+print("<PRE>".print_r($_SERVER,true)."</pre>");
+die();
+
 define('APP_DIR',dirname(__FILE__));
 
 // Let's kick this off by initializing the constants and variables needed by this app
