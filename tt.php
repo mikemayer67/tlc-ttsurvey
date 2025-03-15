@@ -24,9 +24,6 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/page_elements.php'));
 
-log_dev("APP_DIR: ".APP_DIR);
-log_dev("APP_URI: ".APP_URI);
-
 try
 {
   log_dev("-------------- Start of TT --------------");
@@ -38,9 +35,7 @@ try
     if($action == "dev") {
       require(app_file('dev.php'));
     }
-    else
-    {
-      api_die();
+    elseif($action == "demo") {
       $junk_cb = function() {
         print("<span>[Menu1]</span>");
         print("<span>[Menu2]</span>");
@@ -52,6 +47,9 @@ try
       print("<h1>$action</h1>");
       print("<pre>".print_r($_SERVER,true)."</pre>");
       end_page();
+    }
+    else {
+      api_die();
     }
 
   } else {

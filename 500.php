@@ -8,8 +8,6 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/page_elements.php'));
 
-log_dev("500: ".print_r($_SERVER['REQUEST_URI'],true));
-
 define('RENDERING_500_PHP',true);
 
 $url = dirname($_SERVER['SCRIPT_NAME']);
