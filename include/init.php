@@ -3,11 +3,15 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+if(!defined('APP_URI')) { 
+  define('APP_URI', preg_replace('/\/+$/','',dirname($_SERVER['SCRIPT_NAME'])));
+}
+
 function api_die() 
 {
   http_response_code(405);
   echo "<h2>API_DIE</h2>";
-  require(dirname(__FILE__)."/405.php");
+  require(APP_DIR."/405.php");
   die; 
 }
 

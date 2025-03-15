@@ -55,12 +55,12 @@ function start_page($flavor)
     "crossorigin='anonymous'></script>\n"
   );
 
-  print "<link rel='stylesheet' type='text/css' href='css/w3.css?v=$v'>\n";
-  print "<link rel='stylesheet' type='text/css' href='css/tt.css?v=$v'>\n";
+  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//w3.css?v=$v'>\n";
+  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//tt.css?v=$v'>\n";
 
   switch($flavor) {
   case 'login':
-    print "<link rel='stylesheet' type='text/css' href='css/login.css?v=$v'>\n";
+    print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//login.css?v=$v'>\n";
     break;
   default:
     break;
@@ -84,7 +84,8 @@ function navbar($menu_cb=null)
   print("<div class='tt-navbar'>\n");
   print("<span class='tt-title-box'>");
   if(NAVBAR_LOGO) {
-    print("<img class='tt-logo' src='img/" . NAVBAR_LOGO . "'>");
+    $src = APP_URI.'/img/'.NAVBAR_LOGO;
+    print("<img class='tt-logo' src='$src'>");
   }
   print("<span class='tt-title'>$title</span>");
 
