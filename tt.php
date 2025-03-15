@@ -22,7 +22,7 @@ define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR."/include/init.php");
 require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
-require_once(app_file('common/page_elements.php'));
+require_once(app_file('include/page_elements.php'));
 
 try
 {

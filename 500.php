@@ -4,7 +4,7 @@ namespace tlc\tts;
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
-require_once(app_file('common/page_elements.php'));
+require_once(app_file('include/page_elements.php'));
 
 define('RENDERING_500_PHP',true);
 
