@@ -102,14 +102,14 @@ IF version < 1 THEN
     userid   varchar(24)  PRIMARY KEY,
     fullname varchar(100) NOT NULL,
     email    varchar(45)  DEFAULT NULL,
-    token    varchar(45)  NOT NULL ,
-    password varchar(64)  NOT NULL,
+    token    varchar(45)  NOT NULL COMMENT 'access token',
+    password varchar(64)  NOT NULL COMMENT 'hash of the password',
+    anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
     admin    tinyint      NOT NULL DEFAULT 0 COMMENT 'has admin permission'
     );
 
   CREATE TABLE tlc_tt_anonids (
-    anonid    varchar(24) PRIMARY KEY,
-    user_hash varchar(64) NOT NULL COMMENT 'password hash of anonid+userid'
+    anonid    varchar(24) UNIQUE
   );
 
   CREATE TABLE tlc_tt_reset_tokens (

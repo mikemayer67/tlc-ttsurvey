@@ -92,10 +92,34 @@ function write_to_logger($prefix,$msg)
   if( $level <= get_log_level() ) 
   {
     $timestamp = date("d-M-y H:i:s.v T");
+
+    if(! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
+      $trace = debug_backtrace();
+      $file = $trace[1]["file"];
+      $line = $trace[1]["line"];
+      if(str_starts_with($file,APP_DIR)) {
+        $file = substr($file,1+strlen(APP_DIR));
+      }
+      $msg .= " [$file:$line]";
+    }
+
     $prefix = str_pad($prefix,8);
-    fwrite(logger(), "[{$timestamp}] {$prefix} {$msg}\n");
+    fwrite(logger(), "[$timestamp] {$prefix} $msg\n");
   }
 }
+
+function log_location()
+{
+  $trace = debug_backtrace();
+  $pre_re = '/^'.APP_DIR.'\//';
+  $file = $trace[1]["file"];
+  $line = $trace[1]["line"];
+  if(str_starts_with($file,APP_DIR)) {
+    $file = substr($file,1+strlen(APP_DIR));
+  }
+  return "$file[$line]";
+}
+
 
 
 // accessors to the current log level in the admin settings
@@ -105,14 +129,6 @@ function set_log_level($level) { update_setting(LOG_LEVEL_KEY,$level); }
 // the todo function is both a way to mark the code and to include
 //   those todos in the log file at the INFO level
 function todo($msg) {
-  $trace = debug_backtrace();
-  $pre_re = '/^'.APP_DIR.'\//';
-  $file = $trace[0]["file"];
-  $line = $trace[0]["line"];
-  if(str_starts_with($file,APP_DIR)) {
-    $file = substr($file,1+strlen(APP_DIR));
-  }
-  $msg = $file . "[" . $line . "]: " . $msg;
   write_to_logger("TODO",$msg);
 }
 

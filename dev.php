@@ -17,4 +17,8 @@ function dump($k,$v) {
 }
 
 $u = User::from_userid('newtest123');
+$a = $u->anonid();
+dump("anonid",$a);
+$a = $u->anonid();
+dump("anonid",$a);
 
