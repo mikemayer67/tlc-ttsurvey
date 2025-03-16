@@ -7,7 +7,7 @@
 /* navigation bar */
 
 div.tt-navbar {
-  position: fixed;
+  position: sticky;
   top: 0;
   width:100%;
   min-height:50px;
@@ -23,30 +23,25 @@ div.tt-navbar {
 
   font-family: Garamond Sans-serif;
 }
-div.tt-navbar-pad {
-  height:50px;
-}
-
 div.tt-navbar .tt-title-box {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   gap: 10px;
-}
 
-div.tt-navbar .tt-title-box {
   margin-right: auto;
 }
 
 div.tt-navbar .tt-title
 {
-  font-size: clamp(10px,calc(100vw / var(--n-title-chars)),35px);
+  font-size: clamp(20px,calc(100vw / var(--n-title-chars)),35px);
 }
 
 div.tt-navbar .tt-logo {
-  height:40px;
+  height:clamp(25px,5vw,40px);
 }
 
+/*
 @media only screen and (max-width: 768px)
 {
   div.tt-navbar .tt-logo { height: 30px; }
@@ -64,4 +59,4 @@ div.tt-navbar .tt-logo {
 {
   div.tt-navbar .tt-logo { height: 25px; }
 }
-
+*/

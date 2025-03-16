@@ -12,8 +12,6 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 $img = preg_replace('#//#','/', "$url/img/405.png");
 
 start_page('400');
-navbar();
-
 ?>
 
 <div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>

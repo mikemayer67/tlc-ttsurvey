@@ -20,7 +20,6 @@ if(isset($errid)) {
 }
 
 start_page('500');
-navbar();
 ?>
 
 <div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>

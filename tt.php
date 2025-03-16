@@ -18,51 +18,54 @@ namespace tlc\tts;
 
 
 define('APP_DIR',dirname(__FILE__));
-
 require_once(APP_DIR.'/include/init.php');
-
-print("<pre>".$_SERVER['REQUEST_URI']."</pre>");
-die();
-
-// Let's kick this off by initializing the constants and variables needed by this app
-require_once(APP_DIR."/include/init.php");
-require_once(app_file('include/const.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/surveys.php'));
-require_once(app_file('include/page_elements.php'));
+
+// Let's kick this off by initializing the constants and variables needed by this app
+//require_once(APP_DIR."/include/init.php");
+//require_once(app_file('include/const.php'));
+//require_once(app_file('include/page_elements.php'));
 
 try
 {
   log_dev("-------------- Start of TT --------------");
 
-  if( isset($_REQUEST['action']) ) {
-    todo("Make action only callable via POST");
-    $action = strtolower($_REQUEST['action']);
-
-    if($action == "dev") {
-      require(app_file('dev.php'));
-    }
-    elseif($action == "demo") {
-      $junk_cb = function() {
-        print("<span>[Menu1]</span>");
-        print("<span>[Menu2]</span>");
-        print("<span>[Menu3]</span>");
-      };
-
-      start_page('junk');
-      navbar($junk_cb);
-      print("<h1>$action</h1>");
-      print("<pre>".print_r($_SERVER,true)."</pre>");
-      end_page();
-    }
-    else {
-      api_die();
-    }
-
-  } else {
-    require(app_file('user/login.php'));
+  $active_survey_title = active_survey_title();
+  if(!$active_survey_title) {
+    require(app_file('pages/no_survey.php'));
+    die();
   }
+  print("<h1>$active_survey_title</h1>");
 
+//  if( isset($_REQUEST['action']) ) {
+//    todo("Make action only callable via POST");
+//    $action = strtolower($_REQUEST['action']);
+//
+//    if($action == "dev") {
+//      require(app_file('dev.php'));
+//    }
+//    elseif($action == "demo") {
+//      $junk_cb = function() {
+//        print("<span>[Menu1]</span>");
+//        print("<span>[Menu2]</span>");
+//        print("<span>[Menu3]</span>");
+//      };
+//
+//      start_page('junk');
+//      navbar($junk_cb);
+//      print("<h1>$action</h1>");
+//      print("<pre>".print_r($_SERVER,true)."</pre>");
+//      end_page();
+//    }
+//    else {
+//      api_die();
+//    }
+//
+//  } else {
+//    require(app_file('pages/login.php'));
+//  }
+//
 }
 catch (\Exception $e)
 {

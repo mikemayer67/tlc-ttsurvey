@@ -32,23 +32,28 @@ function app_file($path)
 
 function validate_entry_uri()
 {
-  $script_name = basename($_SERVER['SCRIPT_NAME']);
+  // Validate the request URI matches our API
+  // http[s]://(host[/dir])/[tt|tt.php][?query]
   $request_uri = $_SERVER['REQUEST_URI'];
-  print("<pre>".APP_DIR."</pre>");
-  print("<pre>".APP_URI."</pre>");
-  print("<pre>1: $request_uri</pre>");
-
+  // Needs to start with the URI for our app
   if(!str_starts_with($request_uri,APP_URI)) { api_die(); }
+  // Good... now strip that off the request (along with the / that follows)
   $request_uri = substr($request_uri,1+strlen(APP_URI));
-  print("<pre>2:$request_uri</pre>");
-
+  // Strip off any query string
   $pos = strpos($request_uri,"?");
-  if($pos !== false ) {
-    $request_uri = substr($request_uri,0,$pos);
-  }
+  if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
+  // All we should be left with is tt or tt.php (or nothing)
   if(!preg_match("/^(tt|tt.php)?$/",$request_uri)) { api_die(); }
-  print("<pre>3:$request_uri</pre>");
-
+  // We're good!
 }
 validate_entry_uri();
+
+function add_img_tag($filename,$class='')
+{
+  if($filename) {
+    print('<img');
+    if($class) { print(" class='$class'"); }
+    print(" src='" . APP_URI . "/img/$filename'>");
+  }
+}
 

@@ -21,7 +21,7 @@ require_once(app_file('include/surveys.php'));
 //    print   - Don't include any css or javascript
 //    login   - Includes the css associated with user login
 //
-function start_page($flavor)
+function start_page($flavor,$kwargs=[])
 {
   // just in case...
   $flavor = strtolower($flavor);
@@ -68,30 +68,29 @@ function start_page($flavor)
 
   // close the head element and open the body element
   print ("</head><body>");
+
+  // Add the navigation bar
+  if( $kwargs['navbar'] ?? true ) {
+    print("<!-- Navbar -->\n");
+    print("<div class='tt-navbar'>\n");
+    print("<span class='tt-title-box'>");
+    add_img_tag(NAVBAR_LOGO,"tt-logo");
+    print("<span class='tt-title'>$title</span>");
+    print("</span>\n");
+    if( $kwargs['navbar-menu-cb']??null ) { $menu_cb(); }
+    print("</div>\n\n");
+  }
+
+  // Start the container for survey body
+  print("<div id='tt-body'>");
 }
 
 function end_page()
 {
   // close the body and html elements
-  print("</body></html>\n");
+  print("</div>\n");  // #tt-body
+  print("</body>\n"); // html body
+  print("<</html>\n");
 }
 
-
-function navbar($menu_cb=null)
-{
-  $title = active_survey_title() ?? DEFAULT_TITLE;
-  print("<!-- Navbar -->\n");
-  print("<div class='tt-navbar'>\n");
-  print("<span class='tt-title-box'>");
-  if(NAVBAR_LOGO) {
-    $src = APP_URI.'/img/'.NAVBAR_LOGO;
-    print("<img class='tt-logo' src='$src'>");
-  }
-  print("<span class='tt-title'>$title</span>");
-
-  print("</span>\n");
-  if($menu_cb) { $menu_cb(); }
-  print("</div>\n\n");
-  print("<div class='tt-navbar-pad'></div>");
-}
 
