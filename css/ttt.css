@@ -1,0 +1,98 @@
+/* common color palette */
+
+* {
+  --navbar-color:white;
+  --font-red:darkred;
+}
+
+.ttt-red {
+  color:var(--font-red);
+}
+
+/* splash screens */
+
+div.ttt-splash {
+  width:clamp(250px,85vw,600px);
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:10vh;
+}
+
+div.ttt-caption, div.ttt-subcaption {
+  text-align:center;
+}
+
+div.ttt-caption {
+  margin-top:10px;
+  font-size:large;
+}
+
+div.ttt-subcaption {
+  margin-top:8px;
+  color:#333;
+  font-style:italic;
+}
+
+div.ttt-splash img {
+  width: 100%;
+}
+
+
+
+
+/* navigation bar */
+
+div.ttt-navbar {
+  position: sticky;
+  top: 0;
+  width:100%;
+  min-height:50px;
+  z-index:1;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  background-color:var(--navbar-color);
+  padding: 5px 10px;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 10px;
+
+  font-family: Garamond Sans-serif;
+}
+div.ttt-navbar .ttt-title-box {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 10px;
+
+  margin-right: auto;
+}
+
+div.ttt-navbar .ttt-title
+{
+  font-size: clamp(20px,calc(100vw / var(--n-title-chars)),35px);
+}
+
+div.ttt-navbar .ttt-logo {
+  height:clamp(25px,5vw,40px);
+}
+
+/*
+@media only screen and (max-width: 768px)
+{
+  div.ttt-navbar .ttt-logo { height: 30px; }
+}
+
+@media only screen and (max-width: 600px)
+{
+  div.ttt-navbar { flex-flow: column nowrap; }
+  div.ttt-navbar .ttt-title {
+    font-size: clamp(10px,calc(180vw / var(--n-title-chars)),35px);
+  }
+}
+
+@media only screen and (max-width: 400px)
+{
+  div.ttt-navbar .ttt-logo { height: 25px; }
+}
+*/

@@ -3,14 +3,11 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-if(!defined('APP_URI')) { 
-  define('APP_URI', preg_replace('/\/+$/','',dirname($_SERVER['SCRIPT_NAME'])));
-}
+define('APP_URI',preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
 
 function api_die() 
 {
   http_response_code(405);
-  echo "<h2>API_DIE</h2>";
   require(APP_DIR."/405.php");
   die; 
 }
@@ -28,7 +25,24 @@ function internal_error($msg)
   die;
 }
 
-function app_file($path)
+function app_file($path) { return APP_DIR . "/$path"; }
+function app_uri($uri)   { return APP_URI . "/$uri";  }
+
+function validate_entry_uri()
 {
-  return APP_DIR . "/$path";
+  // Validate the request URI matches our API
+  // http[s]://(host[/dir])/[tt|tt.php][?query]
+  $request_uri = $_SERVER['REQUEST_URI'];
+  // Needs to start with the URI for our app
+  if(!str_starts_with($request_uri,APP_URI)) { api_die(); }
+  // Good... now strip that off the request (along with the / that follows)
+  $request_uri = substr($request_uri,1+strlen(APP_URI));
+  // Strip off any query string
+  $pos = strpos($request_uri,"?");
+  if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
+  // All we should be left with is tt.php, 405.php, 500.php, tt or nothing
+  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php"]) ) { api_die(); }
+  // We're good!
 }
+validate_entry_uri();
+

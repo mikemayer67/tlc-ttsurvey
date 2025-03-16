@@ -5,13 +5,9 @@ if(!defined('APP_DIR')) { define('APP_DIR',dirname(__file__)); }
 
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/const.php'));
-require_once(app_file('include/logger.php'));
 require_once(app_file('include/page_elements.php'));
 
 define('RENDERING_500_PHP',true);
-
-$url = dirname($_SERVER['SCRIPT_NAME']);
-$img = preg_replace('#//#','/', "$url/img/500.png");
 
 $contact = ADMIN_CONTACT;
 $pronoun = ADMIN_PRONOUN;
@@ -19,26 +15,20 @@ if(isset($errid)) {
   $contact = preg_replace("/'>/","?subject=Survey Error #$errid'>", $contact);
 }
 
+$url = dirname($_SERVER['SCRIPT_NAME']);
 start_page('500');
-navbar();
-?>
 
-<div style='width:80%; max-width:600px; margin-top:5%; margin-left:auto; margin-right:auto;'>
-  <a href='<?=$url?>'>
-    <img src='<?=$img?>' alt='Something went terribly wrong' style='width:100%;'>
-  </a>
-</div>
+print("<div class='ttt-splash'>");
+print(link_tag('tt.php',img_tag('500.png','','Something went terribly wrong')));
 
-<div style='margin-top:10px; font-size:large; text-align:center;'>
-  Please contact <?=$contact?> and let <?=$pronoun?> know something is amiss.
-</div>
+print("<div class='ttt-caption'>");
+print("Please contact $contact and let $pronoun know something is amiss.");
+print("</div>");
 
-<?php if(isset($errid)) { ?>
-
-<div style='margin-top:8px; color:#202020; text-align:center;'>
-  <i>And if you could mention error </i><span style='color:darkred;'>#<?=$errid?></span><i>, that may be helpful</i>
-</div>
-
-<?php } 
+if(isset($errid)) {
+  print("<div class='ttt-subcaption'>");
+  print("And if you could mention error<span class='ttt-red'>#$errid</span>, that may be helpful");
+  print("</div>");
+}
 
 end_page();
