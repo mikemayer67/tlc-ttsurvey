@@ -7,6 +7,29 @@ require_once(app_file('include/const.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 
+
+function img_tag($filename,$class='',$alt='')
+{
+  $tag = '';
+  if($filename) {
+    $img_uri = app_uri("img/$filename");
+    if($class) { $class = "class='$class'"; }
+    if($alt)   { $alt   = "alt='$alt'"; }
+
+    $tag = "<img $class src='$img_uri' $alt>";
+  }
+  return $tag;
+}
+
+function link_tag($href,$body,$class='')
+{
+  if($class) { $class = "$class='$class'"; }
+  $href = app_uri($href);
+
+  return "<a href='$href' $class>$body</a>";
+}
+
+todo("Update the following commentary on start_page function");
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
 //
@@ -55,12 +78,12 @@ function start_page($flavor,$kwargs=[])
     "crossorigin='anonymous'></script>\n"
   );
 
-  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//w3.css?v=$v'>\n";
-  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//tt.css?v=$v'>\n";
+  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/w3.css?v=$v'>\n";
+  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/ttt.css?v=$v'>\n";
 
   switch($flavor) {
   case 'login':
-    print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css//login.css?v=$v'>\n";
+    print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/login.css?v=$v'>\n";
     break;
   default:
     break;
@@ -72,25 +95,26 @@ function start_page($flavor,$kwargs=[])
   // Add the navigation bar
   if( $kwargs['navbar'] ?? true ) {
     print("<!-- Navbar -->\n");
-    print("<div class='tt-navbar'>\n");
-    print("<span class='tt-title-box'>");
-    add_img_tag(NAVBAR_LOGO,"tt-logo");
-    print("<span class='tt-title'>$title</span>");
+    print("<div class='ttt-navbar'>\n");
+    print("<span class='ttt-title-box'>");
+    print(img_tag(NAVBAR_LOGO,"ttt-logo"));
+    print("<span class='ttt-title'>$title</span>");
     print("</span>\n");
-    if( $kwargs['navbar-menu-cb']??null ) { $menu_cb(); }
+    $menu_cb = $kwargs['navbar-menu-cb']??null;
+    if($menu_cb) { $menu_cb(); }
     print("</div>\n\n");
   }
 
   // Start the container for survey body
-  print("<div id='tt-body'>");
+  print("<div id='ttt-body'>");
 }
 
 function end_page()
 {
   // close the body and html elements
-  print("</div>\n");  // #tt-body
+  print("</div>\n");  // #ttt-body
   print("</body>\n"); // html body
-  print("<</html>\n");
+  print("</html>\n");
 }
 
 

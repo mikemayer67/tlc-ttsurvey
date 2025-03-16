@@ -7,12 +7,12 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('include/page_elements.php'));
 
 start_page('no_survey');
-?>
 
-<div id='no-survey'>
-<header>There is no active survey at this time</header>
-<img src='img/coming_soon.png'>
-</div>
+print("<div class='ttt-splash'>");
+print(img_tag('coming_soon.png','','Coming Soon'));
 
-<?php
+print("<div class='ttt-caption'>");
+print("There is no active survey at this time");
+print("</div>");
+
 end_page();

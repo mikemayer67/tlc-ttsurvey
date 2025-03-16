@@ -25,10 +25,8 @@ function internal_error($msg)
   die;
 }
 
-function app_file($path)
-{
-  return APP_DIR . "/$path";
-}
+function app_file($path) { return APP_DIR . "/$path"; }
+function app_uri($uri)   { return APP_URI . "/$uri";  }
 
 function validate_entry_uri()
 {
@@ -42,18 +40,9 @@ function validate_entry_uri()
   // Strip off any query string
   $pos = strpos($request_uri,"?");
   if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
-  // All we should be left with is tt or tt.php (or nothing)
-  if(!preg_match("/^(tt|tt.php)?$/",$request_uri)) { api_die(); }
+  // All we should be left with is tt.php, 405.php, 500.php, tt or nothing
+  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php"]) ) { api_die(); }
   // We're good!
 }
 validate_entry_uri();
-
-function add_img_tag($filename,$class='')
-{
-  if($filename) {
-    print('<img');
-    if($class) { print(" class='$class'"); }
-    print(" src='" . APP_URI . "/img/$filename'>");
-  }
-}
 

@@ -36,7 +36,21 @@ try
     require(app_file('pages/no_survey.php'));
     die();
   }
+
+  // Developer hacks
+  todo("remove these hacks");
+  if(array_key_exists('dev',$_GET)) {
+    require(app_file('dev.php'));
+    die();
+  } 
+  if(array_key_exists('demo',$_GET)) {
+    require(app_file('demo.php'));
+    die();
+  } 
+
   print("<h1>$active_survey_title</h1>");
+  print("<pre>".print_r($_GET,true)."</pre>");
+  print("<pre>".print_r($_POST,true)."</pre>");
 
 //  if( isset($_REQUEST['action']) ) {
 //    todo("Make action only callable via POST");

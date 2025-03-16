@@ -2,11 +2,47 @@
 
 * {
   --navbar-color:white;
+  --font-red:darkred;
 }
+
+.ttt-red {
+  color:var(--font-red);
+}
+
+/* splash screens */
+
+div.ttt-splash {
+  width:clamp(250px,85vw,600px);
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:10vh;
+}
+
+div.ttt-caption, div.ttt-subcaption {
+  text-align:center;
+}
+
+div.ttt-caption {
+  margin-top:10px;
+  font-size:large;
+}
+
+div.ttt-subcaption {
+  margin-top:8px;
+  color:#333;
+  font-style:italic;
+}
+
+div.ttt-splash img {
+  width: 100%;
+}
+
+
+
 
 /* navigation bar */
 
-div.tt-navbar {
+div.ttt-navbar {
   position: sticky;
   top: 0;
   width:100%;
@@ -23,7 +59,7 @@ div.tt-navbar {
 
   font-family: Garamond Sans-serif;
 }
-div.tt-navbar .tt-title-box {
+div.ttt-navbar .ttt-title-box {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -32,31 +68,31 @@ div.tt-navbar .tt-title-box {
   margin-right: auto;
 }
 
-div.tt-navbar .tt-title
+div.ttt-navbar .ttt-title
 {
   font-size: clamp(20px,calc(100vw / var(--n-title-chars)),35px);
 }
 
-div.tt-navbar .tt-logo {
+div.ttt-navbar .ttt-logo {
   height:clamp(25px,5vw,40px);
 }
 
 /*
 @media only screen and (max-width: 768px)
 {
-  div.tt-navbar .tt-logo { height: 30px; }
+  div.ttt-navbar .ttt-logo { height: 30px; }
 }
 
 @media only screen and (max-width: 600px)
 {
-  div.tt-navbar { flex-flow: column nowrap; }
-  div.tt-navbar .tt-title {
+  div.ttt-navbar { flex-flow: column nowrap; }
+  div.ttt-navbar .ttt-title {
     font-size: clamp(10px,calc(180vw / var(--n-title-chars)),35px);
   }
 }
 
 @media only screen and (max-width: 400px)
 {
-  div.tt-navbar .tt-logo { height: 25px; }
+  div.ttt-navbar .ttt-logo { height: 25px; }
 }
 */
