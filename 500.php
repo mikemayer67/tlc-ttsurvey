@@ -18,17 +18,17 @@ if(isset($errid)) {
 $url = dirname($_SERVER['SCRIPT_NAME']);
 start_page('500');
 
-print("<div class='ttt-splash'>");
-print(link_tag('tt.php',img_tag('500.png','','Something went terribly wrong')));
+echo "<div class='ttt-splash'>";
+add_link_tag('tt.php',img_tag('500.png','','Something went terribly wrong'));
 
-print("<div class='ttt-caption'>");
-print("Please contact $contact and let $pronoun know something is amiss.");
-print("</div>");
+echo "<div class='ttt-caption'>";
+echo "Please contact $contact and let $pronoun know something is amiss.";
+echo "</div>";
 
 if(isset($errid)) {
-  print("<div class='ttt-subcaption'>");
-  print("And if you could mention error<span class='ttt-red'>#$errid</span>, that may be helpful");
-  print("</div>");
+  echo "<div class='ttt-subcaption'>";
+  echo "And if you could mention error<span class='ttt-red'>#$errid</span>, that may be helpful";
+  echo "</div>";
 }
 
 end_page();

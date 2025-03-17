@@ -12,8 +12,8 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 
 start_page('405');
 
-print("<div class='ttt-splash'>");
-print(link_tag('tt.php',img_tag('405.png','','Click here to return to the survey')));
-print("</div>");
+echo "<div class='ttt-splash'>";
+add_link_tag('tt.php',img_tag('405.png','','Click here to return to the survey'));
+echo "</div>";
 
 end_page();

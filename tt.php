@@ -25,12 +25,6 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
-  // If admin pages have been requested, jump to those now...
-  if(array_key_exists('admin',$_REQUEST)) {
-    require(app_file('admin/admin.php'));
-    die();
-  } 
-
   // Developer hacks
   todo("remove these hacks");
   if(array_key_exists('dev',$_GET)) {
@@ -42,18 +36,7 @@ try
     die();
   } 
 
-  // Active Survey
-  //   If there is no active survey, were not going to ask 
-  //   anyone to sign in...
-  require_once(app_file('include/surveys.php'));
-
-  $active_survey_title = active_survey_title();
-  if(!$active_survey_title) {
-    require(app_file('pages/no_survey.php'));
-    die();
-  }
-
-  // User login status
+  // If there is no active user, present the login page
   require_once(app_file('include/login.php'));
 
   $active_user = active_userid();
@@ -61,51 +44,28 @@ try
   log_dev("active_user = $active_user");
 
   if(!$active_user) {
-    require(app_file('pages/login.php'));
+    require(app_file('login/login.php'));
     die();
   }
 
-  print("<h1>$active_survey_title</h1>");
-  print("<pre>".print_r($_GET,true)."</pre>");
-  print("<pre>".print_r($_POST,true)."</pre>");
+  // If access to the admin tools have been requested, jump to the dashboard
+  if(array_key_exists('admin',$_REQUEST)) {
+    require(app_file('admin/admin.php'));
+    die();
+  } 
 
-//  if( isset($_REQUEST['action']) ) {
-//    todo("Make action only callable via POST");
-//    $action = strtolower($_REQUEST['action']);
-//
-//    if($action == "dev") {
-//      require(app_file('dev.php'));
-//    }
-//    elseif($action == "demo") {
-//      $junk_cb = function() {
-//        print("<span>[Menu1]</span>");
-//        print("<span>[Menu2]</span>");
-//        print("<span>[Menu3]</span>");
-//      };
-//
-//      start_page('junk');
-//      navbar($junk_cb);
-//      print("<h1>$action</h1>");
-//      print("<pre>".print_r($_SERVER,true)."</pre>");
-//      end_page();
-//    }
-//    else {
-//      api_die();
-//    }
-//
-//  } else {
-//    require(app_file('pages/login.php'));
-//  }
-//
+  // Otherwise, jump to the survey
+  require(app_file('survey/survey.php'));
+  die();
 }
 catch (\Exception $e)
 {
-  $file = $e->getFile();
-  if(str_starts_with($file,APP_DIR)) { $file = substr($file,1+strlen(APP_DIR)); }
-
+  $file = preg_replace('#'.APP_DIR.'/#', '', $e->getFile());
   internal_error(
     sprintf("Exception %d caught at %s[%s]: %s",
-      $e->getCode(),$file,$e->getLine(),$e->getMessage())
+    $e->getCode(),$file,$e->getLine(),$e->getMessage())
   );
 }
 
+// Should never get here... but just in case
+die();

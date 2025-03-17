@@ -10,15 +10,16 @@ require_once(app_file('include/surveys.php'));
 
 function img_tag($filename,$class='',$alt='')
 {
-  $tag = '';
-  if($filename) {
-    $img_uri = app_uri("img/$filename");
-    if($class) { $class = "class='$class'"; }
-    if($alt)   { $alt   = "alt='$alt'"; }
+  if(!$filename) { return ''; }
 
-    $tag = "<img $class src='$img_uri' $alt>";
-  }
-  return $tag;
+  $img_uri = app_uri("img/$filename");
+  if($class) { $class = "class='$class'"; }
+  if($alt)   { $alt   = "alt='$alt'"; }
+
+  return "<img $class src='$img_uri' $alt>";
+}
+function add_img_tag($filename,$class='',$alt='') { 
+  echo img_tag($filename,$class,$alt); 
 }
 
 function link_tag($href,$body,$class='')
@@ -27,6 +28,9 @@ function link_tag($href,$body,$class='')
   $href = app_uri($href);
 
   return "<a href='$href' $class>$body</a>";
+}
+function add_link_tag($filename,$class='',$alt='') {
+  echo link_tag($filename,$class,$alt); 
 }
 
 todo("Update the following commentary on start_page function");
@@ -49,18 +53,18 @@ function start_page($flavor,$kwargs=[])
   // just in case...
   $flavor = strtolower($flavor);
 
-  print "<!DOCTYPE html><html><head>\n";
+  echo "<!DOCTYPE html><html><head>\n";
 
-  print "<meta charset='UTF-8'>\n";
-  print "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
+  echo "<meta charset='UTF-8'>\n";
+  echo "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
 
   $title = active_survey_title() ?? DEFAULT_TITLE;
-  print "<title class=tlc-title>$title</title>\n";
+  echo "<title class=tlc-title>$title</title>\n";
 
   // don't include css or javascript in pages that are displayed for printing purposes
   if($flavor == 'print') {
     // close the body and html elements and return
-    print("</head></body>\n");
+    echo "</head></body>\n";
     return;
   }
 
@@ -70,51 +74,49 @@ function start_page($flavor,$kwargs=[])
   $v = is_dev() ? rand() : 0;
 
   $title_len = strlen($title);
-  print("<style> *{--n-title-chars:$title_len}</style>");
+  echo "<style> *{--n-title-chars:$title_len}</style>";
 
-  print (
-    "<script src='https://code.jquery.com/jquery-3.7.1.min.js' " .
-    "integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' " .
-    "crossorigin='anonymous'></script>\n"
-  );
+  echo "<script src='https://code.jquery.com/jquery-3.7.1.min.js' ";
+  echo "integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' ";
+  echo "crossorigin='anonymous'></script>\n";
 
-  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/w3.css?v=$v'>\n";
-  print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/ttt.css?v=$v'>\n";
+  echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/w3.css?v=$v'>\n";
+  echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/ttt.css?v=$v'>\n";
 
   switch($flavor) {
   case 'login':
-    print "<link rel='stylesheet' type='text/css' href='".APP_URI."/css/login.css?v=$v'>\n";
+    echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/login.css?v=$v'>\n";
     break;
   default:
     break;
   }
 
   // close the head element and open the body element
-  print ("</head><body>");
+  echo "</head><body>";
 
   // Add the navigation bar
   if( $kwargs['navbar'] ?? true ) {
-    print("<!-- Navbar -->\n");
-    print("<div class='ttt-navbar'>\n");
-    print("<span class='ttt-title-box'>");
-    print(img_tag(NAVBAR_LOGO,"ttt-logo"));
-    print("<span class='ttt-title'>$title</span>");
-    print("</span>\n");
+    echo "<!-- Navbar -->\n";
+    echo "<div class='ttt-navbar'>\n";
+    echo "<span class='ttt-title-box'>";
+    echo img_tag(NAVBAR_LOGO,"ttt-logo");
+    echo "<span class='ttt-title'>$title</span>";
+    echo "</span>\n";
     $menu_cb = $kwargs['navbar-menu-cb']??null;
     if($menu_cb) { $menu_cb(); }
-    print("</div>\n\n");
+    echo "</div>\n\n";
   }
 
   // Start the container for survey body
-  print("<div id='ttt-body'>");
+  echo "<div id='ttt-body'>";
 }
 
 function end_page()
 {
   // close the body and html elements
-  print("</div>\n");  // #ttt-body
-  print("</body>\n"); // html body
-  print("</html>\n");
+  echo "</div>\n";  // #ttt-body
+  echo "</body>\n"; // html body
+  echo "</html>\n";
 }
 
 

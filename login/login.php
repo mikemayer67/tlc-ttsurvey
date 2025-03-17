@@ -3,16 +3,14 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-log_dev("Loading Login Page");
-require_once(app_file('include/users.php'));
 require_once(app_file('include/page_elements.php'));
 
+log_dev("Loading Login Page");
+
 start_page('login');
-navbar();
-?>
 
+echo "<h1>LOGIN</h1>";
 
-<?php
 end_page();
 
 

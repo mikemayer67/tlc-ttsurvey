@@ -8,11 +8,11 @@ require_once(app_file('include/page_elements.php'));
 
 start_page('no_survey');
 
-print("<div class='ttt-splash'>");
-print(img_tag('coming_soon.png','','Coming Soon'));
+echo "<div class='ttt-splash'>";
+add_img_tag('coming_soon.png','','Coming Soon');
 
-print("<div class='ttt-caption'>");
-print("There is no active survey at this time");
-print("</div>");
+echo "<div class='ttt-caption'>";
+echo "There is no active survey at this time";
+echo "</div>";
 
 end_page();
