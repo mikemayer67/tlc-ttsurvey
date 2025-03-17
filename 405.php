@@ -7,7 +7,6 @@ require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/page_elements.php'));
 
 require_once(app_file('include/logger.php'));
-log_dev(print_r($_SERVER,true));
 
 $url = dirname($_SERVER['SCRIPT_NAME']);
 

@@ -24,15 +24,12 @@ require_once(app_file('include/logger.php'));
 try
 {
   log_dev("-------------- Start of TT --------------");
-  log_dev(print_r($_SERVER,true));
 
-  require_once(app_file('include/surveys.php'));
-
-  $active_survey_title = active_survey_title();
-  if(!$active_survey_title) {
-    require(app_file('pages/no_survey.php'));
+  // If admin pages have been requested, jump to those now...
+  if(array_key_exists('admin',$_REQUEST)) {
+    require(app_file('admin/admin.php'));
     die();
-  }
+  } 
 
   // Developer hacks
   todo("remove these hacks");
@@ -44,6 +41,17 @@ try
     require(app_file('demo.php'));
     die();
   } 
+
+  // Active Survey
+  //   If there is no active survey, were not going to ask 
+  //   anyone to sign in...
+  require_once(app_file('include/surveys.php'));
+
+  $active_survey_title = active_survey_title();
+  if(!$active_survey_title) {
+    require(app_file('pages/no_survey.php'));
+    die();
+  }
 
   // User login status
   require_once(app_file('include/login.php'));
