@@ -26,9 +26,10 @@ Options All -Indexes
 # The goal of all of these rewrites is to funnel all URIs consistent
 #   with the app's API through the tt.php script
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} (405|500).php$
+RewriteCond %{REQUEST_FILENAME} (admin|405|500).php$
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule (.*) - [L]
+RewriteRule admin/$ tt.php?admin [L]
 RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule (.*) - [L]

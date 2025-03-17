@@ -159,8 +159,6 @@ class User {
 
   public function clear_email() { return $this->set_email(null); }
 
-  
-
   // Password
 
   public function validate_password($password)
@@ -272,29 +270,48 @@ class User {
 
   // Anonymous Proxy
   
-  public function anonid()
+  public function get_anonid()
   {
-    $r = password_verify( $this->_userid, $this->_anonid );
-    if( !$r ) {
-      // try to find the existing anonymous proxy id
-      $anonids = MySQLSelectValues('select * from tlc_tt_anonids');
-      foreach( $anonids as $anonid ) {
-        if( password_verify($anonid,$this->_anonid) ) { return $anonid; }
-      }
-      log_warning("Failed to locate anonid for $this->_userid");
+    if( password_verify( $this->_userid, $this->_anonid ) ) { return null; }
+
+    // try to find the existing anonymous proxy id
+    $anonids = MySQLSelectValues('select * from tlc_tt_anonids');
+    foreach( $anonids as $anonid ) {
+      if( password_verify($anonid,$this->_anonid) ) { return $anonid; }
     }
+    log_warning("Failed to locate anonid for $this->_userid");
+    return null;
+  }
+
+  public function get_or_create_anonid()
+  {
+    $anonid = $this->get_anonid();
+    if($anonid) { return $anonid; }
 
     // Either the userid was never associated with an anonymous proxy or
     //   We've somehow managed to lose that anonymous proxy id... 
     // Either way, we need to generate a new one
-    //
+
+    // wrap this in a transaction so that we ensure either both or neither
+    //   the userid and anonid tables are updated
+    
+    MySQLBeginTransaction();
     $anonid = 'anon_' . strtolower(gen_token(10));
     $result = MySQLExecute('insert into tlc_tt_anonids values (?)','s',$anonid);
-    if(!$result) { internal_error("Failed to insert $anonid into tlc_tt_anonids"); }
+    if(!$result) { 
+      MySQLRollback();
+      internal_error("Failed to insert $anonid into tlc_tt_anonids"); }
+
     $anonid_hash = password_hash($anonid,PASSWORD_DEFAULT);
     $result = MySQLExecute('update tlc_tt_userids set anonid=? where userid=?','ss',$anonid_hash,$this->_userid);
-    if(!$result) { internal_error("Failed to add anonid to $this->_userid in tlc_tt_userids"); }
+    if(!$result) { 
+      MySQLRollback();
+      internal_error("Failed to add anonid to $this->_userid in tlc_tt_userids");
+    }
+
+    MySQLCommit();
     $this->_anonid = $anonid_hash;
+
     return $anonid;
   }
 }

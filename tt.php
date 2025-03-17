@@ -20,16 +20,13 @@ namespace tlc\tts;
 define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/surveys.php'));
-
-// Let's kick this off by initializing the constants and variables needed by this app
-//require_once(APP_DIR."/include/init.php");
-//require_once(app_file('include/const.php'));
-//require_once(app_file('include/page_elements.php'));
 
 try
 {
   log_dev("-------------- Start of TT --------------");
+  log_dev(print_r($_SERVER,true));
+
+  require_once(app_file('include/surveys.php'));
 
   $active_survey_title = active_survey_title();
   if(!$active_survey_title) {
@@ -47,6 +44,18 @@ try
     require(app_file('demo.php'));
     die();
   } 
+
+  // User login status
+  require_once(app_file('include/login.php'));
+
+  $active_user = active_userid();
+  log_dev(print_r($_COOKIE,true));
+  log_dev("active_user = $active_user");
+
+  if(!$active_user) {
+    require(app_file('pages/login.php'));
+    die();
+  }
 
   print("<h1>$active_survey_title</h1>");
   print("<pre>".print_r($_GET,true)."</pre>");

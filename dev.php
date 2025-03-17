@@ -17,8 +17,12 @@ function dump($k,$v) {
 }
 
 $u = User::from_userid('newtest123');
-$a = $u->anonid();
-dump("anonid",$a);
-$a = $u->anonid();
+
+$a = $u->get_anonid();
 dump("anonid",$a);
 
+$a = $u->get_or_create_anonid();
+dump("anonid",$a);
+
+$a = $u->get_anonid();
+dump("anonid",$a);

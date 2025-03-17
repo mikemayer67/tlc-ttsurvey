@@ -46,6 +46,10 @@ function MySQLConnection()
   return $conn;
 }
 
+function MySQLBeginTransaction() { MySQLConnection()->begin_transaction(); }
+function MySQLRollback()         { MySQLConnection()->rollback();          }
+function MySQLCommit()           { MySQLConnection()->commit();            }
+
 function MySQLExecute($query,$types=null,...$params)
 {
   // log_dev("MySQLExecute($query,$types,".log_array($params).")");
