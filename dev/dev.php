@@ -30,3 +30,10 @@ dump("anonid",$a);
 
 $a = $u->get_anonid();
 dump("anonid",$a);
+
+echo "<h2>GET</h2>";
+echo "<PRE>", print_r($_GET,true), "</pre>";
+echo "<h2>POST</h2>";
+echo "<PRE>", print_r($_POST,true), "</pre>";
+echo "<h2>REQUEST</h2>";
+echo "<PRE>", print_r($_REQUEST,true), "</pre>";

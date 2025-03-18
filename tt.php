@@ -20,21 +20,28 @@ namespace tlc\tts;
 define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/status.php'));
+
+// Developer hacks
+todo("remove these hacks");
+require_once(app_file('dev/hacks.php'));
 
 try
 {
   log_dev("-------------- Start of TT --------------");
 
-  // Developer hacks
-  todo("remove these hacks");
-  if(array_key_exists('dev',$_GET)) {
-    require(app_file('dev.php'));
-    die();
-  } 
-  if(array_key_exists('demo',$_GET)) {
-    require(app_file('demo.php'));
-    die();
-  } 
+  // Common query keys
+  $status = $_POST['status'] ?? '';
+  if($status) {
+    log_dev("status=$status");
+    $status = explode('::',$_POST['status']);
+    log_dev("status=".print_r($status,true));
+    if(count($status) > 1) {
+      status_message($status[1],$status[0]);
+    } else {
+      status_message($status[0]);
+    }
+  }
 
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));

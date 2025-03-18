@@ -34,3 +34,7 @@ function status_tag()
   }
   return "<div id='status-message' class='status $level'>$msg</div>";
 }
+function add_status_tag()
+{
+  echo status_tag();
+}

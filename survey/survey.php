@@ -3,6 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/status.php'));
 require_once(app_file('include/page_elements.php'));
 
 log_dev("Loading Survey Page");
@@ -19,6 +20,8 @@ if(!$active_survey_title) {
 start_page('survey');
 
 echo "<h1>SURVEY</h1>";
+
+add_status_tag();
 
 end_page();
 
