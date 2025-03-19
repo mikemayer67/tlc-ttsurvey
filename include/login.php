@@ -43,9 +43,19 @@ class LoginCookies
 
   private function __construct()
   {
-    $this->_active_userid = stripslashes($_COOKIE[ACTIVE_USER_COOKIE]??"");
-    $this->_active_token  = stripslashes($_COOKIE[ACTIVE_TOKEN_COOKIE]??"");
+    $userid = stripslashes($_COOKIE[ACTIVE_USER_COOKIE]??"");
+    $token  = stripslashes($_COOKIE[ACTIVE_TOKEN_COOKIE]??"");
     $tokens = stripslashes($_COOKIE[CACHED_TOKENS_COOKIE]??"");
+
+    log_dev("LoginCookies($userid,$token)");
+    if(validate_user_access_token($userid,$token)) {
+      log_dev("Validated");
+      $this->_active_userid = $userid;
+      $this->_active_token  = $token;
+    } else {
+      log_dev("NOT Validated");
+      clear_active_userid();
+    }
 
     #reset cookie timeout
     setcookie(CACHED_TOKENS_COOKIE, $tokens, time() + 86400*365, '/');

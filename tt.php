@@ -51,8 +51,20 @@ try
   log_dev("active_user = $active_user");
 
   if(!$active_user) {
-    require(app_file('login/login.php'));
+    require(app_file('login/setup.php'));
     die();
+  }
+
+  // Handle logout and forget token requests
+  //   Allow from get or post queries
+  if(array_key_exists('logoout',$_REQUEST)) {
+    @todo('implement logout');
+    handle_logout();
+    die();
+  }
+  if(array_key_exists('forget',$_REQUEST)) {
+    forget_user_token($_REQUEST['forget'] ?? '');
+    // .. no reason to abort at this point... 
   }
 
   // If access to the admin tools have been requested, jump to the dashboard
@@ -63,7 +75,6 @@ try
 
   // Otherwise, jump to the survey
   require(app_file('survey/survey.php'));
-  die();
 }
 catch (\Exception $e)
 {
