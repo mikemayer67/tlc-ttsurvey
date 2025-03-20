@@ -357,17 +357,6 @@ function create_new_user($userid,$fullname,$password,$email=null)
   return $r;
 }
 
-function gen_token($token_length=25)
-{
-  $access_token = '';
-  $token_pool = '123456789123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  for($i=0; $i<$token_length; $i++) {
-    $index = rand(0,strlen($token_pool)-1);
-    $access_token .= $token_pool[$index];
-  }
-  return $access_token;
-}
-
 function validate_user_password($userid,$password)
 {
   $user = User::from_userid($userid);

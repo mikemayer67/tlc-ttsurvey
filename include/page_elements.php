@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 require_once(app_file('include/const.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/status.php'));
 
 
 function img_tag($filename,$class='',$alt='')
@@ -94,10 +95,14 @@ function start_page($flavor,$kwargs=[])
   // close the head element and open the body element
   echo "</head><body>";
 
+  // Add the survey header box
+  echo "<div id='ttt-header'>";
+
   // Add the navigation bar
+  //   include unless navbar=false is explicitly set in the kwargs
   if( $kwargs['navbar'] ?? true ) {
     echo "<!-- Navbar -->\n";
-    echo "<div class='ttt-navbar'>\n";
+    echo "<div id='ttt-navbar'>\n";
     echo "<span class='ttt-title-box'>";
     echo img_tag(NAVBAR_LOGO,"ttt-logo");
     echo "<span class='ttt-title'>$title</span>";
@@ -106,6 +111,23 @@ function start_page($flavor,$kwargs=[])
     if($menu_cb) { $menu_cb(); }
     echo "</div>\n\n";
   }
+
+  // Add the status bar
+  //   include unless status=false is explicitly set in the kwargs
+  if( $kwargs['status'] ?? true ) {
+    $status = status_message();
+    if($status) {
+      $level = $status[0];
+      $msg   = $status[1];
+    } else {
+      $level = 'none';
+      $msg = '';
+    }
+    echo "<div id='ttt-status' class='$level'>$msg</div>";
+  }
+
+  // Close the survey header box
+  echo "</div>";
 
   // Start the container for survey body
   echo "<div id='ttt-body'>";

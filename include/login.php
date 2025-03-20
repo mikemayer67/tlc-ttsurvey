@@ -30,9 +30,9 @@ class LoginCookies
 {
   private static $_instance = null;
   private $_ajax = false;
-  private $_active_userid = null;
-  private $_active_token = null;
-  private $_cached_tokens = null;
+  private $_active_userid = '';
+  private $_active_token = '';
+  private $_cached_tokens = array();
 
   public static function instance($ajax=false)
   {
@@ -43,25 +43,14 @@ class LoginCookies
 
   private function __construct()
   {
-    $userid = stripslashes($_COOKIE[ACTIVE_USER_COOKIE]??"");
-    $token  = stripslashes($_COOKIE[ACTIVE_TOKEN_COOKIE]??"");
+    $this->_active_userid = stripslashes($_COOKIE[ACTIVE_USER_COOKIE]??"");
+    $this->_active_token  = stripslashes($_COOKIE[ACTIVE_TOKEN_COOKIE]??"");
     $tokens = stripslashes($_COOKIE[CACHED_TOKENS_COOKIE]??"");
 
-    log_dev("LoginCookies($userid,$token)");
-    if(validate_user_access_token($userid,$token)) {
-      log_dev("Validated");
-      $this->_active_userid = $userid;
-      $this->_active_token  = $token;
-    } else {
-      log_dev("NOT Validated");
-      clear_active_userid();
-    }
-
-    #reset cookie timeout
-    setcookie(CACHED_TOKENS_COOKIE, $tokens, time() + 86400*365, '/');
-
     $this->_cached_tokens = array();
+    log_dev("tokens => ".print_r($tokens,true));
     $tokens = json_decode($tokens,true);
+    log_dev("tokens => ".print_r($tokens,true));
     if($tokens) {
       foreach( $tokens as $userid=>$token ) {
         if(validate_user_access_token($userid,$token))
@@ -70,6 +59,10 @@ class LoginCookies
         }
       }
     }
+    
+    # reset cookie timeout (and update tokens if necessary)
+    setcookie(CACHED_TOKENS_COOKIE, json_encode($this->_cached_tokens), time() + 86400*365, '/');
+
   }
 
   private function _set_cookie($key,$value,$expires)
