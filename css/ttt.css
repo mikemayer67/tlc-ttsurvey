@@ -18,6 +18,7 @@
 #ttt-body {
   font-family: var(--sans-serif-font);
   font-size:normal;
+  box-sizing: border-box;
 }
 
 .ttt-card {

@@ -61,6 +61,7 @@
   margin: 0.5em auto 0 0;
 }
 #ttt-login button.resume {
+  margin-bottom:2px;
   width:100%;
   height:unset;
   border-style: outset;
@@ -73,6 +74,7 @@
 }
 #ttt-login button.resume:hover {
   border-width:2px;
+  margin-bottom:1px;
 }
 #ttt-login button.resume .fullname {
   font-weight:bold;
@@ -146,6 +148,16 @@
 #ttt-login .input .info-box .info p {
   margin: 0 0 5px 0;
   font-size:small;
+}
+#ttt-remember-info-cb {
+  display:none;
+}
+#ttt-login #ttt-remember-info {
+  display:none;
+}
+#ttt-remember-info-cb:hover ~ #ttt-remember-info,
+#ttt-remember-info-cb:checked ~ #ttt-remember-info {
+  display:block;
 }
 
 /* Submit and other buttons */

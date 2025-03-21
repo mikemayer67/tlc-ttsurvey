@@ -137,6 +137,11 @@ function add_login_checkbox($name, $kwargs=array())
 
   echo "<!-- $label -->";
   echo "<div class='input $name'>";
+
+  if($info) {
+    $info_cb = "ttt-$name-info-cb";
+    echo "<input id='$info_cb' type='checkbox'>";
+  }
   
   echo "<div class='label-box'>";
   echo "<input id='$id' type='checkbox' name='$name' $checked>";
@@ -147,16 +152,13 @@ function add_login_checkbox($name, $kwargs=array())
     $info_link = "ttt-$name-info";
     $icon_url = app_uri('img/icons8-info.png');
     $info_icon = "<img src='$icon_url' width=18 height=18>";
-    $info_trigger = "<a class='info-trigger' data-target='$info_link'>$info_icon</a>";
     // close out the label-box with the info trigger
-    echo($info_trigger);
+    echo "<label for='$info_cb' class='info-trigger'>$info_icon</a>";
     echo "</div>";
 
     // start the info-box
-    echo "<div>";
     echo "<div id='$info_link' class='info-box'>";
     echo "<div class='info'><p>$info</p></div>";
-    echo "</div>";
   }
   echo "</div>"; // label-box (if no-info) or info-box (if info present)
   echo "</div>"; // input box
