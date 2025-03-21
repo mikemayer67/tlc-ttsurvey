@@ -25,8 +25,11 @@ function internal_error($msg)
   die;
 }
 
-function app_file($path)              { return APP_DIR . "/$path"; }
-function app_uri($uri='tt.php?ttt=1') { return APP_URI . "/$uri";  }
+function app_file($path)              { return APP_DIR . "/$path";        }
+function app_uri($uri='tt.php?ttt=1') { return APP_URI . "/$uri";         }
+function img_uri($filename)           { return APP_URI . "/img/$filename"; }
+function css_uri($filename)           { return APP_URI . "/css/$filename"; }
+function js_uri($filename)            { return APP_URI . "/js/$filename";  }
 
 function validate_entry_uri()
 {

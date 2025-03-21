@@ -15,7 +15,7 @@ function start_login_form($header,$name)
   $nonce = gen_token(16);
   $_SESSION['nonce'][$name] = $nonce;
 
-  echo "<div id='login' class='$name'>";
+  echo "<div id='ttt-login' class='$name ttt-card'>";
   echo "<header>$header</header>";
   echo "<form class='login' method='post' action='$form_uri'>";
   add_hidden_input('nonce',$nonce);
@@ -30,7 +30,7 @@ function add_hidden_input($name,$value)
 
 function close_login_form()
 {
-  // must close all DOM elements opened in tlc-ttsurvey-login
+  // must close all DOM elements opened in ttt-login
   echo "</form></div>";
 }
 
@@ -73,7 +73,7 @@ function add_login_input($type,$kwargs=array())
   $value = stripslashes($kwargs['value'] ?? '');
   $optional = $kwargs['optional'] ?? False;
   $info = $kwargs['info'] ?? null;
-  $id = "tlcsurvey-input-$name";
+  $id = "ttt-input-$name";
 
   echo "<!-- $label -->";
   echo "<div class='input $name'>";
@@ -83,7 +83,7 @@ function add_login_input($type,$kwargs=array())
   echo "<div class='label-box'>";
   echo "<label for='$id'>$label</label>";
   if($info) { 
-    $info_link = "tlc-ttsurvey-$name-info";
+    $info_link = "ttt-$name-info";
     $icon_url = app_uri('img/icons8-info.png');
     $info_icon = "<img src='$icon_url' width=18 height=18>";
     $info_trigger = "<a class='info-trigger' data-target='$info_link'>$info_icon</a>";
@@ -133,7 +133,7 @@ function add_login_checkbox($name, $kwargs=array())
   $label = $kwargs['label'] ?? ucwords($name);
   $checked = stripslashes($kwargs['value'] ?? False) ? 'checked' : '';
   $info = $kwargs['info'] ?? null;
-  $id = "tlcsurvey-cb-$name";
+  $id = "ttt-cb-$name";
 
   echo "<!-- $label -->";
   echo "<div class='input $name'>";
@@ -144,7 +144,7 @@ function add_login_checkbox($name, $kwargs=array())
 
   if($info)
   {
-    $info_link = "tlc-ttsurvey-$name-info";
+    $info_link = "ttt-$name-info";
     $icon_url = app_uri('img/icons8-info.png');
     $info_icon = "<img src='$icon_url' width=18 height=18>";
     $info_trigger = "<a class='info-trigger' data-target='$info_link'>$info_icon</a>";

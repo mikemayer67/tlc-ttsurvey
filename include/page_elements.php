@@ -44,52 +44,49 @@ todo("Update the following commentary on start_page function");
 //   to most of the pages served by the ttsuvey app (jQuery, the app's primary css, etc.)
 //
 // In addition, it will include resources based on the specified "flavor" of the page
+//   Will determine which css file to load.
 //
-// The flavors include:
-//    print   - Don't include any css or javascript
-//    login   - Includes the css associated with user login
-//
-function start_page($flavor,$kwargs=[])
+// To support printable pages, the css flavor of "print" will suppress the
+//   loading of any css (or javascript) ressources.
+function start_page($css,$kwargs=[])
 {
-  // just in case...
-  $flavor = strtolower($flavor);
-
-  echo "<!DOCTYPE html><html><head>\n";
-
-  echo "<meta charset='UTF-8'>\n";
-  echo "<meta name='viewport' content='width=device-width, initial-scale=1'>\n";
-
+  $css = strtolower($css);
   $title = active_survey_title() ?? DEFAULT_TITLE;
-  echo "<title class=tlc-title>$title</title>\n";
-
-  // don't include css or javascript in pages that are displayed for printing purposes
-  if($flavor == 'print') {
-    // close the body and html elements and return
-    echo "</head></body>\n";
-    return;
-  }
+  $title_len = strlen($title);
+  $app_uri = APP_URI;
 
   // in order to prevent css files from caching, we append a changing query
   // string to the URL for the css file... but this should only be needed
   // in a development environment.
   $v = is_dev() ? rand() : 0;
 
-  $title_len = strlen($title);
-  echo "<style> *{--n-title-chars:$title_len}</style>";
+  echo <<<HTMLHEAD
+  <!DOCTYPE html><html><head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <!-- Title -->
+  <title class=tlc-title>$title</title>
+  HTMLHEAD;
 
-  echo "<script src='https://code.jquery.com/jquery-3.7.1.min.js' ";
-  echo "integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=' ";
-  echo "crossorigin='anonymous'></script>\n";
 
-  echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/w3.css?v=$v'>\n";
-  echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/ttt.css?v=$v'>\n";
+  // don't include css or javascript on print pages
+  if($css !== 'print') {
+    echo <<<HTMLHEAD
+    <!-- Javascript -->
+    <script src='https://code.jquery.com/jquery-3.7.1.min.js'
+            integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo='
+            crossorigin='anonymous'>
+    </script>
 
-  switch($flavor) {
-  case 'login':
-    echo "<link rel='stylesheet' type='text/css' href='", APP_URI, "/css/login.css?v=$v'>\n";
-    break;
-  default:
-    break;
+    <!-- Style -->
+    <link rel='stylesheet' type='text/css' href='$app_uri/css/w3.css?v=$v'>
+    <link rel='stylesheet' type='text/css' href='$app_uri/css/ttt.css?v=$v'>
+    <link rel='stylesheet' type='text/css' href='$app_uri/css/$css.css?v=$v'>
+    HTMLHEAD;
   }
 
   // close the head element and open the body element
@@ -98,15 +95,20 @@ function start_page($flavor,$kwargs=[])
   // Add the navigation bar
   //   include unless navbar=false is explicitly set in the kwargs
   if( $kwargs['navbar'] ?? true ) {
-    echo "<!-- Navbar -->\n";
-    echo "<div id='ttt-navbar'>\n";
-    echo "<span class='ttt-title-box'>";
-    echo img_tag(NAVBAR_LOGO,"ttt-logo");
-    echo "<span class='ttt-title'>$title</span>";
-    echo "</span>\n";
-    $menu_cb = $kwargs['navbar-menu-cb']??null;
-    if($menu_cb) { $menu_cb(); }
-    echo "</div>\n\n";
+    $logo = img_uri(NAVBAR_LOGO);
+    $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
+    $menu = $menu_cb ? $menu_cb() : '';
+
+    echo <<<HTMLNAVBAR
+    <!-- Navbar -->
+    <div id='ttt-navbar'>
+      <span class='ttt-title-box'>
+        <img class='ttt-logo' src='$logo' alt='Trinity Logo'>
+        <span class='ttt-title'>$title</span>
+      </span>
+      $menu
+    </div>
+    HTMLNAVBAR;
   }
 
   // Add the status bar
@@ -120,7 +122,10 @@ function start_page($flavor,$kwargs=[])
       $level = 'none';
       $msg = '';
     }
-    echo "<div id='ttt-status' class='$level'>$msg</div>";
+    echo <<<HTMLSTATUS
+    <!-- Status Bar -->
+    <div id='ttt-status' class='$level'>$msg</div>
+    HTMLSTATUS;
   }
 
   // Start the container for survey body
