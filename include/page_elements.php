@@ -95,9 +95,6 @@ function start_page($flavor,$kwargs=[])
   // close the head element and open the body element
   echo "</head><body>";
 
-  // Add the survey header box
-  echo "<div id='ttt-header'>";
-
   // Add the navigation bar
   //   include unless navbar=false is explicitly set in the kwargs
   if( $kwargs['navbar'] ?? true ) {
@@ -125,9 +122,6 @@ function start_page($flavor,$kwargs=[])
     }
     echo "<div id='ttt-status' class='$level'>$msg</div>";
   }
-
-  // Close the survey header box
-  echo "</div>";
 
   // Start the container for survey body
   echo "<div id='ttt-body'>";
