@@ -1,0 +1,224 @@
+/* login color palette */
+
+* {
+  --empty-field-color:#ffffe0;
+  --login-background:#ddd;
+  --header-background:#008;
+  --header-foreground:white;
+  --recover-color:#777777;
+  --recover-background:#f0f0f0;
+  --recover-hover:#f8f8f8;
+  --submit-background:#008;
+  --submit-foreground:white;
+  --submit-hover-fg:white;
+  --submit-hover-bg:#33d;
+  --info-background:#eee;
+  --error-color:#cf0000;
+
+/* overall login box */
+
+#ttt-login {
+  width: min(95%, 600px);
+  margin-top: 1em;
+  margin-left: auto;
+  margin-right: auto;
+
+  background: var(--login-background);
+}
+
+#ttt-login * { background:inherit; }
+
+#ttt-login header {
+  font-size: large ;
+  font-weight:bold;
+  color:var(--header-foreground);
+  padding: 0.5em 1em;
+  background: var(--header-background);
+}
+
+#ttt-login form {
+  margin:1em;
+}
+
+/* Resume buttons */
+
+#ttt-login .resume-box {
+  margin:1em;
+}
+#ttt-login .resume-box .button-box {
+  width:100%;
+  position:relative;
+  margin-bottom:3px;
+}
+#ttt-login .resume-box .button-box * {
+  background-color:var(--recover-background);
+}
+#ttt-login .resume-box .button-box:hover * {
+  background-color:var(--recover-hover);
+}
+#ttt-login .resume-label {
+  font-weight:bold;
+  margin: 0.5em auto 0 0;
+}
+#ttt-login button.resume {
+  margin-bottom:2px;
+  width:100%;
+  height:unset;
+  border-style: outset;
+  border-width: 1px;
+  border-color: var(--recover-color);
+  z-index:1;
+  cursor: hand;
+  cursor: pointer;
+  color:black;
+}
+#ttt-login button.resume:hover {
+  border-width:2px;
+  margin-bottom:1px;
+}
+#ttt-login button.resume .fullname {
+  font-weight:bold;
+  text-align:left;
+  margin: 5px 0 0 8px;
+}
+#ttt-login button.resume .userid {
+  text-align:left;
+  font-size:small;
+  margin: 0 0 5px 8px;
+}
+#ttt-login .resume-box .forget {
+  position:absolute;
+  top:5px;
+  right:5px;
+  font-size:small;
+  z-index:2;
+}
+#ttt-login .resume-box .forget img {
+  width:12px;
+  height:12px;
+}
+
+/* Login userid/password fields */
+
+#ttt-login .input {
+  position: relative;
+  margin: 8px 1em 0 1em;
+}
+#ttt-login .input .label-box {
+  display:flex;
+  align-items: center;
+  gap:0.25em;
+}
+#ttt-login .input div.error {
+  color:var(--error-color);
+  font-size:x-small;
+  display:none;
+  margin-left:auto;
+  align-self:flex-end;
+}
+#ttt-login .input input.text-entry {
+  display:block;
+  padding:0.25em 0.5em;
+  margin-left:1em;
+  width: calc(100% - 1em);
+  border: inset 1px #ccc;
+}
+#ttt-login .input input.empty {
+  background-color:var(--empty-field-color);
+}
+
+#ttt-login .input .info-box {
+  display:flex;
+  margin: 5px 0;
+}
+#ttt-login .input .info-trigger img {
+  width:0.9em;
+  height:0.9em;
+  position:absolute;
+  top:0.25em;
+}
+#ttt-login .input .info-box .info {
+  margin-left:2em;
+  padding:0 0.5em;
+  width:calc(100% - 3em);
+  border: inset 1px;
+  border-radius: 5px;
+  background-color:var(--info-background);
+}
+#ttt-login .input .info-box .info p {
+  margin: 0 0 5px 0;
+  font-size:small;
+}
+#ttt-remember-info-cb {
+  display:none;
+}
+#ttt-login #ttt-remember-info {
+  display:none;
+}
+#ttt-remember-info-cb:hover ~ #ttt-remember-info,
+#ttt-remember-info-cb:checked ~ #ttt-remember-info {
+  display:block;
+}
+
+/* Submit and other buttons */
+
+#ttt-login .submit-bar {
+  margin-top:10px;
+  width: 100%;
+  overflow:hidden;
+  display:flex;
+  flex-direction: row-reverse;
+}
+
+#ttt-login .submit-bar button.full {
+  width:100%;
+  margin-left:0;
+}
+#ttt-login .submit-bar button {
+  padding:0.5em 1em;
+  margin:0.5em 0 0.5em 1em;
+  text-align:center;
+  cursor:hand;
+  cursor:pointer;
+  border:none;
+  border-style:outset;
+  border-width:1px;
+  border-radius:5px;
+}
+#ttt-login .submit-bar button.submit {
+  color:var(--submit-foreground);
+  background-color: var(--submit-background);
+  font-weight:bold;
+}
+#ttt-login .submit-bar button.submit:hover {
+  color:var(--submit-hover-fg);
+  background-color:var(--submit-hover-bg);
+}
+
+#ttt-login .links-bar {
+  padding 0 1em;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+#ttt-login .links-bar:after,
+#ttt-login .links-bar:before {
+  content:"";
+  display:table;
+  clear:both;
+}
+#ttt-login .links-bar .left {
+  float:left;
+}
+#ttt-login .links-bar .right {
+  float:right;
+}
+
+
+
+
+@media only screen and (max-width:640px) 
+{
+  #ttt-login .resume-label {
+    font-size:large;
+  }
+}

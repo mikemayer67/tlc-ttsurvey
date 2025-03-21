@@ -1,8 +1,14 @@
 [content]
+; Title to display if there is no active survey
+default_title = "Time & Talent Survey"
 ; Logo to place in the navbar.  If not specified, no logo is added.
 ;   If a filename is given, the path must be relative to /img
 ; navbar_logo = "[fill this in]"
 
+[security]
+; How long a password reset token can be used before it expires
+;    If not specified, defaults to 900 (15 minutes)
+pw_reset_timeout = 900
 
 [logging]
 ; app specific log file

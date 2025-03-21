@@ -99,35 +99,35 @@ IF version < 1 THEN
   );
 
   CREATE TABLE tlc_tt_userids (
-    id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    userid   varchar(24)  NOT NULL UNIQUE,
+    userid   varchar(24)  PRIMARY KEY,
     fullname varchar(100) NOT NULL,
     email    varchar(45)  DEFAULT NULL,
-    token    varchar(45)  NOT NULL ,
-    password varchar(64)  NOT NULL,
+    token    varchar(45)  NOT NULL COMMENT 'access token',
+    password varchar(64)  NOT NULL COMMENT 'hash of the password',
+    anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
     admin    tinyint      NOT NULL DEFAULT 0 COMMENT 'has admin permission'
     );
 
+  CREATE TABLE tlc_tt_anonids (
+    anonid    varchar(24) UNIQUE
+  );
+
+  CREATE TABLE tlc_tt_reset_tokens (
+    userid    varchar(24)      NOT NULL PRIMARY KEY,
+    token     varchar(20)      NOT NULL,
+    expires   DATETIME         NOT NULL,
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+  );
+
   CREATE TABLE tlc_tt_roles (
-    user_id   int     NOT NULL,
-    survey_id int     NOT NULL,
-    poc       tinyint NOT NULL DEFAULT 0,
-    tech      tinyint NOT NULL DEFAULT 0
-    );
-  ALTER TABLE tlc_tt_roles
-    ADD INDEX tlc_tt_roles_idx (user_id,survey_id) ;
-  ALTER TABLE tlc_tt_roles 
-    ADD CONSTRAINT tlc_tt_roles_user_fk
-    FOREIGN KEY (user_id)
-    REFERENCES tlc_tt_userids (id)
-    ON DELETE CASCADE
-    ON UPDATE RESTRICT;
-  ALTER TABLE tlc_tt_roles 
-    ADD CONSTRAINT tlc_tt_roles_survey_fk
-    FOREIGN KEY (survey_id)
-    REFERENCES tlc_tt_surveys (id)
-    ON DELETE CASCADE
-    ON UPDATE RESTRICT;
+    userid    varchar(24) NOT NULL,
+    survey_id int         NOT NULL,
+    poc       tinyint     NOT NULL DEFAULT 0,
+    tech      tinyint     NOT NULL DEFAULT 0,
+    PRIMARY KEY (userid,survey_id),
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE CASCADE ON DELETE CASCADE
+  );
 
   CREATE OR REPLACE VIEW tlc_tt_draft_surveys
     AS SELECT id, title 
@@ -143,6 +143,11 @@ IF version < 1 THEN
     AS SELECT id, title 
          FROM tlc_tt_surveys 
         WHERE closed is not NULL;
+
+  CREATE OR REPLACE VIEW tlc_tt_user_reset_tokens
+    AS SELECT u.userid, t.token, t.expires
+         FROM tlc_tt_userids u, tlc_tt_reset_tokens t
+        WHERE u.userid = t.userid;
 
 -- Add version 1 to the history and increment current version
   INSERT INTO tlc_tt_version_history (description) values ("Initial Setup");

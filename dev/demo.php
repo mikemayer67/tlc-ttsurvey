@@ -5,12 +5,15 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/page_elements.php'));
 
-log_dev("Loading Admin Dashboard");
+$demo_menu_cb = function() {
+  foreach([1,2,4] as $i) {
+    echo "<span>[Menu$i]</span>";
+  }
+};
 
-start_page('admin');
+start_page('junk',array('navbar-menu-cb'=>$demo_menu_cb));
 
-echo "<h1>ADMIN</h1>";
+echo "<h1>DEMO</h1>";
 
 end_page();
-
 
