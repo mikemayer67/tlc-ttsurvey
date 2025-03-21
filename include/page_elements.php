@@ -86,6 +86,7 @@ function start_page($css,$kwargs=[])
     <link rel='stylesheet' type='text/css' href='$app_uri/css/w3.css?v=$v'>
     <link rel='stylesheet' type='text/css' href='$app_uri/css/ttt.css?v=$v'>
     <link rel='stylesheet' type='text/css' href='$app_uri/css/$css.css?v=$v'>
+
     HTMLHEAD;
   }
 
@@ -109,6 +110,18 @@ function start_page($css,$kwargs=[])
       $menu
     </div>
     HTMLNAVBAR;
+  }
+
+
+  if($css !== 'print') {
+    echo <<<HTMLNOSCRIPT
+    <!-- Javascript suggestion -->
+    <noscript>
+    <div class='noscript'>
+      Consider enabling JavaScript for a smoother interaction with the survey
+    </div>
+    </noscript>
+    HTMLNOSCRIPT;
   }
 
   // Add the status bar

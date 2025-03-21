@@ -85,7 +85,7 @@ function add_login_input($type,$kwargs=array())
   if($info) { 
     $info_link = "ttt-$name-info";
     $icon_url = app_uri('img/icons8-info.png');
-    $info_icon = "<img src='$icon_url' width=18 height=18>";
+    $info_icon = "<img src='$icon_url'>";
     $info_trigger = "<a class='info-trigger' data-target='$info_link'>$info_icon</a>";
     echo($info_trigger); 
   }
