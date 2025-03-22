@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 $get_nonce   = $_GET['ttt'] ?? '';
+$post_nonce  = $_POST['nonce'] ?? '';
 $login_nonce = $_SESSION['nonce']['login'] ?? 'NO_NONCE';
 $_SESSION['nonce']['login'] = null;
 
@@ -28,8 +29,7 @@ if($forget) {
   die();
 }
 
-// Handle requests for other login pages
-log_dev("GET = ".print_r($_GET,true));
+// Handle GET requests for other login pages
 $page = $_GET['p'] ?? null;
 if($page) {
   $page = app_file("login/$page.php");
@@ -37,6 +37,18 @@ if($page) {
   require($page);
   die();
 }
+
+// Handle POST requests to log in
+log_dev("POST = ".print_r($_POST,true));
+if($post_nonce) {
+  log_dev("handle POST request ($post_nonce, $login_nonce)");
+  require_once(app_file('login/post.php'));
+  handle_post_login($post_nonce,$login_nonce);
+}
+log_dev("after POST request");
+
+
+log_dev("COOKIE: ".print_r($_COOKIE,true));
 
 require_once(app_file('include/page_elements.php'));
 require_once(app_file('include/status.php'));

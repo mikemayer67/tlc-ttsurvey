@@ -21,8 +21,6 @@ start_page('survey');
 
 echo "<h1>SURVEY</h1>";
 
-add_status_tag();
-
 end_page();
 
 

@@ -38,13 +38,13 @@ function close_login_form()
 function add_resume_buttons($nonce)
 {
   $tokens = cached_tokens();
-  log_dev("cached_tokens = ".print_r($tokens,true));
   if(!$tokens) { return; }
   
   $icon = img_uri('icons8-delete_sign.png');
-  $class = 'submit resume token';
+  $class = 'resume token';
   $uri = app_uri("ttt=$nonce");
 
+  echo "<input type='submit' style='display:none'>";
   echo "<div class='resume-label'>Resume Survey as:</div>";
   echo "<div class='resume-box'>";
   foreach($tokens as $userid=>$token) {
@@ -178,7 +178,7 @@ function add_login_submit($label,$action,$cancel=False)
   else
   {
     echo "<div class='submit-bar'>";
-    echo "<button class='submit full' name='action' value='$action'>$label</button>";
+    echo "<button type='submit' class='submit full' name='action' value='$action'>$label</button>";
     echo "</div>";
   }
 }

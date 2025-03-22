@@ -61,6 +61,7 @@ class LoginCookies
     # reset cookie timeout (and update tokens if necessary)
     setcookie(CACHED_TOKENS_COOKIE, json_encode($this->_cached_tokens), time() + 86400*365, '/');
 
+    log_dev("LoginCookies: ".print_r($this,true));
   }
 
   private function _set_cookie($key,$value,$expires)

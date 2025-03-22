@@ -60,7 +60,6 @@ class User {
 
   private function __construct($user_data)
   {
-    log_info("construct new user: ".print_r($user_data,true));
     // user_data input is expected to be an associative array
     //
     // The data in this array must have been validated/sanitized
