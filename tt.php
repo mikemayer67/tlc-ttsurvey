@@ -16,6 +16,7 @@ namespace tlc\tts;
 //   is somehow invoked directly (i.e. the .htaccess has failed to properly redirect), then 
 //   api_die() will be called to immediately terminate the invocation of this app.
 
+session_start();
 
 define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR.'/include/init.php');

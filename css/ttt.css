@@ -37,6 +37,15 @@ div.noscript {
   padding:0 1em;
 }
 
+/* Copied from w3.css */
+
+/* W3.CSS 4.15 December 2020 by Jan Egil and Borge Refsnes */
+html{box-sizing:border-box}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0}
+button,input,select,textarea { font:inherit; margin:0 }
+html,body{ font-size:15px; line-height:1.5 }
+
 /*******************************************************
  * From Google Fonts
  *******************************************************
