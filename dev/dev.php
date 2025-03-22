@@ -8,7 +8,6 @@ require_once(app_file('include/users.php'));
 require_once(app_file('include/login.php'));
 
 $cookies = resume_survey_as('kitkat15','1234567890');
-log_dev("Cookies: ".print_r($cookies,true));
 
 echo "<h1>DEV</h1>";
 

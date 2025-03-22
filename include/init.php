@@ -7,6 +7,7 @@ define('APP_URI',preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
 
 function api_die() 
 {
+  error_log("API Error: ".print_r($_SERVER,true));
   http_response_code(405);
   require(APP_DIR."/405.php");
   die; 
@@ -25,11 +26,17 @@ function internal_error($msg)
   die;
 }
 
-function app_file($path)              { return APP_DIR . "/$path";        }
-function app_uri($uri='tt.php?ttt=1') { return APP_URI . "/$uri";         }
-function img_uri($filename)           { return APP_URI . "/img/$filename"; }
-function css_uri($filename)           { return APP_URI . "/css/$filename"; }
-function js_uri($filename)            { return APP_URI . "/js/$filename";  }
+// in order to prevent css files from caching, we append a changing query
+// string to the URL for the css file... but this should only be needed
+// in a development environment.
+function no_cache() { return is_dev() ? ("?v=" . rand()) : ''; }
+
+function app_file($path)   { return APP_DIR . "/$path"; }
+
+function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
+function img_uri($img)     { return APP_URI . "/img/$img"     . no_cache();   }
+function css_uri($css)     { return APP_URI . "/css/$css.css" . no_cache();   }
+function js_uri($filename) { return APP_URI . "/js/$filename" . no_cache();   }
 
 function validate_entry_uri()
 {

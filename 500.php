@@ -19,7 +19,7 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 start_page('500');
 
 echo "<div class='ttt-splash'>";
-add_link_tag('tt.php',img_tag('500.png','','Something went terribly wrong'));
+add_link_tag(app_uri(),img_tag('500.png','','Something went terribly wrong'));
 
 echo "<div class='ttt-caption'>";
 echo "Please contact $contact and let $pronoun know something is amiss.";

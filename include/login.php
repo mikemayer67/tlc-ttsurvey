@@ -48,9 +48,7 @@ class LoginCookies
     $tokens = stripslashes($_COOKIE[CACHED_TOKENS_COOKIE]??"");
 
     $this->_cached_tokens = array();
-    log_dev("tokens => ".print_r($tokens,true));
     $tokens = json_decode($tokens,true);
-    log_dev("tokens => ".print_r($tokens,true));
     if($tokens) {
       foreach( $tokens as $userid=>$token ) {
         if(validate_user_access_token($userid,$token))
@@ -62,7 +60,6 @@ class LoginCookies
     
     # reset cookie timeout (and update tokens if necessary)
     setcookie(CACHED_TOKENS_COOKIE, json_encode($this->_cached_tokens), time() + 86400*365, '/');
-
   }
 
   private function _set_cookie($key,$value,$expires)

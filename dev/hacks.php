@@ -14,12 +14,12 @@ foreach( $_GET as $k=>$v )
   $_POST[$k] = $v;
 }
 
-if(array_key_exists('dev',$_GET)) {
+if(key_exists('dev',$_GET)) {
   require(app_file('dev/dev.php'));
   die();
 } 
 
-if(array_key_exists('demo',$_GET)) {
+if(key_exists('demo',$_GET)) {
   require(app_file('dev/demo.php'));
   die();
 } 

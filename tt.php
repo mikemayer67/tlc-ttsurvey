@@ -16,11 +16,12 @@ namespace tlc\tts;
 //   is somehow invoked directly (i.e. the .htaccess has failed to properly redirect), then 
 //   api_die() will be called to immediately terminate the invocation of this app.
 
-
 define('APP_DIR',dirname(__FILE__));
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/status.php'));
+
+session_start();
 
 // Developer hacks
 todo("remove these hacks");
@@ -47,8 +48,6 @@ try
   require_once(app_file('include/login.php'));
 
   $active_user = active_userid();
-  log_dev(print_r($_COOKIE,true));
-  log_dev("active_user = $active_user");
 
   if(!$active_user) {
     require(app_file('login/setup.php'));
@@ -57,18 +56,18 @@ try
 
   // Handle logout and forget token requests
   //   Allow from get or post queries
-  if(array_key_exists('logoout',$_REQUEST)) {
+  if(key_exists('logoout',$_REQUEST)) {
     @todo('implement logout');
     handle_logout();
     die();
   }
-  if(array_key_exists('forget',$_REQUEST)) {
+  if(key_exists('forget',$_REQUEST)) {
     forget_user_token($_REQUEST['forget'] ?? '');
     // .. no reason to abort at this point... 
   }
 
   // If access to the admin tools have been requested, jump to the dashboard
-  if(array_key_exists('admin',$_REQUEST)) {
+  if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
     die();
   } 

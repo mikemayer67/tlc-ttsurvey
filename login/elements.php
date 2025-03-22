@@ -21,6 +21,7 @@ function start_login_form($header,$name)
   add_hidden_input('nonce',$nonce);
   add_hidden_input('refresh',1);
   add_hidden_input('status','');
+  return $nonce;
 }
 
 function add_hidden_input($name,$value)
@@ -34,15 +35,16 @@ function close_login_form()
   echo "</form></div>";
 }
 
-function add_resume_buttons()
+function add_resume_buttons($nonce)
 {
   $tokens = cached_tokens();
-  log_dev("cached_tokens = ".print_r($tokens,true));
   if(!$tokens) { return; }
   
-  $icon = app_uri('img/icons8-delete_sign.png');
-  $class = 'submit resume token';
+  $icon = img_uri('icons8-delete_sign.png');
+  $class = 'resume token';
+  $uri = app_uri("ttt=$nonce");
 
+  echo "<input type='submit' style='display:none'>";
   echo "<div class='resume-label'>Resume Survey as:</div>";
   echo "<div class='resume-box'>";
   foreach($tokens as $userid=>$token) {
@@ -55,9 +57,8 @@ function add_resume_buttons()
       echo "<div class='fullname'>$fullname</div>";
       echo "<div class='userid'>$userid</div>";
       echo "</button>";
-      $forget_url = app_uri() . "&forget=$userid";
       echo "<div class='forget'>";
-      echo "<a href='$forget_url' data-userid='$userid'><img src='$icon'></a>";
+      echo "<a href='$uri&forget=$userid' data-userid='$userid'><img src='$icon'></a>";
       echo "</div>"; // forget
       echo "</div>"; // button-box
     }
@@ -84,7 +85,7 @@ function add_login_input($type,$kwargs=array())
   echo "<label for='$id'>$label</label>";
   if($info) { 
     $info_link = "ttt-$name-info";
-    $icon_url = app_uri('img/icons8-info.png');
+    $icon_url = img_uri('icons8-info.png');
     $info_icon = "<img src='$icon_url'>";
     $info_trigger = "<a class='info-trigger' data-target='$info_link'>$info_icon</a>";
     echo($info_trigger); 
@@ -144,13 +145,14 @@ function add_login_checkbox($name, $kwargs=array())
   }
   
   echo "<div class='label-box'>";
-  echo "<input id='$id' type='checkbox' name='$name' $checked>";
+  echo "<input type='hidden' name='$name' value=0>";
+  echo "<input id='$id' type='checkbox' name='$name' value=1 $checked>";
   echo "<label for='$id'>$label</label>";
 
   if($info)
   {
     $info_link = "ttt-$name-info";
-    $icon_url = app_uri('img/icons8-info.png');
+    $icon_url = img_uri('icons8-info.png');
     $info_icon = "<img src='$icon_url' width=18 height=18>";
     // close out the label-box with the info trigger
     echo "<label for='$info_cb' class='info-trigger'>$info_icon</a>";
@@ -177,7 +179,7 @@ function add_login_submit($label,$action,$cancel=False)
   else
   {
     echo "<div class='submit-bar'>";
-    echo "<button class='submit full' name='action' value='$action'>$label</button>";
+    echo "<button type='submit' class='submit full' name='action' value='$action'>$label</button>";
     echo "</div>";
   }
 }
@@ -190,7 +192,7 @@ function add_login_links($links)
   foreach($links as $link)
   {
     [$label,$page,$side] = $link;
-    $page_uri = "$form_uri&tlcpage=$page";
+    $page_uri = "$form_uri?p=$page";
     echo "<div class='$side $page'><a href='$page_uri'>$label</a></div>";
   }
   echo "</div>";

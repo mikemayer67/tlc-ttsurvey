@@ -9,29 +9,27 @@ require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
 
 
-function img_tag($filename,$class='',$alt='')
+function img_tag($img,$class='',$alt='')
 {
-  if(!$filename) { return ''; }
+  if(!$img) { return ''; }
 
-  $img_uri = app_uri("img/$filename");
+  $img = img_uri($img);
   if($class) { $class = "class='$class'"; }
   if($alt)   { $alt   = "alt='$alt'"; }
 
-  return "<img $class src='$img_uri' $alt>";
+  return "<img $class src='$img' $alt>";
 }
-function add_img_tag($filename,$class='',$alt='') { 
-  echo img_tag($filename,$class,$alt); 
+function add_img_tag($img,$class='',$alt='') { 
+  echo img_tag($img,$class,$alt); 
 }
 
 function link_tag($href,$body,$class='')
 {
   if($class) { $class = "$class='$class'"; }
-  $href = app_uri($href);
-
   return "<a href='$href' $class>$body</a>";
 }
-function add_link_tag($filename,$class='',$alt='') {
-  echo link_tag($filename,$class,$alt); 
+function add_link_tag($href,$class='',$alt='') {
+  echo link_tag($href,$class,$alt); 
 }
 
 todo("Update the following commentary on start_page function");
@@ -53,12 +51,6 @@ function start_page($css,$kwargs=[])
   $css = strtolower($css);
   $title = active_survey_title() ?? DEFAULT_TITLE;
   $title_len = strlen($title);
-  $app_uri = APP_URI;
-
-  // in order to prevent css files from caching, we append a changing query
-  // string to the URL for the css file... but this should only be needed
-  // in a development environment.
-  $v = is_dev() ? rand() : 0;
 
   echo <<<HTMLHEAD
   <!DOCTYPE html><html><head>
@@ -75,6 +67,8 @@ function start_page($css,$kwargs=[])
 
   // don't include css or javascript on print pages
   if($css !== 'print') {
+    $ttt = css_uri('ttt');
+    $css = css_uri("$css");
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='https://code.jquery.com/jquery-3.7.1.min.js'
@@ -83,9 +77,8 @@ function start_page($css,$kwargs=[])
     </script>
 
     <!-- Style -->
-    <link rel='stylesheet' type='text/css' href='$app_uri/css/w3.css?v=$v'>
-    <link rel='stylesheet' type='text/css' href='$app_uri/css/ttt.css?v=$v'>
-    <link rel='stylesheet' type='text/css' href='$app_uri/css/$css.css?v=$v'>
+    <link rel='stylesheet' type='text/css' href='$ttt'>
+    <link rel='stylesheet' type='text/css' href='$css'>
 
     HTMLHEAD;
   }
