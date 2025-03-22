@@ -39,9 +39,7 @@ if($page) {
 }
 
 // Handle POST requests to log in
-log_dev("POST = ".print_r($_POST,true));
 if($post_nonce) {
-  log_dev("handle POST request ($post_nonce, $login_nonce)");
   require_once(app_file('login/post.php'));
   handle_post_login($post_nonce,$login_nonce);
 }
@@ -61,8 +59,6 @@ add_resume_buttons($nonce);
 add_login_input("userid", array('value'=>$_POST['userid']??null) );
 add_login_input("password");
 
-log_dev("Current remember: ".print_r($_POST,true));
-log_dev($_POST['remember']??"missing");
 add_login_checkbox("remember", array(
   "label" => "Add Resume Button",
   "value" => ($_POST['remember']??1) ? True : False,

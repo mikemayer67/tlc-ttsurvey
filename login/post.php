@@ -48,7 +48,6 @@ function handle_token_login()
 
 function handle_password_login()
 {
-  log_dev("COOKIE: ".print_r($_COOKIE,true));
   require_once(app_file('/include/users.php'));
   require_once(app_file('/include/login.php'));
   require_once(app_file('/include/status.php'));
