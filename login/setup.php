@@ -74,9 +74,8 @@ add_login_links([
 ]);
 
 close_login_form();
-
-
 end_page();
+
 die();
 
 
