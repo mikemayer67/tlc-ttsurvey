@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 require_once(app_file('include/status.php'));
 require_once(app_file('include/page_elements.php'));
 
-togo("Flesh out survey page");
+todo("Flesh out survey page");
 
 // Verify that there is an active survey
 //   If not, display the "No survey" page
