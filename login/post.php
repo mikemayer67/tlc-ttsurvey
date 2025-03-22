@@ -55,7 +55,7 @@ function handle_password_login()
 
   $userid   = $_POST['userid']   ?? '';
   $password = $_POST['password'] ?? '';
-  $remember = $_POST['remember'] ?? 'off';
+  $remember = $_POST['remember'] ?? 0;
 
   $user = User::from_userid($userid);
   if(!$user) {
@@ -79,7 +79,7 @@ function handle_password_login()
 
   start_survey_as($user);
 
-  if( $remember === "on" ) {
+  if( $remember ) {
     remember_user_token($userid,$user->access_token());
   }
 

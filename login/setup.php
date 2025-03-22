@@ -45,10 +45,9 @@ if($post_nonce) {
   require_once(app_file('login/post.php'));
   handle_post_login($post_nonce,$login_nonce);
 }
-log_dev("after POST request");
 
-
-log_dev("COOKIE: ".print_r($_COOKIE,true));
+// All login requests handled, but still not logged in...
+//   Present the standard login form
 
 require_once(app_file('include/page_elements.php'));
 require_once(app_file('include/status.php'));
@@ -59,13 +58,15 @@ start_page('login');
 
 $nonce = start_login_form("Survey Login","login");
 add_resume_buttons($nonce);
-add_login_input("userid");
+add_login_input("userid", array('value'=>$_POST['userid']??null) );
 add_login_input("password");
 
+log_dev("Current remember: ".print_r($_POST,true));
+log_dev($_POST['remember']??"missing");
 add_login_checkbox("remember", array(
-  "label" => "Remember Me",
-  "value" => True,
-  'info' => "<p>Sets a cookie on your browser so that you need not enter your password on fugure logins</p>",
+  "label" => "Add Resume Button",
+  "value" => ($_POST['remember']??1) ? True : False,
+  'info' => "<p>Sets a cookie on your browser so that to enable future login without a password</p>",
 ));
 
 

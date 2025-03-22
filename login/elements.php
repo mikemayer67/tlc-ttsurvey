@@ -145,7 +145,8 @@ function add_login_checkbox($name, $kwargs=array())
   }
   
   echo "<div class='label-box'>";
-  echo "<input id='$id' type='checkbox' name='$name' $checked>";
+  echo "<input type='hidden' name='$name' value=0>";
+  echo "<input id='$id' type='checkbox' name='$name' value=1 $checked>";
   echo "<label for='$id'>$label</label>";
 
   if($info)
