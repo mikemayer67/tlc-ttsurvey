@@ -20,7 +20,7 @@ function internal_error($msg)
 
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $msg");
+  log_error("[$errid]: $msg",2);
   http_response_code(500);
   require(app_file('500.php'));
   die;
@@ -67,4 +67,30 @@ function gen_token($token_length=25)
   }
   return $access_token;
 }
+
+function gen_nonce($key)
+{
+  $nonce = gen_token(16);
+  $_SESSION['nonce'][$key] = $nonce;
+  return $nonce;
+}
+
+function get_nonce($key)
+{
+  $nonce = $_SESSION['nonce'][$key] ?? null;
+  $_SESSION['nonce'][$key] = null;
+  return $nonce;
+}
+
+function validate_nonce($key,$nonce,$msg="Invalid Nonce",$trace=2)
+{
+  $expected = get_nonce($key);
+  if($nonce !== $expected) {
+    log_warning("$msg ($key:$nonce/$expected)",$trace);
+    api_die();
+  }
+}
+
+function validate_post_nonce($key,$msg="Invalid Nonce") { validate_nonce($key,$_POST['nonce'],$msg,3); }
+function validate_get_nonce($key,$msg="Invalid Nonce")  { validate_nonce($key,$_GET['ttt'],$msg,3); }
 

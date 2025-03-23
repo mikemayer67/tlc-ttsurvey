@@ -5,14 +5,18 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/logger.php'));
 
-//////////////////////////////////////////////////
-// Handlers for the main login form
-//////////////////////////////////////////////////
+// Note that all the logic in this file is wrapped up in functions...
+//   the very last action in this file is execute the main entry point for 
+//   handling post requests from the login form.
+//
+// As sumch this file should be included using require rather than require_once.
+
+// Except that we will validate the nonce right up front...
+validate_post_nonce('login');
 
 function handle_login_form()
 {
-  validate_post_nonce('login');
-
+  log_dev("handle_login_form()");
   require_once(app_file('/include/login.php'));
   require_once(app_file('/include/status.php'));
 
@@ -37,8 +41,9 @@ function handle_login_form()
   }
 }
 
-function handdle_login_with_token($userid,$token)
+function handle_login_with_token($userid,$token)
 {
+  log_dev("handle_login_with_token($userid,$token)");
   if( !resume_survey_as($userid,$token) ) {
     // failed to log in
     //   forget bad token, set status, and return to continue loading login page
@@ -55,6 +60,7 @@ function handdle_login_with_token($userid,$token)
 
 function handle_login_with_password()
 {
+  log_dev("handle_login_with_password()");
   $userid   = $_POST['userid']   ?? null;
   $password = $_POST['password'] ?? null;
   $remember = $_POST['remember'] ?? 0;
@@ -91,13 +97,4 @@ function handle_login_with_password()
   die();
 }
 
-//////////////////////////////////////////////////
-// Handlers for the register new user form
-//////////////////////////////////////////////////
-
-function handle_register_form()
-{
-  validate_post_nonce('login');
-  print("<h1>REGISTER</h1>");
-  die();
-}
+handle_login_form();

@@ -12,13 +12,13 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 function start_login_form($header,$name) 
 {
   $form_uri = app_uri();
-  $nonce = gen_token(16);
-  $_SESSION['nonce'][$name] = $nonce;
+  $nonce = gen_nonce($name);
 
   echo "<div id='ttt-login' class='$name ttt-card'>";
   echo "<header>$header</header>";
   echo "<form class='login' method='post' action='$form_uri'>";
   add_hidden_input('nonce',$nonce);
+  add_hidden_input('form',$name);
   add_hidden_input('refresh',1);
   add_hidden_input('status','');
   return $nonce;
