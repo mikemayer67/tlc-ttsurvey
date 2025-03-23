@@ -202,6 +202,16 @@ function add_login_links($links)
   echo "</div>";
 }
 
+function add_login_instructions($instructions)
+{
+  echo "<div>";
+  foreach($instructions as $instruction) {
+    echo "<div class='instruction'>$instruction</div>";
+  }
+  echo "</div>";
+}
+
+
 function info_text($key) 
 {
   $rval = "";
@@ -251,6 +261,23 @@ function info_text($key)
       Sets a cookie on your browser to allow you to reconnect without a password
       INFO;
     break;
+
+  case 'recover-userid':
+    $rval = <<<INFO
+      If the profile for this userid has an associated email address, instructions
+      for resetting your password will be sent to that address:
+      <p class=info-list>If a userid is provided here, the email address below will be ignored</p>
+      INFO;
+    break;
+
+  case 'recover-email':
+    $rval = <<<INFO
+      If a user pofile associated with this email address exists, the userid and
+      instructions for resetting your password will be sent to this address.
+      <p class=info-list>If a userid is provided above, the email address here will be ignored</p>
+      INFO;
+    break;
+
   }
   return $rval;
 }

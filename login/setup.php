@@ -3,10 +3,6 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-log_dev("GET=".print_r($_GET,true));
-log_dev("POST=".print_r($_POST,true));
-log_dev("SESSION=".print_r($_SESSION,true));
-
 // Handle request to forget an access token
 //
 // This is a special case that doesn't fit well into the GET/POST

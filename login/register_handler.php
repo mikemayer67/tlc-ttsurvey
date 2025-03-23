@@ -20,7 +20,8 @@ function handle_register_form()
   if( $action = $_POST['action'] ?? null ) {
     switch($action) {
       case 'cancel':
-        // nothing to do on cancel... simply return to continue loading the main login page
+        // clear the POST fields and return to continue loading the main login page
+        $_POST = array();
         break;
       case 'register':
         handle_register_new_user();
@@ -103,6 +104,5 @@ function handle_register_new_user()
   header("Location: ".app_uri());
   die();
 }
-
 
 handle_register_form();
