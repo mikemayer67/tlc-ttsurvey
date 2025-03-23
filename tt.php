@@ -38,9 +38,9 @@ try
     $status = explode('::',$_POST['status']);
     log_dev("status=".print_r($status,true));
     if(count($status) > 1) {
-      status_message($status[1],$status[0]);
+      set_status_message($status[1],$status[0]);
     } else {
-      status_message($status[0]);
+      set_status_message($status[0]);
     }
   }
 

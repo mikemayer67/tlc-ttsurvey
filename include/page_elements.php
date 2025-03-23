@@ -120,7 +120,7 @@ function start_page($css,$kwargs=[])
   // Add the status bar
   //   include unless status=false is explicitly set in the kwargs
   if( $kwargs['status'] ?? true ) {
-    $status = status_message();
+    $status = get_status_message();
     if($status) {
       $level = $status[0];
       $msg   = $status[1];

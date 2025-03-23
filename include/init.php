@@ -5,6 +5,8 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 define('APP_URI',preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
 
+class BadInput extends \Exception {}
+
 function api_die() 
 {
   error_log("API Error: ".print_r($_SERVER,true));

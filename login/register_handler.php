@@ -4,6 +4,11 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/login.php'));
+require_once(app_file('include/redirect.php'));
+require_once(app_file('include/status.php'));
+require_once(app_file('include/users.php'));
+require_once(app_file('include/validation.php'));
 
 // Note that all the logic in this file is wrapped up in functions...
 //   the very last action in this file is execute the main entry point for 
@@ -16,20 +21,38 @@ validate_post_nonce('register');
 
 function handle_register_form()
 {
-  // all register requests come through the post action parameter
-  if( $action = $_POST['action'] ?? null ) {
-    switch($action) {
-      case 'cancel':
-        // clear the POST fields and return to continue loading the main login page
-        $_POST = array();
-        break;
-      case 'register':
-        handle_register_new_user();
-        break;
-      default:
-        internal_error("Unrecognized register action: $action");
-        break;
+  try {
+    if(!key_exists('action',$_POST)) {
+      internal_error("Register handler triggered without action");
     }
+
+    switch( $action = $_POST['action'] )
+    {
+    case 'cancel':
+      clear_redirect_data();
+      break;
+    case 'register':
+      handle_register_new_user();
+      break;
+    default:
+      internal_error("Unrecognized register action: $action");
+      break;
+    }
+  }
+  catch (BadInput $e) {
+    // Something went wrong processing the login form
+    //   Set the error status
+    //   Cache the userid and remember inputs
+    //   Set the redirect page to the main login entry page
+    set_error_status($e->getMessage());
+    add_redirect_data('userid',   $_POST['userid']   ?? null);
+    add_redirect_data('fullname', $_POST['fullname'] ?? null);
+    add_redirect_data('email',    $_POST['email']    ?? null);
+    add_redirect_data('remember', $_POST['remember'] ?? null);
+    set_redirect_page('register');
+  }
+  catch (Exception $e) {
+    internal_error($e->getMessage());
   }
 }
 
@@ -47,34 +70,23 @@ function handle_register_new_user()
   if(!$pwconfirm) { internal_error("Missing password-confirm in register request"); }
   if(!$fullname)  { internal_error("Missing fullname in register request"); }
 
-  require_once(app_file('include/validation.php'));
-  require_once(app_file('include/users.php'));
-  require_once(app_file('include/login.php'));
-
-  // if we encounter an error, we're going to want to go back to the register page,
-  //   not the main login page. 
-  $_GET['p'] = "register";
 
   $error = '';
   if(!adjust_and_validate_user_input('userid',$userid,$error)) {
-    set_error_status("Invalid userid ($error)");
-    return;
+    throw new BadInput("Invalid userid ($error)");
   }
   elseif(!adjust_and_validate_user_input('password',$password,$error)) {
-    set_error_status("Invalid password ($error)");
-    return;
+    throw new BadInput("Invalid password ($error)");
   }
   elseif($password !== $pwconfirm) {
-    set_error_status("Passwords do not match");
-    return;
+    $error = True;  // we need something truthy
+    throw new BadInput("Passwords do not match");
   }
   elseif(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
-    set_error_status("Invalid name ($error)");
-    return;
+    throw new BadInput("Invalid name ($error)");
   }
   elseif(!adjust_and_validate_user_input('email',$email,$error)) {
-    set_error_status("Invalid email ($error)");
-    return;
+    throw new BadInput("Invalid email ($error)");
   }
 
   // all our inputs look good, add the new user to the database
@@ -82,27 +94,22 @@ function handle_register_new_user()
 
   $user = create_new_user($userid,$fullname,$password,$email); 
 
+  // Just in case we failed to create a new user
   if(!$user) {
-    // something went wrong... not sure what... log it and return failure
     $token = gen_token(6);
     log_error("[$token] Failed to create user ($userid, $fullname, password, $email)");
-    set_error_status("Failed to create user [error #$token]");
-    return;
+    throw BadInput("Failed to create user [error #$token]");
   }
 
-  // succesfully created new user, 
+  // user created
   //   set this as the active user
   //   add userid/token to cached tokens if requested
-  //   redirect to survey entry point to reload with the survey
-
   start_survey_as($user);
 
-  if( $remember ) {
-    remember_user_token($userid,$user->access_token());
-  }
-
-  header("Location: ".app_uri());
-  die();
+  if( $remember ) { remember_user_token($userid,$user->access_token()); }
 }
 
 handle_register_form();
+
+header("Location: ".app_uri());
+die();
