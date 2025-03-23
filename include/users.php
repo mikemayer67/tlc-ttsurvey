@@ -353,6 +353,10 @@ function create_new_user($userid,$fullname,$password,$email=null)
       $userid,$fullname,$token,$password,$anonid
     );
   }
+
+  // Construct and return the new User instance
+  if($r) { $r = User::from_userid($userid); }
+
   return $r;
 }
 

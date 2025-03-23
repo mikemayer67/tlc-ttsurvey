@@ -146,18 +146,27 @@
   background-color:var(--info-background);
 }
 #ttt-login .input .info-box .info p {
-  margin: 0 0 5px 0;
+  margin: 0.5em 0 0.5em 1em;
+  line-height: 1;
   font-size:small;
 }
-#ttt-remember-info-cb {
+#ttt-login .input .info-box .info p:first-child {
+  margin-left:0;
+}
+
+#ttt-login input.info-cb,
+#ttt-login div.input .info-box {
   display:none;
 }
-#ttt-login #ttt-remember-info {
-  display:none;
-}
-#ttt-remember-info-cb:hover ~ #ttt-remember-info,
-#ttt-remember-info-cb:checked ~ #ttt-remember-info {
+
+#ttt-login input.info-cb:checked ~ .info-box {
   display:block;
+}
+
+@media (hover:hover) and (pointer:fine) {
+  #ttt-login input.info-cb:hover ~ .info-box {
+    display:block;
+  }
 }
 
 /* Submit and other buttons */
