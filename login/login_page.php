@@ -34,7 +34,7 @@ add_login_checkbox("remember", array(
 add_login_submit("Log in","login");
 
 add_login_links([
-  ['forgot login info', 'pwrecover', 'left'],
+  ['forgot login info', 'recover', 'left'],
   ['register', 'register', 'right'],
 ]);
 
