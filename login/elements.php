@@ -245,6 +245,12 @@ function info_text($key)
       <p class=info-list>login help (on request)</p>
       INFO;
     break;
+
+  case 'remember':
+    $rval = <<<INFO
+      Sets a cookie on your browser to allow you to reconnect without a password
+      INFO;
+    break;
   }
   return $rval;
 }

@@ -12,14 +12,22 @@ start_page('login');
 
 $nonce = start_login_form("Survey Login","login");
 
+if( $_POST['refresh'] ?? False ) {
+  $userid = $_POST['userid'] ?? null;
+  $remember = filter_var($_POST['remember'] ?? False, FILTER_VALIDATE_BOOLEAN);
+} else {
+  $userid = null;
+  $remember = True;
+}
+
 add_resume_buttons($nonce);
-add_login_input("userid", array('value'=>$_POST['userid']??null) );
+add_login_input("userid", array('value' => $userid) );
 add_login_input("password");
 
 add_login_checkbox("remember", array(
-  "label" => "Add Resume Button",
-  "value" => ($_POST['remember']??1) ? True : False,
-  'info' => "<p>Sets a cookie on your browser so that to enable future login without a password</p>",
+  "label" => "Add Reconnect Button",
+  "value" => $remember,
+  'info' => info_text('remember'),
 ));
 
 

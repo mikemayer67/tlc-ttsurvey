@@ -16,7 +16,6 @@ validate_post_nonce('login');
 
 function handle_login_form()
 {
-  log_dev("handle_login_form()");
   require_once(app_file('/include/login.php'));
   require_once(app_file('/include/status.php'));
 
@@ -43,7 +42,6 @@ function handle_login_form()
 
 function handle_login_with_token($userid,$token)
 {
-  log_dev("handle_login_with_token($userid,$token)");
   if( !resume_survey_as($userid,$token) ) {
     // failed to log in
     //   forget bad token, set status, and return to continue loading login page
@@ -60,7 +58,6 @@ function handle_login_with_token($userid,$token)
 
 function handle_login_with_password()
 {
-  log_dev("handle_login_with_password()");
   $userid   = $_POST['userid']   ?? null;
   $password = $_POST['password'] ?? null;
   $remember = $_POST['remember'] ?? 0;

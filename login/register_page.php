@@ -51,14 +51,12 @@ add_login_input("email",array(
 # default to true on blank form
 # otherwise set to true if currently checked
 add_login_checkbox("remember", array(
-  "label" => "Remember Me",
+  "label" => "Add Reconnect Button",
   "value" => $remember,
-  'info' => "Sets a cookie on your browser so that you need not enter your password on fugure logins",
+  'info' => info_text("remember"),
 ));
 
 add_login_submit("Register",'register',true);
-
-
 
 close_login_form();
 end_page();
