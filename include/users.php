@@ -182,7 +182,6 @@ class User {
     $error = null;
     $sql = "select token,expires from tlc_tt_user_reset_tokens where userid=?";
     $result = MySQLSelectRow($sql,'s', $this->_userid);
-    log_dev("update_password:: current_reset: ".print_r($result,true));
     if(!$result) {
       $error = "No current password reset request";
       return false;
@@ -195,12 +194,10 @@ class User {
     }
     $expires = strtotime($result['expires'].' UTC');
     $now = time();
-    log_dev("update_password:: expires:$expires vs now=$now  diff=".($expires-$now));
     if($now > $expires) {
       $error = "Password reset request has expired";
       return false;
     }
-    log_dev("update_password:: ok to reset");
 
     return $this->set_password($password,$error);
   }

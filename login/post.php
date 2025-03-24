@@ -42,7 +42,7 @@ function handdle_login_with_token($userid,$token)
   if( !resume_survey_as($userid,$token) ) {
     // failed to log in
     //   forget bad token, set status, and return to continue loading login page
-    target_user_token($userid);
+    forget_user_token($userid);
     set_error_status("Access token for $userid is no longer valid");
     return;
   } 

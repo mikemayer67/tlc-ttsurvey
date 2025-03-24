@@ -4,21 +4,17 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/page_elements.php'));
-require_once(app_file('include/status.php'));
-require_once(app_file('include/users.php'));
+require_once(app_file('include/redirect.php'));
 require_once(app_file('login/elements.php'));
 
 start_page('login');
 
+$redirect_data = get_redirect_data();
+
 $nonce = start_login_form("Recover Survey Login","recover");
 
-if( $_POST['refresh'] ?? False ) {
-  $userid = $_POST['userid'] ?? null;
-  $email = $_POST['email'] ?? null;
-} else {
-  $userid = null;
-  $email = null;
-}
+$userid = $redirect_data['userid'] ?? null;
+$email  = $redirect_data['email']  ?? null;
 
 add_login_instructions([
   'Login recovery requires that you included an email address in your profile.',

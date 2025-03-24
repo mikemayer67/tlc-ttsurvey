@@ -37,6 +37,10 @@ div.noscript {
   padding:0 1em;
 }
 
+input.hidden {
+  display:none;
+}
+
 /* Copied from w3.css */
 
 /* W3.CSS 4.15 December 2020 by Jan Egil and Borge Refsnes */
@@ -179,6 +183,10 @@ div.ttt-splash img {
 }
 
 #ttt-status.none {
+}
+
+#ttt-status div {
+  background-color:inherit;
 }
 
 
