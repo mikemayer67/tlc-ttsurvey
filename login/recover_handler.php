@@ -88,13 +88,18 @@ function handle_recover_userid_password()
     throw new BadInput("Must specify userid or password");
   }
 
-  // We've found at least one userid to send a recovery email
-  //   We want to return to the main login page
   log_info("Sending login recovery to $email");
+
+  $tokens = array();
   foreach($users as $user) {
+    $token = $user->get_password_reset_token();
+    $tokens[$user->userid()] = $token;
     log_info("  email sent for ".$user->userid());
   }
-  sendmail_recovery($email,$users);
+
+  log_dev("tokens = ".print_r($tokens,true));
+
+  sendmail_recovery($email,$tokens);
   set_info_status("Login recovery instructions sent to $email");
 }
 

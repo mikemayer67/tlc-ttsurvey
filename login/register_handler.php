@@ -40,10 +40,9 @@ function handle_register_form()
     }
   }
   catch (BadInput $e) {
-    // Something went wrong processing the login form
+    // Something went wrong processing the register form
     //   Set the error status
-    //   Cache the userid and remember inputs
-    //   Set the redirect page to the main login entry page
+    //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
     add_redirect_data('userid',   $_POST['userid']   ?? null);
     add_redirect_data('fullname', $_POST['fullname'] ?? null);
