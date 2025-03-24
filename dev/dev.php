@@ -36,3 +36,36 @@ echo "<h2>POST</h2>";
 echo "<PRE>", print_r($_POST,true), "</pre>";
 echo "<h2>REQUEST</h2>";
 echo "<PRE>", print_r($_REQUEST,true), "</pre>";
+
+echo "<h2>PHPMailer</h2>";
+
+require_once(app_file('vendor/autoload.php'));
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+$mail = new PHPMailer(true);
+
+try {
+    //Server settings
+    $mail->isSMTP();
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->Port       = 465;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'vmwishesmike@gmail.com';
+    $mail->Password   = 'hrul juai iwbc ttee';
+    $mail->setFrom('mikemayer67@vmwishes.com','Mike Mayer');
+    $mail->addAddress('mikemayer67@vmwishes.com','Myself');
+    $mail->Subject = 'PHPMailer GMAIL smtp test';
+    $mail->isHTML(true);
+    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+    $mail->send();
+    echo 'Message has been sent';
+} catch (Exception $e) {
+    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+}
