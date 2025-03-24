@@ -181,6 +181,10 @@ div.ttt-splash img {
 #ttt-status.none {
 }
 
+#ttt-status div {
+  background-color:inherit;
+}
+
 
 @media only screen and (min-width:320px) 
 {

@@ -31,28 +31,24 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
-  // Common query keys
-  $status = $_POST['status'] ?? '';
-  if($status) {
-    log_dev("status=$status");
-    $status = explode('::',$_POST['status']);
-    log_dev("status=".print_r($status,true));
-    if(count($status) > 1) {
-      set_status_message($status[1],$status[0]);
-    } else {
-      set_status_message($status[0]);
-    }
-  }
-
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));
 
   $active_user = active_userid();
 
   if(!$active_user) {
-    require(app_file('login/setup.php'));
+    require(app_file('login/core.php'));
     die();
   }
+
+  // If we get a password reset request when there is an active user,
+  //   set the status to let the user know that they will need to log
+  //   out to handle the reset requst
+  if(key_exists('pwreset',$_REQUEST)) {
+    set_warning_status(
+      "<div>A password recovery request was recieved...</div>".
+      "<div style='font-style:italic;margin-left:1em;font-size:small;'>Ignoring it as you are clearly already logged in.</div>");
+  };
 
   // Handle logout and forget token requests
   //   Allow from get or post queries
