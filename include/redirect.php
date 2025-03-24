@@ -7,6 +7,20 @@ define('REDIRECT_PAGE',    'redirect-page');
 define('REDIRECT_DATA',    'redirect-data');
 define('REDIRECT_TIMEOUT', 'redirect-timeout');
 
+// The functions in this file allow for data to be retained across a http
+//   redirection back to the app's main entry point.  
+//
+// As there is no mechaism for sending POST data with the redirection, this
+//   data is stored in the SESSION data.  There are two pieces to this data:
+//     - page: (string) contains the page/action to be resumed after the redirect
+//     - data: (array) auxilary data needed to resume the page/action after the redirect 
+//   The actual usage of this data is determined as needed.
+//
+// Because this is meant to be a sort of "jump cable" across the redirect, this
+//   data should not persist to subsequent app entries.  Once the data has been
+//   retrieved with get_redirect_page or get_redirect_data, it is immediately
+//   purged from the SESSION data.
+
 function set_redirect_page($page)
 {
   $_SESSION[REDIRECT_PAGE] = $page;

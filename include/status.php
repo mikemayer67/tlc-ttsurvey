@@ -3,10 +3,12 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+// As the status may need to survive page redirects, it is stored in the SESSION data.
+
 function get_status_message()
 {
   $status = $_SESSION['status'] ?? null;
-  $_SESSION['status'] = null;
+  unset($_SESSION['status']);
   return $status;
 }
 
