@@ -4,13 +4,11 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/page_elements.php'));
-require_once(app_file('include/status.php'));
 require_once(app_file('login/elements.php'));
 
 start_page('login');
 
 $redirect_data = get_redirect_data();
-log_dev("Redirect data = ".print_r($redirect_data,true));
 
 $nonce = start_login_form("Register for the Survey","register");
 

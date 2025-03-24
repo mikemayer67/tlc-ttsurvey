@@ -97,8 +97,6 @@ function handle_recover_userid_password()
     log_info("  email sent for ".$user->userid());
   }
 
-  log_dev("tokens = ".print_r($tokens,true));
-
   sendmail_recovery($email,$tokens);
   set_info_status("Login recovery instructions sent to $email");
 }

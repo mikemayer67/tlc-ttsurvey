@@ -5,14 +5,11 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/redirect.php'));
 
-// Handle request to forget an access token
-//
-// This is a special case that doesn't fit well into the GET/POST
-//   requests handled below... so we'll just handle it now
+// Handle special requests that use GET queries
 
 if(key_exists('forget',$_GET)) {
   validate_get_nonce('login');
-  $forget     = $_GET['forget'] ?? null;
+  $forget = $_GET['forget'] ?? null;
   forget_user_token($forget);
   header('Location: '.app_uri());
   die();
@@ -24,21 +21,13 @@ if(key_exists('forget',$_GET)) {
 //   - the session data (e.g. $_SESSION['redirect-page'] = 'recover')
 // These SHOULD be mutually exclusive, but if there is conflict, the session data takes precedence
 
-log_dev("SESSION = ".print_r($_SESSION,true));
-log_dev("GET = ".print_r($_GET,true));
-
 $page = get_redirect_page();
-print("page=$page");
 $page = $page ? $page : $_GET['p'] ?? null;
-print("page=$page");
 
 // If a specifc redirect page was specified, jump to that now
 
 if($page)
 {
-  log_dev("redirect to $page");
-  log_dev("SESSION = ".print_r($_SESSION,true));
-
   $page = app_file("login/{$page}_page.php");
   if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
   require($page);
@@ -47,7 +36,6 @@ if($page)
 
 // Handle POST requests
 
-log_dev("POST = ".print_r($_POST,true));
 if( $form=$_POST['form']??null ) {
   $handler = "login/{$form}_handler.php";
   $handler = app_file($handler);

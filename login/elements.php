@@ -19,14 +19,17 @@ function start_login_form($header,$name)
   echo "<form class='login' method='post' action='$form_uri'>";
   add_hidden_input('nonce',$nonce);
   add_hidden_input('form',$name);
-  add_hidden_input('refresh',1);
-  add_hidden_input('status','');
   return $nonce;
 }
 
 function add_hidden_input($name,$value)
 {
   echo "<input type='hidden' name='$name' value='$value'>";
+}
+
+function add_hidden_submit($name,$value)
+{
+  echo "<input type='submit' class='hidden' name='$name' value='$value'>";
 }
 
 function close_login_form()
@@ -258,7 +261,7 @@ function info_text($key)
 
   case 'remember':
     $rval = <<<INFO
-      Sets a cookie on your browser to allow you to reconnect without a password
+      Sets a cookie on your browser to allow you to resume the survey without a password
       INFO;
     break;
 

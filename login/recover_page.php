@@ -10,7 +10,6 @@ require_once(app_file('login/elements.php'));
 start_page('login');
 
 $redirect_data = get_redirect_data();
-log_dev("Redirect data = ".print_r($redirect_data,true));
 
 $nonce = start_login_form("Recover Survey Login","recover");
 

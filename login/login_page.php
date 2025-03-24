@@ -10,9 +10,9 @@ require_once(app_file('login/elements.php'));
 start_page('login');
 
 $redirect_data = get_redirect_data();
-log_dev("Redirect data = ".print_r($redirect_data,true));
 
 $nonce = start_login_form("Survey Login","login");
+add_hidden_submit('action','login');
 
 $userid   = $redirect_data['userid']   ?? null;
 $remember = $redirect_data['remember'] ?? True;

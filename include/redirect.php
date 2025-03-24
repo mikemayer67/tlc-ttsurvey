@@ -21,7 +21,7 @@ function get_redirect_page()
 
 function clear_redirect_page()
 {
-  set_redirect_page(null);
+  unset($_SESSION[REDIRECT_PAGE]);
 }
 
 
@@ -36,15 +36,25 @@ function add_redirect_data($key,$value)
 
 function get_redirect_data()
 {
+  if(!key_exists(REDIRECT_TIMEOUT,$_SESSION)) {
+    unset($_SESSION[REDIRECT_DATA]);
+    return null;
+  }
+  if(!key_exists(REDIRECT_DATA,$_SESSION)) {
+    unset($_SESSION[REDIRECT_TIMEOUT]);
+    return null;
+  }
+
   // expire the data if we're after the timeout period
-  if( time() > $_SESSION[REDIRECT_TIMEOUT]??0 ) 
+  if( time() > $_SESSION[REDIRECT_TIMEOUT] ) 
   {
     log_dev("Redirect data expired");
-    $_SESSION[REDIRECT_DATA] = null;
+    clear_redirect_data();
+    return null;
   }
 
   // grab the data
-  $data = $_SESSION[REDIRECT_DATA] ?? null;
+  $data = $_SESSION[REDIRECT_DATA];
 
   // clear all session redirect data
   clear_redirect_data();
@@ -55,6 +65,6 @@ function get_redirect_data()
 
 function clear_redirect_data()
 {
-  $_SESSION[REDIRECT_DATA] = array();
-  $_SESSION[REDIRECT_TIMEOUT] = 0;
+  unset($_SESSION[REDIRECT_DATA]);
+  unset($_SESSION[REDIRECT_TIMEOUT]);
 }
