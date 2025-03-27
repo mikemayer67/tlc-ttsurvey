@@ -1,40 +1,215 @@
-[content]
-; Title to display if there is no active survey
-default_title = "Time & Talent Survey"
-; Logo to place in the navbar.  If not specified, no logo is added.
-;   If a filename is given, the path must be relative to /img
-; navbar_logo = "[fill this in]"
+;;==============================================================================
+;;
+;; This file contains configuration parameters controlling the function and
+;;   layout of the survey app. You will need to copy (or rename) this file
+;;   to 'tlc-ttsurvey.ini' and fill in all required fields.  
+;;
+;; A number of the parameters provide default values that will be used if 
+;;   the value left blank or commented out.  If the parameter does not 
+;;   indicate a default value, a value must be provided below.
+;;
+;;==============================================================================
 
+;;------------------------------------------------------------------------------
+;; The following set of parameters allow for a tiny bit of customization to the 
+;;   how the survey presents to the user.  
+;;
+;;   parameter: name  [optional]
+;;        type: string
+;;     default: "Time and Talent Survey"   
+;;     details: The name of the survey app as it appears to survey participants.
+;;                It is what it shown in the navbar when there is no active survey.
+;;                It is the name used in from line in any email sent by the survey.
+;;
+;;   parameter: logo  [optional]
+;;        type: filepath (optional)
+;;     default: [none]
+;;     details: Location of an image file displayed in the navbar.  The path may
+;;                be either absolute or relative to the app's img directory.
+;;
+;;   parameter: timezone (optional)
+;;        type: string
+;;     default: "UTC"
+;;     details: Used for logging timestamps and for any dates/times presented 
+;;                to the user.  See the following website for possible values: 
+;;                https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+;;------------------------------------------------------------------------------
+[main]
+
+name = "Time & Talent Survey"
+;logo = "[fill this in]"
+;timezone = "America/New_york"
+
+;;------------------------------------------------------------------------------
+;; The following set of parameters identify the contact information for 
+;;   the survey admins
+;;
+;;   parameter: name (optional)
+;;        type: string
+;;     default: "the survey admin"
+;;     details: Admin's name
+;;
+;;   parameter: email (optional)
+;;        type: string
+;;     defautl: [none]
+;;     details: Admin's email address
+;;
+;;   parameter: pronoun (optional)
+;;        type: string
+;;     default: "them"
+;;     details: objective pronoun (him, her, them) used to refernce the 
+;;                admin in messages and email.  This is not being "woke."
+;;                It just avoids having to try to guess gender from the
+;;                admin's name. (e.g. "Contact Mike and let [him] know...")
+;;------------------------------------------------------------------------------
+[admin]
+
+;name = "[fill this in]"
+;email = "[fill this in]"
+pronoun = "them"
+
+;;------------------------------------------------------------------------------
+;; The following set of parameters provide some level of protection for the
+;;   integrity of the user and survey data
+;;
+;;   parameter: pwreset_timeout [optional]
+;;        type: integer (seconds)
+;;     default: 900 (15 minutes)
+;;     details: How long a password reset token is valid before it expires.
+;;
+;;   parameter: pwreset_length [optional]
+;;        type: integer
+;;       range: 4-20
+;;     default: 10
+;;     details: Number of characters in a password reset token
+;;------------------------------------------------------------------------------
 [security]
-; How long a password reset token can be used before it expires
-;    If not specified, defaults to 900 (15 minutes)
-pw_reset_timeout = 900
 
+pwreset_timeout = 900
+pwreset_length = 10
+
+;;------------------------------------------------------------------------------
+;; The following set of parameters provide control app logging
+;;   integrity of the user and survey data
+;;
+;;   parameter: filename (optional)
+;;        type: filepath
+;;     default: "tlc-ttsurvey.log"
+;;     details: Location where the log file should be written.  The path may
+;;                be either absolute or relative to the app directory.
+;;
+;;   parameter: level (optional)
+;;        type: integer
+;;       range: 0: error  ( errors only )
+;;              1: warn   ( above + warnings )
+;;              2: info   ( above + informational notices )
+;;              3: dev    ( above + developer probes )
+;;     default: 2 (info)
+;;     details: Types of information to be included in the logging
+;;
+;;   parameter: timezone (optional)
+;;        type: string
+;;     default: "UTC"
+;;     details: 
+;;------------------------------------------------------------------------------
 [logging]
-; app specific log file
-;   used for logging errors, warnings, informational comments, and developer probes
-;   if not specified, only error logging (to the php error log) will be provided
-log_file = "tlc-ttsurvey.log"
 
-; timezone to show in the logging
-;   for list of posible values, see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-;   if not specified, defaults to UTC
-;log_tz = "America/New_York"
+filename = "tlc-ttsurvey.log"
+level = 2
 
+;;------------------------------------------------------------------------------
+;; The following parameters control the connection to the MySQL database
+;;
+;;   parameter: host (required)
+;;        type: string
+;;     details: mysql host location (e.g. localhost, 127.0.0.1)
+;;
+;;   parameter: schema (required)
+;;        type: string
+;;     details: schema (dataabse) containing the survey data on the mysql server
+;;
+;;   parameter: userid, password (required)
+;;        type: string
+;;     details: connection credentials with select and update permission
+;;                to the survey database host/schema
+;;
+;;   parameter: charset (optional)
+;;        type: string
+;;     default: "utf8mb4"
+;;     details: character set used by the survey data tables 
+;;------------------------------------------------------------------------------
 [mysql]
-; defines the connection to the MySQL database schema used by this app
-;   if charset is not specified, defaults to "utf8"
+
 userid = "[fill this in]"
 password = "[fill this in]"
 schema = "[fill this in]"
 host = "[fill this in]"
-charset = "utf8mb4"
 
-[admin]
-; contact information for the person who should be notified if there are issues using this app
-;name = "[fill this in]"
-; email may be left blank
-;email = "[fill this in]"
-; prononun (this is not "woke", it avoids having to guess gender from name)
-;pronoun = "[fill this in]"
+;charset = "utf8mb4"
+
+;;------------------------------------------------------------------------------
+;; The following parameters control connection to an SMTP server for sending
+;;   email to survey participants from within the app.
+;;
+;; Note that this app was developed assuming the SMTP server uses similar 
+;;   authentication as used by GMail.  If this is not true for your environment,
+;;   it may be necessary to edit the include/sendmail.php file to use additional
+;;   features of the PHPMailer package.
+;;
+;;   parameter: host (required)
+;;        type: string
+;;     details: URL for the SMTP server (e.g. "smtp.gmail.com")
+;;
+;;   parameter: auth (required)
+;;        type: integer
+;;       range: 0 = SMTPS, 1 = TLS
+;;     default: 1
+;;     details: method used to authentice to the SMTP server
+;;  
+;;   parameter: port (optional)
+;;        type: integer
+;;     default: 465 for SMTPS, 587 for TLS
+;;     details: SMTP server port
+;;
+;;   parameter: username, password (required)
+;;        type: string
+;;     details: authentication credentials for the SMTP server
+;;                (note that should be an app password for gmail)
+;;
+;;   parameter: reply_email, reply_name (optional)
+;;        type: string
+;;     default: [none]
+;;     details: determines what will be included in the reply-to field in the email
+;;                based on which of these optional parameters are specified:
+;;                neither: no reply-to field will be included in the email
+;;                name only: email address will default to the authentication username
+;;                email only: no name will be included in the reply-to field
+;;                both: both name and address will be included in the reply-to field
+;;
+;;   parameter: debug (optional)
+;;        type: integer
+;;       range: 0 = disabled
+;;              1 = messages sent by client
+;;              2 = above + messages received from server
+;;              3 = above + additional connection info
+;;     default: 0
+;;     details: If enabled, all connection transactions are captured and written
+;;                to the app log file at the 'info' level.  If the current log
+;;                level ([debug.level]) is error or warning, the SMTP logging
+;;                will be suppressed
+;;------------------------------------------------------------------------------
+[smtp]
+
+host  = "smtp.gmail.com"
+auth  = 0
+;port  = 465
+
+username = "[fill this in]"
+password = "[fill this in]"
+
+debug = 0
+
+;reply_email = "[fill this in]"
+;reply_name = "[fill this in]"
+
 

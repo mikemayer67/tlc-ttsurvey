@@ -97,8 +97,16 @@ function handle_recover_userid_password()
     log_info("  email sent for ".$user->userid());
   }
 
-  sendmail_recovery($email,$tokens);
-  set_info_status("Login recovery instructions sent to $email");
+  if(sendmail_recovery($email,$tokens))
+  {
+    set_info_status("Login recovery instructions sent to $email");
+    add_redirect_data('userid',   $_POST['userid']   ?? null);
+    set_redirect_page('pwreset');
+  } else {
+    set_error_status("Failed to send email with recovery instructions to $email");
+    set_redirect_page('recover');
+  }
+
 }
 
 handle_recover_form();

@@ -40,6 +40,15 @@ function img_uri($img)     { return APP_URI . "/img/$img"     . no_cache();   }
 function css_uri($css)     { return APP_URI . "/css/$css.css" . no_cache();   }
 function js_uri($filename) { return APP_URI . "/js/$filename" . no_cache();   }
 
+function full_app_uri($q=null) {
+  $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
+  $host = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST);
+  $path = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_PATH);
+  log_dev("full_app_uri($q) : '$scheme' '$host' '$path'");
+  return "$scheme://$host$path" . ($q ? "?$q" : '');
+}
+
+
 function validate_entry_uri()
 {
   // Validate the request URI matches our API

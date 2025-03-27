@@ -56,7 +56,8 @@ class User {
   private $_token    = null;
   private $_password = null;
   private $_anonid   = null;
-  private $_admin    = false;
+
+  private static $_users = array();
 
   private function __construct($user_data)
   {
@@ -72,31 +73,48 @@ class User {
     $this->_token    = $user_data['token'];
     $this->_password = $user_data['password'];
     $this->_anonid   = $user_data['anonid'];
-    $this->_admin    = $user_data['admin'] ?? false;
   }
 
   public function userid()       { return $this->_userid; }
   public function fullname()     { return $this->_fullname; }
   public function email()        { return $this->_email ?? null; }
   public function access_token() { return $this->_token; }
-  public function admin()        { return $this->_admin; }
+
+  public static function lookup($key) 
+  {
+    if(strstr($key,"@")) { return self::from_email($key); }
+    else                 { return self::from_userid($key); }
+  }
 
   public static function from_userid($userid)
   {
-    log_dev("User::from_userid($userid)");
-    $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
-    if($r) { return new User($r); }
-    else   { return false; }
+    $user = self::$_users[$userid] ?? null;
+    if(!$user) {
+      $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
+
+      if($r) { 
+        $user = new User($r); 
+        self::$_users[$userid] = $user;
+      }
+    }
+    return $user;
   }
 
   public static function from_email($email)
   {
-    log_dev("User::from_email($email)");
     $result = MySQLSelectRows('select * from tlc_tt_userids where email=?','s',$email);
 
     $users = array();
     foreach($result as $user_data) {
-      $users[] = new User($user_data);
+      $userid = $user_data['userid'];
+      $cur_user = self::$_users[$userid] ?? null;
+      if($cur_user) {
+        $users[] = $cur_user;
+      } else {
+        $user = new User($user_data);
+        $users[] = $user;
+        self::$_users[$userid] = $user;
+      }
     }
     return $users;
   }
@@ -169,8 +187,8 @@ class User {
   {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
-    $token = gen_token(10);
-    $expires = time() + PW_RESET_TIMEOUT;
+    $token = gen_token(min(20,max(4,PWRESET_LENGTH)));
+    $expires = time() + PWRESET_TIMEOUT;
     $expires = gmdate('Y-m-d H:i:s', $expires);
     $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
 
@@ -238,26 +256,6 @@ class User {
     if(!$result) { return false; }
     $this->_token = $new_token;
     return $new_token;
-  }
-
-  // Admin 
-
-  public function make_admin()
-  {
-    $result = MySQLExecute("update tlc_tt_userids set admin=1 where userid=?",'s',$this->_userid);
-    if(!$result) { return false; }
-    log_warning("Making ".$this->_userid." an admin");
-    $this->_admin = true;
-    return true;
-  }
-
-  public function revoke_admin()
-  {
-    $result = MySQLExecute("update tlc_tt_userids set admin=0 where userid=?",'s',$this->_userid);
-    if(!$result) { return false; }
-    log_warning("Removing ".$this->_userid." an admin");
-    $this->_admin = false;
-    return true;
   }
 
   // Anonymous Proxy
@@ -335,13 +333,13 @@ function create_new_user($userid,$fullname,$password,$email=null)
 
   if($email) {
     $r = MySQLExecute(
-      "insert into tlc_tt_userids (userid,fullname,email,token,password,anonid,admin) values (?,?,?,?,?,?,0)",
+      "insert into tlc_tt_userids (userid,fullname,email,token,password,anonid) values (?,?,?,?,?,?)",
       "ssssss",
       $userid,$fullname,$email,$token,$password,$anonid
     );
   } else {
     $r = MySQLExecute(
-      "insert into tlc_tt_userids (userid,fullname,token,password,anonid,admin) values (?,?,?,?,?,0)",
+      "insert into tlc_tt_userids (userid,fullname,token,password,anonid) values (?,?,?,?,?)",
       "sssss",
       $userid,$fullname,$token,$password,$anonid
     );
