@@ -30,8 +30,3 @@ user of the app (including changes specific to Trinity).
 - The repo does **not** include this file, but it is necessary for the app to work.
 - The easiest way to create it is to make a copy of tlc-ttsurvey.ini.dist.
 - Look for all instances of ```[fill this in]``` and replace with the appropriate value for your hosting environment.
-
-### custom email content
-- You may provide a custom message to be included in the various emails the app sends to particpants
-- This custom content will be inserted prior to the auto-generated message
-- Read the instructions in sendmail/0.readme.md for info on how to create custom email content

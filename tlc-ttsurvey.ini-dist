@@ -207,7 +207,7 @@ auth  = 0
 username = "[fill this in]"
 password = "[fill this in]"
 
-debug = 1
+debug = 0
 
 ;reply_email = "[fill this in]"
 ;reply_name = "[fill this in]"

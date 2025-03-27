@@ -56,7 +56,6 @@ class User {
   private $_token    = null;
   private $_password = null;
   private $_anonid   = null;
-  private $_admin    = false;
 
   private static $_users = array();
 
@@ -74,14 +73,12 @@ class User {
     $this->_token    = $user_data['token'];
     $this->_password = $user_data['password'];
     $this->_anonid   = $user_data['anonid'];
-    $this->_admin    = $user_data['admin'] ?? false;
   }
 
   public function userid()       { return $this->_userid; }
   public function fullname()     { return $this->_fullname; }
   public function email()        { return $this->_email ?? null; }
   public function access_token() { return $this->_token; }
-  public function admin()        { return $this->_admin; }
 
   public static function lookup($key) 
   {
@@ -267,26 +264,6 @@ class User {
     return $new_token;
   }
 
-  // Admin 
-
-  public function make_admin()
-  {
-    $result = MySQLExecute("update tlc_tt_userids set admin=1 where userid=?",'s',$this->_userid);
-    if(!$result) { return false; }
-    log_warning("Making ".$this->_userid." an admin");
-    $this->_admin = true;
-    return true;
-  }
-
-  public function revoke_admin()
-  {
-    $result = MySQLExecute("update tlc_tt_userids set admin=0 where userid=?",'s',$this->_userid);
-    if(!$result) { return false; }
-    log_warning("Removing ".$this->_userid." an admin");
-    $this->_admin = false;
-    return true;
-  }
-
   // Anonymous Proxy
   
   public function get_anonid()
@@ -362,13 +339,13 @@ function create_new_user($userid,$fullname,$password,$email=null)
 
   if($email) {
     $r = MySQLExecute(
-      "insert into tlc_tt_userids (userid,fullname,email,token,password,anonid,admin) values (?,?,?,?,?,?,0)",
+      "insert into tlc_tt_userids (userid,fullname,email,token,password,anonid) values (?,?,?,?,?,?)",
       "ssssss",
       $userid,$fullname,$email,$token,$password,$anonid
     );
   } else {
     $r = MySQLExecute(
-      "insert into tlc_tt_userids (userid,fullname,token,password,anonid,admin) values (?,?,?,?,?,0)",
+      "insert into tlc_tt_userids (userid,fullname,token,password,anonid) values (?,?,?,?,?)",
       "sssss",
       $userid,$fullname,$token,$password,$anonid
     );
