@@ -138,33 +138,29 @@ function sendmail_recovery($email,$tokens)
       $html .= "<div style='margin:15px 0;'>";
       $html .= "<div><b>$fullname</b></div>";
       $html .= "<div style='margin-left:8px;'>Userid: <b>$userid</b></div>";
-      $html .= "<div style='margin-left:8px;'>Reset Token: <b>$token</b></div>";
+      $html .= "<div style='margin-left:8px;'>Token: <b>$token</b></div>";
       $html .= "</div>";
 
       $text .= "\n";
-      $text .= "   $fullname:\n\n";
-      $text .= "           Userid: $userid\n";
-      $text .= "      Reset Token: $token\n";
+      $text .= "   $fullname:\n";
+      $text .= "      Userid: $userid\n";
+      $text .= "       Token: $token\n";
     }
   }
 
   $url = full_app_uri("p=pwreset");
-  $html .= "<div><p>";
-  $html .= "Click <a href='$url'>here</a> to continue with login recovery";
-  $html .= "</p></div>";
-
-  $text .= "\nTo continue with login recovery, go to $url\n";
-
   $timeout = intval(round( PWRESET_TIMEOUT/ 60));
 
   $html .= "</div>";
   $html .= "<div style='margin:20px 1em;'>";
-  $html .= "<p>The reset token$s will expire in $timeout minutes</p>";
+  $html .= "<div>The reset token$s will expire in $timeout minutes</div>";
+  $html .= "<div>If you've closed the password reset window, click <a href='$url'>here to continue</a> with login recovery</div>";
   $html .= "</div>";
   $html .= html_contacts();
 
   $text .= "\n";
   $text .= "The reset token$s will expire in $timeout minutes\n";
+  $text .= "If you've closed the password reset window, you can get back to it at $url\n";
   $text .= text_contacts();
 
   return sendmail($email, "Login Recovery", $text, $html);
