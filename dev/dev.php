@@ -44,9 +44,16 @@ echo "<pre>" . print_r($users,true) . "</pre>";
 $user = User::lookup('kitkat15');
 echo "<pre>" . print_r($user,true) . "</pre>";
 $user = User::lookup('snickers');
+$user->set_fullname("I am a Krazy Kat");
 echo "<pre>" . print_r($user,true) . "</pre>";
 $users = User::lookup('mikemayer67@vmwishes.com');
 echo "<pre>" . print_r($users,true) . "</pre>";
+
+log_dev("--Set Fullname--");
+
+User::lookup('mikemayer67')->set_fullname("Michael A. Mayer");
+User::lookup('mikemayer67')->set_fullname("Mike Mayer");
+User::lookup('mikemayer67')->set_fullname("Mike Mayer");
 
 echo "<h2>PHPMailer</h2>";
 

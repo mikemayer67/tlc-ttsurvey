@@ -88,11 +88,8 @@ class User {
 
   public static function from_userid($userid)
   {
-    log_dev("User::from_userid($userid)");
-
     $user = self::$_users[$userid] ?? null;
     if(!$user) {
-      log_dev("  lookup $userid in database");
       $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
 
       if($r) { 
@@ -105,7 +102,6 @@ class User {
 
   public static function from_email($email)
   {
-    log_dev("User::from_email($email)");
     $result = MySQLSelectRows('select * from tlc_tt_userids where email=?','s',$email);
 
     $users = array();
@@ -113,10 +109,8 @@ class User {
       $userid = $user_data['userid'];
       $cur_user = self::$_users[$userid] ?? null;
       if($cur_user) {
-        log_dev("  $userid already loaded from database");
         $users[] = $cur_user;
       } else {
-        log_dev("  loading $userid from database");
         $user = new User($user_data);
         $users[] = $user;
         self::$_users[$userid] = $user;

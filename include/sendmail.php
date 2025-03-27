@@ -51,36 +51,69 @@ function sendmail($email,$subject,$text,$html=null)
 
     ob_start();
     $mail->send();
-    log_dev("SMTP logging: ".ob_get_contents());
-    ob_end_clean();
 
     log_dev('Message has been sent');
     return true;
   } 
   catch (Exception $e) 
   {
-    log_dev("SMTP logging:\n".ob_get_contents());
-    ob_end_clean();
     todo("Add sendmail failure to displayed status");
     log_dev("Failed to send email {$mail->ErrorInfo}");
     return false;
   }
+  finally
+  {
+    log_dev("SMTP logging:\n".ob_get_contents());
+    ob_end_clean();
+  }
 }
 
-function sendmail_profile(...$args)
+//------------------------------------------------
+// Profile Update Notice
+//------------------------------------------------
+
+function sendmail_profile($email,$userid,$change,$old_value,$new_value)
 {
-  todo("Implement sendmail capability");
-  log_dev("sendmail_profile: ".log_array($args));
+  log_dev("sendmail_profile($email,$userid,$change,$old_value,$new_value)");
+
+  $html  = "<div style='font-weight:bolder;'>";
+  $html .= "A change has been made to the profile associated with userid: $userid";
+  $html .= "</div>";
+  $html .= "<div style='margin-left:1em;'>";
+  $html .= "<ul>";
+  $html .= "<li>Old $change: $old_value</li>";
+  $html .= "<li>New $change: $new_value</li>";
+  $html .= "</ul>";
+  $html .= "</div>";
+  $html .= "<br>";
+  $html .= "<div>If you did not make this change, please contact one of the following:</div>";
+  $html .= "<div style='margin-left:1em;'>";
+  $html .= html_contacts(); 
+
+  $text = <<<TEXT
+A change has been made to the profile associated with userid: $userid"
+
+  Old $change: $old_value
+  New $change: $new_value
+
+If you did not make this change, please contact one of the following:
+TEXT;
+  $text .= text_contacts(); 
+
+  return sendmail($email, "Profile Update", $text, $html);
 }
 
+//------------------------------------------------
+// Login Recover Information
+//------------------------------------------------
 
 function sendmail_recovery($email,$tokens)
 {
   log_dev("sendmail_recovery($email,...)\n".print_r($tokens,true));
   $ntokens = count($tokens);
 
-  $html  = "<div style='margin-left:1em;'>\n";
-  $html .= "<p>Here is the login recovery information you requested:</p>\n";
+  $html  = "<div style='margin-left:1em;'>";
+  $html .= "<p>Here is the login recovery information you requested:</p>";
 
   $text = "Here is the login recovery information you requested:\n";
 
@@ -88,7 +121,7 @@ function sendmail_recovery($email,$tokens)
   $ntokens = count($tokens);
   if($ntokens > 1) {
     $s = 's';
-    $html .= "<p>There are $ntokens participants using this email address</p>\n";
+    $html .= "<p>There are $ntokens participants using this email address</p>";
     $text .= "\nThere are $ntokens participants using this email address\n";
   }
 
@@ -102,11 +135,11 @@ function sendmail_recovery($email,$tokens)
       $userid   = $user->userid();
       $token    = $token;
 
-      $html .= "<div style='margin:15px 0;'>\n";
-      $html .= "<div><b>$fullname</b></div>\n";
-      $html .= "<div style='margin-left:8px;'>Userid: <b>$userid</b></div>\n";
-      $html .= "<div style='margin-left:8px;'>Reset Token: <b>$token</b></div>\n";
-      $html .= "</div>\n";
+      $html .= "<div style='margin:15px 0;'>";
+      $html .= "<div><b>$fullname</b></div>";
+      $html .= "<div style='margin-left:8px;'>Userid: <b>$userid</b></div>";
+      $html .= "<div style='margin-left:8px;'>Reset Token: <b>$token</b></div>";
+      $html .= "</div>";
 
       $text .= "\n";
       $text .= "   $fullname:\n\n";
@@ -116,9 +149,9 @@ function sendmail_recovery($email,$tokens)
   }
 
   $url = full_app_uri("p=pwreset");
-  $html .= "<div><p>\n";
-  $html .= "Click <a href='$url'>here</a> to continue with login recovery\n";
-  $html .= "</p></div>\n";
+  $html .= "<div><p>";
+  $html .= "Click <a href='$url'>here</a> to continue with login recovery";
+  $html .= "</p></div>";
 
   $text .= "\nTo continue with login recovery, go to $url\n";
 
