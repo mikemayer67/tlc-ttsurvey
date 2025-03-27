@@ -58,6 +58,8 @@ class User {
   private $_anonid   = null;
   private $_admin    = false;
 
+  private static $_users = array();
+
   private function __construct($user_data)
   {
     // user_data input is expected to be an associative array
@@ -81,12 +83,27 @@ class User {
   public function access_token() { return $this->_token; }
   public function admin()        { return $this->_admin; }
 
+  public static function lookup($key) 
+  {
+    if(strstr($key,"@")) { return self::from_email($key); }
+    else                 { return self::from_userid($key); }
+  }
+
   public static function from_userid($userid)
   {
     log_dev("User::from_userid($userid)");
-    $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
-    if($r) { return new User($r); }
-    else   { return false; }
+
+    $user = self::$_users[$userid] ?? null;
+    if(!$user) {
+      log_dev("  lookup $userid in database");
+      $r = MySQLSelectRow('select * from tlc_tt_userids where userid=?','s',$userid);
+
+      if($r) { 
+        $user = new User($r); 
+        self::$_users[$userid] = $user;
+      }
+    }
+    return $user;
   }
 
   public static function from_email($email)
@@ -96,7 +113,17 @@ class User {
 
     $users = array();
     foreach($result as $user_data) {
-      $users[] = new User($user_data);
+      $userid = $user_data['userid'];
+      $cur_user = self::$_users[$userid] ?? null;
+      if($cur_user) {
+        log_dev("  $userid already loaded from database");
+        $users[] = $cur_user;
+      } else {
+        log_dev("  loading $userid from database");
+        $user = new User($user_data);
+        $users[] = $user;
+        self::$_users[$userid] = $user;
+      }
     }
     return $users;
   }
@@ -169,8 +196,8 @@ class User {
   {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
-    $token = gen_token(10);
-    $expires = time() + PW_RESET_TIMEOUT;
+    $token = gen_token(min(20,max(4,PWRESET_LENGTH)));
+    $expires = time() + PWRESET_TIMEOUT;
     $expires = gmdate('Y-m-d H:i:s', $expires);
     $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
 

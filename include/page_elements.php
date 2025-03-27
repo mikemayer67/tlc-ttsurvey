@@ -49,7 +49,7 @@ todo("Update the following commentary on start_page function");
 function start_page($css,$kwargs=[])
 {
   $css = strtolower($css);
-  $title = active_survey_title() ?? DEFAULT_TITLE;
+  $title = active_survey_title() ?? APP_NAME;
   $title_len = strlen($title);
 
   echo <<<HTMLHEAD
@@ -89,7 +89,7 @@ function start_page($css,$kwargs=[])
   // Add the navigation bar
   //   include unless navbar=false is explicitly set in the kwargs
   if( $kwargs['navbar'] ?? true ) {
-    $logo = img_uri(NAVBAR_LOGO);
+    $logo = img_uri(APP_LOGO);
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
     $menu = $menu_cb ? $menu_cb() : '';
 

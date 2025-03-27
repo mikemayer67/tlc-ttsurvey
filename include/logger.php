@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 require_once app_file('include/const.php');
 require_once app_file('include/settings.php');
 
-date_default_timezone_set(LOGGER_TZ); // from config file via const.php
+date_default_timezone_set(APP_TZ); // from config file via const.php
 
 $_logger_fp = null;
 
@@ -16,7 +16,7 @@ function logger($create=true)
 
   if(is_null($_logger_fp) && $create)
   {
-    $logfile = app_file(LOGGER_FILE);
+    $logfile = app_file(LOG_FILE);
     if( file_exists($logfile) and filesize($logfile) > 512*1024 ) {
       $tempfile = $logfile.".tmp";
       $_logger_fp = fopen($tempfile,"w");
@@ -47,7 +47,7 @@ function clear_logger()
 {
   global $_logger_fp;
 
-  $file = app_file(LOGGER_FILE);
+  $file = app_file(LOG_FILE);
   if($_logger_fp) { fclose($_logger_fp); }
   unlink($file);
   $_logger_fp = fopen($file,"a");
@@ -151,5 +151,5 @@ function log_warning($msg,$trace=1) {
 // log_error is intended to show critical errors in the plugin code
 function log_error($msg,$trace=1) {
   write_to_logger("ERROR",$msg,$trace);
-  error_log(APP_NAME.": $msg");
+  error_log(PKG_NAME.": $msg");
 }

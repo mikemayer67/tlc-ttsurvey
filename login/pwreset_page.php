@@ -19,6 +19,7 @@ add_login_input("token", array (
   'info' => 'Found in the login recovery email you should have received.',
 ));
 add_login_input('new-password',array(
+  'label' => 'New Password',
   'name'=>'password',
   'info'=>info_text('new-password'),
 ));

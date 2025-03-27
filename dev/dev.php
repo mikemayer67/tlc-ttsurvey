@@ -37,6 +37,17 @@ echo "<PRE>", print_r($_POST,true), "</pre>";
 echo "<h2>REQUEST</h2>";
 echo "<PRE>", print_r($_REQUEST,true), "</pre>";
 
+echo "<h2>Users</h2>";
+log_dev("--User Lookup--");
+$users = User::lookup('mikemayer67@vmwishes.com');
+echo "<pre>" . print_r($users,true) . "</pre>";
+$user = User::lookup('kitkat15');
+echo "<pre>" . print_r($user,true) . "</pre>";
+$user = User::lookup('snickers');
+echo "<pre>" . print_r($user,true) . "</pre>";
+$users = User::lookup('mikemayer67@vmwishes.com');
+echo "<pre>" . print_r($users,true) . "</pre>";
+
 echo "<h2>PHPMailer</h2>";
 
 require_once(app_file('vendor/autoload.php'));
@@ -55,9 +66,9 @@ try {
     $mail->Port       = 465;
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->SMTPAuth   = true;
-    $mail->Username   = 'vmwishesmike@gmail.com';
-    $mail->Password   = 'hrul juai iwbc ttee';
-    $mail->setFrom('mikemayer67@vmwishes.com','Mike Mayer');
+    $mail->Username   = 'trinityelcawebapps@gmail.com';
+    $mail->Password   = 'gcut slja qisd jvov';
+    $mail->setFrom('ttsurvey@trinityelca.org','Trinity Time and Talent Survey');
     $mail->addAddress('mikemayer67@vmwishes.com','Myself');
     $mail->Subject = 'PHPMailer GMAIL smtp test';
     $mail->isHTML(true);
