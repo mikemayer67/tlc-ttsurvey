@@ -24,6 +24,11 @@ function survey_admins()  { return lookup_userids_by_role('admin'); }
 function content_admins() { return lookup_userids_by_role('content'); }
 function tech_admins()    { return lookup_userids_by_role('tech'); }
 
+function verify_role($userid,$role)
+{
+  return in_array($userid, lookup_userids_by_role($role));
+}
+
 function admin_contacts($role='admin')
 {
   if($role == 'admin') {

@@ -14,9 +14,13 @@ function start_login_form($header,$name)
   $form_uri = app_uri();
   $nonce = gen_nonce($name);
 
+  if($name === 'admin') {
+    $q = "?admin";
+  }
+
   echo "<div id='ttt-login' class='$name ttt-card'>";
   echo "<header>$header</header>";
-  echo "<form class='login' method='post' action='$form_uri'>";
+  echo "<form class='login' method='post' action='$form_uri$q'>";
   add_hidden_input('nonce',$nonce);
   add_hidden_input('form',$name);
   return $nonce;

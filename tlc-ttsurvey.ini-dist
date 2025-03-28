@@ -14,7 +14,7 @@
 ;;
 ;; It is highly recommeneded you change the default values.
 ;;------------------------------------------------------------------------------
-admin_userid   = "admin"
+admin_username = "admin"
 admin_password = "admin"
 
 ;;------------------------------------------------------------------------------

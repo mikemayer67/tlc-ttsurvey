@@ -37,8 +37,7 @@ if($page)
 // Handle POST requests
 
 if( $form=$_POST['form']??null ) {
-  $handler = "login/{$form}_handler.php";
-  $handler = app_file($handler);
+  $handler = app_file("login/{$form}_handler.php");
   if(!file_exists($handler)) {
     internal_error("Unimplemented form handler ($form / $handler)");
   }
