@@ -31,6 +31,12 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
+  // If access to the admin tools have been requested, jump to the dashboard
+  if(key_exists('admin',$_REQUEST)) {
+    require(app_file('admin/admin.php'));
+    die();
+  } 
+
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));
 
