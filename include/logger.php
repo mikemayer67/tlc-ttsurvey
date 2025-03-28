@@ -3,55 +3,41 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once app_file('include/const.php');
 require_once app_file('include/settings.php');
 
-date_default_timezone_set(APP_TZ); // from config file via const.php
-
-$_logger_fp = null;
-
-function logger($create=true)
+function logger()
 {
-  global $_logger_fp;
+  static $_fp = null;
 
-  if(is_null($_logger_fp) && $create)
+  if(is_null($_fp))
   {
-    $logfile = app_file(LOG_FILE);
+    $tz = app_timezone();
+    date_default_timezone_set($tz ?? 'UTF8');
+
+    $logfile = app_file(log_file());
     if( file_exists($logfile) and filesize($logfile) > 512*1024 ) {
       $tempfile = $logfile.".tmp";
-      $_logger_fp = fopen($tempfile,"w");
+      $_fp = fopen($tempfile,"w");
       $skip = 1000;
       foreach(file($logfile) as $line) {
         if($skip > 0) {
           $skip--;
         } else {
-          fwrite($_logger_fp,$line);
+          fwrite($_fp,$line);
         }
       }
-      fclose($_logger_fp);
+      fclose($_fp);
       unlink($logfile);
       rename($tempfile,$logfile);
     }
-    $_logger_fp = fopen($logfile,"a");
+    $_fp = fopen($logfile,"a");
   }
-  return $_logger_fp;
+  return $_fp;
 }
 
 function log_array($x)
 {
   return json_encode($x);
-
-}
-
-function clear_logger()
-{
-  global $_logger_fp;
-
-  $file = app_file(LOG_FILE);
-  if($_logger_fp) { fclose($_logger_fp); }
-  unlink($file);
-  $_logger_fp = fopen($file,"a");
-  log_info("log cleared");
 }
 
 // writes to the app log based on prefix and log level
@@ -89,7 +75,7 @@ function write_to_logger($prefix,$msg,$trace_level=1)
     break;
   }
 
-  if( $level <= get_log_level() ) 
+  if( $level <= log_level() ) 
   {
     $timestamp = date("d-M-y H:i:s.v T");
 
@@ -119,12 +105,6 @@ function log_location()
   }
   return "$file[$line]";
 }
-
-
-
-// accessors to the current log level in the admin settings
-function get_log_level()       { return get_setting(LOG_LEVEL_KEY);    }
-function set_log_level($level) { update_setting(LOG_LEVEL_KEY,$level); }
 
 // the todo function is both a way to mark the code and to include
 //   those todos in the log file at the INFO level

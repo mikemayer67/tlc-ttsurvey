@@ -9,6 +9,11 @@ use PHPMailer\PHPMailer\Exception;
 
 require_once(app_file('vendor/autoload.php'));
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/settings.php'));
+
+class SendmailFailure extends \Exception {}
+
+$SendmailLogToken = '';
 
 function sendmail($email,$subject,$text,$html=null)
 {
@@ -18,23 +23,39 @@ function sendmail($email,$subject,$text,$html=null)
 
   try {
     //Server settings
+    $host     = smtp_host();
+    $port     = smtp_port();
+    $auth     = smtp_auth();
+    $username = smtp_username();
+    $password = smtp_password();
+
+    if(!isset($host))     { throw new SendmailFailure('smtp_host not set in databse'); }
+    if(!isset($username)) { throw new SendmailFailure('smtp_username not set in database'); }
+    if(!isset($password)) { throw new SendmailFailure('smtp_password not set in database'); }
+
     $mail->isSMTP();
-    $mail->SMTPDebug  = SMTP_DEBUG;
-    $mail->Host       = SMTP_HOST;
-    $mail->Port       = SMTP_PORT;
-    $mail->SMTPSecure = SMTP_AUTH ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
+    $mail->SMTPDebug  = smtp_debug();
+    $mail->Host       = $host;
+    $mail->Port       = $port;
+    $mail->SMTPSecure = $auth ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
     $mail->SMTPAuth   = true;
-    $mail->Username   = SMTP_USERNAME;
-    $mail->Password   = SMTP_PASSWORD;
+    $mail->Username   = $username;
+    $mail->Password   = $password;
 
-    $mail->setFrom( SMTP_REPLY_TO ? SMTP_REPLY_TO : SMTP_USERNAME, APP_NAME );
+    $reply_email = smtp_reply_email();
+    $reply_name  = smtp_reply_email();
 
-    if(SMTP_REPLY_TO && SMTP_REPLY_NAME) {
-      $mail->addReplyTo(SMTP_REPLY_TO,SMTP_REPLY_NAME);
-    } elseif(SMTP_REPLY_TO) {
-      $mail->addReplyTo(SMTP_REPLY_TO);
-    } elseif(SMTP_REPLY_NAME) {
-      $mail->addReplyTo(SMTP_USERNAME,SMTP_REPLY_NAME);
+    $mail->setFrom(
+      $reply_email ?? $username,
+      $reply_name ?? app_name()
+    );
+
+    if($reply_email && $reply_name) {
+      $mail->addReplyTo($reply_email,$reply_name);
+    } elseif($reply_email) {
+      $mail->addReplyTo($reply_email);
+    } elseif($reply_name) {
+      $mail->addReplyTo($username,$reply_name);
     }
 
     $mail->addAddress($email);
@@ -51,14 +72,20 @@ function sendmail($email,$subject,$text,$html=null)
 
     ob_start();
     $mail->send();
-
-    log_dev('Message has been sent');
     return true;
   } 
+  catch (SendmailFailure $e)
+  {
+    global $SendmailLogToken;
+    $SendmailLogToken = gen_token(4);
+    log_error("[$SendmailLogToken] Failed to send email: ".$e->getMessage());
+    return false;
+  }
   catch (Exception $e) 
   {
-    todo("Add sendmail failure to displayed status");
-    log_dev("Failed to send email {$mail->ErrorInfo}");
+    global $SendmailLogToken;
+    $SendmailLogToken = gen_token(4);
+    log_error("[$SendmailLogToken] Failed to send email {$mail->ErrorInfo}");
     return false;
   }
   finally
@@ -74,8 +101,6 @@ function sendmail($email,$subject,$text,$html=null)
 
 function sendmail_profile($email,$userid,$change,$old_value,$new_value)
 {
-  log_dev("sendmail_profile($email,$userid,$change,$old_value,$new_value)");
-
   $html  = "<div style='font-weight:bolder;'>";
   $html .= "A change has been made to the profile associated with userid: $userid";
   $html .= "</div>";
@@ -107,9 +132,10 @@ TEXT;
 // Login Recover Information
 //------------------------------------------------
 
-function sendmail_recovery($email,$tokens)
+function sendmail_recovery($email,$tokens,&$error=null)
 {
-  log_dev("sendmail_recovery($email,...)\n".print_r($tokens,true));
+  $error = '';
+
   $ntokens = count($tokens);
 
   $html  = "<div style='margin-left:1em;'>";
@@ -149,17 +175,22 @@ function sendmail_recovery($email,$tokens)
   }
 
   $url = full_app_uri("p=pwreset");
-  $timeout = intval(round( PWRESET_TIMEOUT/ 60));
+  $timeout = intval(round( pwreset_timeout()/ 60));
 
   $html .= "</div>";
   $html .= "<div style='margin:20px 1em;'>";
-  $html .= "<div>The reset token$s will expire in $timeout minutes</div>";
-  $html .= "<div>If you've closed the password reset window, click <a href='$url'>here to continue</a> with login recovery</div>";
+  $html .= "<div>The reset token$s will expire in $timeout minutes.</div>";
+  $html .= "<div>The reset token$s will expire after the first recovery attempt.</div>";
+  $html .= "<div style='margin-top:1em;'>";
+  $html .= "If you've closed the password reset window, click <a href='$url'>here to continue</a> with login recovery.";
+  $html .= "</div>";
   $html .= "</div>";
   $html .= html_contacts();
 
   $text .= "\n";
   $text .= "The reset token$s will expire in $timeout minutes\n";
+  $text .= "The reset token$s will expire after the first recovery attempt.\n";
+  $text .= "\n";
   $text .= "If you've closed the password reset window, you can get back to it at $url\n";
   $text .= text_contacts();
 

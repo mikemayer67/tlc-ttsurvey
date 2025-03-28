@@ -120,13 +120,15 @@ IF version < 1 THEN
   );
 
   CREATE TABLE tlc_tt_roles (
-    userid    varchar(24) NOT NULL,
-    survey_id int         NOT NULL,
+    userid    varchar(24) NOT NULL PRIMARY KEY,
     poc       tinyint     NOT NULL DEFAULT 0,
     tech      tinyint     NOT NULL DEFAULT 0,
-    PRIMARY KEY (userid,survey_id),
-    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+  );
+
+  create table tlc_tt_settings (
+    name  varchar(24)  NOT NULL PRIMARY KEY,
+    value varchar(255) NOT NULL
   );
 
   CREATE OR REPLACE VIEW tlc_tt_draft_surveys
