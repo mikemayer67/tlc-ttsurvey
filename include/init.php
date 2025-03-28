@@ -3,7 +3,10 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-define('APP_URI',preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
+define('APP_URI', preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
+define('PKG_NAME', 'tlc-ttsurvey');
+
+// Error handling 
 
 class BadInput extends \Exception {}
 

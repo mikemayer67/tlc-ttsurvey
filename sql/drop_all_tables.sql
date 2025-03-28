@@ -1,3 +1,4 @@
+drop table if exists tlc_tt_settings;
 drop table if exists tlc_tt_roles;
 drop table if exists tlc_tt_reset_tokens;
 drop table if exists tlc_tt_anonids;

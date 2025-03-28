@@ -3,20 +3,27 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once app_file('include/const.php');
 require_once app_file('include/logger.php');
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // The MySQLConnnection function creates a single connetion the mysql server.
-//   The authentication uses the following constants initialized from the
-//   tlc-ttsurvey.ini file:
-//      MYSQL_HOST     - mysql.host
-//      MYSQL_USERID   - mysql.userid
-//      MYSQL_PASSWORD - mysql.password
-//      MYSQL_SCHEMA   - mysql.host
+//   The authentication uses the following parameters initialized from the
+//   package config (.ini) file
 //
-//   Additionally, sets the charset based on mysql.charset
+//   tlc-ttsurvey.ini file:
+//      HOST     - mysql_host
+//      USERNAME - mysql_username
+//      PASSWORD - mysql_password
+//      SCHEMA   - mysql_host
+//
+//   Additionally, t sets the charset based on mysql.charset if specified
+//   or 'utf8' if not specified.
+//
+// Note that as logger requires settings from the database to function, 
+//   we cannot use any of its logging functions from with MySQLConnection,
+//   we must used the native error_log function instead (which will write
+//   to the generic PHP error log and not the app specific log).
+//   Similarly, we cannot use internal_error as that uses log_error.
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -25,22 +32,24 @@ function MySQLConnection()
   static $conn;
   if(!$conn) {
     try {
+      $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+      $username = $config['mysql_username'];
+      $password = $config['mysql_password'];
+      $schema   = $config['mysql_schema'];
+      $host     = $config['mysql_host'];
+      $charset  = $config['mysql_charset'] ?? 'utf8mb4';
+
       mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-      $conn = new \mysqli(MYSQL_HOST, MYSQL_USERID, MYSQL_PASSWORD, MYSQL_SCHEMA);
+      $conn = new \mysqli($host, $username, $password, $schema);
     } 
     catch(\mysqli_sql_exception $e) {
-      log_dev("MySQL host: ".MYSQL_HOST);
-      log_dev("MySQL userid: ".MYSQL_USERID);
-      log_dev("MySQL password: ".MYSQL_PASSWORD);
-      log_dev("MySQL schema: ".MYSQL_SCHEMA);
-      log_dev(sprintf("mysqli(%s, %s, %s, %s)",MYSQL_HOST,MYSQL_USERID,MYSQL_PASSWORD,MYSQL_SCHEMA));
-      internal_error(
-        sprintf("Failed to connect to database: ".$e->getMessage())
-      );
+      error_log(sprintf("mysqli(%s, %s, %s, %s)",$host,$username,$password,$schema));
+      die();
     }
-    if( ! $conn->set_charset(MYSQL_CHARSET) ) 
+    if( ! $conn->set_charset($charset) ) 
     { 
-      internal_error('Failed to set charset to '.MYSQL_CHARSET);
+      // internal_error is ok now as we have a database connection
+      internal_error('Failed to set charset to '.$charset);
     }
   }
   return $conn;
@@ -135,7 +144,7 @@ function MySQLSelectArray($query,$types=null,...$params)
 // return first value in first row
 function MySQLSelectValue($query,$types=null,...$params)
 {
-  $row = MySQLSelectArray($query,$types,$params);
+  $row = MySQLSelectArray($query,$types,...$params);
   return $row[0] ?? null;
 }
 // return first value in all rows 

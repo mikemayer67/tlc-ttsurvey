@@ -3,7 +3,6 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/const.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
@@ -49,7 +48,7 @@ todo("Update the following commentary on start_page function");
 function start_page($css,$kwargs=[])
 {
   $css = strtolower($css);
-  $title = active_survey_title() ?? APP_NAME;
+  $title = active_survey_title() ?? app_name();
   $title_len = strlen($title);
 
   echo <<<HTMLHEAD
@@ -89,7 +88,13 @@ function start_page($css,$kwargs=[])
   // Add the navigation bar
   //   include unless navbar=false is explicitly set in the kwargs
   if( $kwargs['navbar'] ?? true ) {
-    $logo = img_uri(APP_LOGO);
+    $logo = app_logo() ?? '';
+    logger("logo = $logo");
+    if($logo) { 
+      $logo = "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
+    }
+    logger("logo = $logo");
+
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
     $menu = $menu_cb ? $menu_cb() : '';
 
@@ -97,7 +102,7 @@ function start_page($css,$kwargs=[])
     <!-- Navbar -->
     <div id='ttt-navbar'>
       <span class='ttt-title-box'>
-        <img class='ttt-logo' src='$logo' alt='Trinity Logo'>
+        $logo
         <span class='ttt-title'>$title</span>
       </span>
       $menu

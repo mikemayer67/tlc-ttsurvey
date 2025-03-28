@@ -4,13 +4,11 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { define('APP_DIR',dirname(__file__)); }
 
 require_once(APP_DIR.'/include/init.php');
-require_once(app_file('include/const.php'));
 require_once(app_file('include/page_elements.php'));
 
 define('RENDERING_500_PHP',true);
 
-$contact = ADMIN_CONTACT;
-$pronoun = ADMIN_PRONOUN;
+$contact = admin_contact();
 if(isset($errid)) {
   $contact = preg_replace("/'>/","?subject=Survey Error #$errid'>", $contact);
 }
@@ -22,7 +20,7 @@ echo "<div class='ttt-splash'>";
 add_link_tag(app_uri(),img_tag('500.png','','Something went terribly wrong'));
 
 echo "<div class='ttt-caption'>";
-echo "Please contact $contact and let $pronoun know something is amiss.";
+echo "Please contact $contact and let them know something is amiss.";
 echo "</div>";
 
 if(isset($errid)) {

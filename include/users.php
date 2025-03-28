@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file("include/db.php"));
+require_once(app_file("include/settings.php"));
 require_once(app_file("include/validation.php"));
 
 
@@ -187,8 +188,8 @@ class User {
   {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
-    $token = gen_token(min(20,max(4,PWRESET_LENGTH)));
-    $expires = time() + PWRESET_TIMEOUT;
+    $token = gen_token(pwreset_length());
+    $expires = time() + pwreset_timeout();
     $expires = gmdate('Y-m-d H:i:s', $expires);
     $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
 
