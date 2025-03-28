@@ -71,6 +71,7 @@ function start_page($css,$kwargs=[])
   if($css !== 'print') {
     $ttt_uri = css_uri('ttt');
     $css_uri = css_uri("$css");
+    $js_uri = js_uri("$css.js");
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='https://code.jquery.com/jquery-3.7.1.min.js'
@@ -81,6 +82,7 @@ function start_page($css,$kwargs=[])
     <!-- Style -->
     <link rel='stylesheet' type='text/css' href='$ttt_uri'>
     <link rel='stylesheet' type='text/css' href='$css_uri'>
+    <script src='$js_uri'></script>
 
     HTMLHEAD;
   }
