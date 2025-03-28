@@ -1,0 +1,15 @@
+div.noscript {
+  margin-top:3em;
+}
+
+div.noscript div {
+  display:inline-block;
+  padding:1em;
+  font-size:x-large;
+  font-style:normal;
+  border-color: darkred;
+}
+
+#ttt-body {
+  display:none;
+}

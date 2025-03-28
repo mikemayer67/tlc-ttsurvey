@@ -51,6 +51,9 @@ function start_page($css,$kwargs=[])
   $title = active_survey_title() ?? app_name();
   $title_len = strlen($title);
 
+  log_dev("start_page($css)");
+  $trace = debug_backtrace();
+
   echo <<<HTMLHEAD
   <!DOCTYPE html><html><head>
   <meta charset='UTF-8'>
@@ -66,8 +69,8 @@ function start_page($css,$kwargs=[])
 
   // don't include css or javascript on print pages
   if($css !== 'print') {
-    $ttt = css_uri('ttt');
-    $css = css_uri("$css");
+    $ttt_uri = css_uri('ttt');
+    $css_uri = css_uri("$css");
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='https://code.jquery.com/jquery-3.7.1.min.js'
@@ -76,8 +79,8 @@ function start_page($css,$kwargs=[])
     </script>
 
     <!-- Style -->
-    <link rel='stylesheet' type='text/css' href='$ttt'>
-    <link rel='stylesheet' type='text/css' href='$css'>
+    <link rel='stylesheet' type='text/css' href='$ttt_uri'>
+    <link rel='stylesheet' type='text/css' href='$css_uri'>
 
     HTMLHEAD;
   }
@@ -111,7 +114,21 @@ function start_page($css,$kwargs=[])
   }
 
 
-  if($css !== 'print') {
+  if($css === 'admin') {
+    log_dev("admin noscript");
+    echo <<<HTMLNOSCRIPT
+    <!-- Javascript required -->
+    <noscript>
+    <div class='noscript'>
+      <div class='ttt-card'>
+        Javascript is required for the Admin Dashboard
+      </div>
+    </div>
+    </noscript>
+    HTMLNOSCRIPT;
+  }
+  elseif($css !== 'print') {
+    log_dev("other noscript ($css)");
     echo <<<HTMLNOSCRIPT
     <!-- Javascript suggestion -->
     <noscript>
