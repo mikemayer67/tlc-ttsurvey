@@ -34,11 +34,14 @@ function set_dev($v)         { return set_setting('is_dev',$v); }
 
 // Admin settings
 
-function admin_name()        { return get_setting('admin_name','the survey admin'); }
-function set_admin_name($v)  { return set_setting('admin_name', $v); }
+function admin_name()          { return get_setting('admin_name','the survey admin'); }
+function set_admin_name($v)    { return set_setting('admin_name', $v); }
 
-function admin_email()       { return get_setting('admin_email'); }
-function set_admin_email($v) { return set_setting('admin_email', $v); }
+function admin_email()         { return get_setting('admin_email'); }
+function set_admin_email($v)   { return set_setting('admin_email', $v); }
+
+function primary_admin()       { return get_setting('primary_admin'); }
+function set_primary_admin($v) { return set_setting('primary_admin', $v); }
 
 function admin_contact() {
   $contact = admin_name();
@@ -46,6 +49,7 @@ function admin_contact() {
   if($email) { $contact = sprintf("<a href='mailto:%s'>%s</a>",$email,$contact); }
   return $contact;
 }
+
 
 // Password reset settings
 

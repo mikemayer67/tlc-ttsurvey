@@ -121,7 +121,8 @@ IF version < 1 THEN
 
   CREATE TABLE tlc_tt_roles (
     userid    varchar(24) NOT NULL PRIMARY KEY,
-    poc       tinyint     NOT NULL DEFAULT 0,
+    admin     tinyint     NOT NULL DEFAULT 0,
+    content   tinyint     NOT NULL DEFAULT 0,
     tech      tinyint     NOT NULL DEFAULT 0,
     FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
   );

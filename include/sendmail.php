@@ -10,6 +10,7 @@ use PHPMailer\PHPMailer\Exception;
 require_once(app_file('vendor/autoload.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/settings.php'));
+require_once(app_file('include/roles.php'));
 
 class SendmailFailure extends \Exception {}
 
@@ -199,19 +200,30 @@ function sendmail_recovery($email,$tokens,&$error=null)
 
 function html_contacts()
 {
-  todo("add html_contacts()");
-  return <<<HTMLCONTACTS
-  <br>
-  <div style='font-style:italic;'>TODO: Add contact info</div>
-  HTMLCONTACTS;
+  $rval = "<div style='margin:0;font-style:italic'>";
+  if($general = admin_contacts()) { 
+    $rval .= "<div>For general help with the survey, contact $general</div>";
+  }
+  if($content = admin_contacts('content')) {
+    $rval .= "<div>To report an issue with the survey content, contact: $content</div>";
+  }
+  if($tech = admin_contacts('tech')) {
+    $rval .= "<div>To report an issue with the survey functionality, contact: $tech</div>";
+  }
+  return $rval;
 }
 
 function text_contacts()
 {
-  todo("add text_contacts()");
-  return <<<CONTACTS
-
-  --------------------
-  TODO: Add contact info
-  CONTACTS;
+  $rval = "\n";
+  if($general = admin_contacts()) { 
+    $rval .= "    For general help with the survey, contact $general\n";
+  }
+  if($content = admin_contacts('content')) {
+    $rval .= "    To report an issue with the survey content, contact: $content\n";
+  }
+  if($tech = admin_contacts('tech')) {
+    $rval .= "    To report an issue with the survey functionality, contact: $tech<\n";
+  }
+  return $rval;
 }

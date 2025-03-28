@@ -5,11 +5,12 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('include/roles.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/settings.php'));
 
 function dump($k,$v) {
-  echo "<pre>$k: $v</pre>";
+  echo "<pre>$k: ".print_r($v,true)."</pre>";
 }
 
 $v = get_setting('junk');
@@ -29,7 +30,20 @@ echo "<h1>resume</h1>";
 
 $cookies = resume_survey_as('kitkat15','1234567890');
 
-echo "<h1>DEV</h1>";
+echo "<h1>Admins</h1>";
+$admins = survey_admins();
+dump('admins',$admins);
+$admins = content_admins();
+dump('content',$admins);
+$admins = tech_admins();
+dump('tech',$admins);
+
+$admins = admin_contacts();
+dump('admins',$admins);
+$admins = admin_contacts('content');
+dump('content',$admins);
+$admins = admin_contacts('tech');
+dump('tech',$admins);
 
 /*
 MySQLExecute("delete from tlc_tt_userids where userid like 'newtest%'");
