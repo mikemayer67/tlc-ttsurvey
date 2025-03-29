@@ -189,7 +189,7 @@ class User {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
     $token = gen_token(pwreset_length());
-    $expires = time() + pwreset_timeout();
+    $expires = time() + 60*pwreset_timeout();
     $expires = gmdate('Y-m-d H:i:s', $expires);
     $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
 

@@ -53,8 +53,8 @@ function admin_contact() {
 
 // Password reset settings
 
-function pwreset_timeout()       { return get_setting('pwreset_timeout', 900); }
-function set_pwreset_timeout($v) { return set_setting('pwreset_timeout', $v);  }
+function pwreset_timeout()       { return get_setting('pwreset_timeout', 15); } // minutes
+function set_pwreset_timeout($v) { return set_setting('pwreset_timeout', $v); }
 
 function fix_pwreset_length($v)  { return min(20,max(4,$v)); }
 function pwreset_length()        { return fix_pwreset_length(get_setting('pwreset_length', 10)); }

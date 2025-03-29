@@ -143,7 +143,7 @@ add_input_section('Email Server',[
       '3 = all messages + additional connection info',
       'Will be added to the survey app log at the info level'
     ],
-    'default'=>0,
+    'default' => 0,
   ],
 ]);
 

@@ -176,7 +176,7 @@ function sendmail_recovery($email,$tokens,&$error=null)
   }
 
   $url = full_app_uri("p=pwreset");
-  $timeout = intval(round( pwreset_timeout()/ 60));
+  $timeout = pwreset_timeout();
 
   $html .= "</div>";
   $html .= "<div style='margin:20px 1em;'>";

@@ -53,15 +53,29 @@ function add_input_section($label,$fields)
 
 function add_input_field($field)
 {
-  $key     = $field[0];
+  $key      = $field[0];
 
-  $info    = $field['info'] ?? null;
-  $default = $field['default'] ?? '';
+  $info     = $field['info'] ?? null;
+  $default  = $field['default'] ?? '';
+  $optional = $field['optional'] ?? false;
 
   echo "<tr class='$key'>";
   echo "<td class='label'>$key</td>";
   echo "<td class='input'>";
-  echo "  <input id='{$key}_input' type='text' name='$key'>";
+  echo "  <input id='{$key}_input' type='text' name='$key'";
+  if(strlen($default)) {
+    echo " placeholder='$default'";
+  }
+  elseif($optional) {
+    echo " placeholder='[optional]'";
+  } else {
+    echo " placeholder='[required]' required";
+  }
+  $cur_value = get_setting($key,'');
+  if(strlen($cur_value)) {
+    echo " value='$cur_value'";
+  }
+  echo ">";
   echo "</tr>";
   if($info) {
     if(!is_array($info)) { $info = [$info]; }
