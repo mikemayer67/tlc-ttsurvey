@@ -6,6 +6,14 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 $nonce = gen_nonce('admin-settings');
 
 require_once(app_file('admin/elements.php'));
+require_once(app_file('include/users.php'));
+
+$users = ['' => "--nobody--"];
+foreach(User::all_users() as $user) {
+  $userid = $user->userid();
+  $name   = $user->fullname();
+  $users[$userid] = "$userid: $name";
+}
 
 $form_uri = app_uri('admin');
 echo "<form id='admin-settings' method='post' action='$form_uri'>";
@@ -24,10 +32,7 @@ add_input_section('Look and Feel', [
   ],
   [ 
     'app_logo',
-    'info' => [
-      'Location of the application log image',
-      'Path is relative to '.APP_URI.'/img',
-    ],
+    'info' => 'Location of the application log image (relative to '.APP_URI.'/img)',
     'optional'=>true,
   ],
   [ 
@@ -44,8 +49,9 @@ add_input_section('Look and Feel', [
 add_input_section('Admin',[
   [
     'primary_admin',
+    'options' => $users,
     'info' => 'Userid for the registered user to serve as primary admin',
-    'optional'=>true,
+    'default' => '',
   ], [
     'admin_name', 
     'info' => 'Name of the site admin if no registered user is identified as primary admin',
@@ -147,6 +153,9 @@ echo "<input id='settings_submit' class='submit' type='submit' value='Save Chang
 echo "</div>";
 
 echo "</form>";
+
+$js_uri = js_uri('settings.js');
+echo "<script src='$js_uri'></script>";
 
 
 

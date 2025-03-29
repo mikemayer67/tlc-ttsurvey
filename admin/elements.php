@@ -70,7 +70,7 @@ function add_input_field($field)
   echo "<td class='input'>";
   if($options) {
     if(strlen($default) && strlen($cur_value)==0) { $cur_value = $default; }
-    echo "<select id='{$key}_input' name='$key'>";
+    echo "<select id='{$key}_select' name='$key'>";
     foreach ($options as $index=>$option) {
       echo "<option value='$index'";
       if(strlen($cur_value) && $cur_value == $index) { 

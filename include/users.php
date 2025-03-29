@@ -120,6 +120,18 @@ class User {
     return $users;
   }
 
+  public static function all_users()
+  {
+    // note this function bypasses the user cache.  It is 
+    //   meant to only be used in admin capabilities
+    $result = MySQLSelectRows('select * from tlc_tt_userids');
+    $users = array();
+    foreach($result as $user_data) {
+      $users[] = new User($user_data);
+    }
+    return $users;
+  }
+
   // Full Name
   
   public function set_fullname($fullname,&$error=0)
