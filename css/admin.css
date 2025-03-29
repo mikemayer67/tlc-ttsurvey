@@ -28,6 +28,24 @@ div.noscript div {
 
 #ttt-body #admin-tabs div.tabs button {
   margin:0 2px;
+  background-color:#ccc;
+  border: solid 1px #444;
+  border-radius:5px;
+  color:#444;
+  box-shadow:none;
+}
+
+#ttt-body #admin-tabs div.tabs button:disabled {
+  background-color:white;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  color: black;
+}
+
+
+#ttt-body #admin-tabs div.tabs button:hover:not([disabled]) {
+  background-color:#c8c8f4;
+  box-shadow:0 2px 2px 3px rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  color:black;
 }
 
 #ttt-body #admin-tabs div.tabs button.current {
