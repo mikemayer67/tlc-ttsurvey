@@ -42,6 +42,7 @@ function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
 function img_uri($img)     { return APP_URI . "/img/$img"     . no_cache();   }
 function css_uri($css)     { return APP_URI . "/css/$css.css" . no_cache();   }
 function js_uri($filename) { return APP_URI . "/js/$filename";   }
+function resource_uri($filename) { return APP_URI . "/$filename"; }
 
 function full_app_uri($q=null) {
   $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
