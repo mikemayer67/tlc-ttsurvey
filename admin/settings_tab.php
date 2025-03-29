@@ -48,17 +48,12 @@ add_input_section('Admin',[
     'optional'=>true,
   ], [
     'admin_name', 
-'info' => [
-      'Name of the site admin',
-      '(if no registered user is identified as primary admin)',
-    ],
+    'info' => 'Name of the site admin if no registered user is identified as primary admin',
     'default'=>'the survey admin',
   ], [
     'admin_email',
-    'info' => [
-      'Email address for the site admin',
-      '(if no registered user is identified as primary admin)',
-    ],
+    'type' => 'email',
+    'info' => 'Email address for the site admin if no registered user is identified as primary admin',
     'optional'=>true,
   ],
 ]);
@@ -73,13 +68,13 @@ add_input_section('Logging',[
     'default' => PKG_NAME.'.log',
   ], [
     'log_level',
-    'info' => [
-      'Level of information to include in the survey app log file',
-      '0 = errors only',
-      '1 = errors and warnings',
-      '2 = errors, warnings, and informational notices',
-      '3 = all above + developer probes',
+    'options' => [
+      'errors only',
+      'errors and warnings',
+      'errors, warnings, and informational notices',
+      'errors, warnings, info, and developer probes',
     ],
+    'info' => 'Level of information to include in the survey app log file',
     'default' => 2,
   ],
 ]);
@@ -87,10 +82,12 @@ add_input_section('Logging',[
 add_input_section('Password Reset',[
   [
     'pwreset_timeout',
+    'type'=>'number', 'min'=>1,
     'info' => 'How long a password token is valid before it expires (minutes)',
     'default' => 15,
   ], [
     'pwreset_length',
+    'type'=>'number', 'min'=>4, 'max'=>20, 'step'=>1,
     'info' => 'Number of characters in a passsword reset token (4-20)',
     'default' => 10,
   ],
@@ -103,52 +100,50 @@ add_input_section('Email Server',[
     'info' => 'URL for the SMTP server (e.g. smtp.gmail.com)',
   ], [
     'smtp_auth',
-    'info' => [
-      'method used to authenticate to the SMTP server',
-      '0 = SMTPS',
-      '1 = STARTTLS',
-    ],
+    'options' => ['SMTPS','STARTTLS'],
+    'info' => 'Method used to authenticate to the SMTP server',
     'default' => 1,
   ], [
     'smtp_port',
+    'type'=>'number', 'min'=>1, 'step'=>1,
     'info' => [
-      'SMTP server port',
+      'SMTP server port (use default unless you must override normal values)',
       'Normal values are 465 for SMTPS and 587 for STARTTLS',
     ],
     'default' => '587',
   ], [
     'smtp_username',
-    'info' => 'authenticaion credential to connect to the SMTP server',
+    'info' => 'Authenticaion credential to connect to the SMTP server',
   ], [
     'smtp_password',
     'info' => [
-      'authenticaion credential to connect to the SMTP server',
+      'Authenticaion credential to connect to the SMTP server',
       '(should be app password if using gmail)',
     ],
   ], [
     'smtp_reply_email',
-    'info' => 'email address used in the reply-to field',
+    'type' => 'email',
+    'info' => 'Email address used in the reply-to field',
     'optional' => true,
   ], [
     'smtp_reply_name',
-    'info' => 'addressee name used in the reply-to field',
+    'info' => 'Addressee name used in the reply-to field',
     'optional' => true,
   ], [
     'smtp_debug',
-    'info' => [
-      'SMTP debugging level',
-      '0 = diabled',
-      '1 = messages sent from server to client',
-      '2 = all client/server messages',
-      '3 = all messages + additional connection info',
-      'Will be added to the survey app log at the info level'
+    'options' => [
+      'diabled',
+      'messages sent from server to client',
+      'all client/server messages',
+      'all messages + additional connection info',
     ],
+    'info' => 'SMTP debugging level (added to the survey app log at the info level)',
     'default' => 0,
   ],
 ]);
 
 echo "<div class='button-bar'>";
-echo "<input id='settings_submit' class='submit' type='submit' value='Save Changes' disabled>";
+echo "<input id='settings_submit' class='submit' type='submit' value='Save Changes'>";
 echo "</div>";
 
 echo "</form>";

@@ -54,29 +54,50 @@ function add_input_section($label,$fields)
 function add_input_field($field)
 {
   $key      = $field[0];
-
+  $type     = $field['type'] ?? 'text';
+  $min      = $field['min'] ?? null;
+  $max      = $field['max'] ?? null;
+  $step     = $field['step'] ?? null;
+  $options  = $field['options'] ?? null;
   $info     = $field['info'] ?? null;
   $default  = $field['default'] ?? '';
   $optional = $field['optional'] ?? false;
 
+  $cur_value = get_setting($key,'');
+
   echo "<tr class='$key'>";
   echo "<td class='label'>$key</td>";
   echo "<td class='input'>";
-  echo "  <input id='{$key}_input' type='text' name='$key'";
-  if(strlen($default)) {
-    echo " placeholder='$default'";
-  }
-  elseif($optional) {
-    echo " placeholder='[optional]'";
+  if($options) {
+    if(strlen($default) && strlen($cur_value)==0) { $cur_value = $default; }
+    echo "<select id='{$key}_input' name='$key'>";
+    foreach ($options as $index=>$option) {
+      echo "<option value='$index'";
+      if(strlen($cur_value) && $cur_value == $index) { 
+        echo " selected='selected'";
+      } 
+      echo ">$option</option>";
+    }
+    echo "</select>";
   } else {
-    echo " placeholder='[required]' required";
+    echo "<input id='{$key}_input' type='$type' name='$key'";
+    if(!is_null($min))  { echo " min='$min'";   }
+    if(!is_null($max))  { echo " max='$max'";   }
+    if(!is_null($step)) { echo " step='$step'"; }
+    if(strlen($default)) {
+      echo " placeholder='$default'";
+    }
+    elseif($optional) {
+      echo " placeholder='[optional]'";
+    } else {
+      echo " placeholder='[required]' required";
+    }
+    if(strlen($cur_value)) {
+      echo " value='$cur_value'";
+    }
+    echo ">";
   }
-  $cur_value = get_setting($key,'');
-  if(strlen($cur_value)) {
-    echo " value='$cur_value'";
-  }
-  echo ">";
-  echo "</tr>";
+  echo "</td></tr>";
   if($info) {
     if(!is_array($info)) { $info = [$info]; }
     echo "<tr class='$key info'><td></td>";
