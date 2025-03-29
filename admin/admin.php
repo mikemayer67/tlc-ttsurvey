@@ -26,12 +26,12 @@ if(!$admin_id) {
   die();
 }
 
-$page = $_REQUEST['tab'] ?? 'settings';
+$tab = $_REQUEST['tab'] ?? 'settings';
 
 start_page('admin');
-start_admin_page($page);
+start_admin_page($tab);
 
-echo $_REQUEST['tab']??'none';
+require(app_file("admin/{$tab}_tab.php"));
 
 end_admin_page();
 end_page();

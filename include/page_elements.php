@@ -31,6 +31,17 @@ function add_link_tag($href,$class='',$alt='') {
   echo link_tag($href,$class,$alt); 
 }
 
+function add_hidden_input($name,$value)
+{
+  echo "<input type='hidden' name='$name' value='$value'>";
+}
+
+function add_hidden_submit($name,$value)
+{
+  echo "<input type='submit' class='hidden' name='$name' value='$value'>";
+}
+
+
 todo("Update the following commentary on start_page function");
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
@@ -169,5 +180,4 @@ function end_page()
   echo "</body>\n"; // html body
   echo "</html>\n";
 }
-
 

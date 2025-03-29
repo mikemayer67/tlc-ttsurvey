@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/page_elements.php'));
+
 /****************************************************************
  **
  ** Common Look and Feel for all login forms
@@ -24,16 +26,6 @@ function start_login_form($header,$name)
   add_hidden_input('nonce',$nonce);
   add_hidden_input('form',$name);
   return $nonce;
-}
-
-function add_hidden_input($name,$value)
-{
-  echo "<input type='hidden' name='$name' value='$value'>";
-}
-
-function add_hidden_submit($name,$value)
-{
-  echo "<input type='submit' class='hidden' name='$name' value='$value'>";
 }
 
 function close_login_form()

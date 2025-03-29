@@ -52,8 +52,78 @@ div.noscript div {
   background:green;
 }
 
-
 #ttt-body div.body {
   padding:0.5em;
-  background:white;
+  background:#eee;
 }
+
+#ttt-body div.body * {
+  background:inherit;
+}
+
+#ttt-body div.body form {
+  background:inherit;
+}
+
+#ttt-body div.body form div.section-header {
+  margin:1em 0 0.5em 0;
+  font-size:1.2em;
+}
+
+#ttt-body div.body form div.section-header:first-of-type {
+  margin-top:0;
+}
+
+#ttt-body div.body form div.section-header div {
+  font-weight:bold;
+}
+
+#ttt-body div.body form table {
+  margin:0.25em 1em 0 1em;
+  width:calc(100% - 2em);
+  table-layout:auto;
+}
+
+#ttt-body div.body form table td.input {
+  width:100%;
+}
+
+#ttt-body div.body form table td.label {
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+#ttt-body div.body form table td input[type=text] {
+  width:85%;
+  min-width:20em;
+  background:white;
+  border-color:#bbb;
+}
+
+#ttt-body div.body form table td.info div {
+  font-size:0.85em;
+  margin-left:2em;
+}
+
+#ttt-body div.body form table td.info div:first-child {
+  margin-left:1em;
+}
+
+#ttt-body div.body form div.button-bar {
+  display:flex;
+  flex-direction:row-reverse;
+  margin: 0.5em;
+}
+
+#ttt-body div.body form div.button-bar input.submit {
+  background:darkblue;
+  color:white;
+}
+
+#ttt-body div.body form div.button-bar input.submit:disabled {
+  background:#888;
+  color:#444;
+}
+
+
+
