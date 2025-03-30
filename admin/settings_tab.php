@@ -18,6 +18,7 @@ foreach(User::all_users() as $user) {
 $form_uri = app_uri('admin');
 echo "<form id='admin-settings' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
+add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','settings');
 
 add_input_section('Look and Feel', [

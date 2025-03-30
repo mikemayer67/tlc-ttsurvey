@@ -31,6 +31,12 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
+  // If ajax request, jump to ajax handling
+  if(key_exists('ajax',$_POST)) {
+    require(app_file('ajax.php'));
+    die();
+  }
+
   // If access to the admin tools have been requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
@@ -82,7 +88,7 @@ catch (\Exception $e)
   $file = preg_replace('#'.APP_DIR.'/#', '', $e->getFile());
   internal_error(
     sprintf("Exception %d caught at %s[%s]: %s",
-    $e->getCode(),$file,$e->getLine(),$e->getMessage())
+    $e->getCode(),$file,$e->getLine(),$e->getMessage(),0)
   );
 }
 

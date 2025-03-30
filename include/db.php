@@ -43,7 +43,7 @@ function MySQLConnection()
       $conn = new \mysqli($host, $username, $password, $schema);
     } 
     catch(\mysqli_sql_exception $e) {
-      error_log(sprintf("mysqli(%s, %s, %s, %s)",$host,$username,$password,$schema));
+      error_log(sprintf("mysqli(%s, %s, %s, %s)",$host,$username,$password,$schema),0);
       die();
     }
     if( ! $conn->set_charset($charset) ) 

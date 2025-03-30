@@ -79,7 +79,7 @@ function write_to_logger($prefix,$msg,$trace_level=1)
   {
     $timestamp = date("d-M-y H:i:s.v T");
 
-    if(! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
+    if($trace_level>0 && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
       $trace = debug_backtrace();
       $file = $trace[$trace_level]["file"];
       $line = $trace[$trace_level]["line"];
@@ -132,4 +132,19 @@ function log_warning($msg,$trace=1) {
 function log_error($msg,$trace=1) {
   write_to_logger("ERROR",$msg,$trace);
   error_log(PKG_NAME.": $msg");
+}
+
+function warning_handler($errno,$errstr,$errfile,$errline)
+{
+
+  if(str_starts_with($errfile,APP_DIR)) {
+    $errfile = substr($errfile,1+strlen(APP_DIR));
+  }
+  log_warning("$errstr [$errfile:$errline]",0);
+  return true;
+}
+
+function handle_warnings() 
+{
+  set_error_handler('tlc\tts\warning_handler',E_WARNING|E_NOTICE);
 }
