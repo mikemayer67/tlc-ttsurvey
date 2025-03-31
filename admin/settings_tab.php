@@ -70,9 +70,10 @@ add_input_section('Logging',[
     'log_file',
     'info' => [
       'Location of the survey app log file on the server',
-      'Path may be absolute or relative to the survey app directory',
+      'This can only be changed in the survey config file',
     ],
-    'default' => PKG_NAME.'.log',
+    'default' => log_file(),
+    'editable' => false,
   ], [
     'log_level',
     'options' => [

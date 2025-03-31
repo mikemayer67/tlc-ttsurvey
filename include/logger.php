@@ -5,6 +5,16 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once app_file('include/settings.php');
 
+function log_file() 
+{ 
+  static $log_file = null;
+  if(!$log_file) {
+    $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+    $log_file = $config['log_file'] ?? PKG_NAME.'.log';
+  }
+  return $log_file;
+}
+
 function logger()
 {
   static $_fp = null;

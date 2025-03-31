@@ -62,6 +62,7 @@ function add_input_field($field)
   $info     = $field['info'] ?? null;
   $default  = $field['default'] ?? '';
   $optional = $field['optional'] ?? false;
+  $editable = $field['editable'] ?? true;
 
   $cur_value = get_setting($key,'');
 
@@ -85,7 +86,8 @@ function add_input_field($field)
     if(!is_null($max))  { echo " max='$max'";   }
     if(!is_null($step)) { echo " step='$step'"; }
     if(strlen($default)) {
-      echo " placeholder='$default'";
+      if($editable) { echo " placeholder='$default'"; }
+      else          { echo " value='$default'"; }
     }
     elseif($optional) {
       echo " placeholder='[optional]'";
@@ -94,6 +96,9 @@ function add_input_field($field)
     }
     if(strlen($cur_value)) {
       echo " value='$cur_value'";
+    }
+    if(!$editable) {
+      echo " disabled";
     }
     echo ">";
   }

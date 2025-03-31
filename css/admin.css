@@ -111,6 +111,11 @@ div.noscript div {
   padding-right:0.5em;
 }
 
+#ttt-body div.body form table td input[type=text]:disabled {
+  background:inherit;
+}
+
+
 #ttt-body div.body form table td.info div {
   font-size:0.85em;
   margin-left:2em;

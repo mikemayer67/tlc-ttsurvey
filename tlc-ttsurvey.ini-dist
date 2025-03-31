@@ -18,6 +18,13 @@ admin_username = "admin"
 admin_password = "admin"
 
 ;;------------------------------------------------------------------------------
+;; Location of the survey app log file.  This is not configurable via
+;;   the admin dashboard as that could potentially open a security hole.
+;;------------------------------------------------------------------------------
+
+;log_file = "tlc-ttsurvey.log";
+
+;;------------------------------------------------------------------------------
 ;; The mysql_ parameters control the connection to the MySQL database
 ;;
 ;;   parameter: mysql_host (required)

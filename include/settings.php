@@ -62,9 +62,6 @@ function set_pwreset_length($v)  { return set_setting('pwreset_length', fix_pwre
 
 // Logging settings
 
-function log_file()        { return get_setting('log_file', PKG_NAME.'.log'); }
-function set_log_file($v)  { return set_setting('log_file', $v); }
-
 function log_level()       { return get_setting('log_level', 2);  }
 function set_log_level($v) { return set_setting('log_level', $v); }
 
