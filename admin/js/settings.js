@@ -142,11 +142,11 @@ $(document).ready(
     ce.pwreset_timeout = $('#pwreset_timeout_input');
     ce.pwreset_length = $('#pwreset_length_input');
 
-    ce.app_logo.on('change','app_logo',validate_setting);
-    ce.timezone.on('change','timezone',validate_setting);
-    ce.admin_email.on('change','admin_email',validate_setting);
-    ce.pwreset_timeout.on('change','pwreset_timeout',validate_setting);
-    ce.pwreset_length.on('change','pwreset_length',validate_setting);
+    ce.app_logo.on('change',['app_logo'],validate_setting);
+    ce.timezone.on('change',['timezone'],validate_setting);
+    ce.admin_email.on('change',['admin_email'],validate_setting);
+    ce.pwreset_timeout.on('change',['pwreset_timeout'],validate_setting);
+    ce.pwreset_length.on('change',['pwreset_length'],validate_setting);
 
     ce.smtp_auth.on('change',handle_smtp_auth_change);
 
