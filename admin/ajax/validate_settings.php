@@ -40,7 +40,7 @@ $to = $_POST['pwreset_timeout'] ?? null;
 if(isset($to)) {
   $to = trim($to);
   if(strlen($to) > 0) {
-    if(!( is_numeric($to) && is_integer(1*$to) && $to>0 ) ) {
+    if(!( is_numeric($to) && $to>0 ) ) {
       $response['success'] = false;
       $response['pwreset_timeout'] = "Reset timeout must be a positive number";
     }  

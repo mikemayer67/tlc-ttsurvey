@@ -29,7 +29,7 @@ function internal_error(jqXHR)
 function validate_setting(event)
 {
   var key      = event.data[0];
-  var optional = event.data[2];
+  var optional = event.data[1];
   var input    = ce[key];
   var value    = input.val();
 
@@ -76,19 +76,16 @@ function validate_setting(event)
 
 function validate_all()
 {
+  var data = {
+    ajax:"admin/validate_settings",
+    nonce:ce.nonce, 
+  };
+  ce.simple_inputs.forEach( (key) => { data[key] = ce[key].val() } );
   $.ajax( {
     type: 'POST',
     url: ce.ajaxuri,
     dataType: 'json',
-    data: {
-      ajax:"admin/validate_settings",
-      nonce:ce.nonce, 
-      app_logo:ce.app_logo.val(),
-      timezone:ce.timezone.val(),
-      admin_email:ce.admin_email.val(),
-      pwreset_timeout:ce.pwreset_timeout.val(),
-      pwreset_length:ce.pwreset_length.val(),
-    },
+    data: data,
   } )
   .done( function(data,status,jqXHR) {
     ce.form.children('input').removeClass('invalid-value');
@@ -136,18 +133,11 @@ $(document).ready(
 
     ce.submit.prop('disabled',true);
 
-    ce.app_logo = $('#app_logo_input');
-    ce.timezone = $('#timezone_input');
-    ce.admin_email = $('#admin_email_input');
-    ce.pwreset_timeout = $('#pwreset_timeout_input');
-    ce.pwreset_length = $('#pwreset_length_input');
-
-    ce.app_logo.on('change',['app_logo'],validate_setting);
-    ce.timezone.on('change',['timezone'],validate_setting);
-    ce.admin_email.on('change',['admin_email'],validate_setting);
-    ce.pwreset_timeout.on('change',['pwreset_timeout'],validate_setting);
-    ce.pwreset_length.on('change',['pwreset_length'],validate_setting);
-
+    ce.simple_inputs = 'app_logo timezone admin_email pwreset_timeout pwreset_length'.split(' ');
+    ce.simple_inputs.forEach( (key) => {
+      ce[key] = $('#'+key+'_input');
+      ce[key].on('change',[key,true],validate_setting);
+    } );
     ce.smtp_auth.on('change',handle_smtp_auth_change);
 
     ce.form.on('submit',handle_settings_submit);
