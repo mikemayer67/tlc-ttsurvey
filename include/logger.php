@@ -21,8 +21,7 @@ function logger()
 
   if(is_null($_fp))
   {
-    $tz = app_timezone();
-    date_default_timezone_set($tz ?? 'UTF8');
+    date_default_timezone_set(timezone() ?? 'UTF8');
 
     $logfile = app_file(log_file());
     if( file_exists($logfile) and filesize($logfile) > 512*1024 ) {

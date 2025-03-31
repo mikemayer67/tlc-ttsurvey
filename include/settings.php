@@ -20,17 +20,17 @@ function set_setting($key,$value) {
 
 // App Look-and-Feel settings
 
-function app_name()          { return get_setting('app_name',"Time and Talent Survey"); }
-function set_app_name($v)    { return set_setting('app_name', $v); }
+function app_name()            { return get_setting('app_name',"Time and Talent Survey"); }
+function set_app_name($v)      { return set_setting('app_name', $v); }
 
-function app_logo()          { return get_setting('app_logo'); }
-function set_app_logo($v)    { return set_setting('app_logo', $v); }
+function app_logo()            { return get_setting('app_logo'); }
+function set_app_logo($v)      { return set_setting('app_logo', $v); }
 
-function app_timezone()      { return get_setting('app_tz','UTC'); }
-function set_app_timeone($v) { return set_setting('app_tz', $v); }
+function timezone()            { return get_setting('timezone','UTC'); }
+function set_timeone($v)       { return set_setting('timezone', $v); }
 
-function is_dev()            { return get_setting('is_dev',false); }
-function set_dev($v)         { return set_setting('is_dev',$v); }
+function is_dev()              { return get_setting('is_dev',false); }
+function set_dev($v)           { return set_setting('is_dev',$v); }
 
 // Admin settings
 

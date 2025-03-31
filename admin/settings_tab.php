@@ -37,7 +37,7 @@ add_input_section('Look and Feel', [
     'optional'=>true,
   ],
   [ 
-    'app_timezone',
+    'timezone',
     'info' => [
       'Used for logging timestamps and any dates/times presented to the user.',
       "See the <a href='https://en.wikipedia.org/wiki/List_of_tz_database_time_zones' target='_blank'>" .
@@ -90,12 +90,10 @@ add_input_section('Logging',[
 add_input_section('Password Reset',[
   [
     'pwreset_timeout',
-    'type'=>'number', 'min'=>1,
     'info' => 'How long a password token is valid before it expires (minutes)',
     'default' => 15,
   ], [
     'pwreset_length',
-    'type'=>'number', 'min'=>4, 'max'=>20, 'step'=>1,
     'info' => 'Number of characters in a passsword reset token (4-20)',
     'default' => 10,
   ],
