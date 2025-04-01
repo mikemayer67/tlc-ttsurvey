@@ -90,22 +90,23 @@ function gen_nonce($key)
   return $nonce;
 }
 
-function get_nonce($key)
+function validate_nonce($key,$post=true)
 {
-  $nonce = $_SESSION['nonce'][$key] ?? null;
-  $_SESSION['nonce'][$key] = null;
-  return $nonce;
-}
-
-function validate_nonce($key,$nonce,$msg="Invalid Nonce",$trace=2)
-{
-  $expected = get_nonce($key);
-  if($nonce !== $expected) {
-    log_warning("$msg ($key:$nonce/$expected)",$trace);
+  $expected = $_SESSION['nonce'][$key] ?? null;
+  $actual   = $post ? $_POST['nonce'] : $_GET['ttt'];
+  if($actual !== $expected) {
+    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
     api_die();
   }
 }
 
-function validate_post_nonce($key,$msg="Invalid Nonce") { validate_nonce($key,$_POST['nonce'],$msg,3); }
-function validate_get_nonce($key,$msg="Invalid Nonce")  { validate_nonce($key,$_GET['ttt'],$msg,3); }
-
+function validate_and_drop_nonce($key,$post=true)
+{
+  $expected = $_SESSION['nonce'][$key] ?? null;
+  $actual   = $post ? $_POST['nonce'] : $_GET['ttt'];
+  $_SESSION['nonce'][$key] = null;
+  if($actual !== $expected) {
+    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
+    api_die();
+  }
+}

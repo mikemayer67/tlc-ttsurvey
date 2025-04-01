@@ -17,11 +17,10 @@ require_once(app_file('include/validation.php'));
 //
 // As sumch this file should be included using require rather than require_once.
 
-// Except that we will validate the nonce right up front...
-validate_post_nonce('recover');
-
 function handle_recover_form()
 {
+  validate_and_drop_nonce('recover');
+
   try {
     if(!key_exists('action',$_POST)) {
       internal_error("Recover handler triggered without action");

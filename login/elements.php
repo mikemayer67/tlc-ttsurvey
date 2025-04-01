@@ -16,6 +16,7 @@ function start_login_form($header,$name)
   $form_uri = app_uri();
   $nonce = gen_nonce($name);
 
+  $q = '';
   if($name === 'admin') {
     $q = "?admin";
   }
