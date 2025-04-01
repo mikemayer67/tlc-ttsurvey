@@ -96,6 +96,14 @@ div.noscript div {
   width:100%;
 }
 
+#ttt-body div.body form td.input button {
+  padding:0 0.5em;
+  border-radius:0.25em;
+  font-size:0.95em;
+  background-color:#d8d8d8;
+  color:black;
+}
+
 #ttt-body div.body form table td.label {
   padding-right:0.5em;
   font-weight:bold;

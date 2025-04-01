@@ -111,7 +111,6 @@ add_input_section('Email Server',[
     'default' => 1,
   ], [
     'smtp_port',
-    'type'=>'number', 'min'=>1, 'step'=>1,
     'info' => [
       'SMTP server port (use default unless you must override normal values)',
       'Normal values are 465 for SMTPS and 587 for STARTTLS',
@@ -145,6 +144,16 @@ add_input_section('Email Server',[
     ],
     'info' => 'SMTP debugging level (added to the survey app log at the info level)',
     'default' => 0,
+  ], [
+    'Test Connection',
+    'type'=>'button',
+    'label'=>"Send Test Email",
+    'info'=>[
+      'At least one of the following email addresses must be set as recipient of the test email:',
+      'admin_email',
+      'primaary_admin (if they have an email set)',
+      'smtp_username (if a valid email address)',
+    ]
   ],
 ]);
 

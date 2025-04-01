@@ -80,7 +80,8 @@ function validate_all()
     ajax:"admin/validate_settings",
     nonce:ce.nonce, 
   };
-  ce.simple_inputs.forEach( (key) => { data[key] = ce[key].val() } );
+  ce.optional_inputs.forEach( (key) => { data[key] = ce[key].val() } );
+  ce.required_inputs.forEach( (key) => { data[key] = ce[key].val() } );
   $.ajax( {
     type: 'POST',
     url: ce.ajaxuri,
@@ -102,7 +103,6 @@ function validate_all()
     internal_error(jqXHR); 
   } )
   ;
-
 }
 
 function update_status()
@@ -133,12 +133,22 @@ $(document).ready(
 
     ce.submit.prop('disabled',true);
 
-    ce.simple_inputs = 'app_logo timezone admin_email pwreset_timeout pwreset_length'.split(' ');
-    ce.simple_inputs.forEach( (key) => {
+    ce.optional_inputs = [
+      'app_logo','timezone admin_email',
+      'pwreset_timeout','pwreset_length',
+      'smtp_port','smtp_reply_email','smtp_reply_name',
+    ];
+    ce.required_inputs = [
+      'smtp_host','smtp_username','smtp_password',
+    ];
+    ce.optional_inputs.forEach( (key) => {
       ce[key] = $('#'+key+'_input');
       ce[key].on('change',[key,true],validate_setting);
     } );
-    ce.smtp_auth.on('change',handle_smtp_auth_change);
+    ce.required_inputs.forEach( (key) => {
+      ce[key] = $('#'+key+'_input');
+      ce[key].on('change',[key,false],validate_setting);
+    } );
 
     ce.form.on('submit',handle_settings_submit);
 

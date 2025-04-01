@@ -80,7 +80,14 @@ function add_input_field($field)
       echo ">$option</option>";
     }
     echo "</select>";
-  } else {
+  } 
+  elseif ($type === 'button' ) {
+    // note that actual functionality will be added with javascript
+    $label = $field['label'] ?? $key;
+    $key = strtolower(str_replace(' ','_',$key));
+    echo "<button id='{$key}_button'>$label</button>";
+  } 
+  else {
     echo "<input id='{$key}_input' type='$type' name='$key'";
     if(!is_null($min))  { echo " min='$min'";   }
     if(!is_null($max))  { echo " max='$max'";   }

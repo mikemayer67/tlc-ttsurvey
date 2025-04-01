@@ -30,7 +30,6 @@ if($app_logo = $_POST['app_logo'] ?? null) {
 if($admin_email = $_POST['admin_email'] ?? null) {
   $admin_email = trim($admin_email);
   if(!filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
-    log_dev("Invalid address");
     $response['success'] = false;
     $response['admin_email'] = "Admin email is not a valid address";
   }
@@ -57,6 +56,58 @@ if(isset($len)) {
     }  
   }
 }
+
+$host = $_POST['smtp_host'] ?? null;
+if(isset($host)) {
+  $host = trim($host);
+  if(strlen($host)==0) {
+    $response['success'] = false;
+    $response['smtp_host'] = "Missing smtp_host (required)";
+  }
+  elseif(!filter_var($host,FILTER_VALIDATE_DOMAIN)) {
+    $response['success'] = false;
+    $response['smtp_host'] = "SMTP host must be a valid domain name";
+  }
+}
+
+$username = $_POST['smtp_username'] ?? null;
+if(isset($username)) {
+  $username = trim($username);
+  if(strlen($username)==0) {
+    $response['success'] = false;
+    $response['smtp_username'] = "Missing smtp_username (required)";
+  }
+}
+
+$password = $_POST['smtp_password'] ?? null;
+if(isset($password)) {
+  $password = trim($password);
+  if(strlen($password)==0) {
+    $response['success'] = false;
+    $response['smtp_password'] = "Missing smtp_password (required)";
+  }
+}
+
+$port = $_POST['smtp_port'] ?? null;
+if(isset($port)) {
+  $port = trim($port);
+  if(strlen($port) > 0) {
+    if(!( is_numeric($port) && is_integer(1*$port) && $port>0)) {
+      $response['success'] = false;
+      $response['smtp_port'] = "SMTP port must be a positive integer";
+    }  
+  }
+}
+
+if($email = $_POST['smtp_reply_email'] ?? null) {
+  $email = trim($email);
+  if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $response['success'] = false;
+    $response['smtp_reply_email'] = "smtp_reply_email is not a valid address";
+  }
+}
+
+log_dev("Result: ".print_r($response,true));
 
 echo json_encode($response);
 die();
