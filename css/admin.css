@@ -84,16 +84,8 @@ div.noscript div {
   table-layout:auto;
 }
 
-#ttt-body div.body form table td {
-  padding-top:1em;
-}
-
 #ttt-body div.body form table tr.info td {
   padding-top:0;
-}
-
-#ttt-body div.body form table td.input {
-  width:100%;
 }
 
 #ttt-body div.body form td.input button {
@@ -110,8 +102,26 @@ div.noscript div {
   white-space:nowrap;
 }
 
+#ttt-body div.body form table td div.input-box {
+  display:inline-block;
+  position:relative;
+  padding-top:1em;
+  width:min(600px,95%);
+}
+
+#ttt-body div.body form table td div.input-box div.error {
+  display:none;
+  color:darkred;
+  background:none;
+  font-style:italic;
+  font-size:0.85em;
+  position: absolute;
+  top:0;
+  right:0;
+}
+
 #ttt-body div.body form table td input {
-  width:85%;
+  width:100%;
   min-width:20em;
   background:white;
   border-color:#bbb;

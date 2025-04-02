@@ -88,6 +88,7 @@ function add_input_field($field)
     echo "<button id='{$key}_button'>$label</button>";
   } 
   else {
+    echo "<div class=input-box>";
     echo "<input id='{$key}_input' type='$type' name='$key'";
     if(!is_null($min))  { echo " min='$min'";   }
     if(!is_null($max))  { echo " max='$max'";   }
@@ -108,6 +109,7 @@ function add_input_field($field)
       echo " disabled";
     }
     echo ">";
+    echo "<div id='{$key}_error' class='error'>error</div></div>";
   }
   echo "</td></tr>";
   if($info) {

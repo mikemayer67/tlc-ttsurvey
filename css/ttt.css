@@ -43,7 +43,8 @@ input.hidden {
 }
 
 input.invalid-value {
-  background:var(--invalid-value-bg) !important;
+  color:darkred;
+  caret-color: black;
 }
 
 /* Copied from w3.css */

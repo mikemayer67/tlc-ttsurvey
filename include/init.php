@@ -48,7 +48,6 @@ function full_app_uri($q=null) {
   $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
   $host = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST);
   $path = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_PATH);
-  log_dev("full_app_uri($q) : '$scheme' '$host' '$path'");
   return "$scheme://$host$path" . ($q ? "?$q" : '');
 }
 

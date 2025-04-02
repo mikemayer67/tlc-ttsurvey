@@ -15,15 +15,16 @@ if($timezone = $_POST['timezone'] ?? null) {
   $timezone = trim($timezone);
   if(!date_default_timezone_set($timezone)) {
     $response['success'] = false;
-    $response['timezone'] = "Unrecognized timezone: $timezone";
+    $response['timezone'] = "unrecognized timezone";
   }
 }
 
 if($app_logo = $_POST['app_logo'] ?? null) {
   $app_logo = trim($app_logo);
-  if(!file_exists(app_file("img/$app_logo"))) {
+  $imgfile = app_file("img/$app_logo");
+  if(!(file_exists($imgfile) && getimagesize($imgfile))) {
     $response['success'] = false;
-    $response['app_logo'] = "Cannot find $app_logo on server";
+    $response['app_logo'] = "not found on server";
   }
 }
 
@@ -31,7 +32,7 @@ if($admin_email = $_POST['admin_email'] ?? null) {
   $admin_email = trim($admin_email);
   if(!filter_var($admin_email, FILTER_VALIDATE_EMAIL)) {
     $response['success'] = false;
-    $response['admin_email'] = "Admin email is not a valid address";
+    $response['admin_email'] = "invalid email address";
   }
 }
 
@@ -41,7 +42,7 @@ if(isset($to)) {
   if(strlen($to) > 0) {
     if(!( is_numeric($to) && $to>0 ) ) {
       $response['success'] = false;
-      $response['pwreset_timeout'] = "Reset timeout must be a positive number";
+      $response['pwreset_timeout'] = "not a positive number";
     }  
   }
 }
@@ -52,7 +53,7 @@ if(isset($len)) {
   if(strlen($len) > 0) {
     if(!( is_numeric($len) && is_integer(1*$len) && $len>=4 && $len <=20 ) ) {
       $response['success'] = false;
-      $response['pwreset_length'] = "Reset token length must be an integer in the range 4-20";
+      $response['pwreset_length'] = "not an integer in the range 4-20";
     }  
   }
 }
@@ -62,11 +63,11 @@ if(isset($host)) {
   $host = trim($host);
   if(strlen($host)==0) {
     $response['success'] = false;
-    $response['smtp_host'] = "Missing smtp_host (required)";
+    $response['smtp_host'] = "missing";
   }
   elseif(!filter_var($host,FILTER_VALIDATE_DOMAIN)) {
     $response['success'] = false;
-    $response['smtp_host'] = "SMTP host must be a valid domain name";
+    $response['smtp_host'] = "invalid domain name";
   }
 }
 
@@ -75,7 +76,7 @@ if(isset($username)) {
   $username = trim($username);
   if(strlen($username)==0) {
     $response['success'] = false;
-    $response['smtp_username'] = "Missing smtp_username (required)";
+    $response['smtp_username'] = "missing";
   }
 }
 
@@ -84,7 +85,7 @@ if(isset($password)) {
   $password = trim($password);
   if(strlen($password)==0) {
     $response['success'] = false;
-    $response['smtp_password'] = "Missing smtp_password (required)";
+    $response['smtp_password'] = "missing";
   }
 }
 
@@ -94,7 +95,7 @@ if(isset($port)) {
   if(strlen($port) > 0) {
     if(!( is_numeric($port) && is_integer(1*$port) && $port>0)) {
       $response['success'] = false;
-      $response['smtp_port'] = "SMTP port must be a positive integer";
+      $response['smtp_port'] = "not a positive integer";
     }  
   }
 }
@@ -103,7 +104,7 @@ if($email = $_POST['smtp_reply_email'] ?? null) {
   $email = trim($email);
   if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $response['success'] = false;
-    $response['smtp_reply_email'] = "smtp_reply_email is not a valid address";
+    $response['smtp_reply_email'] = "invalid email address";
   }
 }
 
