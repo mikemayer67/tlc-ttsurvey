@@ -8,7 +8,9 @@ define('PKG_NAME', 'tlc-ttsurvey');
 
 // Error handling 
 
-class BadInput extends \Exception {}
+class BadInput     extends \Exception {}
+class MissingInput extends \Exception {}
+class SMTPError    extends \Exception {}
 
 function api_die() 
 {

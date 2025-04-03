@@ -86,6 +86,7 @@ function add_input_field($field)
     $label = $field['label'] ?? $key;
     $key = strtolower(str_replace(' ','_',$key));
     echo "<button id='{$key}_button'>$label</button>";
+    echo "<span id='{$key}_response' class='button-response'></span>";
   } 
   else {
     echo "<div class=input-box>";

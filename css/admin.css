@@ -96,6 +96,16 @@ div.noscript div {
   color:black;
 }
 
+#ttt-body div.body form td.input span.button-response {
+  margin-left:1em;
+  font-weight:700;
+  color:#282;
+}
+
+#ttt-body div.body form td.input span.button-response.error {
+  color:darkred;
+}
+
 #ttt-body div.body form table td.label {
   padding-right:0.5em;
   font-weight:bold;

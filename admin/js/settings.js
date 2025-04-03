@@ -40,6 +40,7 @@ function validate_all()
   };
   ce.optional_inputs.forEach( (key) => { data[key] = ce[key].val() } );
   ce.required_inputs.forEach( (key) => { data[key] = ce[key].val() } );
+
   $.ajax( {
     type: 'POST',
     url: ce.ajaxuri,
@@ -64,8 +65,44 @@ function validate_all()
   ;
 }
 
+function handle_test_smtp()
+{
+  var data = {
+    ajax:"admin/validate_smtp",
+    nonce:ce.nonce, 
+    admin_email:ce.admin_email.val(),
+    primary_admin:ce.primary_admin.val(),
+  };
+  var smtp_elements = ce.form.find("[name^='smtp']");
+  smtp_elements.each( function() {
+    data[$(this).attr('name')] = $(this).val();
+  });
+
+  $.ajax( {
+    type: 'POST',
+    url: ce.ajaxuri,
+    dataType: 'json',
+    data: data,
+  } )
+  .done( function(data,status,jqXHR) {
+    if(data.success) {
+      ce.test_response.removeClass('error').html('Success');
+    } else {
+      ce.test_response.addClass('error').html(data.reason);
+    }
+  } )
+  .fail( function(jqXHR,textStatus,errorThrown) { 
+    internal_error(jqXHR); 
+  } )
+  ;
+
+  
+}
+
 function update_status()
 {
+  ce.test_response.html('');
+
   var errors = $('input.invalid-value');
   var dirty = has_changes();
   var can_submit = dirty && errors.length==0;
@@ -74,7 +111,6 @@ function update_status()
 
 function handle_change(event)
 {
-  dirty=true;
   clearTimeout(validation_timer);
   validation_timer = null;
   validate_all();
@@ -83,7 +119,6 @@ function handle_change(event)
 function handle_input(event)
 {
   clearTimeout(validation_timer);
-  dirty=true;
   $(this).removeClass('invalid-value');
   validation_timer = setTimeout(validate_all,750);
 }
@@ -115,13 +150,17 @@ function has_changes()
 
 $(document).ready(
   function($) {
-    ce.smtp_auth       = $('#smtp_auth_select');
-    ce.smtp_port       = $('#smtp_port_input');
     ce.form            = $('#admin-settings');
     ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-settings input[name=nonce]').val();
     ce.status          = $('#ttt-status');
+    ce.test_smtp       = $('#test_connection_button');
+    ce.test_response   = $('#test_connection_response');
     ce.submit          = $('#settings_submit');
+
+    ce.smtp_auth       = $('#smtp_auth_select');
+    ce.smtp_port       = $('#smtp_port_input');
+    ce.primary_admin   = $('#primary_admin_select');
 
     ce.submit.prop('disabled',true);
 
@@ -145,8 +184,8 @@ $(document).ready(
     } );
 
     ce.form.on('submit',handle_settings_submit);
-
     ce.smtp_auth.on('change',handle_smtp_auth_change);
+    ce.test_smtp.on('click',handle_test_smtp);
 
     $('select').on('change', handle_change );
     $('input').on('change',  handle_change );
