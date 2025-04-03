@@ -1,5 +1,5 @@
 var ce = {};
-var dirty = false;
+var saved_settings = {};
 
 var validation_timer=null;
 
@@ -15,7 +15,10 @@ function handle_smtp_auth_change(event)
 function handle_settings_submit(event)
 {
   event.preventDefault();
-  alert('Need to implement submit');
+  var sender = event.originalEvent.submitter;
+  if(ce.submit.is(sender)) {
+    alert('Need to implement submit');
+  }
 }
 
 function internal_error(jqXHR)
@@ -64,7 +67,9 @@ function validate_all()
 function update_status()
 {
   var errors = $('input.invalid-value');
-  ce.submit.prop('disabled',!dirty || errors.length>0);
+  var dirty = has_changes();
+  var can_submit = dirty && errors.length==0;
+  ce.submit.prop('disabled',!can_submit);
 }
 
 function handle_change(event)
@@ -83,6 +88,31 @@ function handle_input(event)
   validation_timer = setTimeout(validate_all,750);
 }
 
+function current_values()
+{
+  var inputs = ce.form.find('input:not([type=hidden], [type=submit])');
+  var selects = ce.form.find('select');
+  var values = {};
+  inputs.each( function() { 
+    values[$(this).attr('name')] = $(this).val();
+  });
+  selects.each( function() { 
+    values[$(this).attr('name')] = $(this).val();
+  });
+  return values;
+}
+
+function has_changes()
+{
+  var current = current_values();
+  for( var k in saved_settings ) {
+    if( saved_settings[k] != current[k] ) { 
+      return true;
+    }
+  }
+  return false;
+}
+
 $(document).ready(
   function($) {
     ce.smtp_auth       = $('#smtp_auth_select');
@@ -94,6 +124,8 @@ $(document).ready(
     ce.submit          = $('#settings_submit');
 
     ce.submit.prop('disabled',true);
+
+    saved_settings = current_values();
 
     ce.optional_inputs = [
       'app_logo','timezone','admin_email',

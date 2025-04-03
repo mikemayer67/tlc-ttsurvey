@@ -137,7 +137,7 @@ add_input_section('Email Server',[
   ], [
     'smtp_debug',
     'options' => [
-      'diabled',
+      'disabled',
       'messages sent from server to client',
       'all client/server messages',
       'all messages + additional connection info',
