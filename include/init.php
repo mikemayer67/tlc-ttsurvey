@@ -93,10 +93,8 @@ function gen_nonce($key)
 
 function validate_nonce($key,$src='POST',$invalidate=true)
 {
-  log_dev("validate_nonce($key,$src,$invalidate)");
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
-  log_dev("expected/actual = $expected/$actual");
   if($actual !== $expected) {
     log_warning("Invalid nonce: ($key:$actual/$expected)",2);
     api_die();
@@ -106,10 +104,8 @@ function validate_nonce($key,$src='POST',$invalidate=true)
 
 function validate_ajax_nonce($key)
 {
-  log_dev("validate_ajax_nonce($key)");
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual   = $_POST['nonce'];
-  log_dev("expected/actual = $expected/$actual");
   if($actual !== $expected) {
     log_warning("Invalid nonce: ($key:$actual/$expected)",2);
     $response = array('success'=>false, 'bad_nonce'=>true );

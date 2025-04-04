@@ -9,7 +9,6 @@ log_dev("-----AJAX HANDLER------");
 
 if($request = $_POST['ajax']) {
   list($scope,$action) = explode('/',$request);
-  log_dev(app_file("$scope/ajax/$action.php"));
   require(app_file("$scope/ajax/$action.php"));
 }
 

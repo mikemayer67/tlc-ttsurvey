@@ -8,6 +8,8 @@ $nonce = gen_nonce('admin-settings');
 require_once(app_file('admin/elements.php'));
 require_once(app_file('include/users.php'));
 
+Settings::log("start of settings_tab.php");
+
 $users = ['' => "--nobody--"];
 foreach(User::all_users() as $user) {
   $userid = $user->userid();
@@ -152,6 +154,8 @@ echo "<input id='settings_submit' class='submit' type='submit' value='Save Chang
 echo "</div>";
 
 echo "</form>";
+
+Settings::log("end of settings_tab.php");
 
 $js_uri = resource_uri('admin/js/settings.js');
 echo "<script src='$js_uri'></script>";

@@ -2,6 +2,7 @@ var ce = {};
 var saved_settings = {};
 
 var validation_timer=null;
+var status_timer=null;
 
 function handle_smtp_auth_change()
 {
@@ -140,12 +141,15 @@ function update_submit()
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
-  setTimeout(() => {ce.status.html('')},750);
+  clearTimeout(status_timer);
+  status_timer = setTimeout(() => {ce.status.html('')},750);
 }
 
 function show_status(level,msg)
 {
-  ce.status.html(msg).removeClass('none').addClass(level);
+  clearTimeout(status_timer);
+  status_timer = null;
+  ce.status.removeClass('none').addClass(level).html(msg);
 }
 
 function handle_change(event)

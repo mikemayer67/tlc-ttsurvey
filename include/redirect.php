@@ -62,7 +62,6 @@ function get_redirect_data()
   // expire the data if we're after the timeout period
   if( time() > $_SESSION[REDIRECT_TIMEOUT] ) 
   {
-    log_dev("Redirect data expired");
     clear_redirect_data();
     return null;
   }

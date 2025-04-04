@@ -63,7 +63,7 @@ function add_input_field($field)
   $optional = $field['optional'] ?? false;
   $locked   = key_exists('value',$field);
 
-  $cur_value = $field['value'] ?? get_setting($key) ?? '';
+  $cur_value = $field['value'] ?? Settings::raw($key) ?? '';
   $default   = $field['default'] ?? Settings::default($key) ?? '';
 
   echo "<tr class='$key'>";

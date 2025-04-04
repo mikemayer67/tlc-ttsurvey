@@ -31,7 +31,6 @@ class Settings {
   }
 
   static public function update(...$kv) {
-    log_dev("Settings::update: ".print_r($kv,true));
     if(count($kv) == 1) {
       $kv = $kv[0];
       foreach($kv as $k=>$v) {
@@ -73,12 +72,25 @@ class Settings {
     return self::$defaults[$key] ?? null; 
   }
   
+  static public function raw($key) 
+  {
+    if(key_exists($key,self::$values)) { return self::$values[$key]; }
+
+    $value = MySQLSelectValue('select value from tlc_tt_settings where name=?','s',$key); 
+    if( $value !== null && $value !== '' ) {
+      self::$values[$key] = $value;
+    }
+    return $value;
+  }
+
   static public function get($key) 
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
     $value = MySQLSelectValue('select value from tlc_tt_settings where name=?','s',$key); 
-    if(is_null($value) || $value==='') { 
+    if( $value !== null && $value !== '' ) {
+      self::$values[$key] = $value;
+    } else {
       $value = self::$defaults[$key] ?? null; 
     }
     return $value;
@@ -91,7 +103,6 @@ class Settings {
 
   static public function set($key,$value) 
   {
-    log_dev("Settings:set($key,$value)");
     if(is_null($value) || $value==='') {
       unset(self::$values[$key]);
       MySQLExecute('delete from tlc_tt_settings where name=?','s',$key);
@@ -111,10 +122,10 @@ Settings::load_all();
 // Convenience Accessors
 //
 
-function get_setting($key)        { return Settings::get($key);     } 
-function set_setting($key,$value) { Settings::set($key,$value);     }
-function clear_setting($key)      { Settings::clear($key);          } 
-function setting_default($key)    { return Settings::default($key); }
+function get_setting($key)        { return Settings::get($key);      } 
+function set_setting($key,$value) { Settings::set($key,$value);      }
+function clear_setting($key)      { Settings::clear($key);           } 
+function setting_default($key)    { return Settings::default($key);  }
 
 // App Look-and-Feel settings
 function app_name()            { return get_setting('app_name'); }

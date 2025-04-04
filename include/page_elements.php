@@ -128,7 +128,6 @@ function start_page($css,$kwargs=[])
 
 
   if($css === 'admin') {
-    log_dev("admin noscript");
     echo <<<HTMLNOSCRIPT
     <!-- Javascript required -->
     <noscript>
@@ -141,7 +140,6 @@ function start_page($css,$kwargs=[])
     HTMLNOSCRIPT;
   }
   elseif($css !== 'print') {
-    log_dev("other noscript ($css)");
     echo <<<HTMLNOSCRIPT
     <!-- Javascript suggestion -->
     <noscript>

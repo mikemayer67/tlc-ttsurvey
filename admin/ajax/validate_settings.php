@@ -10,21 +10,16 @@ validate_and_retain_nonce('admin-settings');
 
 handle_warnings();
 
-log_dev("validate_settings: ".print_r($_POST,true));
-
 $settings = $_POST;
 unset($settings['ajax']);
 unset($settings['nonce']);
 
 $response = Settings::validate($settings);
-log_dev("Result: ".print_r($response,true));
 
 // resonse currently contains the list of errors.
 //   it shows success if empty
 //   it shows failure if not empty
 $response['success'] = count($response) == 0;
-
-log_dev("Result: ".print_r($response,true));
 
 echo json_encode($response);
 die();

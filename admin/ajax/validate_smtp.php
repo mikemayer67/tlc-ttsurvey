@@ -13,8 +13,6 @@ require_once(app_file('include/users.php'));
 
 handle_warnings();
 
-log_dev("validate_smtp: ".print_r($_POST,true));
-
 $response = array("success"=>true);
 
 try 
@@ -77,12 +75,6 @@ try
 
   // attempt to send test email
   
-  log_dev("smtp_host => $smtp_host");
-  log_dev("smtp_port => $smtp_port");
-  log_dev("smtp_auth => $smtp_auth");
-  log_dev("smtp_username => $smtp_username");
-  log_dev("smtp_password => $smtp_password");
-  
   $mail = new PHPMailer(true);
 
   $mail->isSMTP();
@@ -116,7 +108,7 @@ try
   $mail->send();
 } 
 catch(SMTPError $e) {
-  log_dev("SMTP Error: ". $e->getMessage());
+  log_info("SMTP Error: ". $e->getMessage());
   $response = array('success'=>false, 'reason'=>$e->getMessage());
 }
 catch(Exception $e) {
@@ -124,11 +116,9 @@ catch(Exception $e) {
   $response = array('success'=>false, 'reason'=>$e->getMessage());
 }
 finally {
-  log_dev("SMTP logging:\n".ob_get_contents());
+  log_info("SMTP logging:\n".ob_get_contents());
   ob_end_clean();
 }
-
-log_dev("Result: ".print_r($response,true));
 
 echo json_encode($response);
 die();

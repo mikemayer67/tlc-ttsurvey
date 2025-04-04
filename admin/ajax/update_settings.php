@@ -9,8 +9,6 @@ validate_ajax_nonce('admin-settings');
 
 handle_warnings();
 
-log_dev("post: ".print_r($_POST,true));
-
 $settings = $_POST;
 unset($settings['nonce']);
 unset($settings['ajax']);
