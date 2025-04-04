@@ -10,80 +10,71 @@ require_once(app_file('include/login.php'));
 require_once(app_file('include/settings.php'));
 
 function dump($k,$v) {
+  if(is_null($v)) { $v = "[null]"; }
+  if($v==='') { $v = "''"; }
+  if($v===false) { $v = '*false*'; }
+  if($v===true) { $v = '*true*'; }
   echo "<pre>$k: ".print_r($v,true)."</pre>";
 }
 
-$v = get_setting('junk');
-dump("v",$v);
-set_setting('junk',5);
-$v = get_setting('junk');
-dump("v",$v);
+echo "<h2>Settings::Defaults</h2>";
+$defaults = ['app_name','timezone','is_dev','admin_name','pwreset_timeout','pwreset_length',
+  'log_level','smtp_auth','smtp_debug','junk','stuff'];
 
-$v = get_setting('horse');
-dump("v",$v);
-dump("null?",is_null($v)?'True':'False');
-dump("set?",isset($v)?'True':'False');
-dump("empty?",empty($v)?'True':'False');
-dump("Truthy?",$v?'True':'False');
+foreach($defaults as $key) {
+  $value = setting_default($key);
+  dump($key,$value);
+}
 
-echo "<h1>resume</h1>";
+echo "<h2>Settings::Functions</h2>";
 
-$cookies = resume_survey_as('kitkat15','1234567890');
+$all_funcs = ['app_name', 'app_logo', 'timezone', 'is_dev', 'admin_name', 'admin_email', 
+  'primary_admin', 'admin_contact', 'pwreset_timeout', 'pwreset_length', 'log_level', 
+  'smtp_host', 'smtp_auth', 'smtp_username', 'smtp_password', 'smtp_reply_email', 
+  'smtp_reply_name', 'smtp_debug', 'smtp_port'];
 
-echo "<h1>Admins</h1>";
-$admins = survey_admins();
-dump('admins',$admins);
-$admins = content_admins();
-dump('content',$admins);
-$admins = tech_admins();
-dump('tech',$admins);
+foreach($all_funcs as $f) {
+  $f="tlc\\tts\\$f";
+  $value = $f();
+  dump($f,$value);
+}
 
-$admins = admin_contacts();
-dump('admins',$admins);
-$admins = admin_contacts('content');
-dump('content',$admins);
-$admins = admin_contacts('tech');
-dump('tech',$admins);
+echo "<h2>Settings::Bogus</h2>";
+foreach(['junk','stuff'] as $key) {
+  $value = Settings::get($key);
+  dump($key,$value);
+}
 
-/*
-MySQLExecute("delete from tlc_tt_userids where userid like 'newtest%'");
-create_new_user("newtest123","Just a Test Subject",'1qaz@WSX3edcRFV','mikemayer67@vmwishes.com');
-create_new_user("newtest124","Just a Test Subject",'1qaz@WSX3edcRFV');
+echo "<h2>Settings::Update</h2>";
+Settings::update('junk',8,'stuff','cow','smtp_debug',3,'oops','oopv');
 
-$u = User::from_userid('newtest123');
+foreach($all_funcs as $f) {
+  $f="tlc\\tts\\$f";
+  $value = $f();
+  dump($f,$value);
+}
 
-$a = $u->get_anonid();
-dump("anonid",$a);
+foreach(['junk','stuff'] as $key) {
+  $value = Settings::get($key);
+  dump($key,$value);
+}
 
-$a = $u->get_or_create_anonid();
-dump("anonid",$a);
+echo "<h2>Settings::Clear</h2>";
+Settings::clear('stuff');
+Settings::set('junk',5);
+Settings::set('oops','');
+Settings::set('smtp_debug',0);
 
-$a = $u->get_anonid();
-dump("anonid",$a);
+echo"<h2>Settings::set with array</h2>";
+$data = ['junk'=>8, 'stuff'=>'cow', 'smtp_debug'=>3,'oops'=>'oopv'];
+Settings::update($data);
+foreach(['junk','stuff','oops','smtp_debug'] as $key) {
+  $value = Settings::get($key);
+  dump($key,$value);
+}
 
-echo "<h2>GET</h2>";
-echo "<PRE>", print_r($_GET,true), "</pre>";
-echo "<h2>POST</h2>";
-echo "<PRE>", print_r($_POST,true), "</pre>";
-echo "<h2>REQUEST</h2>";
-echo "<PRE>", print_r($_REQUEST,true), "</pre>";
-
-echo "<h2>Users</h2>";
-log_dev("--User Lookup--");
-$users = User::lookup('mikemayer67@vmwishes.com');
-echo "<pre>" . print_r($users,true) . "</pre>";
-$user = User::lookup('kitkat15');
-echo "<pre>" . print_r($user,true) . "</pre>";
-$user = User::lookup('snickers');
-$user->set_fullname("I am a Krazy Kat");
-echo "<pre>" . print_r($user,true) . "</pre>";
-$users = User::lookup('mikemayer67@vmwishes.com');
-echo "<pre>" . print_r($users,true) . "</pre>";
-
-log_dev("--Set Fullname--");
-
-User::lookup('mikemayer67')->set_fullname("Michael A. Mayer");
-User::lookup('mikemayer67')->set_fullname("Mike Mayer");
-User::lookup('mikemayer67')->set_fullname("Mike Mayer");
- */
+Settings::clear('stuff');
+Settings::set('junk',5);
+Settings::set('oops','');
+Settings::set('smtp_debug',0);
 
