@@ -15,11 +15,10 @@ require_once(app_file('include/logger.php'));
 //
 // As sumch this file should be included using require rather than require_once.
 
-// Except that we will validate the nonce right up front...
-validate_post_nonce('login');
-
 function handle_login_form()
 {
+  validate_nonce('login');
+
   try {
     // handle resume buttons
     if( $resume = $_POST['resume'] ?? null ) 
@@ -40,6 +39,7 @@ function handle_login_form()
     {
       internal_error("Login handler triggered without resume or login action"); 
     }
+    
   }
   catch (BadInput $e) {
     // Something went wrong processing the login form

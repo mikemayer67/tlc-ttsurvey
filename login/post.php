@@ -11,7 +11,7 @@ require_once(app_file('include/logger.php'));
 
 function handle_login_form()
 {
-  validate_post_nonce('login');
+  validate_nonce('login');
 
   require_once(app_file('/include/login.php'));
   require_once(app_file('/include/status.php'));
@@ -91,13 +91,3 @@ function handle_login_with_password()
   die();
 }
 
-//////////////////////////////////////////////////
-// Handlers for the register new user form
-//////////////////////////////////////////////////
-
-function handle_register_form()
-{
-  validate_post_nonce('login');
-  print("<h1>REGISTER</h1>");
-  die();
-}

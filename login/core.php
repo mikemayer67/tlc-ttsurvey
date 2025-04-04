@@ -7,8 +7,12 @@ require_once(app_file('include/redirect.php'));
 
 // Handle special requests that use GET queries
 
-if(key_exists('forget',$_GET)) {
-  validate_get_nonce('login');
+if(key_exists('forget',$_GET)) 
+{
+  // nonce from get request, but don't drop it as this isn't an actual
+  //   form submission
+  validate_nonce('login',false);
+
   $forget = $_GET['forget'] ?? null;
   forget_user_token($forget);
   header('Location: '.app_uri());

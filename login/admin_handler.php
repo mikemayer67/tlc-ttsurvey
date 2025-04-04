@@ -10,10 +10,10 @@ require_once(app_file('/include/status.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/validation.php'));
 
-validate_post_nonce('admin');
-
 function handle_admin_form()
 {
+  validate_nonce('admin');
+
   unset($_SESSION['admin-id']);
 
   $action   = $_POST['action']   ?? null;

@@ -16,11 +16,10 @@ require_once(app_file('include/validation.php'));
 //
 // As sumch this file should be included using require rather than require_once.
 
-// Except that we will validate the nonce right up front...
-validate_post_nonce('pwreset');
-
 function handle_pwreset_form()
 {
+  validate_nonce('pwreset');
+
   try{
     if(!key_exists('action',$_POST)) {
       internal_error("Password reset handler triggered without action");

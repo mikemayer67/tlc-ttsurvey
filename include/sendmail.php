@@ -79,14 +79,14 @@ function sendmail($email,$subject,$text,$html=null)
   {
     global $SendmailLogToken;
     $SendmailLogToken = gen_token(4);
-    log_error("[$SendmailLogToken] Failed to send email: ".$e->getMessage());
+    log_error("[$SendmailLogToken] Failed to send email: ".$e->getMessage(),0);
     return false;
   }
   catch (Exception $e) 
   {
     global $SendmailLogToken;
     $SendmailLogToken = gen_token(4);
-    log_error("[$SendmailLogToken] Failed to send email {$mail->ErrorInfo}");
+    log_error("[$SendmailLogToken] Failed to send email {$mail->ErrorInfo}",0);
     return false;
   }
   finally
@@ -176,7 +176,7 @@ function sendmail_recovery($email,$tokens,&$error=null)
   }
 
   $url = full_app_uri("p=pwreset");
-  $timeout = intval(round( pwreset_timeout()/ 60));
+  $timeout = pwreset_timeout();
 
   $html .= "</div>";
   $html .= "<div style='margin:20px 1em;'>";

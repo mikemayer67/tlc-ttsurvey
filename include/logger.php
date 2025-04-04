@@ -5,14 +5,23 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once app_file('include/settings.php');
 
+function log_file() 
+{ 
+  static $log_file = null;
+  if(!$log_file) {
+    $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+    $log_file = $config['log_file'] ?? PKG_NAME.'.log';
+  }
+  return $log_file;
+}
+
 function logger()
 {
   static $_fp = null;
 
   if(is_null($_fp))
   {
-    $tz = app_timezone();
-    date_default_timezone_set($tz ?? 'UTF8');
+    date_default_timezone_set(timezone() ?? 'UTF8');
 
     $logfile = app_file(log_file());
     if( file_exists($logfile) and filesize($logfile) > 512*1024 ) {
@@ -79,7 +88,7 @@ function write_to_logger($prefix,$msg,$trace_level=1)
   {
     $timestamp = date("d-M-y H:i:s.v T");
 
-    if(! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
+    if($trace_level>0 && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
       $trace = debug_backtrace();
       $file = $trace[$trace_level]["file"];
       $line = $trace[$trace_level]["line"];
@@ -132,4 +141,19 @@ function log_warning($msg,$trace=1) {
 function log_error($msg,$trace=1) {
   write_to_logger("ERROR",$msg,$trace);
   error_log(PKG_NAME.": $msg");
+}
+
+function warning_handler($errno,$errstr,$errfile,$errline)
+{
+
+  if(str_starts_with($errfile,APP_DIR)) {
+    $errfile = substr($errfile,1+strlen(APP_DIR));
+  }
+  log_warning("$errstr [$errfile:$errline]",0);
+  return true;
+}
+
+function handle_warnings() 
+{
+  set_error_handler('tlc\tts\warning_handler',E_WARNING|E_NOTICE);
 }

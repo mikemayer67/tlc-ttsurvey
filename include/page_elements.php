@@ -31,6 +31,17 @@ function add_link_tag($href,$class='',$alt='') {
   echo link_tag($href,$class,$alt); 
 }
 
+function add_hidden_input($name,$value)
+{
+  echo "<input type='hidden' name='$name' value='$value'>";
+}
+
+function add_hidden_submit($name,$value)
+{
+  echo "<input type='submit' class='hidden' name='$name' value='$value'>";
+}
+
+
 todo("Update the following commentary on start_page function");
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
@@ -51,6 +62,9 @@ function start_page($css,$kwargs=[])
   $title = active_survey_title() ?? app_name();
   $title_len = strlen($title);
 
+  log_dev("start_page($css)");
+  $trace = debug_backtrace();
+
   echo <<<HTMLHEAD
   <!DOCTYPE html><html><head>
   <meta charset='UTF-8'>
@@ -66,8 +80,9 @@ function start_page($css,$kwargs=[])
 
   // don't include css or javascript on print pages
   if($css !== 'print') {
-    $ttt = css_uri('ttt');
-    $css = css_uri("$css");
+    $ttt_uri = css_uri('ttt');
+    $css_uri = css_uri("$css");
+    $js_uri = js_uri("$css.js");
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='https://code.jquery.com/jquery-3.7.1.min.js'
@@ -76,8 +91,9 @@ function start_page($css,$kwargs=[])
     </script>
 
     <!-- Style -->
-    <link rel='stylesheet' type='text/css' href='$ttt'>
-    <link rel='stylesheet' type='text/css' href='$css'>
+    <link rel='stylesheet' type='text/css' href='$ttt_uri'>
+    <link rel='stylesheet' type='text/css' href='$css_uri'>
+    <script src='$js_uri'></script>
 
     HTMLHEAD;
   }
@@ -111,7 +127,20 @@ function start_page($css,$kwargs=[])
   }
 
 
-  if($css !== 'print') {
+  if($css === 'admin') {
+    echo <<<HTMLADMIN
+    <!-- Javascript required -->
+    <noscript>
+    <div class='noscript'>
+      <div class='ttt-card'>
+        Javascript is required for the Admin Dashboard
+      </div>
+    </div>
+    </noscript>
+    <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
+    HTMLADMIN;
+  }
+  elseif($css !== 'print') {
     echo <<<HTMLNOSCRIPT
     <!-- Javascript suggestion -->
     <noscript>
@@ -150,5 +179,4 @@ function end_page()
   echo "</body>\n"; // html body
   echo "</html>\n";
 }
-
 

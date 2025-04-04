@@ -43,7 +43,7 @@ function MySQLConnection()
       $conn = new \mysqli($host, $username, $password, $schema);
     } 
     catch(\mysqli_sql_exception $e) {
-      error_log(sprintf("mysqli(%s, %s, %s, %s)",$host,$username,$password,$schema));
+      error_log(sprintf("mysqli(%s, %s, %s, %s)",$host,$username,$password,$schema),0);
       die();
     }
     if( ! $conn->set_charset($charset) ) 
@@ -61,8 +61,6 @@ function MySQLCommit()           { MySQLConnection()->commit();            }
 
 function MySQLExecute($query,$types=null,...$params)
 {
-  // log_dev("MySQLExecute($query,$types,".log_array($params).")");
-
   if(preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for select queries");
   }
@@ -87,8 +85,6 @@ function MySQLExecute($query,$types=null,...$params)
 
 function MySQLSelect($all,$mode,$query,$types=null,$params=[])
 {
-  // log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
-
   if(! preg_match("/^\s*select/i",$query)) {
     internal_error("Use MySQLSelect for non-select queries");
   }

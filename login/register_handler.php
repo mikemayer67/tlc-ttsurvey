@@ -16,11 +16,10 @@ require_once(app_file('include/validation.php'));
 //
 // As sumch this file should be included using require rather than require_once.
 
-// Except that we will validate the nonce right up front...
-validate_post_nonce('register');
-
 function handle_register_form()
 {
+  validate_nonce('register');
+
   try {
     if(!key_exists('action',$_POST)) {
       internal_error("Register handler triggered without action");

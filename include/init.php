@@ -8,7 +8,9 @@ define('PKG_NAME', 'tlc-ttsurvey');
 
 // Error handling 
 
-class BadInput extends \Exception {}
+class BadInput     extends \Exception {}
+class MissingInput extends \Exception {}
+class SMTPError    extends \Exception {}
 
 function api_die() 
 {
@@ -41,13 +43,13 @@ function app_file($path)   { return APP_DIR . "/$path"; }
 function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
 function img_uri($img)     { return APP_URI . "/img/$img"     . no_cache();   }
 function css_uri($css)     { return APP_URI . "/css/$css.css" . no_cache();   }
-function js_uri($filename) { return APP_URI . "/js/$filename" . no_cache();   }
+function js_uri($filename) { return APP_URI . "/js/$filename";   }
+function resource_uri($filename) { return APP_URI . "/$filename"; }
 
 function full_app_uri($q=null) {
   $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
   $host = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST);
   $path = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_PATH);
-  log_dev("full_app_uri($q) : '$scheme' '$host' '$path'");
   return "$scheme://$host$path" . ($q ? "?$q" : '');
 }
 
@@ -89,22 +91,29 @@ function gen_nonce($key)
   return $nonce;
 }
 
-function get_nonce($key)
+function validate_nonce($key,$src='POST',$invalidate=true)
 {
-  $nonce = $_SESSION['nonce'][$key] ?? null;
-  $_SESSION['nonce'][$key] = null;
-  return $nonce;
+  $expected = $_SESSION['nonce'][$key] ?? null;
+  $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
+  if($actual !== $expected) {
+    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
+    api_die();
+  }
+  if($invalidate) { $_SESSION['nonce'][$key] = null; }
 }
 
-function validate_nonce($key,$nonce,$msg="Invalid Nonce",$trace=2)
+function validate_ajax_nonce($key)
 {
-  $expected = get_nonce($key);
-  if($nonce !== $expected) {
-    log_warning("$msg ($key:$nonce/$expected)",$trace);
-    api_die();
+  $expected = $_SESSION['nonce'][$key] ?? null;
+  $actual   = $_POST['nonce'];
+  if($actual !== $expected) {
+    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
+    $response = array('success'=>false, 'bad_nonce'=>true );
+    echo json_encode($response);
+    die();
   }
 }
 
-function validate_post_nonce($key,$msg="Invalid Nonce") { validate_nonce($key,$_POST['nonce'],$msg,3); }
-function validate_get_nonce($key,$msg="Invalid Nonce")  { validate_nonce($key,$_GET['ttt'],$msg,3); }
-
+function validate_get_nonce($key,$invalidate=true)   { validate_nonce($key,'GET',$invalidate); }
+function validate_and_retain_nonce($key,$src='POST') { validate_nonce($key,$src,false);        }
+function validate_and_retain_get_nonce($key)         { validate_nonce($key,'GET',false);       }

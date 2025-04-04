@@ -4,6 +4,7 @@
   --navbar-color:white;
   --font-red:darkred;
   --empty-field-color:#ffffcc;
+  --invalid-value-bg:#ffcccc;
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
 
@@ -39,6 +40,11 @@ div.noscript {
 
 input.hidden {
   display:none;
+}
+
+input.invalid-value {
+  color:darkred;
+  caret-color: black;
 }
 
 /* Copied from w3.css */
@@ -158,13 +164,13 @@ div.ttt-splash img {
   border-left: solid 5px;
   border-radius:5px;
 
-  display:none;
+  opacity:1;
+  transition: all 0.5s;
 }
 
 #ttt-status.info,
 #ttt-status.warning,
 #ttt-status.error {
-  display:block;
 }
 
 #ttt-status.info {
@@ -183,6 +189,10 @@ div.ttt-splash img {
 }
 
 #ttt-status.none {
+  opacity:0;
+  transform:scaleY(0);
+  margin: 0 auto;
+  font-size:0;
 }
 
 #ttt-status div {
@@ -204,6 +214,9 @@ div.ttt-splash img {
 
 @media only screen and (min-width:640px) 
 {
+  #ttt-small-screen {
+    display:none;
+  }
 }
 
 @media only screen and (min-width:1024px)
