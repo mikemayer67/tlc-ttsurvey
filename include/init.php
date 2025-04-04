@@ -91,23 +91,33 @@ function gen_nonce($key)
   return $nonce;
 }
 
-function validate_nonce($key,$post=true)
+function validate_nonce($key,$src='POST',$invalidate=true)
 {
+  log_dev("validate_nonce($key,$src,$invalidate)");
   $expected = $_SESSION['nonce'][$key] ?? null;
-  $actual   = $post ? $_POST['nonce'] : $_GET['ttt'];
+  $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
+  log_dev("expected/actual = $expected/$actual");
   if($actual !== $expected) {
     log_warning("Invalid nonce: ($key:$actual/$expected)",2);
     api_die();
+  }
+  if($invalidate) { $_SESSION['nonce'][$key] = null; }
+}
+
+function validate_ajax_nonce($key)
+{
+  log_dev("validate_ajax_nonce($key)");
+  $expected = $_SESSION['nonce'][$key] ?? null;
+  $actual   = $_POST['nonce'];
+  log_dev("expected/actual = $expected/$actual");
+  if($actual !== $expected) {
+    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
+    $response = array('success'=>false, 'bad_nonce'=>true );
+    echo json_encode($response);
+    die();
   }
 }
 
-function validate_and_drop_nonce($key,$post=true)
-{
-  $expected = $_SESSION['nonce'][$key] ?? null;
-  $actual   = $post ? $_POST['nonce'] : $_GET['ttt'];
-  $_SESSION['nonce'][$key] = null;
-  if($actual !== $expected) {
-    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
-    api_die();
-  }
-}
+function validate_get_nonce($key,$invalidate=true)   { validate_nonce($key,'GET',$invalidate); }
+function validate_and_retain_nonce($key,$src='POST') { validate_nonce($key,$src,false);        }
+function validate_and_retain_get_nonce($key)         { validate_nonce($key,'GET',false);       }

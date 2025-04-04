@@ -36,7 +36,7 @@ try
   $smtp_auth = $smtp_auth ? PHPMailer::ENCRYPTION_STARTTLS : PHPMailer::ENCRYPTION_SMTPS;
 
   $smtp_port = $_POST['smtp_port'] ?? null;
-  if(!isset($smtp_port)) {
+  if(!$smtp_port) {
     $smtp_port = ($smtp_auth == PHPMailer::ENCRYPTION_STARTTLS) ? 587 : 465;
   }
 
@@ -76,6 +76,12 @@ try
   }
 
   // attempt to send test email
+  
+  log_dev("smtp_host => $smtp_host");
+  log_dev("smtp_port => $smtp_port");
+  log_dev("smtp_auth => $smtp_auth");
+  log_dev("smtp_username => $smtp_username");
+  log_dev("smtp_password => $smtp_password");
   
   $mail = new PHPMailer(true);
 

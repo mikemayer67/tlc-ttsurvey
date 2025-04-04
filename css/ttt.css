@@ -164,13 +164,13 @@ div.ttt-splash img {
   border-left: solid 5px;
   border-radius:5px;
 
-  display:none;
+  opacity:1;
+  transition: all 0.5s;
 }
 
 #ttt-status.info,
 #ttt-status.warning,
 #ttt-status.error {
-  display:block;
 }
 
 #ttt-status.info {
@@ -189,6 +189,10 @@ div.ttt-splash img {
 }
 
 #ttt-status.none {
+  opacity:0;
+  transform:scaleY(0);
+  margin: 0 auto;
+  font-size:0;
 }
 
 #ttt-status div {

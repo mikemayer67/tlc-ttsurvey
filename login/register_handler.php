@@ -18,7 +18,7 @@ require_once(app_file('include/validation.php'));
 
 function handle_register_form()
 {
-  validate_and_drop_nonce('register');
+  validate_nonce('register');
 
   try {
     if(!key_exists('action',$_POST)) {

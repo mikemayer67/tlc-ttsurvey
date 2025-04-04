@@ -11,7 +11,7 @@ require_once(app_file('include/logger.php'));
 
 function handle_login_form()
 {
-  validate_and_drop_nonce('login');
+  validate_nonce('login');
 
   require_once(app_file('/include/login.php'));
   require_once(app_file('/include/status.php'));

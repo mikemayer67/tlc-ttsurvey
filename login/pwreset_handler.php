@@ -18,7 +18,7 @@ require_once(app_file('include/validation.php'));
 
 function handle_pwreset_form()
 {
-  validate_and_drop_nonce('pwreset');
+  validate_nonce('pwreset');
 
   try{
     if(!key_exists('action',$_POST)) {

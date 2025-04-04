@@ -3,12 +3,12 @@ var saved_settings = {};
 
 var validation_timer=null;
 
-function handle_smtp_auth_change(event)
+function handle_smtp_auth_change()
 {
   if(this.value == '0') {
-    ce.smtp_port.attr('placeholder','465');
+    ce.inputs.smtp_port.attr('placeholder','465');
   } else {
-    ce.smtp_port.attr('placeholder','587');
+    ce.inputs.smtp_port.attr('placeholder','587');
   };
 }
 
@@ -16,9 +16,42 @@ function handle_settings_submit(event)
 {
   event.preventDefault();
   var sender = event.originalEvent.submitter;
-  if(ce.submit.is(sender)) {
-    alert('Need to implement submit');
-  }
+  if(!ce.submit.is(sender)) { return; }
+
+  var cur_values = current_values();
+  var data = {...cur_values, 'ajax':"admin/update_settings", 'nonce':ce.nonce};
+
+  $.ajax( {
+    type: 'POST',
+    url: ce.ajaxuri,
+    dataType: 'json',
+    data: data,
+  } )
+  .done( function(data,status,jqXHR) {
+    if(data.success) {
+      ce.nonce = data.nonce;
+      ce.hidden['nonce'].attr('value',data.nonce);
+      saved_settings = cur_values;
+      show_status('info','Changes Saved');
+    } 
+    else {
+      if( 'bad_nonce' in data ) {
+        alert("Somthing got out of sync.  Reloading page.");
+        location.reload();
+      } else {
+        for( const [key,error] of Object.entries(data) ) {
+          if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
+          if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
+        }
+        update_submit();
+      }
+    }
+    update_submit();
+  } )
+  .fail( function(jqXHR,textStatus,errorThrown) { 
+    internal_error(jqXHR); 
+  } )
+  ;
 }
 
 function internal_error(jqXHR)
@@ -38,8 +71,9 @@ function validate_all()
     ajax:"admin/validate_settings",
     nonce:ce.nonce, 
   };
-  ce.optional_inputs.forEach( (key) => { data[key] = ce[key].val() } );
-  ce.required_inputs.forEach( (key) => { data[key] = ce[key].val() } );
+  for( const [key,field] of Object.entries(ce.inputs)) {
+    data[key] = field.val();
+  }
 
   $.ajax( {
     type: 'POST',
@@ -49,15 +83,14 @@ function validate_all()
   } )
   .done( function(data,status,jqXHR) {
     if(!data.success) {
-      Object.entries(data).forEach( (entry) => {
-        const [key,value] = entry;
-        if( key !== 'success' ) {
-          ce[key+'_error'].show().html(value);
-          ce[key].addClass('invalid-value');
+      for( const [key,value] of Object.entries(data) ) {
+        if(key in ce.inputs) {
+          ce.inputs[key].addClass('invalid-value');
+          ce.error_divs[key].show().html(value);
         }
-      });
+      }
     }
-    update_status();
+    update_submit();
   } )
   .fail( function(jqXHR,textStatus,errorThrown) { 
     internal_error(jqXHR); 
@@ -70,13 +103,10 @@ function handle_test_smtp()
   var data = {
     ajax:"admin/validate_smtp",
     nonce:ce.nonce, 
-    admin_email:ce.admin_email.val(),
-    primary_admin:ce.primary_admin.val(),
   };
-  var smtp_elements = ce.form.find("[name^='smtp']");
-  smtp_elements.each( function() {
-    data[$(this).attr('name')] = $(this).val();
-  });
+  for( const [key,field] of Object.entries(ce.inputs) ) {
+    data[key] = field.val(); 
+  }
 
   $.ajax( {
     type: 'POST',
@@ -95,11 +125,9 @@ function handle_test_smtp()
     internal_error(jqXHR); 
   } )
   ;
-
-  
 }
 
-function update_status()
+function update_submit()
 {
   ce.test_response.html('');
 
@@ -109,8 +137,20 @@ function update_status()
   ce.submit.prop('disabled',!can_submit);
 }
 
+function hide_status()
+{
+  ce.status.removeClass().addClass('none');
+  setTimeout(() => {ce.status.html('')},750);
+}
+
+function show_status(level,msg)
+{
+  ce.status.html(msg).removeClass('none').addClass(level);
+}
+
 function handle_change(event)
 {
+  hide_status();
   clearTimeout(validation_timer);
   validation_timer = null;
   validate_all();
@@ -118,6 +158,7 @@ function handle_change(event)
 
 function handle_input(event)
 {
+  hide_status();
   clearTimeout(validation_timer);
   $(this).removeClass('invalid-value');
   validation_timer = setTimeout(validate_all,750);
@@ -125,15 +166,9 @@ function handle_input(event)
 
 function current_values()
 {
-  var inputs = ce.form.find('input:not([type=hidden], [type=submit])');
-  var selects = ce.form.find('select');
   var values = {};
-  inputs.each( function() { 
-    values[$(this).attr('name')] = $(this).val();
-  });
-  selects.each( function() { 
-    values[$(this).attr('name')] = $(this).val();
-  });
+  Object.entries(ce.inputs).forEach(  ([key,field]) => { values[key] = field.val(); } );
+  Object.entries(ce.selects).forEach( ([key,field]) => { values[key] = field.val(); } );
   return values;
 }
 
@@ -154,43 +189,44 @@ $(document).ready(
     ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-settings input[name=nonce]').val();
     ce.status          = $('#ttt-status');
-    ce.test_smtp       = $('#test_connection_button');
     ce.test_response   = $('#test_connection_response');
     ce.submit          = $('#settings_submit');
 
-    ce.smtp_auth       = $('#smtp_auth_select');
-    ce.smtp_port       = $('#smtp_port_input');
-    ce.primary_admin   = $('#primary_admin_select');
-
     ce.submit.prop('disabled',true);
+
+    ce.hidden = {}
+    ce.form.find('input[type=hidden]').each(
+      function() { ce.hidden[$(this).attr('name')] = $(this) }
+    );
+    ce.inputs = {}
+    ce.form.find('input').not('.hidden').not('[type=hidden]').not('[type=submit]').each(
+      function() { ce.inputs[$(this).attr('name')] = $(this) }
+    );
+    ce.selects = {}
+    ce.form.find('select').each(
+      function() { ce.selects[$(this).attr('name')] = $(this) }
+    );
+    ce.error_divs = {}
+    ce.form.find('div.error').each(
+      function() { ce.error_divs[$(this).attr('name')] = $(this) }
+    )
 
     saved_settings = current_values();
 
-    ce.optional_inputs = [
-      'app_logo','timezone','admin_email',
-      'pwreset_timeout','pwreset_length',
-      'smtp_port','smtp_reply_email','smtp_reply_name',
-    ];
-    ce.required_inputs = [
-      'smtp_host','smtp_username','smtp_password',
-    ];
-    ce.optional_inputs.forEach( (key) => {
-      ce[key] = $('#'+key+'_input');
-      ce[key+'_error'] = $('#'+key+'_error');
-    } );
-    ce.required_inputs.forEach( (key) => {
-      ce[key] = $('#'+key+'_input');
-      ce[key+'_error'] = $('#'+key+'_error');
-    } );
-
     ce.form.on('submit',handle_settings_submit);
-    ce.smtp_auth.on('change',handle_smtp_auth_change);
-    ce.test_smtp.on('click',handle_test_smtp);
+    for( const e of Object.values(ce.selects) ) {
+      e.on('change',handle_change);
+    }
+    for( const e of Object.values(ce.inputs) ) {
+      e.on('change',handle_change);
+      e.on('input',handle_input);
+    };
 
-    $('select').on('change', handle_change );
-    $('input').on('change',  handle_change );
-    $('input').on('input',   handle_input  );
+    // smtp specific fields
+    ce.selects.smtp_auth.on('change',handle_smtp_auth_change);
+    $('#test_connection_button').on('click',handle_test_smtp);
 
+    handle_smtp_auth_change();  // to set initial placeholder value
     validate_all();
   }
 );

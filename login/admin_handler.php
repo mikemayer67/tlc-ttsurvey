@@ -12,7 +12,7 @@ require_once(app_file('include/validation.php'));
 
 function handle_admin_form()
 {
-  validate_and_drop_nonce('admin');
+  validate_nonce('admin');
 
   unset($_SESSION['admin-id']);
 

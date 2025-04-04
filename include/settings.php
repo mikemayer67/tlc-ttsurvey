@@ -31,6 +31,7 @@ class Settings {
   }
 
   static public function update(...$kv) {
+    log_dev("Settings::update: ".print_r($kv,true));
     if(count($kv) == 1) {
       $kv = $kv[0];
       foreach($kv as $k=>$v) {
@@ -43,6 +44,28 @@ class Settings {
         self::set($k,$v);
       }
     }
+  }
+
+  static public function validate(...$args) { 
+    if( count($args) == 1 ) {
+      $kv = $args[0];
+    } else {
+      $kv = array();
+      while(count($kv) > 1) {
+        $k = array_shift($kv);
+        $v = array_shift($kv);
+        $kv[$k] = $v;
+      }
+    }
+    $errors = array();
+    $error='';
+    foreach($kv as $key=>$value) {
+      $vfunc = "tlc\\tts\\validate_$key";
+      if(function_exists($vfunc)) {
+        if(!$vfunc($value,$error)) { $errors[$key] = $error; }
+      }
+    }
+    return $errors;
   }
 
   static public function default($key) 
@@ -68,6 +91,7 @@ class Settings {
 
   static public function set($key,$value) 
   {
+    log_dev("Settings:set($key,$value)");
     if(is_null($value) || $value==='') {
       unset(self::$values[$key]);
       MySQLExecute('delete from tlc_tt_settings where name=?','s',$key);
@@ -82,6 +106,10 @@ class Settings {
 };
 
 Settings::load_all();
+
+//
+// Convenience Accessors
+//
 
 function get_setting($key)        { return Settings::get($key);     } 
 function set_setting($key,$value) { Settings::set($key,$value);     }
@@ -133,4 +161,116 @@ function smtp_port() {
   return $port;
 }
 
+//
+// Validation functions
+//
 
+function _fix_validate_value(&$value)
+{
+  if(isset($value)) { $value = trim($value); }
+  else              { $value = ''; }
+}
+
+function validate_timezone($timezone,&$error=null) {
+  $error = '';
+  _fix_validate_value($timezone);
+  if($timezone==='') { return true; }
+  if(!date_default_timezone_set($timezone)) { 
+    $error = "unrecognized timezone";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_app_logo($logo,&$error=null) {
+  $error = '';
+  _fix_validate_value($logo);
+  if($logo==='') { return true; }
+  $imgfile = app_file("img/$logo");
+  if( !(file_exists($imgfile) && getimagesize($imgfile)) ) {
+    $error = "not found on server";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_admin_email($email,&$error=null) {
+  $error = '';
+  _fix_validate_value($email);
+  if($email==='') { return true; }
+  if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error = "invalid email address"; 
+  }
+  return strlen($error) == 0;
+}
+
+function validate_pwreset_timeout($timeout,&$error=null) {
+  $error = '';
+  _fix_validate_value($timeout);
+  if($timeout==='') { return true; }
+  if(is_numeric($timeout)) {
+    $timeout = 1*$timeout;
+    if($timeout <= 0) { $error = "not a postive number"; }
+  } else { 
+    $error = "not a number";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_pwreset_length($len,&$error=null) {
+  $error = '';
+  _fix_validate_value($len);
+  if($len==='') { return true; }
+  if(is_numeric($len)) {
+    $len = 1*$len;
+    if(!is_integer($len)) { $error = "not an integer"; }
+    elseif($len<4)        { $error = "too small (<4)"; }
+    elseif($len>20)       { $error = "too big (>20)"; }
+  } else {
+    $error = "not an integer";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_smtp_host($host,&$error=null) {
+  $error = '';
+  _fix_validate_value($host);
+  if( $host === '' ) { $error = "missing"; }
+  elseif(!filter_var($host,FILTER_VALIDATE_DOMAIN)) {
+    $error = "invalid domain name";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_smtp_username($name,&$error=null) {
+  $error = '';
+  _fix_validate_value($name);
+  if($name==='') { $error = 'missing'; }
+  return strlen($error) == 0;
+}
+
+function validate_smtp_password($password,&$error=null) {
+  $error = '';
+  _fix_validate_value($password);
+  if($password==='') { $error = 'missing'; }
+  return strlen($error) == 0;
+}
+
+function validate_smtp_port($port,&$error=null) {
+  $error = '';
+  _fix_validate_value($port);
+  if($port==='') { return true; }
+  if(is_numeric($port)) {
+    if(!is_integer($len)) { $error = "not an integer"; }
+    elseif($port<=0)      { $error = "not a positive integer"; }
+  } 
+  return strlen($error) == 0;
+}
+
+function validate_smtp_reply_email($email,&$error=null) {
+  $error = '';
+  _fix_validate_value($email);
+  if($email==='') { return true; }
+  if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $error = "invalid email address"; 
+  }
+  return strlen($error) == 0;
+}

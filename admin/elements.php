@@ -60,11 +60,11 @@ function add_input_field($field)
   $step     = $field['step'] ?? null;
   $options  = $field['options'] ?? null;
   $info     = $field['info'] ?? null;
-  $default  = $field['default'] ?? '';
   $optional = $field['optional'] ?? false;
-  $editable = $field['editable'] ?? true;
+  $locked   = key_exists('value',$field);
 
-  $cur_value = get_setting($key,'');
+  $cur_value = $field['value'] ?? get_setting($key) ?? '';
+  $default   = $field['default'] ?? Settings::default($key) ?? '';
 
   echo "<tr class='$key'>";
   echo "<td class='label'>$key</td>";
@@ -95,22 +95,20 @@ function add_input_field($field)
     if(!is_null($max))  { echo " max='$max'";   }
     if(!is_null($step)) { echo " step='$step'"; }
     if(strlen($default)) {
-      if($editable) { echo " placeholder='$default'"; }
-      else          { echo " value='$default'"; }
+      if($locked) { echo " value='$default'"; }
+      else        { echo " placeholder='$default'"; }
     }
     elseif($optional) {
       echo " placeholder='[optional]'";
     } else {
       echo " placeholder='[required]' required";
     }
-    if(strlen($cur_value)) {
-      echo " value='$cur_value'";
-    }
-    if(!$editable) {
-      echo " disabled";
-    }
+
+    if(strlen($cur_value)) { echo " value='$cur_value'"; }
+    if($locked)            { echo " disabled"; }
+
     echo ">";
-    echo "<div id='{$key}_error' class='error'>error</div></div>";
+    echo "<div class='error' name='$key'>error</div></div>";
   }
   echo "</td></tr>";
   if($info) {

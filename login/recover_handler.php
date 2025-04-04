@@ -19,7 +19,7 @@ require_once(app_file('include/validation.php'));
 
 function handle_recover_form()
 {
-  validate_and_drop_nonce('recover');
+  validate_nonce('recover');
 
   try {
     if(!key_exists('action',$_POST)) {
