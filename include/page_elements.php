@@ -128,7 +128,7 @@ function start_page($css,$kwargs=[])
 
 
   if($css === 'admin') {
-    echo <<<HTMLNOSCRIPT
+    echo <<<HTMLADMIN
     <!-- Javascript required -->
     <noscript>
     <div class='noscript'>
@@ -137,7 +137,8 @@ function start_page($css,$kwargs=[])
       </div>
     </div>
     </noscript>
-    HTMLNOSCRIPT;
+    <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
+    HTMLADMIN;
   }
   elseif($css !== 'print') {
     echo <<<HTMLNOSCRIPT
