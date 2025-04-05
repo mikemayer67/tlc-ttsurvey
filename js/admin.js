@@ -28,7 +28,6 @@ var tab_change_cb = null;
     );
 
     ce.form.on('submit',handle_tab_change);
-  }
-  );
+  });
 
 })();

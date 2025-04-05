@@ -5,17 +5,6 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/page_elements.php'));
 
-function start_admin_page($tab)
-{
-  add_admin_navbar($tab);
-  echo "<div class='body'>";
-}
-
-function end_admin_page()
-{
-  echo "</div>";
-}
-
 function add_admin_navbar($tab)
 {
   $form_uri = app_uri('admin');

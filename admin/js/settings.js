@@ -251,7 +251,6 @@
 
     handle_smtp_auth_change();  // to set initial placeholder value
     validate_all();
-  }
-  );
+  });
 
 })();

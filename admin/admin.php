@@ -26,14 +26,55 @@ if(!$admin_id) {
   die();
 }
 
-$tab = $_REQUEST['tab'] ?? 'settings';
+$cur_tab = $_REQUEST['tab'] ?? 'settings';
 
 start_page('admin');
-start_admin_page($tab);
 
-require(app_file("admin/{$tab}_tab.php"));
+$form_uri = app_uri('admin');
+$nonce = gen_nonce('admin-navbar');
 
-end_admin_page();
+$tabs = [
+  'settings' => [],
+  'roles' => [],
+];
+
+echo "<!-- Admin Tabs -->";
+echo "<form id='admin-tabs' class='admin-navbar' method='post' action='$form_uri'>";
+add_hidden_input('nonce',$nonce);
+
+echo "<div class='tabs'>";
+foreach($tabs as $tab=>$access)
+{
+  $disabled = ($cur_tab === $tab) ? "disabled class='active'" : '';
+  echo "<button $disabled name='tab' value='$tab'>$tab</button>";
+}
+echo "</div>";
+echo "</form>";
+
+$img=img_uri("icons8-info.png");
+echo <<<HTMLMODAL
+<!-- Tab Switch Modal -->
+<div id='tab-switch-modal'>
+  <div id='tab-switch-content'>
+    <img src='$img'>
+    <div class='text-box'>
+      <p>You have unsaved changes.</p>
+      <p>If you switch tabs, you will your changes.</p>
+    </div>
+    <div class='tab-switch-buttons'>
+      <button class='confirm'>Switch Tabs</button>
+      <button class='cancel'>Stay Here</button>
+    </div>
+  </div>
+</div>
+HTMLMODAL;
+
+
+echo "<div class='body'>";
+
+require(app_file("admin/{$cur_tab}_tab.php"));
+
+echo "</div>";
 end_page();
 
 
