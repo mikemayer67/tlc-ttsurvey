@@ -211,8 +211,7 @@ function add_login_instructions($instructions)
   echo "</div>";
 }
 
-
-function info_text($key) 
+function login_info_text($key) 
 {
   $rval = "";
   switch($key) {

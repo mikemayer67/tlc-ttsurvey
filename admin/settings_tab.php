@@ -47,16 +47,12 @@ add_input_section('Look and Feel', [
 
 add_input_section('Admin',[
   [
-    'primary_admin',
-    'options' => $users,
-    'info' => 'Userid for the registered user to serve as primary admin',
-  ], [
     'admin_name', 
-    'info' => 'Name of the site admin if no registered user is identified as primary admin',
+    'info' => 'Name of the survey admin. Used if primary admin role has not been assigned',
   ], [
     'admin_email',
     'type' => 'email',
-    'info' => 'Email address for the site admin if no registered user is identified as primary admin',
+    'info' => 'Email address for the survey admin. Used if primary admin role has not been assigned',
     'optional'=>true,
   ],
 ]);
