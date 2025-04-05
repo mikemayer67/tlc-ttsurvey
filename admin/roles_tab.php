@@ -38,42 +38,14 @@ echo "</ul></li>";
 
 
 $survey_admins = survey_admins();
-echo "<li class='role'>Survey Admins</li><ul>";
-foreach($survey_admins as $userid) {
-  $name = $users[$userid];
-  echo "<li class='user'>";
-  echo "<span class='name'>$name</span>";
-  echo "<button class='remove' userid='$userid' from='admin'>-</button>";
-  echo "</li>";
-}
-echo "<li class='new user'>";
-echo "<input type=text id='new-admin' placeholder='Add Another...'>";
-echo "<ul id='new-admin-list' class='user-list'><li>Test</li><li>Me</li></ul>";
-echo "</ul></li>";
+echo "<li class='role'>Survey Admins</li>";
+add_admin_select('admin',$users,survey_admins());
 
-$content_admins = content_admins();
-echo "<li class='role'>Content Editors</li><ul>";
-foreach($content_admins as $userid) {
-  $name = $users[$userid];
-  echo "<li class='user'>";
-  echo "<span class='name'>$name</span>";
-  echo "<button class='remove' userid='$userid from='content''>-</button>";
-  echo "</li>";
-}
-echo "</ul></li>";
+echo "<li class='role'>Content Editors</li>";
+add_admin_select('content',$users,content_admins());
 
-$tech_admins = tech_admins();
-echo "<li class='role'>Technical Contacts</li><ul>";
-foreach($tech_admins as $userid) {
-  $name = $users[$userid];
-  echo "<li class='user'>";
-  echo "<span class='name'>$name</span>";
-  echo "<button class='remove' userid='$userid from='tech''>-</button>";
-  echo "</li>";
-}
-echo "</ul></li>";
-
-
+echo "<li class='role'>Technical Contacts</li>";
+add_admin_select('content',$users,tech_admins());
 
 echo "</ul>";
 

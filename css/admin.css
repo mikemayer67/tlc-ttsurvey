@@ -238,7 +238,10 @@ div.noscript div {
 
 #ttt-body form#admin-roles ul {
   padding:0;
-  margin:0 0 0 1em;
+  margin:0;
+}
+#ttt-body form#admin-roles ul ul {
+  margin-left:1em;
 }
 
 #ttt-body form#admin-roles li {
@@ -252,6 +255,9 @@ div.noscript div {
   font-size:110%;
   margin-top:1em;
 }
+#ttt-body form#admin-roles li.role:first-child {
+  margin-top:0;
+}
 
 #ttt-body form#admin-roles li.user {
   display:flex;
@@ -260,44 +266,19 @@ div.noscript div {
   width:fit-content;
 }
 
-#ttt-body form#admin-roles li.user button {
+#ttt-body form#admin-roles li.new.user {
+  margin-top:0.5em;
+}
+
+#ttt-body form#admin-roles button.remove,
+#ttt-body form#admin-roles button.add {
   display:flex;
   align-items:center;
   justify-content:center;
-}
-
-#ttt-body form#admin-roles button.remove {
-  margin-left:1em;
+  margin-right:1em;
   height:1em;
   width:1em;
 }
-
-#ttt-body form#admin-roles li.new.user input {
-  margin-top:0.25em;
-  width: 100%;
-  min-width: 20em;
-  background: white;
-  border-color: #bbb;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-#ttt-body form#admin-roles li.new.user ul.user-list {
-  display:none;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  max-height: 150px;
-  overflow-y: auto;
-  position: absolute;
-  border: 1px solid #ccc;
-  background-color: white;
-  z-index: 1000;
-  left:1em;
-  top:2em;
-  right:0;
-}
-
 
 
 

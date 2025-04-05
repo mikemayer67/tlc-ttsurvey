@@ -124,3 +124,25 @@ function add_input_field($field)
     echo "</tr>";
   }
 }
+
+function add_admin_select($key,$users,$current)
+{
+  echo "<ul>";
+  foreach($current as $userid) {
+    $name = $users[$userid];
+    echo "<li class='user'>";
+    echo "<button class='remove' userid='$userid' from='$key'>-</button>";
+    echo "<span class='name'>$name</span>";
+    echo "</li>";
+  }
+  echo "<li class='new user'>";
+  echo "<button class='add' to='$key' disabled>+</button>";
+  echo "<select id='new-$key-select' name='new-$key'>";
+  echo "<option value=''>Add...</option>";
+  foreach($users as $userid=>$name) {
+    if(!in_array($userid,$current)) {
+      echo "<option value='$userid'>$name</option>";
+    }
+  }
+  echo "</select></li></ul>";
+}
