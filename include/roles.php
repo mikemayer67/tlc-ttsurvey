@@ -10,6 +10,18 @@ function survey_roles()
   return MySQLSelectRows('select * from tlc_tt_roles');
 }
 
+function add_user_role($userid,$role)
+{
+  $query = "update tlc_tt_roles set $role=1 where userid=?";
+  return MySQLExecute($query,'s',$userid);
+}
+
+function drop_user_role($userid,$role)
+{
+  $query = "update tlc_tt_roles set $role=0 where userid=?";
+  return MySQLExecute($query,'s',$userid);
+}
+
 function lookup_userids_by_role($role)
 {
   $roles = survey_roles();

@@ -250,6 +250,12 @@ div.noscript div {
   margin:0;
 }
 
+#ttt-body form#admin-roles li.info {
+  margin-bottom:.25em;
+  font-size:90%;
+  font-style:italic;
+}
+
 #ttt-body form#admin-roles li.role {
   font-weight:700;
   font-size:110%;
@@ -280,5 +286,8 @@ div.noscript div {
   width:1em;
 }
 
+#ttt-body form#admin-roles button.add {
+  visibility:hidden;
+}
 
 

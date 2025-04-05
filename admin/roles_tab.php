@@ -27,6 +27,7 @@ echo "<ul>";
 
 $primary_admin = primary_admin();
 echo "<li class='role'>Primary Admin</li><ul>";
+add_admin_info_text('primary-admin');
 echo "<li><select id='primary-admin-select' name='primary-admin'>";
 echo "<option value=''>--nobody--</option>";
 foreach($users as $userid=>$name) {
@@ -45,7 +46,7 @@ echo "<li class='role'>Content Editors</li>";
 add_admin_select('content',$users,content_admins());
 
 echo "<li class='role'>Technical Contacts</li>";
-add_admin_select('content',$users,tech_admins());
+add_admin_select('tech',$users,tech_admins());
 
 echo "</ul>";
 

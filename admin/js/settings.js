@@ -4,7 +4,6 @@
   let saved_settings = {};
 
   let validation_timer=null;
-  let status_timer=null;
 
   function handle_smtp_auth_change()
   {
@@ -22,7 +21,7 @@
     if(!ce.submit.is(sender)) { return; }
 
     var cur_values = current_values();
-    var data = {...cur_values, 'ajax':"admin/update_settings", 'nonce':ce.nonce};
+    var data = {...cur_values, 'ajax':'admin/update_settings', 'nonce':ce.nonce};
 
     $.ajax( {
       type: 'POST',
@@ -55,14 +54,6 @@
       internal_error(jqXHR); 
     } )
     ;
-  }
-
-  function internal_error(jqXHR)
-  {
-    alert("Internal error (#" + jqXHR.status
-                           + "): "+ jqXHR.statusMessage
-                           + "\nPlease let the survey admin know something went wrong."
-         );
   }
 
   function validate_all()
@@ -140,20 +131,6 @@
     ce.submit.prop('disabled',!can_submit);
   }
 
-  function hide_status()
-  {
-    ce.status.removeClass().addClass('none');
-    clearTimeout(status_timer);
-    status_timer = setTimeout(() => {ce.status.html('')},750);
-  }
-
-  function show_status(level,msg)
-  {
-    clearTimeout(status_timer);
-    status_timer = null;
-    ce.status.removeClass('none').addClass(level).html(msg);
-  }
-
   function handle_change(event)
   {
     hide_status();
@@ -189,27 +166,11 @@
     return false;
   }
 
-  function allow_tab_change(new_tab_uri)
-  {
-    if(has_changes()) {
-      var tsm = $('#tab-switch-modal');
-      tsm.show();
-      tsm.find('button.cancel').on('click',function() { tsm.hide(); });
-      tsm.find('button.confirm').on('click',function() { tsm.hide();
-        window.location = new_tab_uri;
-      });
-      return false;
-    }
-    return true;
-  }
-
-
   $(document).ready(
     function($) {
     ce.form            = $('#admin-settings');
     ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-settings input[name=nonce]').val();
-    ce.status          = $('#ttt-status');
     ce.test_response   = $('#test_connection_response');
     ce.submit          = $('#settings_submit');
 
@@ -230,7 +191,7 @@
     ce.error_divs = {}
     ce.form.find('div.error').each(
       function() { ce.error_divs[$(this).attr('name')] = $(this) }
-    )
+    );
 
     saved_settings = current_values();
 
@@ -247,7 +208,7 @@
     ce.selects.smtp_auth.on('change',handle_smtp_auth_change);
     $('#test_connection_button').on('click',handle_test_smtp);
 
-    tab_change_cb = allow_tab_change;
+    has_change_cb = has_changes;
 
     handle_smtp_auth_change();  // to set initial placeholder value
     validate_all();

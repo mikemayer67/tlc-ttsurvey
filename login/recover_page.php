@@ -24,12 +24,12 @@ add_login_instructions([
 add_login_input("userid", array(
   "value" => $userid,
   "optional" => True,
-  "info" => info_text('recover-userid'),
+  "info" => login_info_text('recover-userid'),
 ));
 add_login_input("email", array(
   "value" => $email,
   "optional" => True,
-  "info" => info_text('recover-email'),
+  "info" => login_info_text('recover-email'),
 ));
 
 add_login_submit("Send Email",'recover',true);
