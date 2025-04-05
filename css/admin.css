@@ -52,6 +52,73 @@ div.noscript div {
   background:green;
 }
 
+#ttt-body #tab-switch-modal {
+  display:none;
+  position:fixed;
+  z-index:1;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.4);
+  overflow:auto;
+}
+
+#ttt-body #tab-switch-content {
+  background-color:#ddd;
+  margin:15% auto;
+  padding:20px;
+  border:1px solid black;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  width:fit-content;
+  text-align:left;
+}
+
+#ttt-body #tab-switch-content img {
+  width:32px;
+  height:32px;
+}
+#ttt-body #tab-switch-content .text-box {
+  display:inline-block;
+  border-bottom:solid 1px black;
+  padding:0 0.5em 0.5em;
+  margin-bottom:1em;
+}
+
+#ttt-body #tab-switch-content .text-box p:first-child {
+  margin-left:0em;
+  font-weight:700;
+  font-size:100%;
+}
+
+#ttt-body #tab-switch-content .text-box p {
+  margin-left:1em;
+  font-style:italic;
+  font-size:90%;
+}
+
+#ttt-body #tab-switch-content .tab-switch-buttons {
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+#ttt-body #tab-switch-content * {
+  background-color:inherit;
+}
+  
+#ttt-body #tab-switch-content p {
+  margin:0;
+  padding:0;
+}
+
+#ttt-body #tab-switch-content button {
+  padding:0.25em 0.5em;
+}
+#ttt-body #tab-switch-content button.cancel {
+  font-weight:700;
+}
+
 #ttt-body div.body {
   padding:0.5em;
   background:#eee;

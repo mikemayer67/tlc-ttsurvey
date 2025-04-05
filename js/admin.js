@@ -1,5 +1,5 @@
 
-var cache_cb = null;
+var tab_change_cb = null;
 
 
 ( function() {
@@ -8,7 +8,12 @@ var cache_cb = null;
 
   function handle_tab_change(event)
   {
-    if(cache_cb) { cache_cb() }
+    if(tab_change_cb) { 
+      var tgt_action = event.target.action
+      var new_tab = $(event.originalEvent.submitter).val();
+      var new_tab_uri = tgt_action + '&tab=' + new_tab;
+      if(!tab_change_cb(new_tab_uri)) { event.preventDefault(); }
+    }
   }
 
   $(document).ready(

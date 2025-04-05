@@ -189,33 +189,20 @@
     return false;
   }
 
-  function cache_settings()
+  function allow_tab_change(new_tab_uri)
   {
-    data = {};
-    Object.entries(ce.inputs).forEach(  ([key,field]) => { 
-      data[key] = field.val() 
-    } );
-    Object.entries(ce.selects).forEach( ([key,field]) => { 
-      data[key] = field.val() 
-    } );
-    sessionStorage.settings = JSON.stringify(data);
-  }
-
-  function uncache_settings()
-  {
-    if('settings' in sessionStorage) {
-      data = JSON.parse(sessionStorage.settings);
-      delete sessionStorage.settings;
-
-      Object.entries(ce.inputs).forEach( ([key,field]) => {
-        if( key in data ) { field.val(data[key]); }
-      } );
-      Object.entries(ce.selects).forEach( ([key,field]) => {
-        if( key in data ) { field.val(data[key]); }
-      } );
-
+    if(has_changes()) {
+      var tsm = $('#tab-switch-modal');
+      tsm.show();
+      tsm.find('button.cancel').on('click',function() { tsm.hide(); });
+      tsm.find('button.confirm').on('click',function() { tsm.hide();
+        window.location = new_tab_uri;
+      });
+      return false;
     }
+    return true;
   }
+
 
   $(document).ready(
     function($) {
@@ -260,8 +247,7 @@
     ce.selects.smtp_auth.on('change',handle_smtp_auth_change);
     $('#test_connection_button').on('click',handle_test_smtp);
 
-    cache_cb = cache_settings;
-    uncache_settings();
+    tab_change_cb = allow_tab_change;
 
     handle_smtp_auth_change();  // to set initial placeholder value
     validate_all();

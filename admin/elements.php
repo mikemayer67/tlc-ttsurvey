@@ -36,6 +36,20 @@ function add_admin_navbar($tab)
   }
   echo "</div>";
   echo "</form>";
+
+  echo "<!-- Tab Switch Modal -->";
+  echo "<div id='tab-switch-modal'>";
+  echo "<div id='tab-switch-content'>";
+  echo "<img src='".img_uri("icons8-info.png")."'>";
+  echo "<div class='text-box'>";
+  echo "<p>You have unsaved changes.</p>";
+  echo "<p>If you switch tabs, you will your changes.</p>";
+  echo "</div>";
+  echo "<div class='tab-switch-buttons'>";
+  echo "<button class='confirm'>Switch Tabs</button>";
+  echo "<button class='cancel'>Stay Here</button>";
+  echo "</div></div></div>";
+
 }
 
 function add_input_section($label,$fields)
