@@ -270,9 +270,12 @@ function validate_smtp_port($port,&$error=null) {
   _fix_validate_value($port);
   if($port==='') { return true; }
   if(is_numeric($port)) {
-    if(!is_integer($len)) { $error = "not an integer"; }
-    elseif($port<=0)      { $error = "not a positive integer"; }
-  } 
+    $port = 1*$port;
+    if(!is_integer($port)) { $error = "not an integer"; }
+    elseif($port<=0)       { $error = "not a positive integer"; }
+  } else {
+    $error = "not an integer";
+  }
   return strlen($error) == 0;
 }
 

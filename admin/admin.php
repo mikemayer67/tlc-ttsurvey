@@ -35,7 +35,8 @@ $nonce = gen_nonce('admin-navbar');
 
 $tabs = [
   'settings' => [],
-  'roles' => [],
+  'roles' => ['admin'],
+  'log' => ['admin','tech'],
 ];
 
 echo "<!-- Admin Tabs -->";

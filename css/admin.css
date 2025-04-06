@@ -229,10 +229,23 @@ div.noscript div {
 #ttt-body div.body form div.button-bar input.submit {
   background:darkblue;
   color:white;
+  transition: all .25s;
 }
 
 #ttt-body div.body form div.button-bar input.submit:disabled {
-  background:#888;
+  background:#bbb;
+  color:#444;
+}
+
+#ttt-body div.body form div.button-bar input.revert {
+  background:#840;
+  color:white;
+  margin-right:1em;
+  transition: all .25s;
+}
+
+#ttt-body div.body form div.button-bar input.revert:disabled {
+  background:#bbb;
   color:#444;
 }
 
