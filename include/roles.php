@@ -38,6 +38,7 @@ function tech_admins()    { return lookup_userids_by_role('tech'); }
 
 function verify_role($userid,$role)
 {
+  if($role === 'admin' && $userid === primary_admin()) { return true; }
   return in_array($userid, lookup_userids_by_role($role));
 }
 

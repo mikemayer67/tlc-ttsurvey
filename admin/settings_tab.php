@@ -150,5 +150,4 @@ echo "</div>";
 
 echo "</form>";
 
-$js_uri = resource_uri('admin/js/settings.js');
-echo "<script src='$js_uri'></script>";
+echo "<script src='", js_uri('settings','admin'), "'></script>";

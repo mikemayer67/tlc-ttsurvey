@@ -5,7 +5,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/login.php'));
 require_once(app_file('include/roles.php'));
-require_once(app_file('include/page_elements.php'));
+require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
@@ -27,8 +27,11 @@ if(!$admin_id) {
 }
 
 $cur_tab = $_REQUEST['tab'] ?? 'settings';
+$tab_css = css_uri($cur_tab,'admin');
 
-start_page('admin');
+start_page('admin',
+  [ 'css'=>css_uri($cur_tab,'admin'), ]
+);
 
 $form_uri = app_uri('admin');
 $nonce = gen_nonce('admin-navbar');

@@ -1,0 +1,74 @@
+#ttt-body div.body form table {
+  margin:0.25em 1em 0 1em;
+  width:calc(100% - 2em);
+  table-layout:auto;
+}
+
+#ttt-body div.body form table tr.info td {
+  padding-top:0;
+}
+
+#ttt-body div.body form table td.input button {
+  padding:0 0.5em;
+  border-radius:0.25em;
+  font-size:0.95em;
+  background-color:#d8d8d8;
+  color:black;
+}
+
+#ttt-body div.body form table td.label {
+  padding-right:0.5em;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+#ttt-body div.body form table td div.input-box {
+  display:inline-block;
+  position:relative;
+  padding-top:1em;
+  width:min(600px,95%);
+}
+
+#ttt-body div.body form table td div.input-box div.error {
+  display:none;
+  color:darkred;
+  background:none;
+  font-style:italic;
+  font-size:0.85em;
+  position: absolute;
+  top:0;
+  right:0;
+}
+
+#ttt-body div.body form table td input {
+  width:100%;
+  min-width:20em;
+  background:white;
+  border-color:#bbb;
+  padding-left:0.5em;
+  padding-right:0.5em;
+}
+
+#ttt-body div.body form table td input[type=text]:disabled {
+  background:inherit;
+}
+
+#ttt-body div.body form table td.input span.button-response {
+  margin-left:1em;
+  font-weight:700;
+  color:#282;
+}
+
+#ttt-body div.body form table td.input span.button-response.error {
+  color:darkred;
+}
+
+#ttt-body div.body form table td.info div {
+  font-size:0.85em;
+  margin-left:2em;
+}
+
+#ttt-body div.body form table td.info div:first-child {
+  margin-left:1em;
+}
+

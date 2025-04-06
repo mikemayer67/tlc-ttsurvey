@@ -59,5 +59,4 @@ echo "</div>";
 
 echo "</form>";
 
-$js_uri = resource_uri('admin/js/roles.js');
-echo "<script src='$js_uri'></script>";
+echo "<script src='", js_uri('roles','admin'), "'></script>";
