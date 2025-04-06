@@ -12,8 +12,8 @@ function survey_roles()
 
 function add_user_role($userid,$role)
 {
-  $query = "update tlc_tt_roles set $role=1 where userid=?";
-  return MySQLExecute($query,'s',$userid);
+  $query = "insert into tlc_tt_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
+  return MySQLExecute($query,'ss',$userid,$userid);
 }
 
 function drop_user_role($userid,$role)
