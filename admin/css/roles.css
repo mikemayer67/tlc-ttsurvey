@@ -1,45 +1,45 @@
-#ttt-body form#admin-roles ul {
+#ttt-body form ul {
   padding:0;
   margin:0;
 }
-#ttt-body form#admin-roles ul ul {
+#ttt-body form ul ul {
   margin-left:1em;
 }
 
-#ttt-body form#admin-roles li {
+#ttt-body form li {
   list-style-type: none;
   padding:0;
   margin:0;
 }
 
-#ttt-body form#admin-roles li.info {
+#ttt-body form li.info {
   margin-bottom:.25em;
   font-size:90%;
   font-style:italic;
 }
 
-#ttt-body form#admin-roles li.role {
+#ttt-body form li.role {
   font-weight:700;
   font-size:110%;
   margin-top:1em;
 }
-#ttt-body form#admin-roles li.role:first-child {
+#ttt-body form li.role:first-child {
   margin-top:0;
 }
 
-#ttt-body form#admin-roles li.user {
+#ttt-body form li.user {
   display:flex;
   align-items:center;
   position:relative;
   width:fit-content;
 }
 
-#ttt-body form#admin-roles li.new.user {
+#ttt-body form li.new.user {
   margin-top:0.5em;
 }
 
-#ttt-body form#admin-roles button.remove,
-#ttt-body form#admin-roles button.add {
+#ttt-body form button.remove,
+#ttt-body form button.add {
   display:flex;
   align-items:center;
   justify-content:center;
@@ -48,7 +48,7 @@
   width:1em;
 }
 
-#ttt-body form#admin-roles button.add {
+#ttt-body form button.add {
   visibility:hidden;
 }
 

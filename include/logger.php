@@ -24,7 +24,7 @@ function logger()
     date_default_timezone_set(timezone() ?? 'UTF8');
 
     $logfile = app_file(log_file());
-    if( file_exists($logfile) and filesize($logfile) > 512*1024 ) {
+    if( file_exists($logfile) and filesize($logfile) > 1024*1024 ) {
       $tempfile = $logfile.".tmp";
       $_fp = fopen($tempfile,"w");
       $skip = 1000;
@@ -86,7 +86,7 @@ function write_to_logger($prefix,$msg,$trace_level=1)
 
   if( $level <= log_level() ) 
   {
-    $timestamp = date("d-M-y H:i:s.v T");
+    $timestamp = date("d-M-y H:i:s T");
 
     if($trace_level>0 && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
       $trace = debug_backtrace();

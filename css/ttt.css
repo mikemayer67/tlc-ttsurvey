@@ -7,6 +7,7 @@
   --invalid-value-bg:#ffcccc;
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
+  --monospace-font: 'Courier New', Monospace;
 
   font-optical-sizing:auto;
   font-weight:normal;

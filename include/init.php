@@ -41,10 +41,13 @@ function app_file($path)   { return APP_DIR . "/$path"; }
 function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
 
 function full_app_uri($q=null) {
-  $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
-  $host = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST);
-  $path = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_PATH);
-  return "$scheme://$host$path" . ($q ? "?$q" : '');
+  $scheme = 'https';
+  if(($_SERVER['HTTPS'] ?? 'off')==='off') { $scheme = 'http'; }
+  $host = $_SERVER['HTTP_HOST'];
+  $path = $_SERVER['SCRIPT_NAME'];
+  $rval = "$scheme://$host$path";
+  if($q) { $rval .= "?$q"; }
+  return $rval;
 }
 
 function rsrc_uri($rsrc,$type,$no_cache,$context='') {

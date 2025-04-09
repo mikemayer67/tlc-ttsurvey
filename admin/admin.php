@@ -10,8 +10,6 @@ require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
 
-log_dev("POST = ".print_r($_POST,true));
-
 $admin_id = $_SESSION['admin-id'] ?? null;
 if( $admin_id && ($user = User::lookup($admin_id)) ) {
   if(!verify_role($admin_id,'admin')) { 
@@ -23,6 +21,11 @@ if( $admin_id && ($user = User::lookup($admin_id)) ) {
 
 if(!$admin_id) {
   require(app_file('login/admin.php'));
+  die();
+}
+
+if(key_exists('log',$_REQUEST)) {
+  require(app_file('admin/log.php'));
   die();
 }
 

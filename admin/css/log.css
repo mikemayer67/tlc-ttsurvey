@@ -1,0 +1,58 @@
+#ttt-body div.body {
+  padding-top:3px;
+}
+
+#ttt-body form .log-controls {
+  margin-top:0;
+  margin-bottom:0.5em;
+  display:flex;
+  justify-content:space-between;
+}
+
+#ttt-body form .log-controls * {
+  font-size:90%;
+  font-weight:700;
+}
+
+#ttt-body form .log-controls div { 
+  display:inline-block;
+}
+
+#ttt-body form #log-display {
+  width:100%;
+  border-style:ridge;
+  border-width:2px;
+  padding:0.5em;
+  resize:vertical;
+  font-family:'Courier New';
+  font-size:75%;
+}
+
+#ttt-body form .log-button-bar {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#ttt-body form .log-button-bar * {
+  font-size:90%;
+  font-weight:700;
+}
+
+#ttt-body form .log-button-bar .left {
+  margin-right:10px;
+}
+
+#ttt-body form .log-button-bar .right {
+  margin-left:auto;
+}
+
+#ttt-body form .log-button-bar a {
+  color:#008;
+}
+
+#ttt-body form .log-button-bar a:hover {
+  color:#00c;
+  text-shadow:1px 1px 5px #888;
+}
+
