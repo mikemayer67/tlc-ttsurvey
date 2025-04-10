@@ -68,6 +68,7 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
 $tabs = [
   'settings' => [],
   'roles' => ['admin'],
+  'surveys' => ['admin','content'],
   'log' => ['admin','tech'],
 ];
 
