@@ -9,27 +9,67 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
+log_dev("GET: ".print_r($_GET,true));
+log_dev("POST: ".print_r($_POST,true));
 
-$admin_id = $_SESSION['admin-id'] ?? null;
-if( $admin_id && ($user = User::lookup($admin_id)) ) {
-  if(!verify_role($admin_id,'admin')) { 
-    log_warning("Invalid admin login attempt with admin id: $admin_id");
-    $admin_id = '';
-    unset($_SESSION['admin-id']);
-  }
-}
-
-if(!$admin_id) {
+if(($_GET['admin']??'') === 'login') {
   require(app_file('login/admin.php'));
   die();
 }
 
-if(key_exists('log',$_REQUEST)) {
+$admin_id = $_SESSION['admin-id'] ?? null;
+$userid = active_userid();
+
+$active_roles = [];
+if($admin_id) {
+  $active_roles = ['admin','content','tech'];
+} else if($userid) {
+  if($userid===primary_admin()) {
+    $active_roles = ['admin','content','tech'];
+  } else {
+    $active_roles = user_roles($userid);
+  }
+}
+
+if(!$active_roles) {
+  if(isset($userid)) {
+    set_warning_status("$userid does not have access to Admin Dashboard");
+  }
+  require(app_file('login/admin.php'));
+  die();
+}
+
+if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
   require(app_file('admin/log.php'));
   die();
 }
 
-$cur_tab = $_REQUEST['tab'] ?? 'settings';
+$tabs = [
+  'settings' => [],
+  'roles' => ['admin'],
+  'log' => ['admin','tech'],
+];
+
+if($admin_id || $userid===primary_admin()) {
+  $active_tabs = array_keys($tabs);
+} else {
+  $active_tabs = [];
+  foreach($tabs as $tab=>$required_roles) {
+    if(array_intersect($required_roles,$active_roles)) {
+      $active_tabs[] = $tab;
+    }
+  }
+}
+if(!$active_tabs) {
+  set_warning_status("$userid does not have access to Admin Dashboard");
+  require(app_file('login/admin.php'));
+}
+
+$cur_tab = $_REQUEST['tab'] ?? '';
+if(!in_array($cur_tab,$active_tabs)) {
+  $cur_tab = $active_tabs[0];
+}
+
 $tab_css = css_uri($cur_tab,'admin');
 
 start_page('admin',
@@ -39,21 +79,22 @@ start_page('admin',
 $form_uri = app_uri('admin');
 $nonce = gen_nonce('admin-navbar');
 
-$tabs = [
-  'settings' => [],
-  'roles' => ['admin'],
-  'log' => ['admin','tech'],
-];
-
 echo "<!-- Admin Tabs -->";
 echo "<form id='admin-tabs' class='admin-navbar' method='post' action='$form_uri'>";
+add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('nonce',$nonce);
 
 echo "<div class='tabs'>";
-foreach($tabs as $tab=>$access)
+foreach($active_tabs as $tab)
 {
   $disabled = ($cur_tab === $tab) ? "disabled class='active'" : '';
   echo "<button $disabled name='tab' value='$tab'>$tab</button>";
+}
+if($admin_id) {
+  echo "<a class='admin logout'>Logout Admin</a>";
+} else {
+  echo "<span class='userid'>($userid)</span>";
+  echo "<a class='admin login'>Login as Admin</a>";
 }
 echo "</div>";
 echo "</form>";

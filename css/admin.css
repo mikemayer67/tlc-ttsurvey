@@ -28,6 +28,8 @@ div.noscript div {
   padding: 5px 0.5em;
   border-bottom:solid 1px #888;
   box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  display:flex;
+  align-items:center;
 }
 
 #ttt-body #admin-tabs div.tabs button {
@@ -52,8 +54,29 @@ div.noscript div {
   color:black;
 }
 
-#ttt-body #admin-tabs div.tabs button.current {
-  background:green;
+#ttt-body #admin-tabs div.tabs span.userid {
+  background:inherit;
+  margin-left:auto;
+  color:#008;
+  font-size:90%;
+  font-style:italic;
+}
+
+#ttt-body #admin-tabs div.tabs a.admin {
+  background:inherit;
+  margin-left:auto;
+  color:#008;
+  font-size:90%;
+  font-weight:700;
+}
+
+#ttt-body #admin-tabs div.tabs span.userid + a.admin {
+  margin-left:1em;
+}
+
+#ttt-body #admin-tabs div.tabs a.admin:hover {
+  color:#00c;
+  text-shadow:1px 1px 5px #888;
 }
 
 /***************************************

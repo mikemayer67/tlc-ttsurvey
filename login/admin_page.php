@@ -10,6 +10,7 @@ require_once(app_file('login/elements.php'));
 start_page("login");
 
 $nonce = start_login_form("Admin Login","admin");
+add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','admin');
 
 $redirect_data = get_redirect_data();

@@ -29,44 +29,26 @@ function handle_admin_form()
   $userid   = adjust_user_input('userid',$userid);
   $password = adjust_user_input('password',$password);
 
-  if( $user = User::from_userid($userid) ) 
-  {
-    $userid = $user->userid();
-    if(!$user->validate_password($password)) {
-      log_warning("Invalid admin login attempt: bad password for $userid");
-      set_error_status("invalid userid or password");
-      add_redirect_data('userid',$userid);
-    }
-    elseif(!verify_role($userid,'admin')) {
-      log_warning("Invalid admin login attempt: $userid does not have admin permission");
-      set_error_status("$userid does not have admin permission");
-      clear_redirect_data();
-    }
-    else {
-      clear_status();
-      clear_redirect_data();
-      log_info("Admin login as $userid");
+  log_dev("attempt admin login: $userid/$password");
 
-      $_SESSION['admin-id'] = $userid;
-    }
-  }
+  $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+  $admin_username = $config['admin_username'] ?? null;
+  $admin_password = $config['admin_password'] ?? null;
+  if( ($userid === $admin_username) && ($password === $admin_password) ) {
+    clear_status();
+    clear_redirect_data();
+    log_info("Admin login as $userid");
+
+    $_SESSION['admin-id'] = $userid;
+  } 
   else {
-    $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
-    $admin_username = $config['admin_username'] ?? null;
-    $admin_password = $config['admin_password'] ?? null;
-    if( ($userid === $admin_username) && ($password === $admin_password) ) {
-      clear_status();
-      clear_redirect_data();
-      log_info("Admin login as $userid");
-
-      $_SESSION['admin-id'] = $userid;
-    } 
-    else {
-      log_warning("Invalid admin login attempt: bad admin_username ($userid)");
-      set_error_status("invalid userid or password");
-      add_redirect_data('userid',$userid);
-    }
+    log_warning("Invalid admin login attempt: bad admin_username ($userid)");
+    set_error_status("invalid userid or password");
+    add_redirect_data('userid',$userid);
   }
+
+  log_dev(print_r($_SESSION,true));
+
   header('Location: '.app_uri().'?admin');
   die();
 }

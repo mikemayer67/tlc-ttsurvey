@@ -151,6 +151,11 @@ IF version < 1 THEN
     AS SELECT u.userid, t.token, t.expires
          FROM tlc_tt_userids u, tlc_tt_reset_tokens t
         WHERE u.userid = t.userid;
+        
+  CREATE OR REPLACE VIEW tlc_tt_active_roles
+    AS SELECT userid, admin, content, tech
+         FROM tlc_tt_roles
+        WHERE userid=1 OR admin=1 OR tech=1;
 
 -- Add version 1 to the history and increment current version
   INSERT INTO tlc_tt_version_history (description) values ("Initial Setup");
