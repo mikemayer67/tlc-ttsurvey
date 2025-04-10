@@ -18,6 +18,11 @@
   {
     event.preventDefault();
     var sender = event.originalEvent.submitter;
+
+    if(ce.revert.is(sender)) { 
+      revert_values();
+      return;
+    }
     if(!ce.submit.is(sender)) { return; }
 
     var cur_values = current_values();
@@ -129,6 +134,12 @@
     var dirty = has_changes();
     var can_submit = dirty && errors.length==0;
     ce.submit.prop('disabled',!can_submit);
+
+    if(dirty) {
+      ce.revert.prop('disabled',false).css('opacity',1);
+    } else {
+      ce.revert.prop('disabled',false).css('opacity',0);
+    }
   }
 
   function handle_change(event)
@@ -155,6 +166,13 @@
     return values;
   }
 
+  function revert_values()
+  {
+    Object.entries(ce.inputs).forEach(  ([key,field]) => { field.val(saved_settings[key]); } );
+    Object.entries(ce.selects).forEach( ([key,field]) => { field.val(saved_settings[key]); } );
+    validate_all();
+  }
+
   function has_changes()
   {
     var current = current_values();
@@ -173,8 +191,10 @@
     ce.nonce           = $('#admin-settings input[name=nonce]').val();
     ce.test_response   = $('#test_connection_response');
     ce.submit          = $('#settings_submit');
+    ce.revert          = $('#settings_revert');
 
     ce.submit.prop('disabled',true);
+    ce.revert.prop('disabled',true).css('opacity',0);
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(

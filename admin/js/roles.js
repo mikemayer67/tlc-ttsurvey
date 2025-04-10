@@ -14,13 +14,7 @@
     if(sender.hasClass('remove')) {
       var userid = sender.attr('userid');
       var role   = sender.attr('from');
-      var select = ce.add_selects[role];
-
-      var tgt = ce.form.find('li.user[userid="'+userid+'"][role="'+role+'"]');
-      var name = tgt.find('span').html();
-      
-      tgt.remove();
-      select.append(new Option(name,userid));
+      remove_role(role,userid);
       update_submit();
       return;
     }
@@ -31,21 +25,18 @@
       var select = ce.add_selects[role];
       var button = ce.add_buttons[role];
       var userid = select.val();
-      var selected = select.find('option:selected');
-      var name = selected.html();
 
-      sender.parent().before(
-        '<li class="user" userid="' + userid + '" role="' + role + '">' +
-        '<button class="remove" userid="' + userid + '" from="' + role + '">-</button>' +
-        '<span class="name">' + name + '</span></li>'
-      );
+      add_role(role,userid);
 
-      selected.remove();
       select.val('');
-      button.prop('disabled',true);
-      button.css('visibility','hidden');
-
+      button.prop('disabled',true).css('visibility','hidden');
       update_submit();
+      return;
+    }
+
+    // handle revert button
+    if(ce.revert.is(sender)) {
+      revert_values();
       return;
     }
 
@@ -84,6 +75,31 @@
     .fail( function(jqXHR,textStatus,errorThrown) { 
       internal_error(jqXHR); 
     });
+  }
+
+  function remove_role(role,userid)
+  {
+    var select = ce.add_selects[role];
+    var tgt    = ce.form.find('li.user[userid="'+userid+'"][role="'+role+'"]');
+    var name   = tgt.find('span').html();
+    tgt.remove();
+    select.append(new Option(name,userid));
+  }
+
+  function add_role(role,userid)
+  {
+      var select = ce.add_selects[role];
+      var button = ce.add_buttons[role];
+      var option = select.find('option[value="'+userid+'"]');
+      var name   = option.html();
+
+      button.parent().before(
+        '<li class="user" userid="' + userid + '" role="' + role + '">' +
+        '<button class="remove" userid="' + userid + '" from="' + role + '">-</button>' +
+        '<span class="name">' + name + '</span></li>'
+      );
+
+      option.remove();
   }
 
   function handle_role_select(event)
@@ -151,7 +167,15 @@
   function update_submit()
   {
     var dirty = has_changes();
-    ce.submit.attr('disabled',!dirty);
+
+    if(dirty) {
+      ce.submit.attr('disabled',false);
+      ce.revert.attr('disabled',false).css('opacity',1);
+    } else {
+      ce.submit.attr('disabled',true);
+      ce.revert.attr('disabled',true).css('opacity',0);
+    }
+
   }
 
   function current_roles()
@@ -175,6 +199,32 @@
     return roles;
   }
 
+  function revert_values()
+  {
+    ce.form.find('#primary-admin-select').val(saved_roles['primary'][0]);
+
+    ce.form.find('li.user').not('.new').each( function() {
+      var userid = $(this).attr('userid');
+      var role   = $(this).attr('role');
+      if(!((role in saved_roles)&&(saved_roles[role].includes(userid)))) {
+        remove_role(role,userid);
+      }
+    });
+
+    Object.entries(ce.add_selects).forEach( ([role,select]) => {
+      select.find('option').not('[value=""]').each ( function() {
+        var userid = $(this).val();
+        if((role in saved_roles) && saved_roles[role].includes(userid)) {
+          add_role(role,userid);
+        }
+      });
+      select.val("");
+      ce.add_buttons[role].prop('disabled',true).css('visibility','hidden');
+    });
+
+    update_submit();
+  }
+
   $(document).ready(
     function($) {
     ce.form            = $('#admin-roles');
@@ -182,6 +232,7 @@
     ce.nonce           = $('#admin-roles input[name=nonce]').val();
     ce.status          = $('#ttt-status');
     ce.submit          = $('#settings_submit');
+    ce.revert          = $('#settings_revert');
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(

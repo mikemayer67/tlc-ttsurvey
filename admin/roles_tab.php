@@ -54,9 +54,9 @@ echo "</ul>";
 
 echo "<div class='button-bar'>";
 echo "<input id='settings_submit' class='submit' type='submit' value='Save Changes'>";
+echo "<input id='settings_revert' class='revert' type='submit' value='Revert' formnovalidate>";
 echo "</div>";
 
 echo "</form>";
 
-$js_uri = resource_uri('admin/js/roles.js');
-echo "<script src='$js_uri'></script>";
+echo "<script src='", js_uri('roles','admin'), "'></script>";

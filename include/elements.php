@@ -56,13 +56,13 @@ todo("Update the following commentary on start_page function");
 //
 // To support printable pages, the css flavor of "print" will suppress the
 //   loading of any css (or javascript) ressources.
-function start_page($css,$kwargs=[])
+function start_page($context,$kwargs=[])
 {
-  $css = strtolower($css);
+  $context = strtolower($context);
   $title = active_survey_title() ?? app_name();
   $title_len = strlen($title);
 
-  log_dev("start_page($css)");
+  log_dev("start_page($context)");
   $trace = debug_backtrace();
 
   echo <<<HTMLHEAD
@@ -79,10 +79,11 @@ function start_page($css,$kwargs=[])
 
 
   // don't include css or javascript on print pages
-  if($css !== 'print') {
+  if($context !== 'print') {
     $ttt_uri = css_uri('ttt');
-    $css_uri = css_uri("$css");
-    $js_uri = js_uri("$css.js");
+    $context_uri = css_uri($context);
+    $js_uri = js_uri($context,$context);
+
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='https://code.jquery.com/jquery-3.7.1.min.js'
@@ -92,10 +93,17 @@ function start_page($css,$kwargs=[])
 
     <!-- Style -->
     <link rel='stylesheet' type='text/css' href='$ttt_uri'>
-    <link rel='stylesheet' type='text/css' href='$css_uri'>
+    <link rel='stylesheet' type='text/css' href='$context_uri'>
     <script src='$js_uri'></script>
-
     HTMLHEAD;
+
+    $css = $kwargs['css'] ?? null;
+    if($css) {
+      if(!is_array($css)) { $css = [$css]; }
+      foreach ($css as $uri) {
+        echo "<link rel='stylesheet' type='text/css' href='$uri'>";
+      }
+    }
   }
 
   // close the head element and open the body element
@@ -127,7 +135,7 @@ function start_page($css,$kwargs=[])
   }
 
 
-  if($css === 'admin') {
+  if($context === 'admin') {
     echo <<<HTMLADMIN
     <!-- Javascript required -->
     <noscript>
@@ -140,7 +148,7 @@ function start_page($css,$kwargs=[])
     <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
     HTMLADMIN;
   }
-  elseif($css !== 'print') {
+  elseif($context !== 'print') {
     echo <<<HTMLNOSCRIPT
     <!-- Javascript suggestion -->
     <noscript>

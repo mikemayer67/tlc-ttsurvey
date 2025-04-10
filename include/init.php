@@ -36,23 +36,29 @@ function internal_error($msg)
 // in order to prevent css files from caching, we append a changing query
 // string to the URL for the css file... but this should only be needed
 // in a development environment.
-function no_cache() { return is_dev() ? ("?v=" . rand()) : ''; }
 
 function app_file($path)   { return APP_DIR . "/$path"; }
-
 function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
-function img_uri($img)     { return APP_URI . "/img/$img"     . no_cache();   }
-function css_uri($css)     { return APP_URI . "/css/$css.css" . no_cache();   }
-function js_uri($filename) { return APP_URI . "/js/$filename";   }
-function resource_uri($filename) { return APP_URI . "/$filename"; }
 
 function full_app_uri($q=null) {
-  $scheme = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_SCHEME);
-  $host = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_HOST);
-  $path = parse_url($_SERVER['HTTP_REFERER'],PHP_URL_PATH);
-  return "$scheme://$host$path" . ($q ? "?$q" : '');
+  $scheme = 'https';
+  if(($_SERVER['HTTPS'] ?? 'off')==='off') { $scheme = 'http'; }
+  $host = $_SERVER['HTTP_HOST'];
+  $path = $_SERVER['SCRIPT_NAME'];
+  $rval = "$scheme://$host$path";
+  if($q) { $rval .= "?$q"; }
+  return $rval;
 }
 
+function rsrc_uri($rsrc,$type,$no_cache,$context='') {
+  $uri = str_replace('//','/',implode('/',[APP_URI,$context,$type,$rsrc]));
+  if($no_cache && is_dev()) { $uri .= '?v=' . rand(); }
+  return $uri;
+}
+
+function img_uri($img,$ctx='') { return rsrc_uri( $img,     'img',true, $ctx); }
+function css_uri($css,$ctx='') { return rsrc_uri("$css.css",'css',true, $ctx); }
+function  js_uri($js, $ctx='') { return rsrc_uri("$js.js",  'js', false,$ctx); }
 
 function validate_entry_uri()
 {

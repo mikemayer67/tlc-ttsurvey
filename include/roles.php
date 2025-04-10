@@ -7,7 +7,7 @@ require_once(app_file('include/db.php'));
 
 function survey_roles()
 {
-  return MySQLSelectRows('select * from tlc_tt_roles');
+  return MySQLSelectRows('select * from tlc_tt_active_roles');
 }
 
 function add_user_role($userid,$role)
@@ -36,8 +36,24 @@ function survey_admins()  { return lookup_userids_by_role('admin'); }
 function content_admins() { return lookup_userids_by_role('content'); }
 function tech_admins()    { return lookup_userids_by_role('tech'); }
 
+function user_roles($userid)
+{
+  if( $userid === primary_admin() ) { return ['admin', 'content', 'tech']; }
+  $roles =  MySQLSelectRow(
+    'select admin,content,tech from tlc_tt_roles where userid=?','s',$userid
+  );
+  $rval = [];
+  if($roles) { 
+    foreach(array_keys($roles) as $role) {
+      if($roles[$role]) { $rval[] = $role; }
+    }
+  }
+  return $rval;
+}
+
 function verify_role($userid,$role)
 {
+  if($role === 'admin' && $userid === primary_admin()) { return true; }
   return in_array($userid, lookup_userids_by_role($role));
 }
 

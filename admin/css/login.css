@@ -1,0 +1,19 @@
+#ttt-body {
+  width:initial;
+  min-height:initial;
+  border: initial;
+  margin:initial;
+  background:initial;
+}
+
+#ttt-login {
+  border:solid 1px black;
+}
+
+#ttt-login form {
+  margin:0;
+}
+
+#ttt-login .login-box {
+  margin:1em;
+}

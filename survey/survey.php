@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/status.php'));
-require_once(app_file('include/page_elements.php'));
+require_once(app_file('include/elements.php'));
 
 todo("Flesh out survey page");
 
