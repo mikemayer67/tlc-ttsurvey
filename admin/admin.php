@@ -9,11 +9,9 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
-log_dev("GET: ".print_r($_GET,true));
-log_dev("POST: ".print_r($_POST,true));
 
-if(($_GET['admin']??'') === 'login') {
-  require(app_file('login/admin.php'));
+if(($_REQUEST['admin']??'') === 'login') {
+  require(app_file('admin/login.php'));
   die();
 }
 
@@ -35,7 +33,7 @@ if(!$active_roles) {
   if(isset($userid)) {
     set_warning_status("$userid does not have access to Admin Dashboard");
   }
-  require(app_file('login/admin.php'));
+  require(app_file('admin/login.php'));
   die();
 }
 
@@ -62,7 +60,7 @@ if($admin_id || $userid===primary_admin()) {
 }
 if(!$active_tabs) {
   set_warning_status("$userid does not have access to Admin Dashboard");
-  require(app_file('login/admin.php'));
+  require(app_file('admin/login.php'));
 }
 
 $cur_tab = $_REQUEST['tab'] ?? '';
