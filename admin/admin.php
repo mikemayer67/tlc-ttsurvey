@@ -10,10 +10,21 @@ require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
 
+// If an explicit request was made to login as site admin,
+//   handle that now.  No need to verify existing admin/user roles.
+
 if(($_REQUEST['admin']??'') === 'login') {
   require(app_file('admin/login.php'));
   die();
 }
+
+// See if we're already logged in as site admin.  If so, enable
+//   all roles (admin, content, and tech)
+// Otherwise, see if the active user is the primary survey admin.
+//   If so, again enable all roles.
+// Otherwise, if there is an active user, enable only those roles
+//   which the active user has been granted.
+// If none of the above... disable all roles
 
 $admin_id = $_SESSION['admin-id'] ?? null;
 $userid = active_userid();
@@ -29,6 +40,9 @@ if($admin_id) {
   }
 }
 
+// If there are no enabled roles, update the status to indicate
+//   that active user does not have any defined admin roles 
+//   (if applicable) and jump to the admin login page.
 if(!$active_roles) {
   if(isset($userid)) {
     set_warning_status("$userid does not have access to Admin Dashboard");
@@ -37,10 +51,19 @@ if(!$active_roles) {
   die();
 }
 
+//  If a request to download or display the log in new tab,
+//    and the the 'tech' role is enabled, handle the log
+//    request and be done.  (Do not load the admin dashboard)
 if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
   require(app_file('admin/log.php'));
   die();
 }
+
+// If we got here, then there is at least one enabled role, we can
+//   proceed with populating the admin dashboard.
+//
+// But first, we need to determine which tabs to show based on the
+//   enabled roles.
 
 $tabs = [
   'settings' => [],
@@ -58,15 +81,27 @@ if($admin_id || $userid===primary_admin()) {
     }
   }
 }
+
+// If there are no tabs available to the active user, then 
+//   this is equivalent to not having any admin role... 
+//   Go to the admin login page.
+
 if(!$active_tabs) {
   set_warning_status("$userid does not have access to Admin Dashboard");
   require(app_file('admin/login.php'));
 }
 
+// If there was a requested tab, honor that request IF at least
+//  one required role for that tab is satified... Otherwise, 
+//  select the first tab available to the active user.
+
 $cur_tab = $_REQUEST['tab'] ?? '';
 if(!in_array($cur_tab,$active_tabs)) {
   $cur_tab = $active_tabs[0];
 }
+
+// Everything that follows handle populating the admin dashboard content
+//   for the current tab
 
 $tab_css = css_uri($cur_tab,'admin');
 
