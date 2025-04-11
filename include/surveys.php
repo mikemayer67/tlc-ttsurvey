@@ -25,9 +25,23 @@ function active_survey_title()
   return $titles[0] ?? null;
 }
 
-// returns the ids of all draft surveys
-function draft_survey_ids()
+function all_surveys()
 {
-  return MySQLSelectValues("select id from tlc_tt_draft_surveys");
+  return array(
+    'drafts' => MySQLSelectRows( 
+      'select id,title,unix_timestamp(created) created from tlc_tt_surveys'
+      .' where active is NULL and closed is NULL'
+      .' order by created'
+    ),
+    'active' => MySQLSelectRows(
+      'select id,title,unix_timestamp(active) active from tlc_tt_surveys'
+      .' where active is not NULL and closed is NULL'
+      .' order by active'
+    ),
+    'closed' => MySQLSelectRows(
+      'select id,title,unix_timestamp(closed) closed from tlc_tt_surveys'
+      .' where closed is not NULL'
+      .' order by closed desc'
+    ),
+  );
 }
-

@@ -231,8 +231,8 @@
     ce.ajaxuri         = $('#admin-roles input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-roles input[name=nonce]').val();
     ce.status          = $('#ttt-status');
-    ce.submit          = $('#settings_submit');
-    ce.revert          = $('#settings_revert');
+    ce.submit          = $('#changes-submit');
+    ce.revert          = $('#changes-revert');
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(

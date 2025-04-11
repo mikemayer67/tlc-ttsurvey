@@ -1,0 +1,74 @@
+#ttt-body div.body {
+  padding-top:3px;
+}
+
+#ttt-body form .survey-controls {
+  margin-top:0;
+  margin-bottom:0.5em;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#ttt-body form .survey-controls * {
+  font-size:90%;
+  font-weight:700;
+}
+
+#ttt-body form .survey-controls div { 
+  display:inline-block;
+}
+
+#ttt-body form .survey-controls option.header { 
+  font-weight:bold;
+  border-bottom:solid 1px black;
+}
+
+#ttt-body form .survey-controls span.survey-status {
+  font-weight:bold;
+  font-size:110%;
+}
+#ttt-body form .survey-controls span.survey-status::first-letter {
+  text-transform: capitalize;
+}
+
+#ttt-body form .survey-controls div.survey-actions {
+  width:10em;
+  text-align:end;
+}
+
+#ttt-body form .survey-controls a {
+  color:#008;
+}
+
+#ttt-body form .survey-controls a.action.add-sep::before {
+  content: " | ";
+}
+
+#ttt-body form .survey-controls a.hidden {
+  display:none;
+}
+
+#ttt-body form .survey-controls a:hover {
+  color:#00c;
+  text-shadow:1px 1px 5px #888;
+}
+
+#ttt-body form div.content-box {
+  width:100%;
+  border-style:ridge;
+  border-width:2px;
+  padding:0.5em;
+}
+
+#ttt-body div.body form div.button-bar {
+  overflow:none;
+  transition: all 0.25s ease;
+  height:2em;
+}
+
+#ttt-body div.body form div.button-bar.hidden {
+  opacity:0;
+  transform: scaleY(0);
+  height:0;
+}
