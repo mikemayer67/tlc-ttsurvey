@@ -27,21 +27,49 @@ function active_survey_title()
 
 function all_surveys()
 {
-  return array(
-    'drafts' => MySQLSelectRows( 
-      'select id,title,unix_timestamp(created) created from tlc_tt_surveys'
-      .' where active is NULL and closed is NULL'
-      .' order by created'
-    ),
-    'active' => MySQLSelectRows(
-      'select id,title,unix_timestamp(active) active from tlc_tt_surveys'
-      .' where active is not NULL and closed is NULL'
-      .' order by active'
-    ),
-    'closed' => MySQLSelectRows(
-      'select id,title,unix_timestamp(closed) closed from tlc_tt_surveys'
-      .' where closed is not NULL'
-      .' order by closed desc'
-    ),
+  $surveys = array();
+
+  $drafts = MySQLSelectRows( 
+    'select * from tlc_tt_surveys where active is NULL order by created'
   );
+  $active = MySQLSelectRows( 
+    'select * from tlc_tt_surveys where active is not NULL and closed is NULL order by active'
+  );
+  $closed = MySqlSelectRows(
+    'select * from tlc_tt_surveys where closed is not NULL order by closed'
+  );
+
+  if($drafts) {
+    $surveys['drafts'] = array();
+    foreach($drafts as $survey) {
+      $survey['has_pdf'] = (null !== survey_pdf_file($survey['id']));
+      $surveys['drafts'][] = $survey;
+    }
+  }
+  if($active) {
+    $surveys['active'] = array();
+    foreach($active as $survey) {
+      $survey['has_pdf'] = (null !== survey_pdf_file($survey['id']));
+      $surveys['active'][] = $survey;
+    }
+  }
+  if($closed) {
+    $surveys['closed'] = array();
+    foreach($closed as $survey) {
+      $survey['has_pdf'] = (null !== survey_pdf_file($survey['id']));
+      $surveys['closed'][] = $survey;
+    }
+  }
+
+  return $surveys;
+}
+
+function survey_pdf_file($survey_id)
+{
+  $pdf_file = app_file("pdf/survey_$survey_id.pdf");
+  if(file_exists($pdf_file)) {
+    return $pdf_file;
+  } else {
+    return null;
+  }
 }

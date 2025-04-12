@@ -100,3 +100,9 @@
 #ttt-body div.body form table.new-survey tr td{
   padding: .25em;
 }
+
+#ttt-body div.body form table input[type=file] {
+  background-color:inherit;
+  padding:0;
+  margin:0;
+}

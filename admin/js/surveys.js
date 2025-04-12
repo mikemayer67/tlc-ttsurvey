@@ -58,6 +58,82 @@
     return false;
   }
 
+  function init_survey_lists()
+  {
+    ce.all_surveys = JSON.parse(ce.hidden['surveys'].val());
+    ce.survey_map = {};
+
+    ce.active_surveys = [];
+    ce.draft_surveys  = [];
+    ce.closed_surveys = [];
+
+    for (const [status, survey_list] of Object.entries(ce.all_surveys)) {
+      for( const survey of survey_list ) {
+        ce.survey_map[survey.id] = survey;
+        switch(status) {
+          case 'active': ce.active_surveys.push(survey); break;
+          case 'drafts': ce.draft_surveys.push(survey); break;
+          case 'closed': ce.closed_surveys.push(survey); break;
+        }
+      }
+    }
+
+    // populate the survey select menu
+    populate_survey_options(ce.survey_select);
+    populate_survey_options(ce.new_survey_clone);
+  }
+
+
+  function populate_survey_options(sel)
+  {
+    var is_primary = sel===ce.survey_select;
+    if(is_primary) { ce.cur_survey = null; }
+
+    if(ce.active_surveys.length) {
+      sel.append($('<option>',{'text':'Active','disabled':true}));
+      // SHOULD only be one at most... but just in case
+      for( survey of ce.active_surveys ) {
+        sel.append($('<option>',{
+          'value':survey.id,
+          'text':survey.title,
+          'class':'active',
+          'status':'active',
+          'selected':(ce.cur_survey === null),
+        }));
+        if(is_primary && ce.cur_survey === null) {ce.cur_survey = survey.id;}
+      }
+    }
+    if(ce.draft_surveys.length) {
+      sel.append($('<option>',{'text':'Drafts','disabled':true}));
+      if(is_primary) {
+        sel.append($('<option>',{ 'value':'new', 'text':'New...', 'class':'new', 'status':'new'}));
+      }
+      for( survey of ce.draft_surveys ) {
+        sel.append($('<option>',{
+          'value':survey.id,
+          'text':survey.title,
+          'class':'draft',
+          'status':'draft',
+          'selected':(ce.cur_survey === null),
+        }));
+        if(is_primary && ce.cur_survey === null) {ce.cur_survey = survey.id;}
+      }
+    }
+    if(ce.closed_surveys.length) {
+      sel.append($('<option>',{'text':'Closed','disabled':true}));
+      for( survey of ce.closed_surveys ) {
+        sel.append($('<option>',{
+          'value':survey.id,
+          'text':survey.title,
+          'class':'closed',
+          'status':'closed',
+          'selected':(ce.cur_survey === null),
+        }));
+        if(is_primary && ce.cur_survey === null) {ce.cur_survey = survey.id;}
+      }
+    }
+  }
+
   $(document).ready(
     function($) {
     ce.form             = $('#admin-surveys');
@@ -69,6 +145,7 @@
     ce.action_links     = ce.form.find('a.action');
     ce.button_bar       = ce.form.find('div.button-bar');
     ce.new_survey_table = $('#new-survey');
+    ce.new_survey_clone = $('#new-survey-clone');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
 
@@ -84,6 +161,8 @@
     ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
 
     has_change_cb = has_changes;
+
+    init_survey_lists();
 
     update_display_state();
     update_submit();

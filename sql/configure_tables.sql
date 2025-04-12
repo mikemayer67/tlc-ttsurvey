@@ -89,25 +89,12 @@ IF version < 1 THEN
 --   a purpose other than the tlc-ttsurvey app.  Therefore, we do not use
 --   the "if not exists" clause in any of the create statements below.
 
-  CREATE TABLE tlc_tt_surveysx (
-    id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    title    varchar(100) NOT NULL,
-    status   ENUM('draft','active','closed') NOT NULL DEFAULT 'draft',
-    active   TINYINT(1)   AS (status='active') STORED,
-    created  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    active   DATETIME     NULL DEFAULT NULL,
-    closed   DATETIME     NULL DEFAULT NULL,
-    download VARCHAR(150) NULL DEFAULT NULL COMMENT 'URL to download a printable survey',
-    UNIQUE KEY unique_active (active)
-  );
-
   CREATE TABLE tlc_tt_surveys (
     id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title    varchar(100) NOT NULL,
     created  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active   DATETIME     NULL DEFAULT NULL,
     closed   DATETIME     NULL DEFAULT NULL,
-    download VARCHAR(150) NULL DEFAULT NULL COMMENT 'URL to download a printable survey'
   );
 
   CREATE TABLE tlc_tt_userids (
