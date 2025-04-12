@@ -59,6 +59,8 @@
   border-style:ridge;
   border-width:2px;
   padding:0.5em;
+  resize:vertical;
+  overflow:auto;
 }
 
 #ttt-body div.body form div.button-bar {
@@ -71,4 +73,30 @@
   opacity:0;
   transform: scaleY(0);
   height:0;
+}
+
+#ttt-body div.body form table {
+  font-size:90%;
+  margin:0.25em 1em 0 1em;
+  table-layout:auto;
+}
+
+#ttt-body div.body form table td.label {
+  padding-right:0.5em;
+  font-weight:bold;
+  white-space:nowrap;
+  text-align:right;
+}
+
+#ttt-body div.body form table td input {
+  width:100%;
+  min-width:20em;
+  background:white;
+  border-color:#bbb;
+  padding-left:0.5em;
+  padding-right:0.5em;
+}
+
+#ttt-body div.body form table.new-survey tr td{
+  padding: .25em;
 }

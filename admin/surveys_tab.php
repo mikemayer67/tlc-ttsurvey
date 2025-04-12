@@ -85,10 +85,50 @@ echo <<<HTMLCTRLS
 </div>
 
 <div class='content-box'>
-<pre>
-STUFF WILL GO
-HERE
-</pre>
+
+<!--New Survey Table-->
+<table id='new-survey' class='input-table new-survey'>
+  <tr class='survey-name'>
+    <td class='label'>Survey Name:</td>
+    <td><input id='new-survey-name' type='input' class='alphanum-only' name='survey_name' placeholder='required' required></td>
+  </tr><tr class='clone-from'>
+    <td class='label'>Clone From:</td>
+    <td><select id='new-survey-clone'>
+      <option class='none' status='none' value='none' selected>None</option>
+HTMLCTRLS;
+
+if($active) {
+  echo "<option class='header' disabled>Active</option>";
+  foreach($all_surveys['active'] as $survey) {
+    $id    = $survey['id'];
+    $title = $survey['title'];
+    echo "<option class='active' status='active' value='$id'>$title</option>";
+  }
+}
+if($drafts) {
+  echo "<option class='header' disabled>Drafts</option>";
+  foreach($drafts as $survey) {
+    $id    = $survey['id'];
+    $title = $survey['title'];
+    echo "<option class='draft' status='draft' value='$id'>$title</option>";
+  }
+}
+if($closed) {
+  echo "<option class='header' disabled>Closed</option>";
+  foreach($all_surveys['closed'] as $survey) {
+    $id    = $survey['id'];
+    $title = $survey['title'];
+    echo "<option class='closed' status='closed' value='$id'>$title</option>";
+  }
+}
+
+echo <<<HTMLCTRLS
+    </select></td>
+  </tr><tr class='pdf-file'>
+    <td class='label'>Downloadable PDF:</td>
+    <td><input id='new-survey-pdf' type='file' name='new_survey_pdf' accept='.pdf'></td>
+  </tr>
+</table>
 </div>
 HTMLCTRLS;
 
