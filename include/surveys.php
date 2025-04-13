@@ -29,7 +29,7 @@ function all_surveys()
 {
   $surveys = array();
 
-  $drafts = MySQLSelectRows( 
+  $draft = MySQLSelectRows( 
     'select * from tlc_tt_surveys where active is NULL order by created'
   );
   $active = MySQLSelectRows( 
@@ -39,11 +39,11 @@ function all_surveys()
     'select * from tlc_tt_surveys where closed is not NULL order by closed'
   );
 
-  if($drafts) {
-    $surveys['drafts'] = array();
-    foreach($drafts as $survey) {
+  if($draft) {
+    $surveys['draft'] = array();
+    foreach($draft as $survey) {
       $survey['has_pdf'] = (null !== survey_pdf_file($survey['id']));
-      $surveys['drafts'][] = $survey;
+      $surveys['draft'][] = $survey;
     }
   }
   if($active) {
@@ -73,3 +73,62 @@ function survey_pdf_file($survey_id)
     return null;
   }
 }
+
+function create_new_survey($name,$clone_id,$pdf_file,&$info=null)
+{
+  $info = '';
+
+  $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
+  if(!$rc) { 
+    $info = 'Failed to create a new entry in the database';
+    return false;
+  }
+  $new_id = MySQLInsertID();
+
+  if($clone_id) {
+    $nrows = MySQLSelectValue("select count(*) from tlc_tt_survey_content where survey_id = $clone_id");
+    log_dev("Number of rows in cloned survey ($clone_id) = $nrows");
+
+    if($nrows) {
+      $query = <<<SQL
+      INSERT INTO tlc_tt_survey_content
+      SELECT 
+        $new_id as survey_id,
+        t.section_seq,
+        t.element_seq,
+        1 as revision,
+        t.section_id,
+        t.element_id,
+        t.element_rev
+      FROM
+        tlc_tt_survey_content t
+      WHERE
+        t.survey_id = $clone_id
+        AND t.revision = (
+          SELECT MAX(revision)
+            FROM tlc_tt_survey_content
+           WHERE survey_id = t.survey_id
+             AND section_seq = t.section_seq
+             AND element_seq = t.element_seq
+        );
+      SQL;
+
+      $rc = MySQLExecute($query);
+      if(!$rc) {
+        $info = "Failed to copy content from cloned survey";
+        return false;
+      }
+    } else {
+      $info .= implode("\n",[$info,"No content to copy from cloned survey"]);
+    }
+  }
+
+  if($pdf_file) {
+    $tgt_file = app_file("pdf/survey_$new_id.pdf");
+    $rval = move_uploaded_file($pdf_file,$tgt_file);
+    log_dev("MOVE RESULT: $rval");
+  }
+
+  return $new_id;
+}
+

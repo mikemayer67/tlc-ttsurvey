@@ -5,34 +5,113 @@
   function handle_surveys_submit(event) 
   {
     event.preventDefault();
-    alert('handle_submit');
+    
+    var sender = $(event.originalEvent.submitter);
+    if(sender.hasClass('hidden')) { return; }
+
+    if(ce.revert.is(sender)) {
+      if(ce.cur_survey === 'new') {
+        if(ce.prior_survey !== 'new') { 
+          ce.cur_survey = ce.prior_survey;
+          ce.survey_select.val(ce.cur_survey);
+          update_display_state();
+        }
+      }
+      else {
+        alert("revert survey changes");
+      }
+
+      return;
+    }
+
+    if(ce.submit.is(sender)) {
+      if(ce.cur_survey === 'new') {
+        submit_new_survey();
+      }
+      else {
+        submit_survey_updates();
+      }
+      return;
+    }
+  }
+
+  function submit_new_survey()
+  {
+    var formData = new FormData();
+    formData.append('nonce',ce.nonce);
+    formData.append('ajax','admin/create_new_survey');
+    formData.append('name',ce.new_survey_name.val());
+    var clone = ce.new_survey_clone.val();
+    if(!isNaN(clone)) { formData.append('clone',clone); }
+    formData.append('new_survey_pdf',ce.new_survey_pdf[0].files[0]);
+
+    $.ajax({
+      type: 'POST',
+      url: ce.ajaxuri,
+      contentType: false,
+      processData: false,
+      data: formData,
+
+    })
+    .done( function(data,start,jqHXR) {
+      alert("received response: "+data);
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) {
+      internal_error(jqXHR);
+    });
+  }
+
+  function submit_survey_updates()
+  {
+    alert('submit survey updates');
   }
 
   function handle_survey_select(event)
   {
+    var next_survey = $(this).val();
+    if(next_survey === "new") {
+      if(ce.cur_survey !== "new") {
+        ce.prior_survey = ce.cur_survey;
+      }
+    }
+    ce.cur_survey = next_survey;
     update_display_state();
   }
 
   function update_display_state() 
   {
-    var selected = ce.survey_select.find(':selected');
-    var status = selected.attr('status');
-    ce.survey_status.html(status);
     ce.action_links.addClass('hidden');
-    ce.action_links.filter('.'+status).removeClass('hidden');
-    ce.new_survey_table.hide();
-    if(status=='draft') {
-      ce.button_bar.removeClass('hidden');
-      ce.submit.val('Save Changes');
-      ce.revert.val('Revert');
-    }
-    else if(status=='new') {
+
+    if(ce.cur_survey === "new") {
+      ce.survey_status.html('New Survey');
       ce.button_bar.removeClass('hidden');
       ce.submit.val('Create Survey');
       ce.revert.val('Cancel');
       ce.new_survey_table.show();
-    } else {
-      ce.button_bar.addClass('hidden');
+
+      $('input[required]').removeAttr('required');
+      ce.new_survey_name.attr('required',true);
+    } 
+    else {
+      var survey = ce.survey_map[ce.cur_survey];
+      var status = survey.status;
+
+      ce.new_survey_table.hide();
+
+      ce.survey_status.html(status);
+      ce.action_links.filter('.'+status).removeClass('hidden');
+
+      if(status=='draft') {
+        $('input[required]').removeAttr('required');
+        // TODO: reset required attributes for fields that need it
+        console.log('reset required attribute for fields that need it');
+        ce.button_bar.removeClass('hidden');
+        ce.submit.val('Save Changes');
+        ce.revert.val('Revert');
+      } 
+      else {
+        ce.button_bar.addClass('hidden');
+      }
     }
   }
 
@@ -68,11 +147,12 @@
     ce.closed_surveys = [];
 
     for (const [status, survey_list] of Object.entries(ce.all_surveys)) {
-      for( const survey of survey_list ) {
+      for( var survey of survey_list ) {
+        survey.status = status;
         ce.survey_map[survey.id] = survey;
         switch(status) {
           case 'active': ce.active_surveys.push(survey); break;
-          case 'drafts': ce.draft_surveys.push(survey); break;
+          case 'draft':  ce.draft_surveys.push(survey); break;
           case 'closed': ce.closed_surveys.push(survey); break;
         }
       }
@@ -104,7 +184,7 @@
       }
     }
     if(ce.draft_surveys.length) {
-      sel.append($('<option>',{'text':'Drafts','disabled':true}));
+      sel.append($('<option>',{'text':'draft','disabled':true}));
       if(is_primary) {
         sel.append($('<option>',{ 'value':'new', 'text':'New...', 'class':'new', 'status':'new'}));
       }
@@ -145,7 +225,9 @@
     ce.action_links     = ce.form.find('a.action');
     ce.button_bar       = ce.form.find('div.button-bar');
     ce.new_survey_table = $('#new-survey');
+    ce.new_survey_name  = $('#new-survey-name');
     ce.new_survey_clone = $('#new-survey-clone');
+    ce.new_survey_pdf   = $('#new-survey-pdf');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
 
