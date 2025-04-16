@@ -29,7 +29,7 @@ HTMLCTRLS;
 
 if(in_array('admin',$active_roles)) {
   echo "<a class='action draft' target='active'>Go Live</a>";
-  echo "<a class='action active' target='draft'>Return to Draft</a>";
+  echo "<a class='action active' target='draft'>Edit</a>";
   echo "<a class='action active add-sep' target='closed'>Close</a>";
   echo "<a class='action closed' target='active'>Reopen</a>";
 }

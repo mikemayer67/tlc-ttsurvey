@@ -129,6 +129,26 @@ IF version < 1 THEN
              ON UPDATE CASCADE ON DELETE RESTRICT
   );
 
+  CREATE TABLE tlc_tt_options (
+    id       int          NOT NULL AUTO_INCREMENT,
+    revision int          NOT NULL DEFAULT 1,
+    label    varchar(128) NOT NULL,
+    PRIMARY KEY (id,revision)
+  );
+
+  CREATE TABLE tlc_tt_element_options (
+    element_id  int NOT NULL,
+    revision    int NOT NULL,
+    option_id   int NOT NULL,
+    option_rev  int NOT NULL,
+    PRIMARY KEY (element_id,revision,option_id),
+    FOREIGN KEY (element_id) REFERENCES tlc_tt_survey_elements(id) 
+             ON UPDATE CASCADE ON DELETE RESTRICT,
+    FOREIGN KEY (option_id,option_rev) REFERENCES tlc_tt_options(id,revision) 
+             ON UPDATE CASCADE ON DELETE RESTRICT
+  );
+
+
   CREATE TABLE tlc_tt_userids (
     userid   varchar(24)  PRIMARY KEY,
     fullname varchar(100) NOT NULL,

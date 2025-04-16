@@ -76,57 +76,70 @@ function survey_pdf_file($survey_id)
 
 function create_new_survey($name,$clone_id,$pdf_file,&$info=null)
 {
+  class FailedToCreate extends \Exception {}
+
   $info = '';
+  $new_id = null;
 
-  $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
-  if(!$rc) { 
-    $info = 'Failed to create a new entry in the database';
-    return false;
-  }
-  $new_id = MySQLInsertID();
+  try {
+    MySQLBeginTransaction();
 
-  if($clone_id) {
-    $nrows = MySQLSelectValue("select count(*) from tlc_tt_survey_content where survey_id = $clone_id");
-    log_dev("Number of rows in cloned survey ($clone_id) = $nrows");
-
-    if($nrows) {
-      $query = <<<SQL
-      INSERT INTO tlc_tt_survey_content
-      SELECT 
-        $new_id as survey_id,
-        t.section_seq,
-        t.element_seq,
-        1 as revision,
-        t.section_id,
-        t.element_id,
-        t.element_rev
-      FROM
-        tlc_tt_survey_content t
-      WHERE
-        t.survey_id = $clone_id
-        AND t.revision = (
-          SELECT MAX(revision)
-            FROM tlc_tt_survey_content
-           WHERE survey_id = t.survey_id
-             AND section_seq = t.section_seq
-             AND element_seq = t.element_seq
-        );
-      SQL;
-
-      $rc = MySQLExecute($query);
-      if(!$rc) {
-        $info = "Failed to copy content from cloned survey";
-        return false;
-      }
-    } else {
-      $info .= implode("\n",[$info,"No content to copy from cloned survey"]);
+    $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
+    if(!$rc) { 
+      throw new FailedToCreate('Failed to create a new entry in the database');
     }
-  }
+    $new_id = MySQLInsertID();
 
-  if($pdf_file) {
-    $tgt_file = app_file("pdf/survey_$new_id.pdf");
-    $rval = move_uploaded_file($pdf_file,$tgt_file);
-    log_dev("MOVE RESULT: $rval");
+    if($clone_id) {
+      $nrows = MySQLSelectValue(
+        "select count(*) from tlc_tt_survey_content where survey_id = $clone_id"
+      );
+      log_dev("Number of rows in cloned survey ($clone_id) = $nrows");
+
+      if($nrows) {
+        $query = <<<SQL
+        INSERT INTO tlc_tt_survey_content
+        SELECT 
+          $new_id as survey_id,
+          t.section_seq,
+          t.element_seq,
+          1 as revision,
+          t.section_id,
+          t.element_id,
+          t.element_rev
+        FROM
+          tlc_tt_survey_content t
+        WHERE
+          t.survey_id = $clone_id
+          AND t.revision = (
+            SELECT MAX(revision)
+              FROM tlc_tt_survey_content
+             WHERE survey_id = t.survey_id
+               AND section_seq = t.section_seq
+               AND element_seq = t.element_seq
+          );
+        SQL;
+
+        if(!MySQLExecute($query)) {
+          throw new FailedToCreate('Failed to copy content from cloned survey');
+        }
+      }
+    }
+
+    if($pdf_file) {
+      $tgt_file = app_file("pdf/survey_$new_id.pdf");
+      if(!move_uploaded_file($pdf_file,$tgt_file)) {
+        throw new FailedToCreate("Failed to upload PDF file");
+      }
+    }
+
+    MySQLCommit();
+  }
+  catch(FailedToCreate $e)
+  {
+    MySQLRollback();
+    $info = "Failed to create new survey (" . $e->getMessage() . ")";
+    $new_id = null;
   }
 
   return $new_id;
