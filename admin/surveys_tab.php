@@ -20,11 +20,9 @@ add_hidden_submit('action','surveys');
 echo <<<HTMLCTRLS
 <div class='survey-controls'>
   <div class='survey-id'>
-    <label>Survey
-      <select id='survey-select' name='survey-d'></select>
-    </label>
+    <select id='survey-select' name='survey-d'></select>
   </div>
-  <span class='survey-status'></span>
+  <label>Status:<span class='survey-status'></span></label>
   <div class='survey-actions'>
 HTMLCTRLS;
 
@@ -41,39 +39,34 @@ echo <<<HTML
 
 <div class='content-box'>
 
+<!--Info Bar-->
+<div class='info-bar'>
+  <label class='info-label created'>Created:<span class='date'>???</span></label>
+  <label class='info-label opened'>Opened:<span class='date'>???</span></label>
+  <label class='info-label closed'>Closed:<span class='date'>???</span></label>
+  <span class='pdf-link'>
+    <span class='no-link'>No PDF</span>
+    <a class='pdf-download' download>Download PDF</a>
+  </span>
+</div>
+
 <!--New Survey Table-->
-<table id='new-survey' class='input-table new-survey'>
+<table id='info-edit' class='input-table new-survey'>
   <tr class='survey-name'>
     <td class='label'>Survey Name:</td>
-    <td><input id='new-survey-name' type='input' class='alphanum-only' name='survey_name' placeholder='required' required></td>
+    <td><input id='survey-name' type='input' class='alphanum-only' name='survey_name' placeholder='required' required></td>
   </tr><tr class='clone-from'>
     <td class='label'>Clone From:</td>
-    <td><select id='new-survey-clone'>
+    <td><select id='survey-clone-from'>
       <option class='none' status='none' value='none' selected>--None--</option>
     </select></td>
   </tr><tr class='pdf-file'>
     <td class='label'>Downloadable PDF:</td>
-    <td><input id='new-survey-pdf' type='file' name='new_survey_pdf' accept='.pdf'></td>
+    <td><input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'></td>
   </tr>
 </table>
 
-<!--Survey Display-->
-<div id='show-survey'>
-  <div class='info-bar'>
-    <label class='info-label created'>Created:<span class='date'>???</span></label>
-    <label class='info-label opened'>Opened:<span class='date'>???</span></label>
-    <label class='info-label closed'>Closed:<span class='date'>???</span></label>
-    <span class='pdf-link'>
-      <span class='no-link'>No PDF</span>
-      <a class='pdf-download' download>Download PDF</a>
-    </span>
-  </div>
-</div>
-
-<!--Survey Edit-->
-
 <!--Button Bar-->
-
 </div>
 <div class='button-bar'>
   <input id='changes-submit' class='submit' type='submit' value='Save Changes'>

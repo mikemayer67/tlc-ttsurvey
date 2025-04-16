@@ -83,18 +83,16 @@ function start_page($context,$kwargs=[])
     $ttt_uri = css_uri('ttt');
     $context_uri = css_uri($context);
     $js_uri = js_uri($context,$context);
+    $jq_uri = js_uri('jquery-3.7.1.min');
 
     echo <<<HTMLHEAD
     <!-- Javascript -->
-    <script src='https://code.jquery.com/jquery-3.7.1.min.js'
-            integrity='sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo='
-            crossorigin='anonymous'>
-    </script>
+    <script src='$jq_uri'></script>
+    <script src='$js_uri'></script>
 
     <!-- Style -->
     <link rel='stylesheet' type='text/css' href='$ttt_uri'>
     <link rel='stylesheet' type='text/css' href='$context_uri'>
-    <script src='$js_uri'></script>
     HTMLHEAD;
 
     $css = $kwargs['css'] ?? null;

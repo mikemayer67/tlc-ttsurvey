@@ -47,10 +47,10 @@
     var formData = new FormData();
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/create_new_survey');
-    formData.append('name',ce.new_survey_name.val());
-    var clone = ce.new_survey_clone.val();
+    formData.append('name',ce.survey_name.val());
+    var clone = ce.survey_clone.val();
     if(!isNaN(clone)) { formData.append('clone',clone); }
-    formData.append('new_survey_pdf',ce.new_survey_pdf[0].files[0]);
+    formData.append('survey_pdf',ce.survey_pdf[0].files[0]);
 
     $.ajax({
       type: 'POST',
@@ -88,10 +88,10 @@
   function update_display_state() 
   {
     // Hide everything temporarily... we'll turn them back on below as needed
-    ce.action_links.hide()
+    ce.action_links.hide();
     ce.button_bar.hide();
-    ce.new_survey_table.hide();
-    ce.show_survey.hide();
+    ce.info_edit.hide();
+    ce.info_bar.hide();
 
     $('input[required]').removeAttr('required');
 
@@ -102,8 +102,8 @@
       ce.submit.val('Create Survey');
       ce.revert.val('Cancel');
 
-      ce.new_survey_table.show();
-      ce.new_survey_name.attr('required',true);
+      ce.info_edit.show();
+      ce.survey_name.attr('required',true);
       return;
     } 
 
@@ -116,32 +116,32 @@
     ce.action_links.filter('.'+status).show();
 
     if(status=='draft') {
+      ce.info_edit.show();
       ce.button_bar.show();
       ce.submit.val('Save Changes');
       ce.revert.val('Revert');
     } 
 
-    ce.show_survey.show();
-    var info_bar = ce.show_survey.find('.info-bar');
-    info_bar.find('.info-label.created .date').html(format_date(survey.created));
+    ce.info_bar.show();
+    ce.info_bar.find('.info-label.created .date').html(format_date(survey.created));
     if(survey.active) {
-      info_bar.find('.info-label.opened').show();
-      info_bar.find('.info-label.opened .date').html(format_date(survey.active));
+      ce.info_bar.find('.info-label.opened').show();
+      ce.info_bar.find('.info-label.opened .date').html(format_date(survey.active));
     } else {
-      info_bar.find('.info-label.opened').hide();
+      ce.info_bar.find('.info-label.opened').hide();
     }
     if(survey.closed) {
-      info_bar.find('.info-label.closed').show();
-      info_bar.find('.info-label.closed .date').html(format_date(survey.closed));
+      ce.info_bar.find('.info-label.closed').show();
+      ce.info_bar.find('.info-label.closed .date').html(format_date(survey.closed));
     } else {
-      info_bar.find('.info-label.closed').hide();
+      ce.info_bar.find('.info-label.closed').hide();
     }
     if(survey.has_pdf) {
-      info_bar.find('.pdf-link .no-link').hide();
-      info_bar.find('.pdf-link a').attr('href',ce.pdfuri+survey.id).show();
+      ce.info_bar.find('.pdf-link .no-link').hide();
+      ce.info_bar.find('.pdf-link a').attr('href',ce.pdfuri+survey.id).show();
     } else {
-      info_bar.find('.pdf-link .no-link').show();
-      info_bar.find('.pdf-link a').hide();
+      ce.info_bar.find('.pdf-link .no-link').show();
+      ce.info_bar.find('.pdf-link a').hide();
     }
   }
 
@@ -190,7 +190,7 @@
 
     // populate the survey select menu
     populate_survey_options(ce.survey_select);
-    populate_survey_options(ce.new_survey_clone);
+    populate_survey_options(ce.survey_clone);
   }
 
 
@@ -255,11 +255,11 @@
     ce.survey_status    = ce.form.find('span.survey-status');
     ce.action_links     = ce.form.find('a.action');
     ce.button_bar       = ce.form.find('div.button-bar');
-    ce.new_survey_table = $('#new-survey');
-    ce.new_survey_name  = $('#new-survey-name');
-    ce.new_survey_clone = $('#new-survey-clone');
-    ce.new_survey_pdf   = $('#new-survey-pdf');
-    ce.show_survey      = $('#show-survey');
+    ce.info_edit        = $('#info-edit');
+    ce.survey_name      = $('#survey-name');
+    ce.survey_clone     = $('#survey-clone-from');
+    ce.survey_pdf       = $('#survey-pdf');
+    ce.info_bar         = ce.form.find('.content-box .info-bar');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
 
