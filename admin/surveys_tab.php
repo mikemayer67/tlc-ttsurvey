@@ -14,6 +14,7 @@ echo "<form id='admin-surveys' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
 add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('surveys',json_encode($all_surveys));
+add_hidden_input('pdfuri',full_app_uri("admin&ttt=$nonce&pdf="));
 add_hidden_submit('action','surveys');
 
 echo <<<HTMLCTRLS
@@ -55,13 +56,25 @@ echo <<<HTML
     <td><input id='new-survey-pdf' type='file' name='new_survey_pdf' accept='.pdf'></td>
   </tr>
 </table>
+
+<!--Survey Display-->
+<div id='show-survey'>
+  <div class='info-bar'>
+    <label class='info-label created'>Created:<span class='date'>???</span></label>
+    <label class='info-label opened'>Opened:<span class='date'>???</span></label>
+    <label class='info-label closed'>Closed:<span class='date'>???</span></label>
+    <span class='pdf-link'>
+      <span class='no-link'>No PDF</span>
+      <a class='pdf-download' download>Download PDF</a>
+    </span>
+  </div>
 </div>
 
-<!--Survey Display or Edit Table -->
-
+<!--Survey Edit-->
 
 <!--Button Bar-->
 
+</div>
 <div class='button-bar'>
   <input id='changes-submit' class='submit' type='submit' value='Save Changes'>
   <input id='changes-revert' class='revert' type='submit' value='Revert' formnovalidate>
@@ -71,6 +84,7 @@ echo <<<HTML
 HTML;
 
 echo "<script src='", js_uri('surveys','admin'), "'></script>";
+echo "<script src='", js_uri('dayjs.min'), "'></script>";
 
 die();
 

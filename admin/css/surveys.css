@@ -106,3 +106,39 @@
   padding:0;
   margin:0;
 }
+
+#ttt-body div.body form div#show-survey .info-bar {
+  display: flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#ttt-body div.body form div#show-survey .info-bar label {
+  font-weight:bold;
+  font-size:90%;
+  margin-right:1em;
+}
+
+#ttt-body div.body form div#show-survey .info-bar .date {
+  font-size:90%;
+  margin-left:0.5em;
+}
+
+#ttt-body div.body form div#show-survey .info-bar span.pdf-link {
+  margin-left:auto;
+  font-size:90%;
+}
+
+#ttt-body div.body form div#show-survey .info-bar a.pdf-download {
+  background:inherit;
+  margin-left:auto;
+  color:#008;
+  font-size:90%;
+  font-weight:700;
+  text-decoration:none;
+}
+
+#ttt-body div.body form div#show-survey .info-bar a.pdf-download:hover {
+  color:#00c;
+  text-shadow:1px 1px 5px #888;
+}

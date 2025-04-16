@@ -9,6 +9,7 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
+log_dev("REQUEST: ".print_r($_REQUEST,true));
 
 // If an explicit request was made to login as site admin,
 //   handle that now.  No need to verify existing admin/user roles.
@@ -56,6 +57,14 @@ if(!$active_roles) {
 //    request and be done.  (Do not load the admin dashboard)
 if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
   require(app_file('admin/log.php'));
+  die();
+}
+
+//  If a request to download a pdf file and the 'content' role
+//    is enabled, handle the pdf download request and be done.
+if(key_exists('pdf',$_REQUEST) && in_array('content',$active_roles)) {
+  log_dev("pdf requested");
+  require(app_file('admin/pdf.php'));
   die();
 }
 

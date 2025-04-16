@@ -2,6 +2,13 @@
 
   let ce = {};
 
+  function format_date(date)
+  {
+    var date = dayjs(date);
+    date = date.format('MMM D, YYYY h:mma');
+    return date;
+  }
+
   function handle_surveys_submit(event) 
   {
     event.preventDefault();
@@ -80,37 +87,58 @@
 
   function update_display_state() 
   {
-    ce.action_links.addClass('hidden');
+    // Hide everything temporarily... we'll turn them back on below as needed
+    ce.action_links.hide()
+    ce.button_bar.hide();
+    ce.new_survey_table.hide();
+    ce.show_survey.hide();
 
+    $('input[required]').removeAttr('required');
+
+    // Handle the "new survey" case and return
     if(ce.cur_survey === "new") {
       ce.survey_status.html('New Survey');
-      ce.button_bar.removeClass('hidden');
+      ce.button_bar.show();
       ce.submit.val('Create Survey');
       ce.revert.val('Cancel');
-      ce.new_survey_table.show();
 
-      $('input[required]').removeAttr('required');
+      ce.new_survey_table.show();
       ce.new_survey_name.attr('required',true);
+      return;
+    } 
+
+    // Switch on/off elements based on selected (cur) survey
+
+    var survey = ce.survey_map[ce.cur_survey];
+    var status = survey.status;
+
+    ce.survey_status.html(status);
+    ce.action_links.filter('.'+status).show();
+
+    if(status=='draft') {
+      ce.button_bar.show();
+      ce.submit.val('Save Changes');
+      ce.revert.val('Revert');
     } 
     else {
-      var survey = ce.survey_map[ce.cur_survey];
-      var status = survey.status;
+      ce.show_survey.show();
 
-      ce.new_survey_table.hide();
-
-      ce.survey_status.html(status);
-      ce.action_links.filter('.'+status).removeClass('hidden');
-
-      if(status=='draft') {
-        $('input[required]').removeAttr('required');
-        // TODO: reset required attributes for fields that need it
-        console.log('reset required attribute for fields that need it');
-        ce.button_bar.removeClass('hidden');
-        ce.submit.val('Save Changes');
-        ce.revert.val('Revert');
-      } 
-      else {
-        ce.button_bar.addClass('hidden');
+      var info_bar = ce.show_survey.find('.info-bar');
+      
+      info_bar.find('.info-label.created .date').html(format_date(survey.created));
+      info_bar.find('.info-label.opened .date').html(format_date(survey.active));
+      if(survey.closed) {
+        info_bar.find('.info-label.closed').show();
+        info_bar.find('.info-label.closed .date').html(format_date(survey.closed));
+      } else {
+        info_bar.find('.info-label.closed').hide();
+      }
+      if(survey.has_pdf) {
+        info_bar.find('.pdf-link .no-link').hide();
+        info_bar.find('.pdf-link a').attr('href',ce.pdfuri+survey.id).show();
+      } else {
+        info_bar.find('.pdf-link .no-link').show();
+        info_bar.find('.pdf-link a').hide();
       }
     }
   }
@@ -218,6 +246,7 @@
     function($) {
     ce.form             = $('#admin-surveys');
     ce.ajaxuri          = $('#admin-surveys input[name=ajaxuri]').val();
+    ce.pdfuri           = $('#admin-surveys input[name=pdfuri]').val();
     ce.nonce            = $('#admin-surveys input[name=nonce]').val();
     ce.status           = $('#ttt-status');
     ce.survey_select    = $('#survey-select');
@@ -228,6 +257,7 @@
     ce.new_survey_name  = $('#new-survey-name');
     ce.new_survey_clone = $('#new-survey-clone');
     ce.new_survey_pdf   = $('#new-survey-pdf');
+    ce.show_survey      = $('#show-survey');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
 

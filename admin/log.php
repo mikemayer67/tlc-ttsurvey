@@ -7,14 +7,14 @@ validate_and_retain_nonce('admin-log','GET');
 
 require_once(app_file('include/logger.php'));
 
-$dest = $_POST['log'] ?? 'newtab';
+$dest = $_REQUEST['log'] ?? 'newtab';
 
 $log_file = log_file();
 fflush(logger());
 
 $data = file_get_contents($log_file);
 
-if( 'newtab' === ($_POST['log'] ?? 'newtab') )
+if('newtab' === $dest)
 {
   echo "<pre>", $data, "</pre>";
 } 

@@ -25,6 +25,11 @@ function active_survey_title()
   return $titles[0] ?? null;
 }
 
+function survey_info($id)
+{
+  return MySQLSelectRow("select * from tlc_tt_surveys where id=?",'i',$id);
+}
+
 function all_surveys()
 {
   $surveys = array();
