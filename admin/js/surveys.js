@@ -120,26 +120,28 @@
       ce.submit.val('Save Changes');
       ce.revert.val('Revert');
     } 
-    else {
-      ce.show_survey.show();
 
-      var info_bar = ce.show_survey.find('.info-bar');
-      
-      info_bar.find('.info-label.created .date').html(format_date(survey.created));
+    ce.show_survey.show();
+    var info_bar = ce.show_survey.find('.info-bar');
+    info_bar.find('.info-label.created .date').html(format_date(survey.created));
+    if(survey.active) {
+      info_bar.find('.info-label.opened').show();
       info_bar.find('.info-label.opened .date').html(format_date(survey.active));
-      if(survey.closed) {
-        info_bar.find('.info-label.closed').show();
-        info_bar.find('.info-label.closed .date').html(format_date(survey.closed));
-      } else {
-        info_bar.find('.info-label.closed').hide();
-      }
-      if(survey.has_pdf) {
-        info_bar.find('.pdf-link .no-link').hide();
-        info_bar.find('.pdf-link a').attr('href',ce.pdfuri+survey.id).show();
-      } else {
-        info_bar.find('.pdf-link .no-link').show();
-        info_bar.find('.pdf-link a').hide();
-      }
+    } else {
+      info_bar.find('.info-label.opened').hide();
+    }
+    if(survey.closed) {
+      info_bar.find('.info-label.closed').show();
+      info_bar.find('.info-label.closed .date').html(format_date(survey.closed));
+    } else {
+      info_bar.find('.info-label.closed').hide();
+    }
+    if(survey.has_pdf) {
+      info_bar.find('.pdf-link .no-link').hide();
+      info_bar.find('.pdf-link a').attr('href',ce.pdfuri+survey.id).show();
+    } else {
+      info_bar.find('.pdf-link .no-link').show();
+      info_bar.find('.pdf-link a').hide();
     }
   }
 
