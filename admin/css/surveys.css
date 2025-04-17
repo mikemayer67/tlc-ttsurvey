@@ -102,8 +102,22 @@
   padding-right:0.5em;
 }
 
-#ttt-body div.body form table.info-edit tr td{
+#ttt-body div.body form table#info-edit tr td {
   padding: .25em;
+}
+
+#ttt-body div.body form table#info-edit div.pdf-box {
+  display:flex;
+  align-items:center;
+}
+
+#ttt-body div.body form table#info-edit div.pdf-box button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5em;
+  height: 1em;
+  width: 1em;
 }
 
 #ttt-body div.body form table input[type=file] {

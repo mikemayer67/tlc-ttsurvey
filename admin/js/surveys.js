@@ -90,8 +90,10 @@
     // Hide everything temporarily... we'll turn them back on below as needed
     ce.action_links.hide();
     ce.button_bar.hide();
-    ce.info_edit.hide();
     ce.info_bar.hide();
+    ce.info_edit.hide();
+    ce.info_edit.find('.clone-from').hide();
+    ce.clear_pdf.hide();
 
     $('input[required]').removeAttr('required');
 
@@ -101,9 +103,10 @@
       ce.button_bar.show();
       ce.submit.val('Create Survey');
       ce.revert.val('Cancel');
-
       ce.info_edit.show();
+      ce.info_edit.find('.clone-from').show();
       ce.survey_name.attr('required',true);
+      ce.survey_name.attr('placeholder','required');
       return;
     } 
 
@@ -118,6 +121,7 @@
     if(status=='draft') {
       ce.info_edit.show();
       ce.button_bar.show();
+      ce.survey_name.attr('placeholder',survey['title']);
       ce.submit.val('Save Changes');
       ce.revert.val('Revert');
     } 
@@ -143,6 +147,19 @@
       ce.info_bar.find('.pdf-link .no-link').show();
       ce.info_bar.find('.pdf-link a').hide();
     }
+  }
+
+  function handle_survey_pdf(events)
+  {
+    var pdf_file = ce.survey_pdf.val();
+    if(pdf_file) { ce.clear_pdf.show(); }
+    else         { ce.clear_pdf.hide(); }
+  }
+
+  function clear_survey_pdf(events)
+  {
+    ce.survey_pdf.val('');
+    ce.clear_pdf.hide();
   }
 
   function enforce_alphanum_only(event)
@@ -259,6 +276,7 @@
     ce.survey_name      = $('#survey-name');
     ce.survey_clone     = $('#survey-clone-from');
     ce.survey_pdf       = $('#survey-pdf');
+    ce.clear_pdf        = ce.info_edit.find('button.clear-pdf');
     ce.info_bar         = ce.form.find('.content-box .info-bar');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
@@ -270,6 +288,8 @@
 
     ce.form.on('submit',handle_surveys_submit);
     ce.survey_select.on('change',handle_survey_select);
+    ce.survey_pdf.on('change',handle_survey_pdf);
+    ce.clear_pdf.on('click',clear_survey_pdf);
     ce.action_links.on('click',handle_action_link);
 
     ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);

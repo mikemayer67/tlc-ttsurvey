@@ -54,7 +54,7 @@ echo <<<HTML
 <table id='info-edit' class='input-table new-survey'>
   <tr class='survey-name'>
     <td class='label'>Survey Name:</td>
-    <td><input id='survey-name' type='input' class='alphanum-only' name='survey_name' placeholder='required' required></td>
+    <td><input id='survey-name' type='input' class='alphanum-only' name='survey_name'></td>
   </tr><tr class='clone-from'>
     <td class='label'>Clone From:</td>
     <td><select id='survey-clone-from'>
@@ -62,7 +62,12 @@ echo <<<HTML
     </select></td>
   </tr><tr class='pdf-file'>
     <td class='label'>Downloadable PDF:</td>
-    <td><input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'></td>
+    <td>
+      <div class='pdf-box'>
+        <button class='clear-pdf'>-</button>
+        <input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'>
+      </div>
+    </td>
   </tr>
 </table>
 
