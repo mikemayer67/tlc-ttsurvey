@@ -20,7 +20,7 @@ add_hidden_submit('action','surveys');
 echo <<<HTMLCTRLS
 <div class='survey-controls'>
   <div class='survey-id'>
-    <select id='survey-select' name='survey-d'></select>
+    <select id='survey-select' name='survey-id'></select>
   </div>
   <label>Status:<span class='survey-status'></span></label>
   <div class='survey-actions'>

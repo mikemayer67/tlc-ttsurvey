@@ -184,17 +184,17 @@ IF version < 1 THEN
   );
 
   CREATE OR REPLACE VIEW tlc_tt_draft_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
         WHERE active is NULL and closed is NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_active_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
         WHERE active is not NULL and closed is NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_closed_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
         WHERE closed is not NULL;
 

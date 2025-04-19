@@ -15,6 +15,10 @@
   font-weight:700;
 }
 
+#ttt-body form .survey-controls option {
+  color:blue;
+}
+
 #ttt-body form .survey-controls #survey-select {
   font-size:100%;
 }
