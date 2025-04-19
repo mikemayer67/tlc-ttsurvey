@@ -23,7 +23,8 @@ $error = null;
 $new_id = create_new_survey($name,$clone,$tmp_pdf,$error);
 
 if($new_id) {
-  $rval = array('success'=>true);
+  $info = survey_info($new_id);
+  $rval = array('success'=>true, 'survey'=>$info);
 } else {
   $rval = array('success'=>false, 'error'=>$error);
 }

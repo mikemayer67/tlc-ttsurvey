@@ -71,7 +71,7 @@
         ce.survey_select.append($('<option>',{
           'value':survey.id,
           'text':survey.title,
-          'class':'draft',
+'class':'draft',
           'status':'draft',
         }));
       }
@@ -218,14 +218,14 @@
     }
   }
 
-  function handle_survey_pdf(events)
+  function handle_survey_pdf()
   {
     var pdf_file = ce.survey_pdf.val();
     if(pdf_file) { ce.clear_pdf.show(); }
     else         { ce.clear_pdf.hide(); }
   }
 
-  function clear_survey_pdf(events)
+  function clear_survey_pdf()
   {
     ce.survey_pdf.val('');
     ce.clear_pdf.hide();
@@ -297,9 +297,16 @@
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel');
     ce.info_edit.show();
+
+    ce.survey_name.attr({
+      required:true,
+      placeholder:'required',
+    }).val('');
+
     ce.info_edit.find('.clone-from').show();
-    ce.survey_name.attr('required',true);
-    ce.survey_name.attr('placeholder','required');
+    ce.survey_clone.val('none');
+
+    ce.survey_pdf.val('');
   }
 
   function revert_new_survey()
@@ -322,15 +329,30 @@
       url: ce.ajaxuri,
       contentType: false,
       processData: false,
+      dataType: 'json',
       data: formData,
 
     })
     .done( function(data,start,jqHXR) {
-      alert("received response: "+data);
+      if(data.success) { add_new_survey(data.survey); }
+      else             { alert('Failed to create new survey: '+error); }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
       internal_error(jqXHR);
     });
+  }
+
+  function add_new_survey(survey)
+  {
+    survey.status = 'draft';
+    ce.all_surveys[survey.id] = survey;
+
+    var new_option = ce.survey_select.find('option[value=new]');
+    new_option.after(
+      $('<option>',{value:survey.id, text:survey.title, class:'draft', status:'draft'})
+    );
+    
+    select_survey(survey);
   }
 
   //

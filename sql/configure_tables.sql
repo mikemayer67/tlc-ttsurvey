@@ -122,11 +122,11 @@ IF version < 1 THEN
     element_rev int NOT NULL,
     PRIMARY KEY (survey_id,section_seq,element_seq,revision),
     FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) 
-             ON UPDATE CASCADE ON DELETE RESTRICT,
+             ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (section_id) REFERENCES tlc_tt_survey_sections(id) 
-             ON UPDATE CASCADE ON DELETE RESTRICT,
+             ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (element_id,element_rev) REFERENCES tlc_tt_survey_elements(id,revision) 
-             ON UPDATE CASCADE ON DELETE RESTRICT
+             ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_options (
@@ -143,9 +143,9 @@ IF version < 1 THEN
     option_rev  int NOT NULL,
     PRIMARY KEY (element_id,revision,option_id),
     FOREIGN KEY (element_id) REFERENCES tlc_tt_survey_elements(id) 
-             ON UPDATE CASCADE ON DELETE RESTRICT,
+             ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (option_id,option_rev) REFERENCES tlc_tt_options(id,revision) 
-             ON UPDATE CASCADE ON DELETE RESTRICT
+             ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
 
@@ -167,7 +167,7 @@ IF version < 1 THEN
     userid    varchar(24)      NOT NULL PRIMARY KEY,
     token     varchar(20)      NOT NULL,
     expires   datetime         NOT NULL,
-    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_roles (
@@ -175,7 +175,7 @@ IF version < 1 THEN
     admin     tinyint     NOT NULL DEFAULT 0,
     content   tinyint     NOT NULL DEFAULT 0,
     tech      tinyint     NOT NULL DEFAULT 0,
-    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   create table tlc_tt_settings (
