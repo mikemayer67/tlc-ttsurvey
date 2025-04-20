@@ -2,6 +2,8 @@
 
   let ce = {};
 
+  let validation_timer=null;
+
   //
   // Simple Support Functions
   //
@@ -118,6 +120,34 @@
   // Event Handler Dispatch
   //
   
+  function handle_input(event)
+  {
+    hide_status();
+    clearTimeout(validation_timer);
+    $(this).removeClass('invalid-value');
+    validation_timer = setTimeout(validate_all,150);
+  }
+
+  function handle_change(event)
+  {
+    hide_status();
+    clearTimeout(validation_timer);
+    validation_timer = null;
+    validate_all();
+  }
+
+  function validate_all()
+  {
+    ce.form.children('input').removeClass('invalid-value');
+    ce.form.find('div.error').hide();
+
+    switch(ce.cur_survey.status)
+    {
+      case "new":   validate_new_survey();   break;
+      case "draft": validate_draft_survey(); break;
+    }
+  }
+  
   function handle_survey_select(event)
   {
     var survey_id = $(this).val();
@@ -126,6 +156,7 @@
 
   function select_survey(survey)
   {
+    hide_status();
     ce.action_links.hide();
     ce.button_bar.hide();
     ce.info_bar.hide();
@@ -165,6 +196,7 @@
       case "new":   revert_new_survey();   break;
       case "draft": revert_draft_survey(); break;
     }
+    validate_all();
   }
 
   function handle_action_link(event)
@@ -174,7 +206,17 @@
 
   function has_changes()
   {
-    return false;
+    if(ce.cur_survey.status !== 'draft') { return false; }
+    return has_draft_changes();
+  }
+
+  function update_submit()
+  {
+    switch(ce.cur_survey.status)
+    {
+      case "new":   update_new_submit();   break;
+      case "draft": update_draft_submit(); break;
+    }
   }
 
   //
@@ -223,12 +265,16 @@
     var pdf_file = ce.survey_pdf.val();
     if(pdf_file) { ce.clear_pdf.show(); }
     else         { ce.clear_pdf.hide(); }
+
+    update_submit();
   }
 
   function clear_survey_pdf()
   {
     ce.survey_pdf.val('');
     ce.clear_pdf.hide();
+
+    update_submit();
   }
 
   function select_existing_survey(survey)
@@ -238,6 +284,17 @@
 
     update_survey_controls(survey);
     show_info_bar(survey);
+  }
+
+  function validate_survey_name()
+  {
+    var survey_name = ce.survey_name.val().trim();
+    if(survey_name.length > 0) {
+      if(survey_name.length < 5) {
+        ce.survey_name.addClass('invalid-value');
+        ce.form.find('div.error[name=survey_name]').show().html("too short");
+      }
+    }
   }
 
   //
@@ -261,27 +318,155 @@
   // 
   // Draft Survey Functions
   //
-
+ 
   function select_draft_survey(survey)
   {
     select_existing_survey(survey);
 
     ce.info_edit.show();
     ce.button_bar.show();
-    ce.survey_name.attr('placeholder',survey['title']);
     ce.submit.val('Save Changes');
     ce.revert.val('Revert');
+
+    ce.survey_name.attr({
+      required:false,
+      placeholder:survey['title'],
+    }).val('');
+
+    if(survey.has_pdf) {
+      ce.info_edit.find('.pdf-file td.label').html('Replace PDF');
+    } else {
+      ce.info_edit.find('.pdf-file td.label').html('Downloadable PDF');
+    }
+    ce.survey_pdf.val('');
+
+    ce.saved_values = current_draft_values();
+    update_submit();
   }
 
   function revert_draft_survey()
   {
-    alert('handle_revert_draft_survey');
+    var survey_name = ce.saved_values['survey_name'].trim();
+    if( survey_name === ce.cur_survey.title ) { survey_name=''; }
+
+    ce.survey_name.val(survey_name);
+    ce.survey_pdf.val('');
+    clear_survey_pdf();
+
+    //@@@TODO: Add survey elements
+    
+    update_draft_submit();
   }
 
   function submit_draft_survey()
   {
-    alert('handle_submit_draft_survey');
+    var cur_values = current_draft_values();
+    var survey_name = cur_values['survey_name'].trim();
+    if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
+
+    var has_pdf = ce.survey_pdf.val() ? true : false;
+
+    var formData = new FormData();
+    formData.append('nonce',ce.nonce);
+    formData.append('ajax','admin/update_survey');
+    formData.append('survey_id',ce.cur_survey.id);
+    formData.append('name',survey_name);
+    if(has_pdf) {
+      formData.append('survey_pdf',ce.survey_pdf[0].files[0]);
+    }
+
+    $.ajax( {
+      type: 'POST',
+      ulr: ce.ajaxuri,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      data:formData,
+    })
+    .done( function(data,status,jqXHR) {
+      if(data.success) {
+        ce.saved_values = cur_values;
+        ce.saved_values['survey_name'] = '';
+
+        ce.cur_survey.title = survey_name;
+        ce.cur_survey.has_pdf = data.has_pdf;
+
+        clear_survey_pdf();
+
+        ce.survey_select.find('option[value='+ce.cur_survey.id+']').html(survey_name);
+        ce.survey_clone.find('option[value='+ce.cur_survey.id+']').html(survey_name);
+
+        select_draft_survey(ce.cur_survey);
+        show_status('info','Changes Saved');
+      } 
+      else {
+        if( 'bad_nonce' in data ) {
+          alert("Somthing got out of sync.  Reloading page.");
+          location.reload();
+        } else {
+          alert("handle bad input notices");
+//          --- copied from settings.js ---
+//          for( const [key,error] of Object.entries(data) ) {
+//            if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
+//            if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
+//          }
+        }
+      }
+      update_draft_submit();
+    } )
+    .fail( function(jqXHR,textStatus,errorThrown) { 
+      internal_error(jqXHR); 
+    } )
+    ;
   }
+
+  function update_draft_submit()
+  {
+    var errors = $('input.invalid-value');
+    var dirty = has_draft_changes();
+    var can_submit = dirty && errors.length==0;
+
+    ce.submit.prop('disabled',!can_submit);
+
+    if(dirty) {
+      ce.revert.prop('disabled',false).css('opacity',1);
+    } else {
+      ce.revert.prop('disabled',false).css('opacity',0);
+    }
+  }
+
+  function current_draft_values()
+  {
+    var values = {
+      survey_name: ce.survey_name.val(),
+    };
+    //@@@TODO: Add survey elements
+    return values;
+  }
+
+  function has_draft_changes()
+  {
+    var current_values = current_draft_values();
+    
+    var current_survey_name = current_values['survey_name'].trim();
+    if(current_survey_name.length>0) {
+      var saved_survey_name = ce.saved_values['survey_name'];
+      if( saved_survey_name.length == 0 ) { saved_survey_name=ce.cur_survey.title; }
+
+      if( current_values['survey_name'] !== saved_survey_name ) { return true; }
+    }
+
+    if(ce.survey_pdf.val()) { return true; }
+
+    return false;
+  }
+
+  function validate_draft_survey()
+  {
+    validate_survey_name();
+    update_draft_submit();
+  }
+
 
   //
   // New Survey Functions
@@ -306,7 +491,10 @@
     ce.info_edit.find('.clone-from').show();
     ce.survey_clone.val('none');
 
+    ce.info_edit.find('.pdf-file td.label').html('Downloadable PDF');
     ce.survey_pdf.val('');
+
+    update_new_submit();
   }
 
   function revert_new_survey()
@@ -342,6 +530,14 @@
     });
   }
 
+  function update_new_submit()
+  {
+    var survey_name = ce.survey_name.val().trim();
+    var can_submit = survey_name.length > 4;
+    ce.submit.prop('disabled',!can_submit);
+  }
+
+
   function add_new_survey(survey)
   {
     survey.status = 'draft';
@@ -353,6 +549,12 @@
     );
     
     select_survey(survey);
+  }
+
+  function validate_new_survey()
+  {
+    validate_survey_name();
+    update_new_submit();
   }
 
   //
@@ -392,6 +594,8 @@
     ce.action_links.on('click',handle_action_link);
 
     ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
+    ce.survey_name.on('input',handle_input);
+    ce.survey_name.on('change',handle_change);
 
     has_change_cb = has_changes;
 

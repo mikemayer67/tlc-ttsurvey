@@ -62,11 +62,11 @@ function survey_pdf_file($survey_id)
   }
 }
 
-function create_new_survey($name,$clone_id,$pdf_file,&$info=null)
+function create_new_survey($name,$clone_id,$pdf_file,&$error=null)
 {
   class FailedToCreate extends \Exception {}
 
-  $info = '';
+  $error = '';
   $new_id = null;
 
   try {
@@ -126,10 +126,53 @@ function create_new_survey($name,$clone_id,$pdf_file,&$info=null)
   catch(FailedToCreate $e)
   {
     MySQLRollback();
-    $info = "Failed to create new survey (" . $e->getMessage() . ")";
+    $error = "Failed to create new survey (" . $e->getMessage() . ")";
     $new_id = null;
   }
 
   return $new_id;
+}
+
+function update_survey($id,$name,$pdf_file,&$error=null)
+{
+  class FailedToUpdate extends \Exception {}
+
+  $error = '';
+  $errid = bin2hex(random_bytes(3));
+
+  try {
+    if($name) 
+    {
+      MySQLBeginTransaction();
+      $rc = MySQLExecute('update tlc_tt_surveys set title=? where id=?','si',$name,$id);
+      if($rc === false) {
+        log_error("[$errid] Failed to update entry ($id,$name)");
+        throw FailedToUpdate("updating name");
+      }
+    }
+
+    if($pdf_file) {
+      $tgt_file = app_file("pdf/survey_$id.pdf");
+      if(file_exists($tgt_file)) {
+        if(!unlink($tgt_file)) {
+          log_error("[$errid] Failed to unlink $tgt_file");
+          throw FailedToUpdate("updating PDF file");
+        }
+      }
+      if(!move_uploaded_file($pdf_file,$tgt_file)) {
+        log_error("[$errid] Failed to save updloded PDF to $tgt_file");
+        throw FailedToUpdate("updating PDF file");
+      }
+    }
+
+    if($name) { MySQLCommit(); }
+  }
+  catch(FailedToUpdate $e)
+  {
+    if($name) { MySQLRollback(); }
+    $error = "Failed to update survey. Please report error $errid to a tech admin";
+  }
+
+  return strlen($error) == 0;
 }
 

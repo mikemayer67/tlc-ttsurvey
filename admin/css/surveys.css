@@ -124,6 +124,21 @@
   width: 1em;
 }
 
+#ttt-body div.body form table#info-edit td.input-box {
+  position:relative;
+}
+
+#ttt-body div.body form table#info-edit td div.error {
+  display:none;
+  color:darkred;
+  background:none;
+  font-style:italic;
+  font-size:0.85em;
+  position: absolute;
+  top:2px;
+  right:0.75em;
+}
+
 #ttt-body div.body form table input[type=file] {
   background-color:inherit;
   padding:0;

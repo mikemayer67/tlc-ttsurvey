@@ -54,7 +54,10 @@ echo <<<HTML
 <table id='info-edit' class='input-table new-survey'>
   <tr class='survey-name'>
     <td class='label'>Survey Name:</td>
-    <td><input id='survey-name' type='input' class='alphanum-only' name='survey_name'></td>
+    <td class='input-box'>
+      <input id='survey-name' type='input' class='alphanum-only' name='survey_name'>
+      <div class='error' name='survey_name'>error</div>
+    </td>
   </tr><tr class='clone-from'>
     <td class='label'>Clone From:</td>
     <td><select id='survey-clone-from'>
