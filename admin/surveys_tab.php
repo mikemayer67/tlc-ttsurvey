@@ -67,6 +67,11 @@ echo <<<HTML
     <td class='label'>Downloadable PDF:</td>
     <td>
       <div class='pdf-box'>
+        <select id='existing-pdf-action'>
+          <option value='keep'>Keep it</option>
+          <option value='drop'>Drop it</option>
+          <option value='replace'>Replace it</option>
+        </select>
         <button class='clear-pdf'>-</button>
         <input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'>
       </div>

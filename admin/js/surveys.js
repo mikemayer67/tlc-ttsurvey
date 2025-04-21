@@ -156,12 +156,15 @@
 
   function select_survey(survey)
   {
+    if(block_survey_select()) { return; }
+
     hide_status();
     ce.action_links.hide();
     ce.button_bar.hide();
     ce.info_bar.hide();
     ce.info_edit.hide();
     ce.info_edit.find('.clone-from').hide();
+    ce.existing_pdf.hide();
     ce.clear_pdf.hide();
 
     $('input[required]').removeAttr('required');
@@ -175,16 +178,39 @@
     }
   }
 
+  function block_survey_select()
+  {
+    if(ce.cur_survey.status !== 'draft') { return false; }
+    if(!has_draft_changes()) { return false; }
+
+    var cand_survey = ce.survey_select.val();
+
+    var tsm = $('#tab-switch-modal');
+    tsm.find('.tsm-type').html('surveys');
+    tsm.find('button.cancel').off('click').on('click',function() { 
+      tsm.hide();
+      ce.survey_select.val(ce.cur_survey.id);
+    });
+    tsm.find('button.confirm').off('click').on('click',function() { 
+      tsm.hide();
+      revert_draft_survey();
+      select_survey(ce.all_surveys[cand_survey]);
+    }).html("Switch Surveys");
+    tsm.show();
+
+    return true;
+  }
+
   function handle_surveys_submit(event)
   {
     event.preventDefault();
     var sender = $(event.originalEvent.submitter);
-    if(sender.hasClass('hidden')) { return; }
-
-    switch(ce.cur_survey.status)
-    {
-      case "new":   submit_new_survey();   break;
-      case "draft": submit_draft_survey(); break;
+    if( ce.submit.is(sender) ) {
+      switch(ce.cur_survey.status)
+      {
+        case "new":   submit_new_survey();   break;
+        case "draft": submit_draft_survey(); break;
+      }
     }
   }
 
@@ -262,10 +288,11 @@
 
   function handle_survey_pdf()
   {
-    var pdf_file = ce.survey_pdf.val();
-    if(pdf_file) { ce.clear_pdf.show(); }
-    else         { ce.clear_pdf.hide(); }
-
+    if(!ce.cur_survey.has_pdf) {
+      var pdf_file = ce.survey_pdf.val();
+      if(pdf_file) { ce.clear_pdf.show(); }
+      else         { ce.clear_pdf.hide(); }
+    }
     update_submit();
   }
 
@@ -273,7 +300,6 @@
   {
     ce.survey_pdf.val('');
     ce.clear_pdf.hide();
-
     update_submit();
   }
 
@@ -333,15 +359,28 @@
       placeholder:survey['title'],
     }).val('');
 
+    clear_survey_pdf();
     if(survey.has_pdf) {
-      ce.info_edit.find('.pdf-file td.label').html('Replace PDF');
+      ce.existing_pdf.val('keep').show();
+      ce.survey_pdf.hide();
+      ce.info_edit.find('.pdf-file td.label').html('Existing PDF');
     } else {
+      ce.survey_pdf.show();
       ce.info_edit.find('.pdf-file td.label').html('Downloadable PDF');
     }
     ce.survey_pdf.val('');
 
     ce.saved_values = current_draft_values();
     update_submit();
+  }
+
+  function handle_pdf_action(event)
+  {
+    if( ce.existing_pdf.val() === "replace" ) {
+      ce.survey_pdf.show();
+    } else {
+      ce.survey_pdf.hide();
+    }
   }
 
   function revert_draft_survey()
@@ -352,6 +391,7 @@
     ce.survey_name.val(survey_name);
     ce.survey_pdf.val('');
     clear_survey_pdf();
+    ce.form.find('div.error').hide();
 
     //@@@TODO: Add survey elements
     
@@ -492,8 +532,8 @@
     ce.survey_clone.val('none');
 
     ce.info_edit.find('.pdf-file td.label').html('Downloadable PDF');
-    ce.survey_pdf.val('');
 
+    clear_survey_pdf();
     update_new_submit();
   }
 
@@ -576,6 +616,7 @@
     ce.survey_name      = $('#survey-name');
     ce.survey_clone     = $('#survey-clone-from');
     ce.survey_pdf       = $('#survey-pdf');
+    ce.existing_pdf     = $('#existing-pdf-action');
     ce.clear_pdf        = ce.info_edit.find('button.clear-pdf');
     ce.info_bar         = ce.form.find('.content-box .info-bar');
     ce.submit           = $('#changes-submit');
@@ -591,6 +632,7 @@
     ce.survey_select.on('change',handle_survey_select);
     ce.survey_pdf.on('change',handle_survey_pdf);
     ce.clear_pdf.on('click',clear_survey_pdf);
+    ce.existing_pdf.on('change',handle_pdf_action);
     ce.action_links.on('click',handle_action_link);
 
     ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);

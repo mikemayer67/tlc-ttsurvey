@@ -150,7 +150,7 @@ echo <<<HTMLMODAL
     <img src='$img'>
     <div class='text-box'>
       <p>You have unsaved changes.</p>
-      <p>If you switch tabs, you will your changes.</p>
+      <p>If you switch <span class='tsm-type'>tabs</span>, you will lose your changes.</p>
     </div>
     <div class='tab-switch-buttons'>
       <button class='confirm'>Switch Tabs</button>

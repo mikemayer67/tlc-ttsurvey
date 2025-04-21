@@ -139,6 +139,10 @@
   right:0.75em;
 }
 
+#ttt-body div.body form table#info-edit td select {
+  margin-right:0.5em;
+}
+
 #ttt-body div.body form table input[type=file] {
   background-color:inherit;
   padding:0;
