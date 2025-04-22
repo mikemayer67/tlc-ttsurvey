@@ -9,6 +9,7 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
+log_dev("REQUEST: ".print_r($_REQUEST,true));
 
 // If an explicit request was made to login as site admin,
 //   handle that now.  No need to verify existing admin/user roles.
@@ -59,6 +60,13 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
   die();
 }
 
+//  If a request to download a pdf file and the 'content' role
+//    is enabled, handle the pdf download request and be done.
+if(key_exists('pdf',$_REQUEST) && in_array('content',$active_roles)) {
+  require(app_file('admin/pdf.php'));
+  die();
+}
+
 // If we got here, then there is at least one enabled role, we can
 //   proceed with populating the admin dashboard.
 //
@@ -68,6 +76,7 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
 $tabs = [
   'settings' => [],
   'roles' => ['admin'],
+  'surveys' => ['admin','content'],
   'log' => ['admin','tech'],
 ];
 
@@ -140,7 +149,7 @@ echo <<<HTMLMODAL
     <img src='$img'>
     <div class='text-box'>
       <p>You have unsaved changes.</p>
-      <p>If you switch tabs, you will your changes.</p>
+      <p>If you switch <span class='tsm-type'>tabs</span>, you will lose your changes.</p>
     </div>
     <div class='tab-switch-buttons'>
       <button class='confirm'>Switch Tabs</button>

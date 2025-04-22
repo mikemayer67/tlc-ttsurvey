@@ -83,6 +83,13 @@ function MySQLExecute($query,$types=null,...$params)
   return false;
 }
 
+function MySQLInsertID()
+{
+  // this must be called immediately after the insert query that generated the new 
+  $conn = MySQLConnection();
+  return $conn->insert_id;
+}
+
 function MySQLSelect($all,$mode,$query,$types=null,$params=[])
 {
   if(! preg_match("/^\s*select/i",$query)) {

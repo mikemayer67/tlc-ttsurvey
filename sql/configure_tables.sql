@@ -65,7 +65,7 @@ DECLARE version INT DEFAULT 0;
 CREATE TABLE IF NOT EXISTS tlc_tt_version_history (
 	version INT AUTO_INCREMENT PRIMARY KEY,
   description VARCHAR(45) NOT NULL,
-  added DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
     
 -- see if there are any rows in the table.
@@ -92,11 +92,62 @@ IF version < 1 THEN
   CREATE TABLE tlc_tt_surveys (
     id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     title    varchar(100) NOT NULL,
-    created  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    active   DATETIME     NULL DEFAULT NULL,
-    closed   DATETIME     NULL DEFAULT NULL,
-    download VARCHAR(150) NULL DEFAULT NULL COMMENT 'URL to download a printable survey'
+    created  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    active   datetime     NULL DEFAULT NULL,
+    closed   datetime     NULL DEFAULT NULL,
+    revision int          NOT NULL DEFAULT 1
   );
+
+  CREATE TABLE tlc_tt_survey_sections (
+    id          int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    name        varchar(45)  NOT NULL,
+    description varchar(512) DEFAULT NULL
+  );
+
+  CREATE TABLE tlc_tt_survey_elements (
+    id       int                     NOT NULL AUTO_INCREMENT,
+    revision int                     NOT NULL DEFAULT 1,
+    type     ENUM('INFO','CHECKBOX') NOT NULL,
+    data     varchar(1024)           DEFAULT NULL,
+    PRIMARY KEY (id,revision)
+  );
+
+  CREATE TABLE tlc_tt_survey_content (
+    survey_id int NOT NULL,
+    section_seq int NOT NULL,
+    element_seq int NOT NULL,
+    revision    int NOT NULL DEFAULT 1,
+    section_id  int NOT NULL,
+    element_id  int NOT NULL,
+    element_rev int NOT NULL,
+    PRIMARY KEY (survey_id,section_seq,element_seq,revision),
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) 
+             ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (section_id) REFERENCES tlc_tt_survey_sections(id) 
+             ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (element_id,element_rev) REFERENCES tlc_tt_survey_elements(id,revision) 
+             ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+  CREATE TABLE tlc_tt_options (
+    id       int          NOT NULL AUTO_INCREMENT,
+    revision int          NOT NULL DEFAULT 1,
+    label    varchar(128) NOT NULL,
+    PRIMARY KEY (id,revision)
+  );
+
+  CREATE TABLE tlc_tt_element_options (
+    element_id  int NOT NULL,
+    revision    int NOT NULL,
+    option_id   int NOT NULL,
+    option_rev  int NOT NULL,
+    PRIMARY KEY (element_id,revision,option_id),
+    FOREIGN KEY (element_id) REFERENCES tlc_tt_survey_elements(id) 
+             ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (option_id,option_rev) REFERENCES tlc_tt_options(id,revision) 
+             ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+
 
   CREATE TABLE tlc_tt_userids (
     userid   varchar(24)  PRIMARY KEY,
@@ -115,8 +166,8 @@ IF version < 1 THEN
   CREATE TABLE tlc_tt_reset_tokens (
     userid    varchar(24)      NOT NULL PRIMARY KEY,
     token     varchar(20)      NOT NULL,
-    expires   DATETIME         NOT NULL,
-    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+    expires   datetime         NOT NULL,
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_roles (
@@ -124,7 +175,7 @@ IF version < 1 THEN
     admin     tinyint     NOT NULL DEFAULT 0,
     content   tinyint     NOT NULL DEFAULT 0,
     tech      tinyint     NOT NULL DEFAULT 0,
-    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   create table tlc_tt_settings (
@@ -133,17 +184,17 @@ IF version < 1 THEN
   );
 
   CREATE OR REPLACE VIEW tlc_tt_draft_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
-        WHERE active is NULL;
+        WHERE active is NULL and closed is NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_active_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
         WHERE active is not NULL and closed is NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_closed_surveys
-    AS SELECT id, title 
+    AS SELECT *
          FROM tlc_tt_surveys 
         WHERE closed is not NULL;
 

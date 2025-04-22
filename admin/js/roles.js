@@ -108,7 +108,6 @@
 
     var selected = $(this).val();
     var role = $(this).attr('name');
-    console.log('handle_new_role_select' + role + ' ' + selected);
     var add_button = ce.add_buttons[role];
     if(selected == "") {
       add_button.prop('disabled',true);
@@ -231,8 +230,8 @@
     ce.ajaxuri         = $('#admin-roles input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-roles input[name=nonce]').val();
     ce.status          = $('#ttt-status');
-    ce.submit          = $('#settings_submit');
-    ce.revert          = $('#settings_revert');
+    ce.submit          = $('#changes-submit');
+    ce.revert          = $('#changes-revert');
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(

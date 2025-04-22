@@ -98,7 +98,7 @@ echo <<<HTMLCTRLS
   </div>
 </div>
 
-<div class='log-display-box'>
+<div class='content-box'>
   <textarea id='log-display' readonly rows=20></textarea>
 </div>
 <div class='log-button-bar'>
@@ -109,5 +109,6 @@ echo <<<HTMLCTRLS
 HTMLCTRLS;
 
 echo "</form>";
-
 echo "<script src='", js_uri('log','admin'), "'></script>";
+
+die();

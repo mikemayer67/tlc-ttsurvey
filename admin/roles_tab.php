@@ -53,8 +53,8 @@ echo "</ul>";
  
 
 echo "<div class='button-bar'>";
-echo "<input id='settings_submit' class='submit' type='submit' value='Save Changes'>";
-echo "<input id='settings_revert' class='revert' type='submit' value='Revert' formnovalidate>";
+echo "<input id='changes-submit' class='submit' type='submit' value='Save Changes'>";
+echo "<input id='changes-revert' class='revert' type='submit' value='Revert' formnovalidate>";
 echo "</div>";
 
 echo "</form>";

@@ -190,8 +190,8 @@
     ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
     ce.nonce           = $('#admin-settings input[name=nonce]').val();
     ce.test_response   = $('#test_connection_response');
-    ce.submit          = $('#settings_submit');
-    ce.revert          = $('#settings_revert');
+    ce.submit          = $('#changes-submit');
+    ce.revert          = $('#changes-revert');
 
     ce.submit.prop('disabled',true);
     ce.revert.prop('disabled',true).css('opacity',0);

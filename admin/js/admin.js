@@ -37,13 +37,14 @@ function handle_tab_change(event)
     var new_tab_uri = tgt_action + '&tab=' + new_tab;
 
     var tsm = $('#tab-switch-modal');
-    tsm.find('button.cancel').on('click',function() { 
+    tsm.find('.tsm-type').html('tabs');
+    tsm.find('button.cancel').off('click').on('click',function() { 
       tsm.hide();
     });
-    tsm.find('button.confirm').on('click',function() { 
+    tsm.find('button.confirm').off('click').on('click',function() { 
       tsm.hide();
       window.location = new_tab_uri;
-    });
+    }).html("Switch Tabs");
     tsm.show();
   }
 }
