@@ -133,7 +133,7 @@ function create_new_survey($name,$clone_id,$pdf_file,&$error=null)
   return $new_id;
 }
 
-function update_survey($id,$name,$pdf_file,&$error=null)
+function update_survey($id,$name,$pdf_action,$new_pdf_file,&$error=null)
 {
   class FailedToUpdate extends \Exception {}
 
@@ -151,16 +151,20 @@ function update_survey($id,$name,$pdf_file,&$error=null)
       }
     }
 
-    if($pdf_file) {
-      $tgt_file = app_file("pdf/survey_$id.pdf");
-      if(file_exists($tgt_file)) {
-        if(!unlink($tgt_file)) {
-          log_error("[$errid] Failed to unlink $tgt_file");
-          throw FailedToUpdate("updating PDF file");
+    $pdf_path = app_file("pdf/survey_$id.pdf");
+
+    if($pdf_action === 'drop' || $pdf_action === 'replace') {
+      if(file_exists($pdf_path)) {
+        if(!unlink($pdf_path)) {
+          log_error("[$errid] Failed to unlink $pdf_path");
+          throw FailedToUpdate("drop existing PDF file");
         }
       }
-      if(!move_uploaded_file($pdf_file,$tgt_file)) {
-        log_error("[$errid] Failed to save updloded PDF to $tgt_file");
+    }
+
+    if($pdf_action === 'add' || $pdf_action === 'replace') {
+      if(!move_uploaded_file($new_pdf_file,$pdf_path)) {
+        log_error("[$errid] Failed to save updloded PDF to $pdf_path");
         throw FailedToUpdate("updating PDF file");
       }
     }

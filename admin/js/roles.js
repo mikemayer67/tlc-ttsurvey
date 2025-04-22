@@ -108,7 +108,6 @@
 
     var selected = $(this).val();
     var role = $(this).attr('name');
-    console.log('handle_new_role_select' + role + ' ' + selected);
     var add_button = ce.add_buttons[role];
     if(selected == "") {
       add_button.prop('disabled',true);

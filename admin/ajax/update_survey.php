@@ -12,12 +12,10 @@ handle_warnings();
 
 use Exception;
 
-log_dev("POST = ".print_r($_POST,true));
-log_dev("FILES = ".print_r($_FILES,true));
-
 $id      = $_POST['survey_id'] ?? null;
 $name    = $_POST['name'] ?? null;
-$tmp_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
+$cur_pdf = $_POST['existing_pdf'] ?? 'keep';
+$new_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
 
 try {
   $error = null;
@@ -25,7 +23,7 @@ try {
     throw new Exception('Missing id in request');
   }
 
-  if(!update_survey($id,$name,$tmp_pdf,$error)) {
+  if(!update_survey($id,$name,$cur_pdf,$new_pdf,$error)) {
     throw new Exception($error);
   }
 

@@ -63,7 +63,6 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
 //  If a request to download a pdf file and the 'content' role
 //    is enabled, handle the pdf download request and be done.
 if(key_exists('pdf',$_REQUEST) && in_array('content',$active_roles)) {
-  log_dev("pdf requested");
   require(app_file('admin/pdf.php'));
   die();
 }
