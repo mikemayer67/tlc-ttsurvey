@@ -453,6 +453,7 @@
         ce.cur_survey.has_pdf = data.has_pdf;
 
         clear_survey_pdf();
+        ce.existing_pdf.val('keep');
 
         ce.survey_select.find('option[value='+ce.cur_survey.id+']').html(survey_name);
         ce.survey_clone.find('option[value='+ce.cur_survey.id+']').html(survey_name);
