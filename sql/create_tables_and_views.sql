@@ -46,7 +46,7 @@
 
 -- HERE WE GO... 
 
--- If you don't understand the following statement, please read up creating
+-- If you don't understand the following statement, please read up on creating
 -- stored procedures before modifying this script!!!
 DELIMITER //
 
@@ -70,12 +70,7 @@ CREATE TABLE IF NOT EXISTS tlc_tt_version_history (
     
 -- see if there are any rows in the table.
 -- if not, then we are at version 0 (initial table creation)
-SELECT COUNT(*) INTO version FROM tlc_tt_version_history;
-
--- if we do have a version history get the most recent one
-IF version > 0 THEN
-	SELECT MAX(version) INTO version FROM tlc_tt_version_history;
-END IF;
+SELECT IFNULL(MAX(version),0) INTO version FROM tlc_tt_version_history;
 
 --
 -- VERSION 1 --
@@ -90,62 +85,81 @@ IF version < 1 THEN
 --   the "if not exists" clause in any of the create statements below.
 
   CREATE TABLE tlc_tt_surveys (
-    id       int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id       int          NOT NULL AUTO_INCREMENT,
     title    varchar(100) NOT NULL,
     created  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    active   datetime     NULL DEFAULT NULL,
-    closed   datetime     NULL DEFAULT NULL,
-    revision int          NOT NULL DEFAULT 1
+    active   datetime     DEFAULT NULL,
+    closed   datetime     DEFAULT NULL,
+    parent   int          DEFAULT NULL,
+    revision int          NOT NULL DEFAULT 1,
+    PRIMARY KEY (id),
+    FOREIGN KEY (parent) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE SET NULL
+  );
+
+  CREATE TABLE tlc_tt_survey_options (
+    id         int          NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
+    survey_id  int          NOT NULL DEFAULT 1,
+    survey_rev int          NOT NULL,
+    text       varchar(128) NOT NULL COMMENT 'What will appear in the survey form',
+    PRIMARY KEY (id,survey_id,survey_rev),
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_survey_sections (
-    id          int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    name        varchar(45)  NOT NULL,
-    description varchar(512) DEFAULT NULL
+    survey_id   int          NOT NULL,
+    survey_rev  int          NOT NULL,
+    sequence    int          COMMENT 
+'Order this section will appear in the survey form.
+ NULL excludes the section from the survey form, but retains it for use by descendent surveys.',
+    name        varchar(45)  NOT NULL           COMMENT 'Section name that will appear in the survey form',
+    description varchar(512) DEFAULT NULL       COMMENT 'Section description that will appear in the survey form',
+    feedback    tinyint      NOT NULL DEFAULT 0 COMMENT 'Include a general feedback textarea for this section',
+    PRIMARY KEY (survey_id,survey_rev,sequence),
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_survey_elements (
-    id       int                     NOT NULL AUTO_INCREMENT,
-    revision int                     NOT NULL DEFAULT 1,
-    type     ENUM('INFO','CHECKBOX') NOT NULL,
-    data     varchar(1024)           DEFAULT NULL,
-    PRIMARY KEY (id,revision)
-  );
-
-  CREATE TABLE tlc_tt_survey_content (
-    survey_id int NOT NULL,
-    section_seq int NOT NULL,
-    element_seq int NOT NULL,
-    revision    int NOT NULL DEFAULT 1,
-    section_id  int NOT NULL,
-    element_id  int NOT NULL,
-    element_rev int NOT NULL,
-    PRIMARY KEY (survey_id,section_seq,element_seq,revision),
-    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) 
-             ON UPDATE RESTRICT ON DELETE CASCADE,
-    FOREIGN KEY (section_id) REFERENCES tlc_tt_survey_sections(id) 
-             ON UPDATE RESTRICT ON DELETE CASCADE,
-    FOREIGN KEY (element_id,element_rev) REFERENCES tlc_tt_survey_elements(id,revision) 
-             ON UPDATE RESTRICT ON DELETE CASCADE
-  );
-
-  CREATE TABLE tlc_tt_options (
-    id       int          NOT NULL AUTO_INCREMENT,
-    revision int          NOT NULL DEFAULT 1,
-    label    varchar(128) NOT NULL,
-    PRIMARY KEY (id,revision)
+    id           int          NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
+    survey_id    int          NOT NULL,
+    survey_rev   int          NOT NULL,
+    section_seq  int          NOT NULL COMMENT 
+'0 indicates that this element will be in the header rather than a survey section. 
+ Any other value that does not appear in tlc_tt_survey_sections will be excluded from the survey.',
+    sequence     int          COMMENT 
+'Order this element will appear in the survey section. 
+ NULL excludes the element from the survey form, but retains it for use by descendent surveys.',
+    label        varchar(128) NOT NULL COMMENT 'The label for this element shown in the survey',
+    element_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL COMMENT 
+'INFO = Not a question, exists in the flow to provide info to the survey participant. BOOL = Yes/No type question, most likely implemented as a checkbox. OPTIONS = Multiple choice (option) questions. FREETEXT = Question where user can provide a written response.',
+    other        varchar(45) DEFAULT NULL COMMENT 
+'Only applies if element_type=OPTIONS.
+ If not NULL, provides an "other" option, labeled with the value of this field',
+    qualifier    varchar(45) DEFAULT NULL COMMENT 
+'Only applies if element_type=OPTIONS or BOOL.
+ If not NULL, provides a text input field, labeled with the value of this field',
+    description  varchar(512) DEFAULT NULL COMMENT 
+ 'Does not apply if element_type=INFO.
+  Text to include in the survey to provide information to the survey participant.',
+    info         varchar(1024) DEFAULT NULL COMMENT 
+ 'If element_type=INFO, provides the information to be displayed (HTML and markdown are acceptable).
+  Otherwise, Text to include in a pop-up info box if the participant hovers over the info button.',
+    PRIMARY KEY (id,survey_id,survey_rev),
+    UNIQUE  KEY (survey_id,survey_rev,section_seq,sequence),
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_element_options (
-    element_id  int NOT NULL,
-    revision    int NOT NULL,
-    option_id   int NOT NULL,
-    option_rev  int NOT NULL,
-    PRIMARY KEY (element_id,revision,option_id),
-    FOREIGN KEY (element_id) REFERENCES tlc_tt_survey_elements(id) 
-             ON UPDATE RESTRICT ON DELETE CASCADE,
-    FOREIGN KEY (option_id,option_rev) REFERENCES tlc_tt_options(id,revision) 
-             ON UPDATE RESTRICT ON DELETE CASCADE
+    survey_id   int     NOT NULL,
+    survey_rev  int     NOT NULL,
+    element_id  int     NOT NULL,
+    sequence    int     NOT NULL,
+    option_id   int     NOT NULL,
+    secondary   tinyint NOT NULL DEFAULT 0,
+    PRIMARY KEY (survey_id,survey_rev,element_id,option_id),
+    UNIQUE  KEY (survey_id,survey_rev,element_id,sequence),
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,id)
+                ON UPDATE RESTRICT ON DELETE RESTRICT
   );
 
 
