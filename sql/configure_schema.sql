@@ -152,7 +152,7 @@ IF version < 1 THEN
     survey_id   int     NOT NULL,
     survey_rev  int     NOT NULL,
     element_id  int     NOT NULL,
-    sequence    int     NOT NULL,
+    sequence    int     COMMENT 'If set to NULL, option will not be included',
     option_id   int     NOT NULL,
     secondary   tinyint NOT NULL DEFAULT 0,
     PRIMARY KEY (survey_id,survey_rev,element_id,option_id),
