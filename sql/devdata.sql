@@ -30,14 +30,14 @@ insert into tlc_tt_settings (name,value) values
   ('smtp_username', 'trinityelcawebapps@gmail.com' );
 
 insert into tlc_tt_userids (userid,fullname,email,token,password,anonid) values
-  ('ewemeeweme',  'mrs.mayer',        'valerie@vmwishes.com',     'QGOS7PI8VEB1V3P6389Q284Z2', '$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK', '$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK'),                
-  ('kitkat15',    'KitKatLardoMayer', 'NULL',                     '1234567890',                '$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG', '$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m'),                
-  ('memeeweewe',  'mrmayer',          'NULL',                     'ZM65V4CIHKE24M2OVP11XNQGF', '$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC', '$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO'),                
-  ('mikemayer67', 'MikeMayer',        'mikemayer67@vmwishes.com', '1234567890',                '$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq', '$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO'),                
-  ('newtest123',  'JustaTestSubject', 'mikemayer67@vmwishes.com', '7T6KRG9XFDJ3AI6ZM4AHEHQT1', '$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW', '$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO'),                
-  ('newtest124',  'JustaTestSubject', 'NULL',                     '7JSLV1DED57HGCC6QU78LQU74', '$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S', '$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.'),                
-  ('shadowcat',   'RickyLeChatMayer', 'mikemayer67@vmwishes.com', '4SS2V72GT33X25P4U1W2E9Q7Q', '$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa', '$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu'),                
-  ('snickers',    'IamaKrazyKat',     'NULL',                     '1234567890',                '$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2', '$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS');
+  ('ewemeeweme',  'mrs. mayer',        'valerie@vmwishes.com',     'QGOS7PI8VEB1V3P6389Q284Z2', '$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK', '$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK'),                
+  ('kitkat15',    'KitKat Lardo Mayer', 'NULL',                     '1234567890',                '$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG', '$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m'),                
+  ('memeeweewe',  'mr mayer',          'NULL',                     'ZM65V4CIHKE24M2OVP11XNQGF', '$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC', '$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO'),                
+  ('mikemayer67', 'Mike Mayer',        'mikemayer67@vmwishes.com', '1234567890',                '$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq', '$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO'),                
+  ('newtest123',  'Justa Test Subject', 'mikemayer67@vmwishes.com', '7T6KRG9XFDJ3AI6ZM4AHEHQT1', '$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW', '$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO'),                
+  ('newtest124',  'Justa Test Subject', 'NULL',                     '7JSLV1DED57HGCC6QU78LQU74', '$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S', '$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.'),                
+  ('shadowcat',   'Ricky LeChat Mayer', 'mikemayer67@vmwishes.com', '4SS2V72GT33X25P4U1W2E9Q7Q', '$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa', '$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu'),                
+  ('snickers',    'Iama Krazy Kat',     'NULL',                     '1234567890',                '$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2', '$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS');
 
 insert into tlc_tt_roles (userid,admin,content,tech) values
   ('ewemeeweme',  0, 0, 1),

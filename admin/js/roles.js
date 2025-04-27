@@ -258,7 +258,14 @@
 
     has_change_cb = has_changes;
 
-    update_submit();
+    if(admin_lock.has_lock) {
+      update_submit();
+    }
+    else {
+      $('button').not('[name=tab]').attr('disabled',true);
+      $('select').attr('disabled',true);
+      $('input').attr('disabled',true);
+    }
   });
 
 })();

@@ -231,7 +231,15 @@
     has_change_cb = has_changes;
 
     handle_smtp_auth_change();  // to set initial placeholder value
-    validate_all();
+
+    if(admin_lock.has_lock) {
+      validate_all();
+    }
+    else {
+      $('button').not('[name=tab]').attr('disabled',true);
+      $('select').attr('disabled',true);
+      $('input').attr('disabled',true);
+    }
   });
 
 })();

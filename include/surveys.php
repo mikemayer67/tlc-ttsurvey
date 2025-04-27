@@ -70,7 +70,6 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
   $new_id = null;
 
   try {
-    log_dev("begin try");
     MySQLBeginTransaction();
 
     $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
@@ -80,7 +79,6 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
     }
     $new_id = MySQLInsertID();
 
-    log_dev("new id=$new_id");
 
     if($parent_id) {
       $parent_rev = MySQLSelectValue(
@@ -89,14 +87,12 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
       if(!$parent_rev) {
         throw new FailedToCreate("Failed to find survey to clone ($parent_id)");
       }
-      log_dev("parent_rev=$parent_rev");
 
       $rc = MySQLExecute("update tlc_tt_surveys set parent=$parent_id where id=$new_id");
       if(!$rc) {
         throw new FailedToCreate("Failed to update parent id in clone");
       }
 
-      log_dev("begin clones $parent_id => $new_id");
       clone_survey_options($parent_id,$new_id);
       clone_survey_sections($parent_id,$new_id);
       clone_survey_elements($parent_id,$new_id);
@@ -124,7 +120,6 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
 
 function clone_survey_options($parent_id,$child_id)
 {
-  log_dev("clone_survey_options($parent_id,$child_id)");
   $query = <<<SQL
   INSERT into tlc_tt_survey_options
   SELECT a.id, $child_id, 1, a.text
@@ -137,7 +132,6 @@ function clone_survey_options($parent_id,$child_id)
               AND b.id = a.id )
     ;
   SQL;
-  log_dev($query);
   if(!MySQLExecute($query)) {
     throw new FailedToCreate('Failed to copy survey options from cloned survey');
   }
@@ -145,7 +139,6 @@ function clone_survey_options($parent_id,$child_id)
 
 function clone_survey_sections($parent_id,$child_id)
 {
-  log_dev("clone_survey_sections($parent_id,$child_id)");
   $query = <<<SQL
   INSERT into tlc_tt_survey_sections
   SELECT $child_id, 1, a.sequence, a.name, a.description, a.feedback
@@ -158,7 +151,6 @@ function clone_survey_sections($parent_id,$child_id)
               AND b.sequence=a.sequence )
     ;
   SQL;
-  log_dev($query);
   if(!MySQLExecute($query)) {
     throw new FailedToCreate('Failed to copy survey sections from cloned survey');
   }
@@ -166,7 +158,6 @@ function clone_survey_sections($parent_id,$child_id)
 
 function clone_survey_elements($parent_id,$child_id)
 {
-  log_dev("clone_survey_elements($parent_id,$child_id)");
   $query = <<<SQL
   INSERT into tlc_tt_survey_elements
   SELECT a.id, $child_id, 1, 
@@ -181,7 +172,6 @@ function clone_survey_elements($parent_id,$child_id)
               AND b.id=a.id )
     ;
   SQL;
-  log_dev($query);
   if(!MySQLExecute($query)) {
     throw new FailedToCreate('Failed to copy survey elements from cloned survey');
   }
@@ -189,7 +179,6 @@ function clone_survey_elements($parent_id,$child_id)
 
 function clone_element_options($parent_id,$child_id)
 {
-  log_dev("clone_element_options($parent_id,$child_id)");
   $query = <<<SQL
   INSERT into tlc_tt_element_options
   SELECT $child_id, 1, a.element_id, a.sequence, a.option_id, a.secondary
@@ -204,7 +193,6 @@ function clone_element_options($parent_id,$child_id)
               AND a.option_id=b.option_id )
     ;
   SQL;
-  log_dev($query);
   if(!MySQLExecute($query)) {
     throw new FailedToCreate('Failed to copy survey elements from cloned survey');
   }
