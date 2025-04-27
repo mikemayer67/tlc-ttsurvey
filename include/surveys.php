@@ -62,7 +62,7 @@ function survey_pdf_file($survey_id)
   }
 }
 
-function create_new_survey($name,$clone_id,$pdf_file,&$error=null)
+function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
 {
   class FailedToCreate extends \Exception {}
 
@@ -70,48 +70,37 @@ function create_new_survey($name,$clone_id,$pdf_file,&$error=null)
   $new_id = null;
 
   try {
+    log_dev("begin try");
     MySQLBeginTransaction();
 
     $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
+
     if(!$rc) { 
       throw new FailedToCreate('Failed to create a new entry in the database');
     }
     $new_id = MySQLInsertID();
 
-    if($clone_id) {
-      $nrows = MySQLSelectValue(
-        "select count(*) from tlc_tt_survey_content where survey_id = $clone_id"
+    log_dev("new id=$new_id");
+
+    if($parent_id) {
+      $parent_rev = MySQLSelectValue(
+        "select revision from tlc_tt_surveys where id = $parent_id"
       );
-      log_dev("Number of rows in cloned survey ($clone_id) = $nrows");
-
-      if($nrows) {
-        $query = <<<SQL
-        INSERT INTO tlc_tt_survey_content
-        SELECT 
-          $new_id as survey_id,
-          t.section_seq,
-          t.element_seq,
-          1 as revision,
-          t.section_id,
-          t.element_id,
-          t.element_rev
-        FROM
-          tlc_tt_survey_content t
-        WHERE
-          t.survey_id = $clone_id
-          AND t.revision = (
-            SELECT MAX(revision)
-              FROM tlc_tt_survey_content
-             WHERE survey_id = t.survey_id
-               AND section_seq = t.section_seq
-               AND element_seq = t.element_seq
-          );
-        SQL;
-
-        if(!MySQLExecute($query)) {
-          throw new FailedToCreate('Failed to copy content from cloned survey');
-        }
+      if(!$parent_rev) {
+        throw new FailedToCreate("Failed to find survey to clone ($parent_id)");
       }
+      log_dev("parent_rev=$parent_rev");
+
+      $rc = MySQLExecute("update tlc_tt_surveys set parent=$parent_id where id=$new_id");
+      if(!$rc) {
+        throw new FailedToCreate("Failed to update parent id in clone");
+      }
+
+      log_dev("begin clones $parent_id => $new_id");
+      clone_survey_options($parent_id,$new_id);
+      clone_survey_sections($parent_id,$new_id);
+      clone_survey_elements($parent_id,$new_id);
+      clone_element_options($parent_id,$new_id);
     }
 
     if($pdf_file) {
@@ -131,6 +120,94 @@ function create_new_survey($name,$clone_id,$pdf_file,&$error=null)
   }
 
   return $new_id;
+}
+
+function clone_survey_options($parent_id,$child_id)
+{
+  log_dev("clone_survey_options($parent_id,$child_id)");
+  $query = <<<SQL
+  INSERT into tlc_tt_survey_options
+  SELECT a.id, $child_id, 1, a.text
+    FROM tlc_tt_survey_options a
+   WHERE a.survey_id=$parent_id
+     AND a.survey_rev = (
+           SELECT MAX(b.survey_rev)
+             FROM tlc_tt_survey_options b
+            WHERE b.survey_id=$parent_id
+              AND b.id = a.id )
+    ;
+  SQL;
+  log_dev($query);
+  if(!MySQLExecute($query)) {
+    throw new FailedToCreate('Failed to copy survey options from cloned survey');
+  }
+}
+
+function clone_survey_sections($parent_id,$child_id)
+{
+  log_dev("clone_survey_sections($parent_id,$child_id)");
+  $query = <<<SQL
+  INSERT into tlc_tt_survey_sections
+  SELECT $child_id, 1, a.sequence, a.name, a.description, a.feedback
+    FROM tlc_tt_survey_sections a
+   WHERE a.survey_id=$parent_id
+     AND a.survey_rev = (
+           SELECT MAX(b.survey_rev)
+             FROM tlc_tt_survey_sections b
+            WHERE b.survey_id=$parent_id
+              AND b.sequence=a.sequence )
+    ;
+  SQL;
+  log_dev($query);
+  if(!MySQLExecute($query)) {
+    throw new FailedToCreate('Failed to copy survey sections from cloned survey');
+  }
+}
+
+function clone_survey_elements($parent_id,$child_id)
+{
+  log_dev("clone_survey_elements($parent_id,$child_id)");
+  $query = <<<SQL
+  INSERT into tlc_tt_survey_elements
+  SELECT a.id, $child_id, 1, 
+         a.section_seq, a.sequence, a.label, 
+         a.element_type, a.other, a.qualifier, a.description, a.info
+    FROM tlc_tt_survey_elements a
+   WHERE a.survey_id=$parent_id
+     AND a.survey_rev = (
+           SELECT MAX(b.survey_rev)
+             FROM tlc_tt_survey_elements b
+            WHERE b.survey_id=$parent_id
+              AND b.id=a.id )
+    ;
+  SQL;
+  log_dev($query);
+  if(!MySQLExecute($query)) {
+    throw new FailedToCreate('Failed to copy survey elements from cloned survey');
+  }
+}
+
+function clone_element_options($parent_id,$child_id)
+{
+  log_dev("clone_element_options($parent_id,$child_id)");
+  $query = <<<SQL
+  INSERT into tlc_tt_element_options
+  SELECT $child_id, 1, a.element_id, a.sequence, a.option_id, a.secondary
+    FROM tlc_tt_element_options a
+   WHERE a.survey_id=$parent_id
+     AND a.sequence is not NULL
+     AND a.survey_rev = (
+           SELECT MAX(b.survey_rev)
+             FROM tlc_tt_element_options b
+            WHERE b.survey_id=$parent_id
+              AND a.element_id=b.element_id
+              AND a.option_id=b.option_id )
+    ;
+  SQL;
+  log_dev($query);
+  if(!MySQLExecute($query)) {
+    throw new FailedToCreate('Failed to copy survey elements from cloned survey');
+  }
 }
 
 function update_survey($id,$name,$pdf_action,$new_pdf_file,&$error=null)
