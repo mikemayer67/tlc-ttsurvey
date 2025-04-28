@@ -5,6 +5,12 @@ var ace = {};
 var has_change_cb = null;
 var status_timer=null;
 var lock_timer=null;
+var expires_timer=null;
+
+const lock_hold_freq  = 20; // seconds (I know, this is a period, not a frequency... )
+const check_hold_freq = 10; // seconds (... deal with it. )
+var overdue_lock_hold = false;
+var active=false;
 
 function internal_error(jqXHR)
 {
@@ -91,15 +97,14 @@ function handle_admin_logout() {
   });
 }
 
-function check_lock_status()
+function check_lock()
 {
   if(admin_lock.next_check > 0) {
-    console.log("check_lock_status: " + admin_lock.next_check);
-    $('.admin-lock.timeout').html(admin_lock.next_check);
+    $('.admin-lock.timeout').html(seconds_to_mmss(admin_lock.expires_in));
     admin_lock.next_check = admin_lock.next_check - 1;
-    lock_timer = setTimeout(check_lock_status,1000);
+    admin_lock.expires_in = Math.max(0,admin_lock.expires_in - 1);
+    lock_timer = setTimeout(check_lock,1000);
   } else {
-    console.log("ajax call to obtain lock");
     $.ajax({
       type:'POST',
       url: ace.ajaxui,
@@ -107,17 +112,15 @@ function check_lock_status()
       data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
     })
     .done( function(data,status,jqXHR) {
-      console.log("ajax call returned: " + JSON.stringify(data));
-      admin_lock.has_lock = data.has_lock;
-      admin_locked_by = data.locked_by;
       if(data.has_lock) {
         alert("Admin Dashboard lock has been released. You are free to start making edits");
         window.location.reload();
       } else {
-        $('.admin-lock.timeout').html(admin_lock.next_check);
-        $('.admin-lock.name').html(admin_lock.locked_by);
-        admin_lock.next_check=60;
-        lock_timer = setTimeout(check_lock_status,1000);
+        admin_lock.expires_in = data.expires_in;
+        admin_lock.next_check = check_hold_freq;
+        $('.admin-lock.timeout').html(seconds_to_mmss(data.expires_in));
+        $('.admin-lock.name').html(data.locked_by);
+        lock_timer = setTimeout(check_lock,1000);
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
@@ -126,9 +129,26 @@ function check_lock_status()
   }
 }
 
+function seconds_to_mmss(seconds) {
+  var min = Math.floor(seconds/60);
+  var sec = seconds - 60*min;
+  return min.toString() + ":" + sec.toString().padStart(2,'0');
+}
+
 function hold_lock()
 {
-  console.log("hold lock");
+  if(!active) { 
+    overdue_lock_hold = true;
+    lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
+    return; 
+  }
+  // reset for next hold_lock timeout
+  active = false;
+  overdue_lock_hold = false;
+
+  clearTimeout(expires_timer);
+  expires_timer = null;
+
   $.ajax({
     type:'POST',
     url: ace.ajaxui,
@@ -136,20 +156,25 @@ function hold_lock()
     data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
   })
   .done( function(data,status,jqXHR) {
-    console.log("ajax call returned: " + JSON.stringify(data));
-    admin_lock.has_lock = data.has_lock;
     if(data.has_lock) {
       if(data.new_token) {
-        alert("While you were away, someone else obtained a lock on the Admin Dashboard.\n" +
+        alert("While you were away, someone else obtained and released a lock on the Admin Dashboard. " +
               "This page will be reloaded to pick up any changes they may have made.");
         window.location.reload();
       }
-      lock_timer = setTimeout(hold_lock,30000);
+      lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
+      var warn_in = Math.max(0,data.expires_in-60);
+      expires_timer = setTimeout(
+        function() { 
+          alert("You are about to lose your lock on the Admin Dashboard due to inactivity.");
+          active = true;
+          hold_lock();
+        },
+        1000*warn_in
+      );
     }
     else {
-      admin_lock.locked_by = data.locked_by;
-      alert("While you were away, " + data.locked_by + " obtained a lock on the Admin Dashboard.\n" +
-            "This page will be reloaded.");
+      alert("While you were away, " + data.locked_by + " obtained a lock on the Admin Dashboard.");
       window.location.reload();
     }
   })
@@ -179,13 +204,36 @@ $(document).ready(
   ace.form.on('submit',handle_tab_change);
 
   if( !admin_lock.has_lock ) {
-    admin_lock.next_check = 60;
+    admin_lock.next_check = check_hold_freq;
     show_status('warning',"<div>Admin Dashboard is locked by <span class='admin-lock name'>" + 
                 admin_lock.locked_by + "</span>.</div><div>" +
-                "Will check again in <span class='admin-lock timeout'>?</span> seconds</div>");
-    check_lock_status();
+                "Unless they renew it, the lock will expire in <span class='admin-lock timeout'>?</span></div>");
+    check_lock();
   }
   else {
-    setTimeout(hold_lock,30000);
+    // We only want to extend our lock if the user is active.  This includes interacting with
+    //   the form AND simply moving the mouse, typing keys, etc.   As interacting with the
+    //   form requires the latter, we will add a event handler for each of these which
+    //   simply sets the active flag to true.
+    active = false;
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'focus'];
+    activityEvents.forEach( eventName => { 
+      document.addEventListener(eventName, function() {
+        active = true;
+        if(overdue_lock_hold) {
+          clearTimeout(lock_timer);
+          hold_lock();
+        }
+      }, {passive:true})
+    });
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        active = true;
+        clearTimeout(lock_timer);
+        hold_lock();
+      }
+    });
+
+    hold_lock();
   }
 });

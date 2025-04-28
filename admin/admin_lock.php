@@ -14,10 +14,14 @@ const LOCK_DURATION = 300;
 
 function obtain_admin_lock()
 {
-  log_dev('otain_admin_lock: '.$_SERVER['HTTP_USER_AGENT']??'unknown');
+  $agent = $_SERVER['HTTP_USER_AGENT']??'unknown';
   $now = time();
   $own_cur_lock = false;
 
+  $requester = active_userid();
+  $requester = User::from_userid($requester);
+  $requester = $requester ? $requester->fullname() : 'Site Admin';
+  
   $cur_lock = get_setting(LOCK_SETTING);
   if($cur_lock) {
     // There is a current lock out there, let's handle that
@@ -27,27 +31,22 @@ function obtain_admin_lock()
 
     if($my_token === $cur_lock_token) {
       // I own the lock... renew it
-      log_dev("user owns lock, renew it");
       $own_cur_lock = true;
     }
     else if ($now < $lock_expires) {
       // someone else owns the lock and it has not yet expired
-      log_dev("failed to obtain lock");
+      $expires_in = $lock_expires - $now;
+      log_info("$requester failed to acquire admin lock. Lock held by $locked_by. Expires in $expires_in seconds");
       return array(
         'has_lock'   => false,
         'locked_by'  => $locked_by,
-        'expires_in' => $lock_expires - $now,
+        'expires_in' => $expires_in,
       );
     }
   }
 
-  $requester = active_userid();
-  $requester = User::from_userid($requester);
-  $requester = $requester ? $requester->fullname() : 'Site Admin';
-  
   if(!$own_cur_lock) {
     $_SESSION[LOCK_TOKEN] = gen_token(10);
-    log_dev("new token: ".$_SESSION[LOCK_TOKEN]);
   }
 
   $expires = $now + LOCK_DURATION;
@@ -55,9 +54,11 @@ function obtain_admin_lock()
 
   set_setting(LOCK_SETTING,$new_lock);
 
+  if($own_cur_lock) { log_info("Admin lock renewed by $requester"); }
+  else              { log_info("Admin lock aquired by $requester"); }
   return array(
     'has_lock'    => true,
-    'expiress_in' => LOCK_DURATION,
+    'expires_in' => LOCK_DURATION,
     'new_token'   => !$own_cur_lock,
   );
 }

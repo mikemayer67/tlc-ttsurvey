@@ -105,7 +105,6 @@ if(!$active_tabs) {
 
 require_once(app_file('admin/admin_lock.php'));
 $lock = obtain_admin_lock();
-log_dev("LOCK: ".print_r($lock,true));
 
 // If there was a requested tab, honor that request IF at least
 //  one required role for that tab is satified... Otherwise, 
