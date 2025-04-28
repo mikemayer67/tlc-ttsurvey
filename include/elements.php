@@ -134,6 +134,8 @@ function start_page($context,$kwargs=[])
 
 
   if($context === 'admin') {
+    require_once(app_file('admin/admin_lock.php'));
+    $lock = json_encode(obtain_admin_lock());
     echo <<<HTMLADMIN
     <!-- Javascript required -->
     <noscript>
@@ -144,6 +146,9 @@ function start_page($context,$kwargs=[])
     </div>
     </noscript>
     <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
+    <script>
+      var admin_lock = $lock;
+    </script>
     HTMLADMIN;
   }
   elseif($context !== 'print') {

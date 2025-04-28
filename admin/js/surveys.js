@@ -674,7 +674,18 @@
     has_change_cb = has_changes;
 
     init_survey_lists();
+    
+    var lock_status = null;
+    if(!admin_lock.has_lock) { lock_status = ce.status.html(); }
+
     select_survey(ce.cur_survey);
+
+    if(!admin_lock.has_lock) {
+      show_status('warning',lock_status);
+      $('button').not('[name=tab]').attr('disabled',true);
+      $('select').attr('disabled',true);
+      $('input').attr('disabled',true);
+    }
   });
 
 })();

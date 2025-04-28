@@ -4,6 +4,13 @@ var ace = {};
 
 var has_change_cb = null;
 var status_timer=null;
+var lock_timer=null;
+var expires_timer=null;
+
+const lock_hold_freq  = 20; // seconds (I know, this is a period, not a frequency... )
+const check_hold_freq = 10; // seconds (... deal with it. )
+var overdue_lock_hold = false;
+var active=false;
 
 function internal_error(jqXHR)
 {
@@ -90,6 +97,97 @@ function handle_admin_logout() {
   });
 }
 
+function check_lock()
+{
+  if(admin_lock.next_check > 0) {
+    $('.admin-lock.timeout').html(seconds_to_mmss(admin_lock.expires_in));
+    admin_lock.next_check = admin_lock.next_check - 1;
+    admin_lock.expires_in = Math.max(0,admin_lock.expires_in - 1);
+    clearTimeout(lock_timer);
+    lock_timer = setTimeout(check_lock,1000);
+  } else {
+    $.ajax({
+      type:'POST',
+      url: ace.ajaxui,
+      dataType:'json',
+      data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
+    })
+    .done( function(data,status,jqXHR) {
+      if(data.has_lock) {
+        alert("Admin Dashboard lock has been released. You are free to start making edits");
+        window.location.reload();
+      } else {
+        admin_lock.expires_in = data.expires_in;
+        admin_lock.next_check = check_hold_freq;
+        $('.admin-lock.timeout').html(seconds_to_mmss(data.expires_in));
+        $('.admin-lock.name').html(data.locked_by);
+        clearTimeout(lock_timer);
+        lock_timer = setTimeout(check_lock,1000);
+      }
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) {
+      internal_error(jqXHR);
+    });
+  }
+}
+
+function seconds_to_mmss(seconds) {
+  var min = Math.floor(seconds/60);
+  var sec = seconds - 60*min;
+  return min.toString() + ":" + sec.toString().padStart(2,'0');
+}
+
+function hold_lock()
+{
+  if(!active) { 
+    overdue_lock_hold = true;
+    clearTimeout(lock_timer);
+    lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
+    return; 
+  }
+  // reset for next hold_lock timeout
+  active = false;
+  overdue_lock_hold = false;
+
+  clearTimeout(expires_timer);
+  expires_timer = null;
+
+  $.ajax({
+    type:'POST',
+    url: ace.ajaxui,
+    dataType:'json',
+    data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
+  })
+  .done( function(data,status,jqXHR) {
+    if(data.has_lock) {
+      if(data.new_token) {
+        alert("While you were away, someone else obtained and released a lock on the Admin Dashboard. " +
+              "This page will be reloaded to pick up any changes they may have made.");
+        window.location.reload();
+      }
+      clearTimeout(lock_timer);
+      lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
+      var warn_in = Math.max(0,data.expires_in-60);
+      clearTimeout(expires_timer);
+      expires_timer = setTimeout(
+        function() { 
+          alert("You are about to lose your lock on the Admin Dashboard due to inactivity.");
+          active = true;
+          hold_lock();
+        },
+        1000*warn_in
+      );
+    }
+    else {
+      alert("While you were away, " + data.locked_by + " obtained a lock on the Admin Dashboard.");
+      window.location.reload();
+    }
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    internal_error(jqXHR);
+  });
+}
+
 $(document).ready(
   function($) {
   $('#ttt-body').show();
@@ -109,4 +207,38 @@ $(document).ready(
   $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
 
   ace.form.on('submit',handle_tab_change);
+
+  if( !admin_lock.has_lock ) {
+    admin_lock.next_check = check_hold_freq;
+    show_status('warning',"<div>Admin Dashboard is locked by <span class='admin-lock name'>" + 
+                admin_lock.locked_by + "</span>.</div><div>" +
+                "Unless they renew it, the lock will expire in <span class='admin-lock timeout'>?</span></div>");
+    check_lock();
+  }
+  else {
+    // We only want to extend our lock if the user is active.  This includes interacting with
+    //   the form AND simply moving the mouse, typing keys, etc.   As interacting with the
+    //   form requires the latter, we will add a event handler for each of these which
+    //   simply sets the active flag to true.
+    active = false;
+    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'focus'];
+    activityEvents.forEach( eventName => { 
+      document.addEventListener(eventName, function() {
+        active = true;
+        if(overdue_lock_hold) {
+          clearTimeout(lock_timer);
+          hold_lock();
+        }
+      }, {passive:true})
+    });
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        active = true;
+        clearTimeout(lock_timer);
+        hold_lock();
+      }
+    });
+
+    hold_lock();
+  }
 });

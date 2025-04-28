@@ -19,6 +19,15 @@ div.noscript div {
   background: white;
 }
 
+
+/***************************************
+ * Admin lock
+ ***************************************/
+
+#ttt-status .admin-lock {
+  background:inherit;
+}
+
 /***************************************
  * Admin Dashboard tabs
  ***************************************/
