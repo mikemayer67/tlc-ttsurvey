@@ -103,6 +103,7 @@ function check_lock()
     $('.admin-lock.timeout').html(seconds_to_mmss(admin_lock.expires_in));
     admin_lock.next_check = admin_lock.next_check - 1;
     admin_lock.expires_in = Math.max(0,admin_lock.expires_in - 1);
+    clearTimeout(lock_timer);
     lock_timer = setTimeout(check_lock,1000);
   } else {
     $.ajax({
@@ -120,6 +121,7 @@ function check_lock()
         admin_lock.next_check = check_hold_freq;
         $('.admin-lock.timeout').html(seconds_to_mmss(data.expires_in));
         $('.admin-lock.name').html(data.locked_by);
+        clearTimeout(lock_timer);
         lock_timer = setTimeout(check_lock,1000);
       }
     })
@@ -139,6 +141,7 @@ function hold_lock()
 {
   if(!active) { 
     overdue_lock_hold = true;
+    clearTimeout(lock_timer);
     lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
     return; 
   }
@@ -162,8 +165,10 @@ function hold_lock()
               "This page will be reloaded to pick up any changes they may have made.");
         window.location.reload();
       }
+      clearTimeout(lock_timer);
       lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
       var warn_in = Math.max(0,data.expires_in-60);
+      clearTimeout(expires_timer);
       expires_timer = setTimeout(
         function() { 
           alert("You are about to lose your lock on the Admin Dashboard due to inactivity.");

@@ -100,12 +100,6 @@ if(!$active_tabs) {
   require(app_file('admin/login.php'));
 }
 
-// We have admin permission, but we need to check that no other 
-//   admin is logged in and possibly making changes.
-
-require_once(app_file('admin/admin_lock.php'));
-$lock = obtain_admin_lock();
-
 // If there was a requested tab, honor that request IF at least
 //  one required role for that tab is satified... Otherwise, 
 //  select the first tab available to the active user.
