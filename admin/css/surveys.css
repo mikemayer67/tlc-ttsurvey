@@ -70,6 +70,16 @@
   padding:0.5em;
   resize:vertical;
   overflow:auto;
+  display:flex;
+  flex-direction:column;
+}
+
+#ttt-body form div.content-box > * {
+  margin-bottom:0.5em;
+}
+
+#ttt-body form div.content-box > .left {
+  align-self: flex-start;
 }
 
 #ttt-body div.body form div.button-bar {
@@ -105,6 +115,10 @@
   padding-left:0.5em;
   padding-right:0.5em;
 }
+
+/***************************************
+ * Info Editor
+ ***************************************/
 
 #ttt-body div.body form table#info-edit tr td {
   padding: .25em;
@@ -183,4 +197,41 @@
 #ttt-body div.body form .info-bar a.pdf-download:hover {
   color:#00c;
   text-shadow:1px 1px 5px #888;
+}
+
+/***************************************
+ * Content Editor
+ ***************************************/
+
+#ttt-body form  #content-editor {
+  flex-grow:1;
+  margin: 0 0.5em;
+  background:inherit;
+  overflow:auto;
+  display:flex;
+  flex-direction:row;
+}
+
+#ttt-body form  #content-editor > * {
+  height:100%;
+  min-height:300px;
+}
+
+#ttt-body form #content-editor #survey-tree {
+  width:25%;
+  background:white;
+  border: 1px solid black;
+}
+#ttt-body form #content-editor div.resizer {
+  width:2px;
+  background:#888;
+  cursor:col-resize;
+}
+
+#ttt-body form #content-editor #element-editor {
+  flex:1;
+  min-width:0;
+  width:calc(75% - 3px);
+  background:white;
+  border: 1px solid black;
 }

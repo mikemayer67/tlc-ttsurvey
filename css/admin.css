@@ -12,7 +12,7 @@ div.noscript div {
 
 #ttt-body {
   display:none;
-  width: calc(min(800px,90%));
+  width: calc(min(1200px,90%));
   min-height:100px;
   border:solid 1px black;
   margin: 2em auto 0 auto;

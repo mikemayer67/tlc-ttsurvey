@@ -51,7 +51,7 @@ echo <<<HTML
 </div>
 
 <!--New Survey Table-->
-<table id='info-edit' class='input-table new-survey'>
+<table id='info-edit' class='input-table left'>
   <tr class='survey-name'>
     <td class='label'>Survey Name:</td>
     <td class='input-box'>
@@ -78,6 +78,13 @@ echo <<<HTML
     </td>
   </tr>
 </table>
+
+<!--Survey Content-->
+<div id='content-editor'>
+  <div id='survey-tree'></div>
+  <div class='resizer'></div>
+  <div id='element-editor'></div>
+</div>
 
 <!--Button Bar-->
 </div>

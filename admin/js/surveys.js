@@ -355,6 +355,7 @@
     ce.button_bar.show();
     ce.submit.val('Save Changes');
     ce.revert.val('Revert');
+    ce.content_editor.show();
 
     ce.survey_name.attr({
       required:false,
@@ -554,6 +555,7 @@
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel');
     ce.info_edit.show();
+    ce.content_editor.hide();
 
     ce.survey_name.attr({
       required:true,
@@ -607,6 +609,7 @@
     var survey_name = ce.survey_name.val().trim();
     var can_submit = survey_name.length > 4;
     ce.submit.prop('disabled',!can_submit);
+    ce.revert.prop('disabled',false).css('opacity',1);
   }
 
 
@@ -627,6 +630,50 @@
   {
     validate_survey_name();
     update_new_submit();
+  }
+
+  //
+  // Content editor resizing
+  //
+
+  function start_survey_tree_resize(e) {
+    e.preventDefault();
+    ce.content_editor.css('cursor','col-resize');
+    ce.resizing = { 
+      min_x : 200 - ce.survey_tree.width(),
+      max_x : ce.element_editor.width() - 300,
+      start_x : e.pageX,
+      start_w : ce.survey_tree.width(),
+      in_editor : true,
+      last_move : 0,
+    };
+    ce.content_editor.on('mouseenter', function(e) { ce.resizing.in_editor = true;  } );
+    ce.content_editor.on('mouseleave', function(e) { ce.resizing.in_editor = false; } );
+  }
+
+  function track_mouse(e) {
+    e.preventDefault();
+    if(!ce.resizing) { return; }
+    const now = Date.now();
+    if(now < ce.lastMove + 10) { return; }
+    ce.lastMove = now;
+
+    const dx = e.pageX - ce.resizing.start_x;
+    if( dx > ce.resizing.min_x && dx < ce.resizing.max_x ) {
+      ce.survey_tree.width(ce.resizing.start_w + dx);
+    }
+  }
+
+  function stop_tracking_mouse(e) {
+    e.preventDefault();
+    if(!ce.resizing) { return; }
+    ce.content_editor.css('cursor','');
+    if(!ce.resizing.in_editor) { 
+      ce.survey_tree.width(ce.resizing.start_w); 
+    }
+    ce.content_editor.off('mouseenter');
+    ce.content_editor.off('mouseleave');
+    ce.resizing = null;
   }
 
   //
@@ -651,6 +698,10 @@
     ce.existing_pdf     = $('#existing-pdf-action');
     ce.clear_pdf        = ce.info_edit.find('button.clear-pdf');
     ce.info_bar         = ce.form.find('.content-box .info-bar');
+    ce.content_editor   = ce.form.find('#content-editor');
+    ce.survey_tree      = ce.content_editor.find('#survey-tree');
+    ce.element_editor   = ce.content_editor.find('#element-editor');
+    ce.resizer          = ce.content_editor.find('.resizer');
     ce.submit           = $('#changes-submit');
     ce.revert           = $('#changes-revert');
 
@@ -670,6 +721,11 @@
     ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
     ce.survey_name.on('input',handle_input);
     ce.survey_name.on('change',handle_change);
+
+    ce.resizing = null;
+    ce.resizer.on('mousedown',start_survey_tree_resize);
+    $(document).on('mousemove',track_mouse);
+    $(document).on('mouseup',stop_tracking_mouse);
 
     has_change_cb = has_changes;
 
