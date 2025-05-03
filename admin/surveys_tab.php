@@ -97,7 +97,7 @@ foreach(['active','draft','closed'] as $status) {
 
 
 echo "<script>";
-echo "const all_surveys = " . json_encode($all_surveys) . ";";
+echo "const ttt_all_surveys = " . json_encode($all_surveys) . ";";
 echo "</script>";
 
 $form_uri = app_uri('admin');
@@ -187,6 +187,6 @@ echo <<<HTML
 </form>
 HTML;
 
-echo "<script src='", js_uri('surveys','admin'), "'></script>";
-echo "<script src='", js_uri('survey_editor','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('surveys','admin'), "'></script>";
+//echo "<script src='", js_uri('survey_editor','admin'), "'></script>";
 echo "<script src='", js_uri('dayjs.min'), "'></script>";

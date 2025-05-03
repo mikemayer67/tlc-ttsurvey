@@ -58,7 +58,8 @@ function rsrc_uri($rsrc,$type,$no_cache,$context='') {
 
 function img_uri($img,$ctx='') { return rsrc_uri( $img,     'img',true, $ctx); }
 function css_uri($css,$ctx='') { return rsrc_uri("$css.css",'css',true, $ctx); }
-function  js_uri($js, $ctx='') { return rsrc_uri("$js.js",  'js', false,$ctx); }
+// caching is not disabled for js as forced reload clears breakpoints
+function  js_uri($js, $ctx='') { return rsrc_uri("$js.js",  'js', false, $ctx); }
 
 function validate_entry_uri()
 {
