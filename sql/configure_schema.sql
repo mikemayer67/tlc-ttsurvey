@@ -131,6 +131,9 @@ IF version < 1 THEN
     label        varchar(128) NOT NULL COMMENT 'The label for this element shown in the survey',
     element_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL COMMENT 
 'INFO = Not a question, exists in the flow to provide info to the survey participant. BOOL = Yes/No type question, most likely implemented as a checkbox. OPTIONS = Multiple choice (option) questions. FREETEXT = Question where user can provide a written response.',
+    multiple     tinyint     DEFAULT NULL COMMENT
+'Only applies if element_type=OPTIONS.
+ If 1 (or any other truthy value), participant can select multiple options.  If NULL or 0, participant can only select one option.',
     other        varchar(45) DEFAULT NULL COMMENT 
 'Only applies if element_type=OPTIONS.
  If not NULL, provides an "other" option, labeled with the value of this field',

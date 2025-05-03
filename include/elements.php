@@ -187,6 +187,17 @@ function end_page()
 {
   // close the body and html elements
   echo "</div>\n";  // #ttt-body
+
+  echo <<<HTMLFOOTER
+    <!-- Footer -->
+    <div id='ttt-footer'>
+      <span class='ttt-ack'>
+        icons by <a href='https://icons8.com' target='_blank'>icons8</a>
+      </span>
+    </div>
+    HTMLFOOTER;
+
+  // close the html elements
   echo "</body>\n"; // html body
   echo "</html>\n";
 }

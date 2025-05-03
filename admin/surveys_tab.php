@@ -7,15 +7,106 @@ require_once(app_file('include/surveys.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
+// survey data
 $all_surveys = all_surveys();
+
+@todo("remove bogus test data");
+foreach(['active','draft','closed'] as $status) {
+  foreach(($all_surveys[$status]??[]) as $i => &$survey) {
+    $sections = [
+      [],
+      [ 'name' => 'Section 1', 'description' => "some words about section 1", 'feedback' => 0 ],
+      [ 'name' => 'Section Deux', 'description' => "But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'feedback' => 1 ],
+      [ 'name' => 'Section 3', 'description' => "some words about section 3", 'feedback' => 0 ],
+      [ 'name' => 'Section 4', 'description' => "some words about section 4", 'feedback' => 0 ],
+      [ 'name' => 'Section 5', 'description' => "some words about section 5", 'feedback' => 0 ],
+      [ 'name' => 'Section 6', 'description' => "some words about section 6", 'feedback' => 0 ],
+      [ 'name' => 'Section 7', 'description' => "some words about section 7", 'feedback' => 0 ],
+    ];
+    $id = 1;
+    foreach($sections as &$section) {
+      $section['elements'] = [
+        [
+          'id' => ++$id, 
+          'type' => 'INFO', 
+          'label' => 'Info Text', 
+          'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'BOOL', 
+          'label' => 'Yes/No Questions',
+          'qualifier' => 'Why or why not?',
+          'description' => 'Blah blah blah... This is important because',
+          'info'=>'This is popup info.  Just here to see if popups are working',
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'OPTIONS', 
+          'label' => 'Select Question #1',
+          'multiple' => 0,
+          'other' => 'Other',
+          'qualifier' => 'Anything we should know?',
+          'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
+          'info'=>'This is popup info.  Just here to see if popups are working',
+          'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'OPTIONS', 
+          'label' => 'Select Question #2',
+          'multiple' => 0,
+          'qualifier' => 'Anything we should know?',
+          'description' => 'Pick whichever answer best applies.',
+          'info'=>'This is popup info.  Just here to see if popups are working',
+          'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'OPTIONS', 
+          'label' => 'Multi Select #1',
+          'multiple' => 1,
+          'other' => 'Other',
+          'qualifier' => 'Anything we should know?',
+          'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
+          'info'=>'This is popup info.  Just here to see if popups are working',
+          'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'OPTIONS', 
+          'label' => 'Multi Select #2',
+          'multiple' => 1,
+          'qualifier' => 'Anything we should know?',
+          'description' => 'Pick whichever answer or answers best apply.',
+          'info'=>'This is popup info.  Just here to see if popups are working',
+          'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+        ],
+        [
+          'id' => ++$id, 
+          'type' => 'FREETEXT', 
+          'label' => 'Your thoughts?',
+          'description' => 'What else would you like us to know?',
+          'info'=>'This is popup info.  Just here to see if popups are working',
+        ],
+      ];
+    }
+    $all_surveys[$status][$i]['sections'] = $sections;
+  }
+}
+
+
+echo "<script>";
+echo "const all_surveys = " . json_encode($all_surveys) . ";";
+echo "</script>";
 
 $form_uri = app_uri('admin');
 echo "<form id='admin-surveys' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
 add_hidden_input('ajaxuri',app_uri());
-add_hidden_input('surveys',json_encode($all_surveys));
 add_hidden_input('pdfuri',full_app_uri("admin&ttt=$nonce&pdf="));
 add_hidden_submit('action','surveys');
+
 
 echo <<<HTMLCTRLS
 <div class='survey-controls'>
@@ -97,7 +188,5 @@ echo <<<HTML
 HTML;
 
 echo "<script src='", js_uri('surveys','admin'), "'></script>";
+echo "<script src='", js_uri('survey_editor','admin'), "'></script>";
 echo "<script src='", js_uri('dayjs.min'), "'></script>";
-
-die();
-

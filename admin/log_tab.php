@@ -110,5 +110,3 @@ HTMLCTRLS;
 
 echo "</form>";
 echo "<script src='", js_uri('log','admin'), "'></script>";
-
-die();
