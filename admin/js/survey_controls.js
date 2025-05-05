@@ -1,125 +1,126 @@
-let self = {
-  surveys: {},
-};
+export default function survey_controls(ce)
+{
+  const _surveys = {};
 
-function init_select_list() {
-  // self function requires that the php code creates the javascript object ttt_all_surveys in a <script> element
+  const _survey_select = $('#survey-select');
+  const _survey_status = ce.form.find('span.survey-status');
+  const _pdf_actions   = ce.form.find('a.action');
+
+  // initialize survey select list
+  // requires that the php code creates the javascript object ttt_all_surveys in a 
+  //   <script> element.  @@@ TODO build a suveys data script
 
   var survey = ttt_all_surveys['active'];
   if(!(survey===null || Array.isArray(survey))) {
     survey.status = 'active';
-    self.select.append($('<option>',{ 'text':'---Active---', 'disabled':true }));
-    self.surveys[survey.id] = survey;
-    self.select.append($('<option>',{
-      'value':survey.id,
-      'text':survey.title,
-      'class':'active',
-      'status':'active',
+    _surveys[survey.id] = survey;
+
+    _survey_select.append($('<option>',{ 'text':'---Active---', 'disabled':true }));
+    _survey_select.append($('<option>',{
+      'value':  survey.id,
+      'text':   survey.title,
+      'class':  'active',
+      'status': 'active',
     }));
   }
 
-  self.select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
-  self.select.append($('<option>',{ 
-    'value':'new', 
-    'text':'Open New Survey...', 
-    'class':'new', 
-    'status':'new'
+  _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
+  _survey_select.append($('<option>',{ 
+    'value':  'new', 
+    'text':   'Open New Survey...', 
+    'class':  'new', 
+    'status': 'new'
   }));
 
   if( ttt_all_surveys['draft'].length>0 ) {
-    self.select.append($('<option>',{ 'text':'---Draft---', 'disabled':true }));
+    _survey_select.append($('<option>',{ 'text':'---Draft---', 'disabled':true }));
     for( var survey of ttt_all_surveys['draft']) {
       survey.status = 'draft';
-      self.surveys[survey.id] = survey;
-      self.select.append($('<option>',{
-        'value':survey.id,
-        'text':survey.title,
-        'class':'draft',
-        'status':'draft',
+      _surveys[survey.id] = survey;
+
+      _survey_select.append($('<option>',{
+        'value':  survey.id,
+        'text':   survey.title,
+        'class':  'draft',
+        'status': 'draft',
       }));
     }
   }
 
   if( ttt_all_surveys['closed'].length>0 ) {
-    self.select.append($('<option>',{ 'text':'---Closed---', 'disabled':true }));
+    _survey_select.append($('<option>',{ 'text':'---Closed---', 'disabled':true }));
     for( var survey of ttt_all_surveys['closed']) {
       survey.status = 'closed';
-      self.surveys[survey.id] = survey;
-      self.select.append($('<option>',{
-        'value':survey.id,
-        'text':survey.title,
-        'class':'closed',
-        'status':'closed',
+      _surveys[survey.id] = survey;
+
+      _survey_select.append($('<option>',{
+        'value':  survey.id,
+        'text':   survey.title,
+        'class':  'closed',
+        'status': 'closed',
       }));
     }
   }
 
   // create a pseudo-survey for handling the New Survey select
-  self.surveys["new"] = {'id':'new', 'status':'new'};
-}
+  _surveys["new"] = {'id':'new', 'status':'new'};
 
-function select_initial_survey() {
-  var options = self.select.find('option[value]').filter(':not(.new)');
-  var id      = options.length ? options.first().val() : 'new';
-  select_survey(id);
-}
+  //
+  // methods
+  //
 
-async function select_survey(id) {
-  hide_status();
+  function select_survey(id) {
+    hide_status();  // global scope 
 
-  const prior_survey = self.ce.cur_survey;
+    const prior_survey = ce.cur_survey;
 
-  self.select.val(id);
-  self.ce.cur_survey = self.surveys[id];
+    _survey_select.val(id);
+    ce.cur_survey = _surveys[id];
 
-  const status = self.ce.cur_survey.status;
+    const status = ce.cur_survey.status;
 
-  self.status.html(status.charAt(0).toUpperCase() + status.slice(1));
+    _survey_status.html(status.charAt(0).toUpperCase() + status.slice(1));
 
-  self.actions.hide();
-  self.actions.filter(`.${status}`).show();
+    _pdf_actions.hide();
+    _pdf_actions.filter(`.${status}`).show();
 
-  $(document).trigger('surveySelectionChanged', {newSurvey: self.ce.cur_survey} );
+    // update the info bar and editor to reflect the selected survey
+    ce.survey_info.update_for_survey(ce.cur_survey);
 
-  // set some "common" user element configurations
-  self.ce.button_bar.hide();
+    // we're going to hide the button bar now. status controllers that
+    //   need the button bar must unhide it
+    ce.button_bar.hide();
 
-  self.ce.dispatch('select_survey',prior_survey);
-}
-
-function handle_action_link(e) {
-  alert('handle action link');
-}
-
-async function handle_survey_select(e) {
-  const blocked = await self.ce.dispatch_async('block_survey_select');
-  if( blocked )
-  {
-    self.select.val(self.ce.cur_survey.id);
-  } else {
-    select_survey(self.select.val());
+    ce.dispatch('select_survey',prior_survey);
   }
-}
 
-function survey_controls(ce) {
-  self.ce = ce;
+  var options = _survey_select.find('option[value]').filter(':not(.new)');
+  select_survey(options.length ? options.first().val() : 'new');
 
-  self.select  = $('#survey-select');
-  self.status  = ce.form.find('span.survey-status');
-  self.actions = ce.form.find('a.action');
+  function cloneable_surveys()
+  {
+    return _survey_select.find('option[value]').filter(':not(.new)').clone();
+  }
 
-  self.select.on('change',handle_survey_select);
-  self.actions.on('click',handle_action_link);
+  // event handlers
 
-  init_select_list();
-  select_initial_survey();
+  function handle_action_link(e)
+  {
+    alert('handle action link');
+  }
+
+  async function handle_survey_select(e) 
+  {
+    const blocked = await ce.dispatch_async('block_survey_select');
+    if( blocked ) { _survey_select.val( ce.cur_survey.id ); }
+    else          { select_survey( _survey_select.val() );  }
+  }
+
+  _survey_select.on('change',handle_survey_select);
+  _pdf_actions.on('click',handle_action_link);
 
   return {
-    clonable_surveys() {
-      return self.select.find('option[value]').filter(':not(.new)').clone();
-    },
-    select_survey:select_survey,
+    cloneable_surveys: cloneable_surveys,
+    select_survey:    select_survey,
   };
-}
-
-export default survey_controls;
+};

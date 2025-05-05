@@ -1,11 +1,6 @@
-const self = {};
-
-function active_controller(ce) {
-  self.ce = ce;
-
+export default function active_controller(ce)
+{
   return {
     state:'active',
   }
-};
-
-export default active_controller;
+}

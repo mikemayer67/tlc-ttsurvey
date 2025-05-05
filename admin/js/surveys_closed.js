@@ -1,11 +1,6 @@
-const self = {};
-
-function closed_controller(ce) {
-  self.ce = ce;
-
+export default function closed_controller(ce) 
+{
   return {
     state:'closed',
   }
 };
-
-export default closed_controller;

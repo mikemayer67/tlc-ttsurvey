@@ -1,7 +1,3 @@
-let self = {
-  surveys: {},
-};
-
 function format_date(date)
 {
   var date = dayjs(date);
@@ -9,126 +5,110 @@ function format_date(date)
   return date;
 }
 
-function update_info()
+export default function survey_info(ce)
 {
-  const survey = self.ce.cur_survey;
+  const _info_bar     = ce.form.find('.content-box .info-bar');
+  const _info_edit    = $('#info-edit');
 
-  self.info_bar.hide();
+  const _survey_clone = $('survey-clone');
+  const _survey_pdf   = $('#survey-pdf');
+  const _pdf_action   = $('#existing-pdf-action');
+  const _clear_pdf    = $('#clear-pdf');
 
-  var item;
-
-  item = self.info_bar.find('.info-label.created');
-  if(survey.created) {
-    self.info_bar.show();
-    item.show();
-    item.find('.date').html(format_date(survey.created));
-  } else { 
-    item.hide();
+  function update_info()
+  {
+    _info_bar.hide(); // we'll unhide it if/when we find something to put in it
+    
+    var item = _info_bar.find('.info-label.created');
+    if(ce.cur_survey.created) {
+      _info_bar.show();
+      item.show();
+      item.find('.date').html(format_date(ce.cur_survey.created));
+    } else { 
+      item.hide();
+    }
+  
+    item = _info_bar.find('.info-label.opened'); // note the mismatch between active/opened
+    if(ce.cur_survey.active) {
+      _info_bar.show();
+      item.show();
+      item.find('.date').html(format_date(ce.cur_survey.active));
+    } else { 
+      item.hide();
+    }
+  
+    item = _info_bar.find('.info-label.closed');
+    if(ce.cur_survey.closed) {
+      _info_bar.show();
+      item.show();
+      item.find('.date').html(format_date(ce.cur_survey.closed));
+    } else { 
+      item.hide();
+    }
+  
+    item = _info_bar.find('.pdf-link');
+    if(ce.cur_survey.has_pdf) {
+      item.find('.no-link').hide();
+      item.find('a').attr('href',ce.pdfuri+ce.cur_survey.id).show();
+    } else {
+      item.find('.no-link').show();
+      item.find('a').hide();
+    }
+  
+    // The following are dependent on the survey status.  As each status controller
+    //   should only need to know about the fields that it cares about and not those
+    //   that it does not care about,  We reset and hide the entire info edit box here
+    //   and ask each controller to turn it on and customize it as the need it.
+  
+    _info_edit.hide();
+    _info_edit.find('tr.clone-from').hide();
+    _pdf_action.hide();
+    _clear_pdf.hide();
+    _survey_pdf.val('');
+  
+    ce.dispatch('update_info');
   }
 
-  item = self.info_bar.find('.info-label.opened'); // note the mismatch between active/opened
-  if(survey.active) {
-    self.info_bar.show();
-    item.show();
-    item.find('.date').html(format_date(survey.active));
-  } else { 
-    item.hide();
-  }
+  // event handlers
 
-  item = self.info_bar.find('.info-label.closed');
-  if(survey.closed) {
-    self.info_bar.show();
-    item.show();
-    item.find('.date').html(format_date(survey.closed));
-  } else { 
-    item.hide();
-  }
-
-  item = self.info_bar.find('.pdf-link');
-  if(survey.has_pdf) {
-    item.find('.no-link').hide();
-    item.find('a').attr('href',self.ce.pdfuri+survey.id).show();
-  } else {
-    item.find('.no-link').show();
-    item.find('a').hide();
-  }
-
-  // The following are dependent on survey status.  As each status event handler
-  //   should only need to know about the fields that it cares about and not those
-  //   that it does not care about,  We reset and hide the entire info edit box here
-  //   and ask each event handler to turn it on and customize it as the need it.
-
-  self.info_edit.hide();
-  self.info_edit.find('tr.clone-from').hide();
-  self.survey_pdf.val('');
-  self.pdf_action.hide();
-  self.clear_pdf.hide();
-
-  self.ce.dispatch('update_info_edit');
-}
-
-function handle_survey_pdf()
-{
-  const survey = self.ce.cur_survey;
-
-  if(!self.ce.cur_survey.has_pdf) {
-    var pdf_file = self.survey_pdf.val();
-    if(pdf_file) { self.clear_pdf.show(); }
-    else         { self.clear_pdf.hide(); }
-  }
-//  validate_all();
-}
-
-function clear_survey_pdf()
-{
-  self.survey_pdf.val('');
-  self.clear_pdf.hide();
-}
-
-function handle_pdf_action()
-{
-  if(self.pdf_action.val() === 'replace') {
-    self.survey_pdf.show();
-  } else {
-    self.survey_pdf.hide();
-  }
-}
-
-
-
-function validate_survey_name()
-{
-  var survey_name = ce.survey_name.val().trim();
-  if(survey_name.length > 0) {
-    if(survey_name.length < 5) {
-      ce.survey_name.addClass('invalid-value');
-      ce.form.find('div.error[name=survey_name]').show().html("too short");
+  function handle_survey_pdf()
+  {
+    if(!ce.cur_survey.has_pdf) {
+      if(_survey_pdf.val()) { _clear_pdf.show(); }
+      else                  { _clear_pdf.hide(); }
     }
   }
-}
 
+  function clear_survey_pdf()
+  {
+    _survey_pdf.val('');
+    _clear_pdf.hide();
+  }
 
-function survey_info(ce) {
-  self.ce = ce;
+  function handle_pdf_action()
+  {
+    if(_pdf_action.val() === 'replace') { _survey_pdf.show(); }
+    else                                { _survey_pdf.hide(); }
+  }
 
-  self.info_bar = ce.form.find('.content-box .info-bar');
-  self.info_edit = $('#info-edit');
+  _survey_pdf.on('change',handle_survey_pdf);
+  _clear_pdf.on('click',clear_survey_pdf);
+  _pdf_action.on('change',handle_pdf_action);
 
-  self.survey_clone = $('survey-clone');
-  self.survey_pdf   = $('#survey-pdf');
-  self.pdf_action   = $('#existing-pdf-action');
-  self.clear_pdf    = $('#clear-pdf');
+  // validation methods
 
-  self.survey_pdf.on('change',handle_survey_pdf);
-  self.clear_pdf.on('click',clear_survey_pdf);
-  self.pdf_action.on('change',handle_pdf_action);
-
-  $(document).on('surveySelectionChanged',update_info);
-
-  update_info();
+  function validate_survey_name()
+  {
+    var survey_name = ce.survey_name.val().trim();
+    if(survey_name.length > 0) {
+      if(survey_name.length < 5) {
+        ce.survey_name.addClass('invalid-value');
+        ce.form.find('div.error[name=survey_name]').show().html("too short");
+      }
+    }
+  }
 
   return {
+    update_for_survey: update_info,
   };
 }
-
-export default survey_info;
