@@ -64,16 +64,38 @@ function select_initial_survey() {
   select_survey(id);
 }
 
-function select_survey(id) {
+async function select_survey(id) {
+  hide_status();
+
+  const prior_survey = self.ce.cur_survey;
+
   self.select.val(id);
-  self.cur_survey = self.surveys[id];
+  self.ce.cur_survey = self.surveys[id];
+
+  const status = self.ce.cur_survey.status;
+
+  self.status.html(status.charAt(0).toUpperCase() + status.slice(1));
+
+  self.actions.hide();
+  self.actions.filter(`.${status}`).show();
+
+  $(document).trigger('surveySelectionChanged', {newSurvey: self.ce.cur_survey} );
+
+  // set some "common" user element configurations
+  self.ce.button_bar.hide();
+
+  self.ce.dispatch('select_survey',prior_survey);
+}
+
+function handle_action_link(e) {
+  alert('handle action link');
 }
 
 async function handle_survey_select(e) {
-  const blocked = await self.ce.dispatch('block_survey_select');
+  const blocked = await self.ce.dispatch_async('block_survey_select');
   if( blocked )
   {
-    self.select.val(self.cur_survey.id);
+    self.select.val(self.ce.cur_survey.id);
   } else {
     select_survey(self.select.val());
   }
@@ -87,17 +109,16 @@ function survey_controls(ce) {
   self.actions = ce.form.find('a.action');
 
   self.select.on('change',handle_survey_select);
+  self.actions.on('click',handle_action_link);
 
   init_select_list();
   select_initial_survey();
 
   return {
-    cur_survey() { return self.cur_survey; },
-    cur_status() { return self.cur_survey.status; },
-
     clonable_surveys() {
       return self.select.find('option[value]').filter(':not(.new)').clone();
     },
+    select_survey:select_survey,
   };
 }
 

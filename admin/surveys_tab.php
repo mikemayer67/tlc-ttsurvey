@@ -163,7 +163,7 @@ echo <<<HTML
           <option value='drop'>Drop it</option>
           <option value='replace'>Replace it</option>
         </select>
-        <button class='clear-pdf'>-</button>
+        <button id='clear-pdf'>-</button>
         <input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'>
       </div>
     </td>

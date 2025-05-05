@@ -1,6 +1,6 @@
 const self = {};
 
-function closed_handler(ce) {
+function closed_controller(ce) {
   self.ce = ce;
 
   return {
@@ -8,4 +8,4 @@ function closed_handler(ce) {
   }
 };
 
-export default closed_handler;
+export default closed_controller;

@@ -1,6 +1,6 @@
 const self = {};
 
-function active_handler(ce) {
+function active_controller(ce) {
   self.ce = ce;
 
   return {
@@ -8,4 +8,4 @@ function active_handler(ce) {
   }
 };
 
-export default active_handler;
+export default active_controller;
