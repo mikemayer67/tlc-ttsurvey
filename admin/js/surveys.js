@@ -7,6 +7,8 @@ import new_controller from './surveys_new.js';
 
 const ce = (window._survey_ce = window._survey_ce || {});
 
+let validation_timer = null;
+
 // Survey status agnostic stuff
 
 function enforce_alphanum_only(event)
@@ -14,6 +16,27 @@ function enforce_alphanum_only(event)
   var v = $(this).val();
   v = v.replace(/[^a-zA-Z0-9& ]/g,'');
   $(this).val(v);
+}
+
+function handle_input(e)
+{
+  hide_status();
+  clearTimeout(validation_timer);
+  $(this).removeClass('invalid-value');
+  validation_timer = setTimeout(validate_input,250,$(this));
+}
+
+function handle_change(e)
+{
+  hide_status()
+  clearTimeout(validation_timer);
+  validation_timer = null;
+  validate_input($(this));
+}
+
+function validate_input(sender)
+{
+  ce.dispatch('validate_input',sender);
 }
 
 function handle_submit(e)
@@ -73,6 +96,12 @@ $(document).ready(
   ce.button_bar = ce.form.find('div.button-bar');
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
+
+  // event handlers
+
+  ce.handle_input = handle_input;
+  ce.handle_change = handle_change;
+  ce.validate_input = validate_input;
 
   ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
   ce.form.on('submit', handle_submit);

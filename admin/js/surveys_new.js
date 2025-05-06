@@ -9,6 +9,26 @@ export default function new_controller(ce)
 
   let _prior_id = null;
 
+  function validate_input(sender)
+  {
+    if(_survey_name.is(sender)) {
+      update_submit();
+    }
+  }
+
+  function update_submit()
+  {
+    // other status handlers will have more complicated logic, but for new surveys
+    //   the only check is on survey name
+
+    ce.survey_info.validate_survey_name();
+
+    const survey_name = _survey_name.val().trim();
+
+    const bad_name = (survey_name.length == 0 || _survey_name.hasClass('invalid-value'));
+    ce.submit.prop('disabled',bad_name);
+  }
+
   function select_new(prior)
   {
     if(prior.id !== 'new') {
@@ -30,10 +50,45 @@ export default function new_controller(ce)
     _pdf_action.hide();
     _clear_pdf.hide();
 
+    // The only new survey field that needs validation is the survey name
+    _survey_name.on('input',ce.handle_input);
+    _survey_name.on('change',ce.handle_change);
+
     ce.button_bar.show();
+
     ce.submit.val('Create Survey');
-    ce.revert.val('Cancel');
+    ce.revert.val('Cancel').prop('disabled',false).css('opacity',1);
+    update_submit();
   }
+
+  function submit_new()
+  {
+    const formData = new FormData();
+    formData.append('nonce',ce.nonce);
+    formData.append('ajax','admin/create_new_survey');
+    formData.append('name',_survey_name.val().trim());
+    const clone = _survey_clone.val();
+    if(!isNaN(clone)) { formData.append('clone',clone); }
+    formData.append('survey_pdf',_survey_pdf[0].files[0]);
+
+    $.ajax({
+      type: 'POST',
+      url: ce.ajaxuri,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      data: formData,
+
+    })
+    .done( function(data,start,jqHXR) {
+      if(data.success) { ce.survey_controls.add_new_survey(data.survey); }
+      else             { alert('Failed to create new survey: '+error);   }
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) {
+      internal_error(jqXHR);
+    });
+  }
+
 
   function cancel_new()
   {
@@ -44,6 +99,7 @@ export default function new_controller(ce)
     status:'new',
     select_survey:select_new,
     handle_revert:cancel_new,
+    handle_submit:submit_new,
+    validate_input:validate_input,
   };
-
 };

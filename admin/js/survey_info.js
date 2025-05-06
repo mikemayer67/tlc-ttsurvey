@@ -10,7 +10,8 @@ export default function survey_info(ce)
   const _info_bar     = ce.form.find('.content-box .info-bar');
   const _info_edit    = $('#info-edit');
 
-  const _survey_clone = $('survey-clone');
+  const _survey_name  = $('#survey-name');
+  const _survey_clone = $('#survey-clone');
   const _survey_pdf   = $('#survey-pdf');
   const _pdf_action   = $('#existing-pdf-action');
   const _clear_pdf    = $('#clear-pdf');
@@ -99,16 +100,20 @@ export default function survey_info(ce)
 
   function validate_survey_name()
   {
-    var survey_name = ce.survey_name.val().trim();
-    if(survey_name.length > 0) {
-      if(survey_name.length < 5) {
-        ce.survey_name.addClass('invalid-value');
-        ce.form.find('div.error[name=survey_name]').show().html("too short");
+    const name = _survey_name.val().trim();
+    const err = ce.form.find('div.error[name=survey_name]');
+    err.hide();
+    _survey_name.removeClass('invalid-value');
+    if(name.length > 0) {
+      if(name.length < 10) {
+        _survey_name.addClass('invalid-value');
+        err.html("too short").show();
       }
     }
   }
 
   return {
     update_for_survey: update_info,
+    validate_survey_name: validate_survey_name,
   };
 }

@@ -146,7 +146,7 @@ echo <<<HTML
   <tr class='survey-name'>
     <td class='label'>Survey Name:</td>
     <td class='input-box'>
-      <input id='survey-name' type='input' class='alphanum-only' name='survey_name'>
+      <input id='survey-name' type='input' class='alphanum-only watch' name='survey_name'>
       <div class='error' name='survey_name'>error</div>
     </td>
   </tr><tr class='clone-from'>
@@ -164,7 +164,7 @@ echo <<<HTML
           <option value='replace'>Replace it</option>
         </select>
         <button id='clear-pdf'>-</button>
-        <input id='survey-pdf' type='file' name='survey_pdf' accept='.pdf'>
+        <input id='survey-pdf' type='file' class='watch' name='survey_pdf' accept='.pdf'>
       </div>
     </td>
   </tr>

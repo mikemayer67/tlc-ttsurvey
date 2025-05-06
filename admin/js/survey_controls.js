@@ -87,9 +87,12 @@ export default function survey_controls(ce)
     // update the info bar and editor to reflect the selected survey
     ce.survey_info.update_for_survey(ce.cur_survey);
 
-    // we're going to hide the button bar now. status controllers that
-    //   need the button bar must unhide it
+    // hide the button bar... status controllers that need the button bar must unhide it
     ce.button_bar.hide();
+
+    // disable all event handlers that trigger on changes to the survey form inputs/selects
+    ce.form.find('input.watch').off('input').off('change');
+    ce.form.find('select.watch').off('change');
 
     ce.dispatch('select_survey',prior_survey);
   }
@@ -100,6 +103,19 @@ export default function survey_controls(ce)
   function cloneable_surveys()
   {
     return _survey_select.find('option[value]').filter(':not(.new)').clone();
+  }
+
+  function add_new_survey(survey)
+  {
+    survey.status = 'draft';
+    _surveys[survey.id] = survey;
+
+    var new_option = _survey_select.find('option[value=new]');
+    new_option.after(
+      $('<option>',{value:survey.id, text:survey.title, class:'draft', status:'draft'})
+    );
+    
+    select_survey(survey.id);
   }
 
   // event handlers
@@ -121,6 +137,7 @@ export default function survey_controls(ce)
 
   return {
     cloneable_surveys: cloneable_surveys,
-    select_survey:    select_survey,
+    select_survey:     select_survey,
+    add_new_survey:    add_new_survey,
   };
 };
