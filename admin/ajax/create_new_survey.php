@@ -8,6 +8,8 @@ require_once(app_file('include/surveys.php'));
 
 validate_ajax_nonce('admin-surveys');
 
+log_dev(print_r($_POST,true));
+
 handle_warnings();
 
 $name = $_POST['name'] ?? null;

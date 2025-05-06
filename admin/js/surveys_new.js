@@ -36,6 +36,7 @@ export default function new_controller(ce)
     }
 
     _info_edit.show();
+    ce.survey_editor.hide();
 
     _survey_name.attr({ required:true, placeholder:'required', }).val('');
 
@@ -88,7 +89,6 @@ export default function new_controller(ce)
       internal_error(jqXHR);
     });
   }
-
 
   function cancel_new()
   {

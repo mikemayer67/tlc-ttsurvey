@@ -87,10 +87,9 @@ export default function survey_controls(ce)
     // update the info bar and editor to reflect the selected survey
     ce.survey_info.update_for_survey(ce.cur_survey);
 
-    // hide the button bar... status controllers that need the button bar must unhide it
+    // perform common config... status controllers can override these later
+    ce.survey_editor.show();
     ce.button_bar.hide();
-
-    // disable all event handlers that trigger on changes to the survey form inputs/selects
     ce.form.find('input.watch').off('input').off('change');
     ce.form.find('select.watch').off('change');
 

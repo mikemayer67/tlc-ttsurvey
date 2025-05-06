@@ -27,7 +27,11 @@ function active_survey_title()
 
 function survey_info($id)
 {
-  return MySQLSelectRow("select * from tlc_tt_surveys where id=?",'i',$id);
+  $info = MySQLSelectRow("select * from tlc_tt_surveys where id=?",'i',$id);
+  if(survey_pdf_file($id)) {
+    $info['has_pdf'] = true;
+  }
+  return $info;
 }
 
 function all_surveys()
@@ -72,23 +76,23 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
   try {
     MySQLBeginTransaction();
 
-    $rc = MySQLExecute("insert into tlc_tt_surveys (title) values (?)",'s',$name);
+    $query = "insert into tlc_tt_surveys (title) values (?)";
+    $rc = MySQLExecute($query,'s',$name);
 
     if(!$rc) { 
       throw new FailedToCreate('Failed to create a new entry in the database');
     }
     $new_id = MySQLInsertID();
 
-
     if($parent_id) {
-      $parent_rev = MySQLSelectValue(
-        "select revision from tlc_tt_surveys where id = $parent_id"
-      );
+      $query = "select revision from tlc_tt_surveys where id = $parent_id";
+      $parent_rev = MySQLSelectValue($query);
       if(!$parent_rev) {
         throw new FailedToCreate("Failed to find survey to clone ($parent_id)");
       }
 
-      $rc = MySQLExecute("update tlc_tt_surveys set parent=$parent_id where id=$new_id");
+      $query = "update tlc_tt_surveys set parent=$parent_id where id=$new_id";
+      $rc = MySQLExecute($query);
       if(!$rc) {
         throw new FailedToCreate("Failed to update parent id in clone");
       }
@@ -162,7 +166,7 @@ function clone_survey_elements($parent_id,$child_id)
   INSERT into tlc_tt_survey_elements
   SELECT a.id, $child_id, 1, 
          a.section_seq, a.sequence, a.label, 
-         a.element_type, a.other, a.qualifier, a.description, a.info
+         a.element_type, a.multiple, a.other, a.qualifier, a.description, a.info
     FROM tlc_tt_survey_elements a
    WHERE a.survey_id=$parent_id
      AND a.survey_rev = (

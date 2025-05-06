@@ -4,6 +4,7 @@ import active_controller from './surveys_active.js';
 import draft_controller from './surveys_draft.js';
 import closed_controller from './surveys_closed.js';
 import new_controller from './surveys_new.js';
+import survey_editor from './survey_editor.js';
 
 const ce = (window._survey_ce = window._survey_ce || {});
 
@@ -119,6 +120,7 @@ $(document).ready(
   ce.surveyControllers['new']    = new_controller(ce);
 
   ce.survey_info     = survey_info(ce);
+  ce.survey_editor   = survey_editor(ce);
   ce.survey_controls = survey_controls(ce);
 
   // Support global form
