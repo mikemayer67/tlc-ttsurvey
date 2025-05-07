@@ -88,8 +88,10 @@ export default function survey_info(ce)
 
   function handle_pdf_action()
   {
-    if(_pdf_action.val() === 'replace') { _survey_pdf.show(); }
-    else                                { _survey_pdf.hide(); }
+    const action = _pdf_action.val();
+    if(action === 'replace') { _survey_pdf.show(); }
+    else                     { _survey_pdf.hide(); }
+    ce.dispatch('handle_pdf_action',action)
   }
 
   _survey_pdf.on('change',handle_survey_pdf);

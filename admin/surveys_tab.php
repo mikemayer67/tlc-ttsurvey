@@ -158,7 +158,7 @@ echo <<<HTML
     <td class='label'>Downloadable PDF:</td>
     <td>
       <div class='pdf-box'>
-        <select id='existing-pdf-action'>
+        <select id='existing-pdf-action' name='pdf_action'>
           <option value='keep'>Keep it</option>
           <option value='drop'>Drop it</option>
           <option value='replace'>Replace it</option>

@@ -9,7 +9,7 @@ export default function new_controller(ce)
 
   let _prior_id = null;
 
-  function validate_input(sender)
+  function validate_input(sender,event)
   {
     if(_survey_name.is(sender)) {
       update_submit();
@@ -56,7 +56,6 @@ export default function new_controller(ce)
     _survey_name.on('change',ce.handle_change);
 
     ce.button_bar.show();
-
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel').prop('disabled',false).css('opacity',1);
     update_submit();

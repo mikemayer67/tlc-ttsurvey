@@ -24,7 +24,7 @@ function handle_input(e)
   hide_status();
   clearTimeout(validation_timer);
   $(this).removeClass('invalid-value');
-  validation_timer = setTimeout(validate_input,250,$(this));
+  validation_timer = setTimeout(validate_input,250,$(this),e);
 }
 
 function handle_change(e)
@@ -32,12 +32,12 @@ function handle_change(e)
   hide_status()
   clearTimeout(validation_timer);
   validation_timer = null;
-  validate_input($(this));
+  validate_input($(this),e);
 }
 
-function validate_input(sender)
+function validate_input(sender,event)
 {
-  ce.dispatch('validate_input',sender);
+  ce.dispatch('validate_input',sender,event);
 }
 
 function handle_submit(e)
