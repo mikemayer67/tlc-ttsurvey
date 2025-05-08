@@ -82,20 +82,20 @@ export default function draft_controller(ce)
 
   function validate_all()
   {
-    ce.survey_info.validate_survey_name()
+    ce.survey_info.validate_survey_name();
     validate_pdf_action();
 
-    const has_changes = Object.keys(_changes).length > 0;
+    const dirty = has_changes();
     const has_errors = ce.form.find('.invalid-value').length > 0;
 
-    if(has_changes) {
+    if(dirty) {
       ce.revert.prop('disabled',false).css('opacity',1);
     }
     else {
       ce.revert.prop('disabled',true).css('opacity',0);
     }
 
-    ce.submit.prop('disabled',has_errors || !has_changes);
+    ce.submit.prop('disabled',has_errors || !dirty);
   }
 
   function validate_pdf_action()
@@ -130,29 +130,28 @@ export default function draft_controller(ce)
 
   function has_changes()
   {
-  //  const survey  = self.ce.cur_survey;
-  //  const current = current_values();
-  //
-  //  var current_name = current['survey_name'].trim();
-  //  if(current_name.length>0) {
-  //    var saved_name = ce.saved_values['survey_name'];
-  //    if( saved_name.length == 0 ) { saved_name = survey.title; }
-  //
-  //    if( current_values['survey_name'] !== saved_name ) { return true; }
-  //  }
-
-    // @@@ TODO: Add pdf actions
-    // if(ce.existing_pdf_action.val() !=='keep') { return true; }
-    // if(ce.survey_pdf.val()) { return true; }
-
-    // @@@ TODO: Add survey elements
-
-  //  return false;
-   
-    return true;
+    return Object.keys(_changes).length > 0;
   }
 
   _last_saved = current_values();
+
+  function handle_revert()
+  {
+    for( let key in _changes ) {
+      ce.form.find(`[name=${key}]`).val(_last_saved[key]);
+    }
+    if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
+    else                                     { _survey_pdf.hide(); }
+
+    _changes = {};
+    validate_all();
+  }
+
+  function handle_submit()
+  {
+    alert('handle submit');
+  }
+
 
   return {
     state:'draft',
@@ -161,5 +160,7 @@ export default function draft_controller(ce)
     handle_pdf_action:handle_pdf_action,
     has_changes: has_changes,
     validate_input:validate_input,
+    handle_revert:handle_revert,
+    handle_submit:handle_submit,
   };
 };
