@@ -114,6 +114,8 @@ export default function survey_info(ce)
     }
   }
 
+  $(document).on('SurveyDataChanged',update_info);
+
   return {
     update_for_survey: update_info,
     validate_survey_name: validate_survey_name,

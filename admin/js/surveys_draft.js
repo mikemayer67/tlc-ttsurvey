@@ -6,9 +6,6 @@ export default function draft_controller(ce)
   const _pdf_action   = $('#existing-pdf-action');
   const _clear_pdf    = $('#clear-pdf');
 
-  var _last_saved = {};
-  var _changes    = {};
-
   async function block_survey_select()
   {
     if( !has_changes() ) { return Promise.resolve(false); }
@@ -32,9 +29,23 @@ export default function draft_controller(ce)
 
   function select_survey()
   {
-    _info_edit.show();
+    ce.survey_info.update_for_survey();
 
     _survey_name.attr({ required:false, placeholder:ce.cur_survey['title'], }).val('');
+
+    ce.form.find('input.watch').on('input',ce.handle_input).on('change',ce.handle_change);
+    ce.form.find('select.watch').on('change',ce.handle_change);
+
+    ce.button_bar.show();
+    ce.submit.val('Save Changes').prop('disabled',true);
+    ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
+
+    validate_all();
+  }
+
+  function update_info()
+  {
+    _info_edit.show();
 
     _survey_pdf.val('');
     _pdf_action.hide();
@@ -49,27 +60,19 @@ export default function draft_controller(ce)
       _survey_pdf.show();
       _info_edit.find('.pdf-file td.label').html('Downloadable PDF');
     }
-    _survey_pdf.val('');
-
-    ce.form.find('input.watch').on('input',ce.handle_input).on('change',ce.handle_change);
-    ce.form.find('select.watch').on('change',ce.handle_change);
-
-    ce.button_bar.show();
-    ce.submit.val('Save Changes').prop('disabled',true);
-    ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
-
-    validate_all();
   }
 
   // Input Validation
   
   function handle_pdf_action(action)
   {
+    hide_status();
     validate_all();
   }
 
   function validate_input(sender,event)
   {
+    hide_status();
     // before validating the input/select, record changes
     const key   = sender.attr('name');
     const value = sender.val();
@@ -100,20 +103,26 @@ export default function draft_controller(ce)
 
   function validate_pdf_action()
   {
-    const action = _pdf_action.val();
-    if(action !==_last_saved.pdf_action) { _changes.pdf_action = action; } 
-    else                                 { delete _changes.pdf_action;   }
+    if(ce.cur_survey.has_pdf) {
+      const action = _pdf_action.val();
+      if(action !==_last_saved.pdf_action) { _changes.pdf_action = action; } 
+      else                                 { delete _changes.pdf_action;   }
 
-    var ok = true;
-    if( action === "replace" ) {
-      if( !_survey_pdf.val() ) { ok = false; }
-    } else {
-      _survey_pdf.val('');
-      delete _changes.survey_pdf;
+      var ok = true;
+      if( action === "replace" ) {
+        if( !_survey_pdf.val() ) { ok = false; }
+      } else {
+        _survey_pdf.val('');
+        delete _changes.survey_pdf;
+      }
+
+      if(ok) { _survey_pdf.removeClass('invalid-value'); }
+      else   { _survey_pdf.addClass('invalid-value');    }
+    } 
+    else {
+      if(_survey_pdf.val()) { _clear_pdf.show(); }
+      else                  { _clear_pdf.hide(); }
     }
-
-    if(ok) { _survey_pdf.removeClass('invalid-value'); }
-    else   { _survey_pdf.addClass('invalid-value');    }
   }
 
 
@@ -133,8 +142,6 @@ export default function draft_controller(ce)
     return Object.keys(_changes).length > 0;
   }
 
-  _last_saved = current_values();
-
   function handle_revert()
   {
     for( let key in _changes ) {
@@ -144,19 +151,92 @@ export default function draft_controller(ce)
     else                                     { _survey_pdf.hide(); }
 
     _changes = {};
+    $(document).trigger('SurveyDataChanged');
     validate_all();
   }
 
   function handle_submit()
   {
-    alert('handle submit');
+    var cur_values = current_values();
+    var survey_name = cur_values.survey_name.trim();
+    if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
+
+    var formData = new FormData();
+    formData.append('nonce',ce.nonce);
+    formData.append('ajax','admin/update_survey');
+    formData.append('survey_id',ce.cur_survey.id);
+    formData.append('name',survey_name);
+
+    if(ce.cur_survey.has_pdf) {
+      switch(_pdf_action.val()) {
+        case 'drop':
+          formData.append('existing_pdf','drop');
+          break;
+        case 'replace':
+          formData.append('existing_pdf','replace');
+          formData.append('survey_pdf',_survey_pdf[0].files[0]);
+          break;
+      }
+    } else {
+      if(_survey_pdf.val()) {
+        formData.append('existing_pdf','add');
+        formData.append('survey_pdf',_survey_pdf[0].files[0]);
+      }
+    }
+
+    $.ajax( {
+      type: 'POST',
+      ulr: ce.ajaxuri,
+      contentType: false,
+      processData: false,
+      dataType: 'json',
+      data:formData,
+    })
+    .done( function(data,status,jqXHR) {
+      if(data.success) {
+        _last_saved = cur_values;
+        _last_saved.survey_name = '';
+
+        ce.cur_survey.title = survey_name;
+        ce.cur_survey.has_pdf = data.has_pdf;
+
+        _survey_name.val('');
+//        _survey_pdf.val('');
+//        _pdf_action.val('keep');
+
+        $(document).trigger('SurveyDataChanged');
+
+        show_status('info','Changes Saved');
+      } 
+      else {
+        if( 'bad_nonce' in data ) {
+          alert("Somthing got out of sync.  Reloading page.");
+          location.reload();
+        } else {
+          alert("handle bad input notices");
+//          --- copied from settings.js ---
+//          for( const [key,error] of Object.entries(data) ) {
+//            if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
+//            if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
+//          }
+        }
+      }
+      validate_all();
+    } )
+    .fail( function(jqXHR,textStatus,errorThrown) { 
+      internal_error(jqXHR); 
+    } )
+    ;
   }
 
+  var _last_saved = current_values();
+  var _changes    = {};
 
   return {
     state:'draft',
     block_survey_select: block_survey_select,
     select_survey: select_survey,
+    update_info: update_info,
     handle_pdf_action:handle_pdf_action,
     has_changes: has_changes,
     validate_input:validate_input,

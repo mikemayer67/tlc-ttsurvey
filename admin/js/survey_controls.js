@@ -117,6 +117,14 @@ export default function survey_controls(ce)
     select_survey(survey.id);
   }
 
+  function handle_data_changed()
+  {
+    const id = ce.cur_survey.id;
+    const name = ce.cur_survey.title;
+    _surveys[id].title = name;
+    _survey_select.find(`option[value=${id}]`).html(name);
+  }
+
   // event handlers
 
   function handle_action_link(e)
@@ -134,9 +142,11 @@ export default function survey_controls(ce)
   _survey_select.on('change',handle_survey_select);
   _pdf_actions.on('click',handle_action_link);
 
+  $(document).on('SurveyDataChanged',handle_data_changed);
+
   return {
-    cloneable_surveys: cloneable_surveys,
-    select_survey:     select_survey,
-    add_new_survey:    add_new_survey,
+    cloneable_surveys:  cloneable_surveys,
+    select_survey:      select_survey,
+    add_new_survey:     add_new_survey,
   };
 };
