@@ -2,6 +2,8 @@
 .*.swp
 
 admin/settings.json
+pdf/survey*pdf
+sql/dump*sql
 tlc-ttsurvey.ini
 tlc-ttsurvey.log
 error_log
