@@ -1,20 +1,13 @@
 export default function survey_controls(ce)
 {
-  const _surveys = {};
-
   const _survey_select = $('#survey-select');
   const _survey_status = ce.form.find('span.survey-status');
   const _pdf_actions   = ce.form.find('a.action');
 
   // initialize survey select list
-  // requires that the php code creates the javascript object ttt_all_surveys in a 
-  //   <script> element.  @@@ TODO build a suveys data script
 
-  var survey = ttt_all_surveys['active'];
+  var survey = ce.survey_data.active();
   if(!(survey===null || Array.isArray(survey))) {
-    survey.status = 'active';
-    _surveys[survey.id] = survey;
-
     _survey_select.append($('<option>',{ 'text':'---Active---', 'disabled':true }));
     _survey_select.append($('<option>',{
       'value':  survey.id,
@@ -32,12 +25,10 @@ export default function survey_controls(ce)
     'status': 'new'
   }));
 
-  if( ttt_all_surveys['draft'].length>0 ) {
+  const draft_surveys = ce.survey_data.drafts();
+  if( draft_surveys.length > 0 ) {
     _survey_select.append($('<option>',{ 'text':'---Draft---', 'disabled':true }));
-    for( var survey of ttt_all_surveys['draft']) {
-      survey.status = 'draft';
-      _surveys[survey.id] = survey;
-
+    for( var survey of draft_surveys ) {
       _survey_select.append($('<option>',{
         'value':  survey.id,
         'text':   survey.title,
@@ -47,12 +38,10 @@ export default function survey_controls(ce)
     }
   }
 
-  if( ttt_all_surveys['closed'].length>0 ) {
+  const closed_surveys = ce.survey_data.closed();
+  if( closed_surveys.length > 0 ) {
     _survey_select.append($('<option>',{ 'text':'---Closed---', 'disabled':true }));
-    for( var survey of ttt_all_surveys['closed']) {
-      survey.status = 'closed';
-      _surveys[survey.id] = survey;
-
+    for( var survey of closed_surveys ) {
       _survey_select.append($('<option>',{
         'value':  survey.id,
         'text':   survey.title,
@@ -61,9 +50,6 @@ export default function survey_controls(ce)
       }));
     }
   }
-
-  // create a pseudo-survey for handling the New Survey select
-  _surveys["new"] = {'id':'new', 'status':'new'};
 
   //
   // methods
@@ -75,7 +61,7 @@ export default function survey_controls(ce)
     const prior_survey = ce.cur_survey;
 
     _survey_select.val(id);
-    ce.cur_survey = _surveys[id];
+    ce.cur_survey = ce.survey_data.lookup(id);
 
     const status = ce.cur_survey.status;
 
@@ -107,7 +93,7 @@ export default function survey_controls(ce)
   function add_new_survey(survey)
   {
     survey.status = 'draft';
-    _surveys[survey.id] = survey;
+    ce.survey_data.add(survey);
 
     var new_option = _survey_select.find('option[value=new]');
     new_option.after(
@@ -121,7 +107,6 @@ export default function survey_controls(ce)
   {
     const id = ce.cur_survey.id;
     const name = ce.cur_survey.title;
-    _surveys[id].title = name;
     _survey_select.find(`option[value=${id}]`).html(name);
   }
 

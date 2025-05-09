@@ -1,3 +1,4 @@
+import survey_data from './survey_data.js';
 import survey_controls from './survey_controls.js';
 import survey_info from './survey_info.js';
 import active_controller from './surveys_active.js';
@@ -119,6 +120,7 @@ $(document).ready(
   ce.surveyControllers['closed'] = closed_controller(ce);
   ce.surveyControllers['new']    = new_controller(ce);
 
+  ce.survey_data     = survey_data();
   ce.survey_info     = survey_info(ce);
   ce.survey_editor   = survey_editor(ce);
   ce.survey_controls = survey_controls(ce);

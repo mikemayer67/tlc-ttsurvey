@@ -11,12 +11,9 @@ $nonce = gen_nonce('admin-surveys');
 $all_surveys = all_surveys();
 
 // add content data to the first survey that will be shown
-foreach(['active','draft','closed'] as $status) {
-  if(count($all_surveys[$status])>0) {
-    $survey_id = $all_surveys[$status][0]['id'];
-    $all_surveys[$status][0]['content'] = survey_content($survey_id);
-    break;
-  }
+if($all_surveys) {
+  $id = $all_surveys[0]['id'];
+  $all_surveys[0]['content'] = survey_content($id);
 }
 
 echo "<script>";

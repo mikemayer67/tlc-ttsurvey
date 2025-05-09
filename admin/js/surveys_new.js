@@ -43,7 +43,18 @@ export default function new_controller(ce)
     _info_edit.find('tr.clone-from').show();
 
     _survey_clone.find('option:not(:first)').remove();
-    _survey_clone.append(ce.survey_controls.cloneable_surveys());
+    var cur_status = '';
+    const cloneable = ce.survey_controls.cloneable_surveys();
+    for(const opt of cloneable) {
+      var status = $(opt).attr('status');
+      if(status !== cur_status) {
+        cur_status = status;
+        status = status.charAt(0).toUpperCase() + status.slice(1);
+        _survey_clone.append($('<option>',{'text':status,'disabled':true}));
+      }
+      _survey_clone.append(opt);
+    }
+    //_survey_clone.append(cloneable);
     _survey_clone.val('none');
 
     _info_edit.find('.pdf-file td.label').html('Downloadable PDF');

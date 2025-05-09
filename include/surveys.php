@@ -36,21 +36,29 @@ function survey_info($id)
 
 function all_surveys()
 {
-  $surveys = array(
-    'active' => MySQLSelectRows('select * from tlc_tt_active_surveys'),
-    'draft'  => MySQLSelectRows('select * from tlc_tt_draft_surveys'),
-    'closed' => MySQLSelectRows('select * from tlc_tt_closed_surveys'),
-  );
+  $surveys = [];
 
-  foreach($surveys as &$t) {
-    foreach($t as &$s) {
-      $s['has_pdf'] = (null !== survey_pdf_file($s['id']));
-    }
-  }
-  $nactive = count($surveys['active']);
+  $active = MySQLSelectRows('select * from tlc_tt_active_surveys');
+  $drafts = MySQLSelectRows('select * from tlc_tt_draft_surveys');
+  $closed = MySQLSelectRows('select * from tlc_tt_closed_surveys');
+
+  $nactive = count($active);
   if($nactive) {
     if($nactive>1) { internal_error('Multiple active surveys found'); }
-    $surveys['active'] = $surveys['active'][0];
+    $survey['status'] = 'active';
+    $surveys[] = $survey;
+  }
+  foreach($drafts as $survey) {
+    $survey['status'] = 'draft';
+    $surveys[] = $survey;
+  }
+  foreach($closed as $survey) {
+    $survey['status'] = 'closed';
+    $surveys[] = $survey;
+  }
+
+  foreach( $surveys as &$survey ) {
+    $survey['has_pdf'] = (null !== survey_pdf_file($survey['id']));
   }
 
   return $surveys;
