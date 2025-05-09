@@ -56,6 +56,90 @@ function all_surveys()
   return $surveys;
 }
 
+function survey_content($survey_id)
+{
+  todo('remove bogus survey content');
+  $content = [
+    [],
+    [ 'name' => 'Section 1', 'description' => "some words about section 1", 'feedback' => 0 ],
+    [ 'name' => 'Section Deux', 'description' => "But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'feedback' => 1 ],
+    [ 'name' => 'Section 3', 'description' => "some words about section 3", 'feedback' => 0 ],
+    [ 'name' => 'Section 4', 'description' => "some words about section 4", 'feedback' => 0 ],
+    [ 'name' => 'Section 5', 'description' => "some words about section 5", 'feedback' => 0 ],
+    [ 'name' => 'Section 6', 'description' => "some words about section 6", 'feedback' => 0 ],
+    [ 'name' => 'Section 7', 'description' => "some words about section 7", 'feedback' => 0 ],
+  ];
+  $id = 1;
+  foreach($content as &$section) {
+    $section['elements'] = [
+      [
+        'id' => ++$id, 
+        'type' => 'INFO', 
+        'label' => 'Info Text', 
+        'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'BOOL', 
+        'label' => 'Yes/No Questions',
+        'qualifier' => 'Why or why not?',
+        'description' => 'Blah blah blah... This is important because',
+        'info'=>'This is popup info.  Just here to see if popups are working',
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'OPTIONS', 
+        'label' => 'Select Question #1',
+        'multiple' => 0,
+        'other' => 'Other',
+        'qualifier' => 'Anything we should know?',
+        'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
+        'info'=>'This is popup info.  Just here to see if popups are working',
+        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'OPTIONS', 
+        'label' => 'Select Question #2',
+        'multiple' => 0,
+        'qualifier' => 'Anything we should know?',
+        'description' => 'Pick whichever answer best applies.',
+        'info'=>'This is popup info.  Just here to see if popups are working',
+        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'OPTIONS', 
+        'label' => 'Multi Select #1',
+        'multiple' => 1,
+        'other' => 'Other',
+        'qualifier' => 'Anything we should know?',
+        'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
+        'info'=>'This is popup info.  Just here to see if popups are working',
+        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'OPTIONS', 
+        'label' => 'Multi Select #2',
+        'multiple' => 1,
+        'qualifier' => 'Anything we should know?',
+        'description' => 'Pick whichever answer or answers best apply.',
+        'info'=>'This is popup info.  Just here to see if popups are working',
+        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
+      ],
+      [
+        'id' => ++$id, 
+        'type' => 'FREETEXT', 
+        'label' => 'Your thoughts?',
+        'description' => 'What else would you like us to know?',
+        'info'=>'This is popup info.  Just here to see if popups are working',
+      ],
+    ];
+  }
+  return $content;
+}
+
 function survey_pdf_file($survey_id)
 {
   $pdf_file = app_file("pdf/survey_$survey_id.pdf");
