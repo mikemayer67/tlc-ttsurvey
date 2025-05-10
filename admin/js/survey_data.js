@@ -1,4 +1,4 @@
-export default function survey_data()
+export default function survey_data(ce)
 {
   // full survey data (indexed by id)
   const _surveys = {};
@@ -29,6 +29,55 @@ export default function survey_data()
   }
   // create a pseudo-survey for handling the New Survey select
   _surveys["new"] = {'id':'new', 'status':'new'};
+
+  // content methods
+
+  function get_content(id) {
+    // This function may need to retrieve the data from the server.
+    //   In this case, this function issues the AJAX call and then return false.
+    //   The AJAX response handler will then trigger a 'NewContentData' event
+    //     when the data has been retrieved.
+    // If the data does not need to be retrieved from the server, it returns
+    //   it immediately.
+    
+    if( ! id in _surveys ) { 
+      alert("Somthing got out of sync.  Reloading page.");
+      location.reload();
+    }
+
+    if('content' in _surveys[id]) { return _surveys[id].content; }
+
+    show_status('warning','Retrieving survey content from server');
+    $.ajax( {
+      type: 'POST',
+      url: ce.ajaxuri,
+      dataType: 'json',
+      data: {
+        ajax:'admin/get_survey_content',
+        nonce: ce.nonce,
+        survey_id:id,
+      }
+    })
+    .done( function(data,status,jqXHR) {
+      if (data.success) {
+        _surveys[id].content = data.content;
+        hide_status();
+        $(document).trigger('NewContentData');
+      }
+      else if( 'bad_nonce' in data ) {
+        alert("Somthing got out of sync.  Reloading page.");
+        location.reload();
+      } 
+      else {
+        show_status('warning',data.error);
+      }
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) {
+      internal_error(jqXHR);
+    }) ;
+    return false;
+
+  }
 
   // accessors
 
@@ -72,10 +121,11 @@ export default function survey_data()
   }
 
   return {
-    active: get_active_survey,
-    drafts: get_draft_surveys,
-    closed: get_closed_surveys,
-    lookup: get_survey_by_id,
-    add:    add_survey,
+    active:  get_active_survey,
+    drafts:  get_draft_surveys,
+    closed:  get_closed_surveys,
+    lookup:  get_survey_by_id,
+    content: get_content,
+    add:     add_survey,
   };
 };

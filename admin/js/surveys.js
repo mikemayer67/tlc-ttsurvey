@@ -120,7 +120,7 @@ $(document).ready(
   ce.surveyControllers['closed'] = closed_controller(ce);
   ce.surveyControllers['new']    = new_controller(ce);
 
-  ce.survey_data     = survey_data();
+  ce.survey_data     = survey_data(ce);
   ce.survey_info     = survey_info(ce);
   ce.survey_editor   = survey_editor(ce);
   ce.survey_controls = survey_controls(ce);
