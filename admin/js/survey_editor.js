@@ -5,6 +5,8 @@ export default function survey_editor(ce)
   const _element_editor  = _content_editor.find('#element-editor');
   const _resizer         = _content_editor.find('.resizer');
 
+  // editor pane resizing
+
   var _resize_data = null;
 
   function start_resize(e) {
@@ -56,8 +58,18 @@ export default function survey_editor(ce)
 
   _resizer.on('mousedown',start_resize);
 
+  // editor content
+
+  function update_all_content(content) {
+    console.log('update all content');
+  }
+  $(document).on('NewContentData', function(e,data) {
+    update_all_content(data);
+  });
+
   return {
     show() { _content_editor.show(); },
     hide() { _content_editor.hide(); },
+    update_all_content: update_all_content,
   }
 };

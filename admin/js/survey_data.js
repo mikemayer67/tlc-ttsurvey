@@ -34,9 +34,10 @@ export default function survey_data(ce)
 
   function get_content(id) {
     // This function may need to retrieve the data from the server.
-    //   In this case, this function issues the AJAX call and then return false.
-    //   The AJAX response handler will then trigger a 'NewContentData' event
-    //     when the data has been retrieved.
+    //   In this case, this function issues the AJAX call and then return null.
+    //   The AJAX response handler will trigger a 'NewContentData' event
+    //     when the data has been retrieved, passing the content data as the
+    //     (only) function parameter.
     // If the data does not need to be retrieved from the server, it returns
     //   it immediately.
     
@@ -62,7 +63,7 @@ export default function survey_data(ce)
       if (data.success) {
         _surveys[id].content = data.content;
         hide_status();
-        $(document).trigger('NewContentData');
+        $(document).trigger('NewContentData',[data.content]);
       }
       else if( 'bad_nonce' in data ) {
         alert("Somthing got out of sync.  Reloading page.");
@@ -75,8 +76,7 @@ export default function survey_data(ce)
     .fail( function(jqXHR,textStatus,errorThrown) {
       internal_error(jqXHR);
     }) ;
-    return false;
-
+    return null;
   }
 
   // accessors

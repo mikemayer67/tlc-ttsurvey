@@ -41,7 +41,7 @@ export default function draft_controller(ce)
     ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
 
     const content = ce.survey_data.content(ce.cur_survey.id);
-    if(content) { update_content(); }
+    ce.survey_editor.update_all_content(content);
 
     validate_all();
   }
@@ -64,13 +64,6 @@ export default function draft_controller(ce)
       _info_edit.find('.pdf-file td.label').html('Downloadable PDF');
     }
   }
-
-  function update_content()
-  {
-    console.log('updating content');
-  }
-
-  $(document).on('NewContentData',update_content);
 
   // Input Validation
   
