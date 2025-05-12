@@ -62,7 +62,7 @@ export default function survey_data(ce)
     .done( function(data,status,jqXHR) {
       if (data.success) {
         _surveys[id].content = data.content;
-        hide_status();
+        setTimeout( function() {hide_status();}, 1000);
         $(document).trigger('NewContentData',[data.content]);
       }
       else if( 'bad_nonce' in data ) {

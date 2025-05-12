@@ -41,7 +41,8 @@ export default function draft_controller(ce)
     ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
 
     const content = ce.survey_data.content(ce.cur_survey.id);
-    ce.survey_editor.update_all_content(content);
+    ce.survey_editor.enable();
+    ce.survey_editor.update_content(content);
 
     validate_all();
   }

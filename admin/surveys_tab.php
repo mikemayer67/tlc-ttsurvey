@@ -92,7 +92,7 @@ echo <<<HTML
 
 <!--Survey Content-->
 <div id='content-editor'>
-  <div id='survey-tree'></div>
+  <div id='survey-tree'><ul class='sections'></ul></div>
   <div class='resizer'></div>
   <div id='element-editor'></div>
 </div>
