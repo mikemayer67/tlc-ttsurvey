@@ -7,6 +7,7 @@ export default function survey_editor(ce)
   const _resizer         = _content_editor.find('.resizer');
 
   let _editable = false;
+  let _content = null;
 
   // editor pane resizing
 
@@ -67,13 +68,28 @@ export default function survey_editor(ce)
     console.log('update all content');
     _survey_tree.remove('li');
 
-    if(!content) { return; }
+    if(!content) { _content=null; return; }
+    _content = content;
 
-    for(const [section_index,section] of content.entries()) {
-      const name = section.name ?? 'Unlabeled Header';
+    // Add sections to the survey tree
+
+    Object.keys(content.sections)
+    .map(Number)
+    .sort((a,b) => a-b)
+    .forEach( sid => { // section id
+      const section = content.sections[sid];
+
       const btn = $('<button>').addClass('toggle');
-      const span = $('<span>').text(name).addClass('name');
+      const span = $('<span>').text(section.name).addClass('name');
       const div = $('<div>').append(btn,span);
+
+      const li = $('<li>')
+        .addClass('section closed')
+        .attr('data-section',sid)
+        .html(div)
+        .appendTo(_survey_tree);
+
+      const ul = $('<ul>').appendTo(li);
 
       btn.on('click', function(e) {
         const li = $(this).parent().parent();
@@ -83,36 +99,38 @@ export default function survey_editor(ce)
       span.on('click', function(e) {
         _survey_tree.find('.selected').removeClass('selected');
         $(this).parent().addClass('selected');
+        const li = $(this).parent().parent();
+        const sid = li.data('section');
+        alert('selected section: ' + content.sections[sid].name);
       });
 
-      if(!section.name) { span.addClass('header'); }
+      Object.entries(content.elements)
+      .filter( ([eid,element]) => element.section == sid )
+      .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
+      .forEach( ([eid,element]) => {
 
-      const li = $('<li>')
-        .addClass('section closed')
-        .attr('data-section',section_index)
-        .html(div)
-        .appendTo(_survey_tree);
-      if(section.elements) {
-        const ul = $('<ul>').appendTo(li);
-        for(const [element_index,element] of section.elements.entries()) {
-          const eli = $('<li>')
-            .addClass('element')
-            .addClass(element.type.toLowerCase())
-            .attr('data-section',section_index)
-            .attr('data-element',element_index)
-            .text(element.label)
-            .appendTo(ul);
-          if(element.multiple) { 
-            eli.addClass('multi'); 
-          }
-          eli.on('click',function(e) {
-            _survey_tree.find('.selected').removeClass('selected');
-            $(this).addClass('selected');
-          });
+        const eli = $('<li>')
+        .addClass('element')
+        .addClass(element.type.toLowerCase())
+        .attr('data-section',sid)
+        .attr('data-element',eid)
+        .text(element.label);
+        if(element.multiple) { 
+          eli.addClass('multi'); 
         }
-      }
-    }
+        eli.appendTo(ul);
+        eli.on('click',function(e) {
+          _survey_tree.find('.selected').removeClass('selected');
+          $(this).addClass('selected');
+          const eid = $(this).data('element');
+          alert('selected element: ' + content.elements[eid].label + ' (' + content.elements[eid].type + ')');
+        });
+
+      });
+    });
+
   }
+
   $(document).on('NewContentData', function(e,data) {
     update_content(data);
   });

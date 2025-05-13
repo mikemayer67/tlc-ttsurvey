@@ -67,85 +67,105 @@ function all_surveys()
 function survey_content($survey_id)
 {
   todo('remove bogus survey content');
-  $content = [
-    [],
-    [ 'name' => 'Section 1', 'description' => "some words about section 1", 'feedback' => 0 ],
-    [ 'name' => 'Section Deux', 'description' => "But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'feedback' => 1 ],
-    [ 'name' => 'Section 3', 'description' => "some words about section 3", 'feedback' => 0 ],
-    [ 'name' => 'Section 4', 'description' => "some words about section 4", 'feedback' => 0 ],
-    [ 'name' => 'Section 5', 'description' => "some words about section 5", 'feedback' => 0 ],
-    [ 'name' => 'Section 6', 'description' => "some words about section 6", 'feedback' => 0 ],
-    [ 'name' => 'Section 7', 'description' => "some words about section 7", 'feedback' => 0 ],
+  $sections = [
+    1 => [ 'name' => 'Welcome', 'show' => 0, 'feedback' => 0 ],
+    2 => [ 'name' => 'Section 1', 'description' => "some words about section 1", 'show' => 1, 'feedback' => 0 ],
+    3 => [ 'name' => 'Section Deux', 'description' => "But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'show' => 1, 'feedback' => 1 ],
+    4 => [ 'name' => 'Section 3', 'description' => "some words about section 3", 'show' => 1, 'feedback' => 0 ],
+    5 => [ 'name' => 'Section 4', 'description' => "some words about section 4", 'show' => 1, 'feedback' => 0 ],
+    7 => [ 'name' => 'Section 5', 'description' => "some words about section 5", 'show' => 1, 'feedback' => 0 ],
+    9 => [ 'name' => 'Section 6', 'description' => "some words about section 6", 'show' => 1, 'feedback' => 0 ],
+    8 => [ 'name' => 'Section 7', 'description' => "some words about section 7", 'show' => 1, 'feedback' => 0 ],
   ];
-  $id = 1;
-  foreach($content as &$section) {
-    $section['elements'] = [
-      [
-        'id' => ++$id, 
-        'type' => 'INFO', 
-        'label' => 'Info Text', 
-        'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'BOOL', 
-        'label' => 'Yes/No Questions',
-        'qualifier' => 'Why or why not?',
-        'description' => 'Blah blah blah... This is important because',
-        'info'=>'This is popup info.  Just here to see if popups are working',
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'OPTIONS', 
-        'label' => 'Select Question #1',
-        'multiple' => 0,
-        'other' => 'Other',
-        'qualifier' => 'Anything we should know?',
-        'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
-        'info'=>'This is popup info.  Just here to see if popups are working',
-        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'OPTIONS', 
-        'label' => 'Select Question #2',
-        'multiple' => 0,
-        'qualifier' => 'Anything we should know?',
-        'description' => 'Pick whichever answer best applies.',
-        'info'=>'This is popup info.  Just here to see if popups are working',
-        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'OPTIONS', 
-        'label' => 'Multi Select #1',
-        'multiple' => 1,
-        'other' => 'Other',
-        'qualifier' => 'Anything we should know?',
-        'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
-        'info'=>'This is popup info.  Just here to see if popups are working',
-        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'OPTIONS', 
-        'label' => 'Multi Select #2',
-        'multiple' => 1,
-        'qualifier' => 'Anything we should know?',
-        'description' => 'Pick whichever answer or answers best apply.',
-        'info'=>'This is popup info.  Just here to see if popups are working',
-        'options' => [ [3, "Three"], [2, 'Two'], [1,"negative i^2"], ],
-      ],
-      [
-        'id' => ++$id, 
-        'type' => 'FREETEXT', 
-        'label' => 'Your thoughts?',
-        'description' => 'What else would you like us to know?',
-        'info'=>'This is popup info.  Just here to see if popups are working',
-      ],
+  $options = [
+    1 => 'neative i^2',
+    2 => 'Two',
+    3 => 'Three',
+    4 => 'Whatever',
+  ];
+
+  $id = 0;
+  $elements = array();
+  for($i=1; $i<=count($sections); ++$i)
+  {
+    $s = $i > 5 ? 1+$i : $i;
+
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'INFO', 
+      'label' => 'Info Text', 
+      'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'BOOL', 
+      'label' => 'Yes/No Questions',
+      'qualifier' => 'Why or why not?',
+      'description' => 'Blah blah blah... This is important because',
+      'info'=>'This is popup info.  Just here to see if popups are working',
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'OPTIONS', 
+      'label' => 'Select Question #1',
+      'multiple' => 0,
+      'other' => 'Other',
+      'qualifier' => 'Anything we should know?',
+      'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
+      'info'=>'This is popup info.  Just here to see if popups are working',
+      'options' => [ [3, false], [2, false], [1,false], ],
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'OPTIONS', 
+      'label' => 'Select Question #2',
+      'multiple' => 0,
+      'qualifier' => 'Anything we should know?',
+      'description' => 'Pick whichever answer best applies.',
+      'info'=>'This is popup info.  Just here to see if popups are working',
+      'options' => [ [3, false], [2, false], [1,true], ],
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'OPTIONS', 
+      'label' => 'Multi Select #1',
+      'multiple' => 1,
+      'other' => 'Other',
+      'qualifier' => 'Anything we should know?',
+      'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
+      'info'=>'This is popup info.  Just here to see if popups are working',
+      'options' => [ [1, false], [2, false], [3,true], [4,true] ],
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'OPTIONS', 
+      'label' => 'Multi Select #2',
+      'multiple' => 1,
+      'qualifier' => 'Anything we should know?',
+      'description' => 'Pick whichever answer or answers best apply.',
+      'info'=>'This is popup info.  Just here to see if popups are working',
+      'options' => [ [1, false], [2, false], [3,true], [4,true] ],
+    ];
+    $elements[++$id] = [
+      'section' => $s,
+      'sequence' => 1 + ($id -1)%10,
+      'type' => 'FREETEXT', 
+      'label' => 'Your thoughts?',
+      'description' => 'What else would you like us to know?',
+      'info'=>'This is popup info.  Just here to see if popups are working',
     ];
   }
-  return $content;
+  return [
+    'sections' => $sections,
+    'options'  => $options,
+    'elements' => $elements,
+  ];
 }
 
 function survey_pdf_file($survey_id)
@@ -237,14 +257,14 @@ function clone_survey_sections($parent_id,$child_id)
 {
   $query = <<<SQL
   INSERT into tlc_tt_survey_sections
-  SELECT $child_id, 1, a.sequence, a.name, a.description, a.feedback
+  SELECT $child_id, 1, a.section, a.name, a.show, a.description, a.feedback
     FROM tlc_tt_survey_sections a
    WHERE a.survey_id=$parent_id
      AND a.survey_rev = (
            SELECT MAX(b.survey_rev)
              FROM tlc_tt_survey_sections b
             WHERE b.survey_id=$parent_id
-              AND b.sequence=a.sequence )
+              AND b.section=a.section )
     ;
   SQL;
   if(!MySQLExecute($query)) {
@@ -257,7 +277,7 @@ function clone_survey_elements($parent_id,$child_id)
   $query = <<<SQL
   INSERT into tlc_tt_survey_elements
   SELECT a.id, $child_id, 1, 
-         a.section_seq, a.sequence, a.label, 
+         a.section, a.sequence, a.label, 
          a.element_type, a.multiple, a.other, a.qualifier, a.description, a.info
     FROM tlc_tt_survey_elements a
    WHERE a.survey_id=$parent_id

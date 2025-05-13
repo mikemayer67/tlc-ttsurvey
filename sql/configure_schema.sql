@@ -98,7 +98,7 @@ IF version < 1 THEN
 
   CREATE TABLE tlc_tt_survey_options (
     id         int          NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
-    survey_id  int          NOT NULL DEFAULT 1,
+    survey_id  int          NOT NULL,
     survey_rev int          NOT NULL,
     text       varchar(128) NOT NULL COMMENT 'What will appear in the survey form',
     PRIMARY KEY (id,survey_id,survey_rev),
@@ -108,48 +108,54 @@ IF version < 1 THEN
   CREATE TABLE tlc_tt_survey_sections (
     survey_id   int          NOT NULL,
     survey_rev  int          NOT NULL,
-    sequence    int          COMMENT 
-'Order this section will appear in the survey form.
- NULL excludes the section from the survey form, but retains it for use by descendent surveys.',
-    name        varchar(45)  NOT NULL           COMMENT 'Section name that will appear in the survey form',
+    section     int                             COMMENT 'Order this section will appear in the survey form. (NULL excludes section).'
+    name        varchar(45)  NOT NULL           COMMENT 'Section name that will appear in the editor and on survey tabs'
+    show        tinyint      NOT NULL DEFAULT 1 COMMENT 'Whether to include the name as a section header'
     description varchar(512) DEFAULT NULL       COMMENT 'Section description that will appear in the survey form',
     feedback    tinyint      NOT NULL DEFAULT 0 COMMENT 'Include a general feedback textarea for this section',
-    PRIMARY KEY (survey_id,survey_rev,sequence),
+    PRIMARY KEY (survey_id,survey_rev,section),
     FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
+  -- Notes:
+  --  The survey rev indicates the first revision for which this setting applies.  It will apply to later 
+  --    revisions as well, provided there is not a newer survey_rev entry.
+  --  To avoid potential ordering conflicts, any time there is a change to list of sections or their order
+  --    in the survey, all section entries must be updated with a new survey_rev value.
+  --  Setting the section to NULL excludes the section from the survey beginning with the corresponding survey rev.
+  --    (This can be subsquenetly reversed in a later rev.)
+
 
   CREATE TABLE tlc_tt_survey_elements (
     id           int          NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
     survey_id    int          NOT NULL,
     survey_rev   int          NOT NULL,
-    section_seq  int          NOT NULL COMMENT 
-'0 indicates that this element will be in the header rather than a survey section. 
- Any other value that does not appear in tlc_tt_survey_sections will be excluded from the survey.',
-    sequence     int          COMMENT 
-'Order this element will appear in the survey section. 
- NULL excludes the element from the survey form, but retains it for use by descendent surveys.',
-    label        varchar(128) NOT NULL COMMENT 'The label for this element shown in the survey',
-    element_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL COMMENT 
-'INFO = Not a question, exists in the flow to provide info to the survey participant. BOOL = Yes/No type question, most likely implemented as a checkbox. OPTIONS = Multiple choice (option) questions. FREETEXT = Question where user can provide a written response.',
-    multiple     tinyint     DEFAULT NULL COMMENT
-'Only applies if element_type=OPTIONS.
- If 1 (or any other truthy value), participant can select multiple options.  If NULL or 0, participant can only select one option.',
-    other        varchar(45) DEFAULT NULL COMMENT 
-'Only applies if element_type=OPTIONS.
- If not NULL, provides an "other" option, labeled with the value of this field',
-    qualifier    varchar(45) DEFAULT NULL COMMENT 
-'Only applies if element_type=OPTIONS or BOOL.
- If not NULL, provides a text input field, labeled with the value of this field',
-    description  varchar(512) DEFAULT NULL COMMENT 
- 'Does not apply if element_type=INFO.
-  Text to include in the survey to provide information to the survey participant.',
-    info         varchar(1024) DEFAULT NULL COMMENT 
- 'If element_type=INFO, provides the information to be displayed (HTML and markdown are acceptable).
-  Otherwise, Text to include in a pop-up info box if the participant hovers over the info button.',
+    section      int                                  COMMENT 'Which survey section the element is included in.',
+    sequence     int                                  COMMENT 'Order this element will appear in the survey section.  (NULL excludes the element).',
+    label        varchar(128) NOT NULL                COMMENT 'The label for this element shown in the survey',
+    element_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
+    multiple     tinyint     DEFAULT NULL             COMMENT 'For OPTIONS type, multiple options can be selected',
+    other        varchar(45) DEFAULT NULL             COMMENT 'For OPTIONS type, provide an "other" option with the specified label',
+    qualifier    varchar(45) DEFAULT NULL             COMMENT 'For OPTIONS/BOOL types, provide a text input field with the specified label',
+    description  varchar(512) DEFAULT NULL            COMMENT 'For non-INFO types, provides a description of the element on the survey',
+    info         varchar(1024) DEFAULT NULL           COMMENT 'Additional information about the element. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
     PRIMARY KEY (id,survey_id,survey_rev),
-    UNIQUE  KEY (survey_id,survey_rev,section_seq,sequence),
+    UNIQUE  KEY (survey_id,survey_rev,section,sequence),
     FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
+  -- Notes:
+  --  The survey rev indicates the first revision for which this setting applies.  It will apply to later 
+  --    revisions as well, provided there is not a newer survey_rev entry.
+  -- If the section is not found in tlc_tt_survey_sections, the element will not be included in the survey.
+  -- If the sequence is set to NULL, the element will not be included in the survey.  It is, however, retained in the
+  --    databse to establish continuity between ancestor/descendant surveys even if the element is not included
+  --    in the current survey.  (This is useful for recurring surveys where a given question may not always apply).
+  -- Survey types:
+  --    INFO      Not a question, exists to provide info to the survey participants.
+  --    BOOL      Yes/No type question (probably will be implemented as a checkbox)
+  --    OPTIONS   Multiple choice (option) questions.
+  --    FREETEXT  Question where the participant can provide a free form written respone
+  -- The info column can contain HTML and Markdown.
+
 
   CREATE TABLE tlc_tt_element_options (
     survey_id   int     NOT NULL,
