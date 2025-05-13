@@ -80,6 +80,10 @@ export default function survey_editor(ce)
         if( li.hasClass('closed') ) { li.removeClass('closed'); }
         else                        { li.addClass('closed');    }
       });
+      span.on('click', function(e) {
+        _survey_tree.find('.selected').removeClass('selected');
+        $(this).parent().addClass('selected');
+      });
 
       if(!section.name) { span.addClass('header'); }
 
@@ -101,6 +105,10 @@ export default function survey_editor(ce)
           if(element.multiple) { 
             eli.addClass('multi'); 
           }
+          eli.on('click',function(e) {
+            _survey_tree.find('.selected').removeClass('selected');
+            $(this).addClass('selected');
+          });
         }
       }
     }

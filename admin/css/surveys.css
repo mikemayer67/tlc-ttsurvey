@@ -255,6 +255,14 @@
   cursor:pointer;
 }
 
+#ttt-body form #content-editor #survey-tree li.section div.selected {
+  background-color:#ffe41f;  /* from TLC logo */
+}
+
+#ttt-body form #content-editor #survey-tree li.element.selected {
+  background-color:#ffe41f;  /* from TLC logo */
+}
+
 #ttt-body form #content-editor #survey-tree li.section div button.toggle {
   background:none;
   border:none;
