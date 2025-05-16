@@ -63,7 +63,7 @@ export default function survey_data(ce)
       if (data.success) {
         _surveys[id].content = data.content;
         setTimeout( function() {hide_status();}, 1000);
-        $(document).trigger('NewContentData',[data.content]);
+        $(document).trigger('NewContentData',[id]);
       }
       else if( 'bad_nonce' in data ) {
         alert("Somthing got out of sync.  Reloading page.");

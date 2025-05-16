@@ -1,7 +1,10 @@
+import Sortable from '../../js/sortable.esm.js';
+
 export default function survey_editor(ce)
 {
   const _content_editor  = $('#content-editor');
-  const _tree_box     = _content_editor.find('#survey-tree');
+  const _tree_box        = _content_editor.find('#survey-tree');
+  const _tree_info       = _tree_box.find('.info');
   const _survey_tree     = _tree_box.find('ul.sections');
   const _element_editor  = _content_editor.find('#element-editor');
   const _resizer         = _content_editor.find('.resizer');
@@ -64,9 +67,12 @@ export default function survey_editor(ce)
 
   // editor content
 
-  function update_content(content) {
+  function update_content(survey_id) {
     console.log('update all content');
-    _survey_tree.remove('li');
+    const survey = ce.survey_data.lookup(survey_id);
+    const content = ce.survey_data.content(survey_id);
+
+    reset_survey_tree();
 
     if(!content) { _content=null; return; }
     _content = content;
@@ -89,7 +95,7 @@ export default function survey_editor(ce)
         .html(div)
         .appendTo(_survey_tree);
 
-      const ul = $('<ul>').appendTo(li);
+      const ul = $('<ul>').addClass('elements').appendTo(li);
 
       btn.on('click', function(e) {
         const li = $(this).parent().parent();
@@ -101,7 +107,7 @@ export default function survey_editor(ce)
         $(this).parent().addClass('selected');
         const li = $(this).parent().parent();
         const sid = li.data('section');
-        alert('selected section: ' + content.sections[sid].name);
+        console.log('selected section: ' + content.sections[sid].name);
       });
 
       Object.entries(content.elements)
@@ -112,7 +118,6 @@ export default function survey_editor(ce)
         const eli = $('<li>')
         .addClass('element')
         .addClass(element.type.toLowerCase())
-        .attr('data-section',sid)
         .attr('data-element',eid)
         .text(element.label);
         if(element.multiple) { 
@@ -123,19 +128,197 @@ export default function survey_editor(ce)
           _survey_tree.find('.selected').removeClass('selected');
           $(this).addClass('selected');
           const eid = $(this).data('element');
-          alert('selected element: ' + content.elements[eid].label + ' (' + content.elements[eid].type + ')');
+          console.log('selected element: ' + content.elements[eid].label + ' (' + content.elements[eid].type + ')');
         });
 
       });
     });
 
+    // Tree sorting
+    if( _editable ) {
+      setup_tree_sorting();
+      enable_tree_sorting();
+    }
   }
 
-  $(document).on('NewContentData', function(e,data) {
-    update_content(data);
+  $(document).on('NewContentData', function(e,survey_id) {
+    update_content(survey_id);
   });
 
-  // survey tree
+  // update handler
+  
+  function handle_user_updates(info)
+  {
+    console.log('handle user updates: ' + info.what);
+  }
+
+  $(document).on('ContentModifiedByUser', function(e,info) {
+    handle_user_updates(info);
+  });
+
+  // survey tree 
+
+  let _element_sorters = [];
+  let _cand_drop_section = {};
+
+  const _section_sorter = new Sortable(
+    _survey_tree[0],
+    {
+      group: 'sections',
+      animation: 150,
+      filter: '.element',
+      onEnd: handle_drop_section,
+    }
+  );
+
+  function reset_survey_tree()
+  {
+    _section_sorter.option('disabled',true);
+    _element_sorters.forEach( (s) => s.destroy() );
+    _element_sorters = [];
+    _survey_tree.empty();
+    _tree_info.hide();
+    _cand_drop_section = {};
+  }
+
+  function setup_tree_sorting()
+  {
+    _section_sorter.option('disabled',false);
+    _survey_tree.find('ul.elements').each( function() {
+      const sorter = new Sortable(
+        this,
+        {
+          group: { name:'elements', pull:true, pust:true },
+          animation: 150,
+          onEnd: handle_drop_element,
+        }
+      );
+      _element_sorters.push(sorter);
+    });
+
+    _survey_tree.find('li.section span.name')
+    .off('dragenter')
+    .off('dragleave')
+    .on('dragenter', function(e) {
+      _cand_drop_section.bbox  = this.getBoundingClientRect();
+      _cand_drop_section.li    = $(this).parent().parent().addClass('drop-target'); 
+    })
+    .on('dragleave', function(e) {
+      // may trigger after enter into new section, so don't use _cand_drop_section.li
+      $(this).parent().parent().removeClass('drop-target');
+    });
+  }
+
+  function handle_drop_section(e)
+  {
+    _survey_tree.find('.drop-target').removeClass('drop-target');
+    if(e.oldIndex === e.newIndex) {
+      alert('No change in section position');
+      return;
+    }
+    $(document).trigger(
+      'ContentModifiedByUser',
+      { 
+        what:'sections_reordered', 
+        evt: e,
+      }
+    );
+    _cand_drop_section = {};
+  }
+
+  function handle_drop_element(e)
+  {
+    _survey_tree.find('.drop-target').removeClass('drop-target');
+    handle_drag_element_to_new_section(e) || handle_drag_element_to_new_position(e);
+    _cand_drop_section = {};
+  }
+
+  function handle_drag_element_to_new_section(e)
+  {
+    const bbox = _cand_drop_section.bbox ?? null;
+    if(!bbox) { return false; }
+
+    const x = e.originalEvent.clientX;
+    const y = e.originalEvent.clientY;
+    if( x < bbox.left || x > bbox.right  ) { return false; }
+    if( y < bbox.top  || y > bbox.bottom ) { return false; }
+
+    const action = {
+      element: $(e.item),
+      from: $(e.from),
+      to: _cand_drop_section.li.find('ul'),
+      oldIndex: e.oldIndex,
+      redo() {
+        console.log('handle redo');
+        this.element.appendTo(this.to);
+      },
+      undo() {
+        const peers = this.from.children('li');
+        if(this.oldIndex >= peers.length) {
+          console.log('handle undo... append');
+          this.element.appendTo(this.from);
+        } else {
+          console.log('handle undo... insert at '+this.oldIndex);
+          this.element.insertBefore(peers.eq(this.oldIndex));
+        }
+      },
+    };
+
+    action.redo();
+    action.undo();
+    action.redo();
+
+    $(document).trigger(
+      'ContentModifiedByUser',
+      { 
+        what:'element_dropped_on_section', 
+        evt: e,
+      }
+    );
+    return true;
+  }
+
+  function handle_drag_element_to_new_position(e)
+  {
+    if(e.from === e.to && e.oldIndex === e.newIndex) {
+      alert('No change in element position');
+      return;
+    }
+
+    const action = {
+      element: e.item,
+      from: e.from,
+      to: e.to,
+      oldIndex: e.oldIndex,
+      newIndex: e.newIndex,
+    };
+ 
+    $(document).trigger(
+      'ContentModifiedByUser',
+      { 
+        what:'elements_reordered', 
+        evt: e,
+      }
+    );
+    return true;
+  }
+
+  function disable_tree_sorting()
+  {
+    _tree_info.hide();
+    _section_sorter.option('disabled',true);
+    _element_sorters.forEach( (s) => s.option('disabled',true) );
+  }
+
+  function enable_tree_sorting()
+  {
+    _tree_info.show();
+    _section_sorter.option('disabled',false);
+    _element_sorters.forEach( (s) => s.option('disabled',false) );
+  }
+
+
+  // return editor object
 
   return {
     show() { _content_editor.show(); },

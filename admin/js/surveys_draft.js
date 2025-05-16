@@ -42,7 +42,7 @@ export default function draft_controller(ce)
 
     const content = ce.survey_data.content(ce.cur_survey.id);
     ce.survey_editor.enable();
-    ce.survey_editor.update_content(content);
+    ce.survey_editor.update_content(ce.cur_survey.id);
 
     validate_all();
   }
