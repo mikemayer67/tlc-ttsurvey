@@ -221,22 +221,18 @@ $(document).ready(
     //   form requires the latter, we will add a event handler for each of these which
     //   simply sets the active flag to true.
     active = false;
-    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'focus'];
-    activityEvents.forEach( eventName => { 
+    const passiveEvents = ['mousemove', 'mousedown', 'scroll', 'touchstart', 'focus'];
+    const nonPassiveEvents = ['keydown','visibilitychange'];
+    passiveEvents.concat(nonPassiveEvents).forEach( eventName => {
       document.addEventListener(eventName, function() {
         active = true;
         if(overdue_lock_hold) {
           clearTimeout(lock_timer);
           hold_lock();
         }
-      }, {passive:true})
-    });
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState === 'visible') {
-        active = true;
-        clearTimeout(lock_timer);
-        hold_lock();
-      }
+      }, 
+      { passive: passiveEvents.includes(eventName) } 
+      )
     });
 
     hold_lock();

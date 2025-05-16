@@ -146,20 +146,28 @@ export default function survey_editor(ce)
   });
 
   // update handler
-  
-  function handle_user_updates(info)
-  {
-    console.log('handle user updates: ' + info.what);
-  }
 
-  $(document).on('ContentModifiedByUser', function(e,info) {
-    handle_user_updates(info);
-  });
+//  function send_change_notification(what,info)
+//  {
+//    if(info !== undefined) {
+//      $(document).trigger('ContentModifiedByUser',{what:what,info:info});
+//    } else {
+//      $(document).trigger('ContentModifiedByUser',{what:what});
+//    }
+//  }
+//  
+//  function handle_user_updates(info)
+//  {
+//    console.log('handle user updates: ' + info.what);
+//  }
+//
+//  $(document).on('ContentModifiedByUser', function(e,info) {
+//    handle_user_updates(info);
+//  });
 
   // survey tree 
 
   let _element_sorters = [];
-  let _cand_drop_section = {};
 
   const _section_sorter = new Sortable(
     _survey_tree[0],
@@ -178,7 +186,6 @@ export default function survey_editor(ce)
     _element_sorters = [];
     _survey_tree.empty();
     _tree_info.hide();
-    _cand_drop_section = {};
   }
 
   function setup_tree_sorting()
@@ -195,95 +202,56 @@ export default function survey_editor(ce)
       );
       _element_sorters.push(sorter);
     });
-
-    _survey_tree.find('li.section span.name')
-    .off('dragenter')
-    .off('dragleave')
-    .on('dragenter', function(e) {
-      _cand_drop_section.bbox  = this.getBoundingClientRect();
-      _cand_drop_section.li    = $(this).parent().parent().addClass('drop-target'); 
-    })
-    .on('dragleave', function(e) {
-      // may trigger after enter into new section, so don't use _cand_drop_section.li
-      $(this).parent().parent().removeClass('drop-target');
-    });
   }
 
   function handle_drop_section(e)
   {
     _survey_tree.find('.drop-target').removeClass('drop-target');
-    if(e.oldIndex === e.newIndex) {
-      alert('No change in section position');
-      return;
-    }
-    $(document).trigger(
-      'ContentModifiedByUser',
-      { 
-        what:'sections_reordered', 
-        evt: e,
-      }
-    );
-    _cand_drop_section = {};
+
+    if(e.oldIndex === e.newIndex) { return false; }
+
+    const action = {
+      element: e.item,
+      oldIndex: e.oldIndex,
+      newIndex: e.newIndex,
+      undo() {
+        const st = _survey_tree[0];
+        const peers = st.children;
+        var tgt_index = this.oldIndex;
+        if( tgt_index > this.newIndex ) { tgt_index +=1; }
+        if( tgt_index >= peers.length ) {
+          console.log('undo append');
+          st.appendChild(this.element);
+        } else {
+          console.log('undo insert at ' + tgt_index);
+          st.insertBefore(this.element, peers[tgt_index]);
+        }
+      },
+      redo() {
+        const st = _survey_tree[0];
+        const peers = st.children;
+        var tgt_index = this.newIndex;
+        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
+        if( tgt_index >= peers.length ) {
+          console.log('undo append');
+          st.appendChild(this.element);
+        } else {
+          console.log('redo insert at ' + tgt_index);
+          st.insertBefore(this.element, peers[tgt_index]);
+        }
+      },
+    };
+
+    ce.undo_manager.add(action);
+
+    return true;
   }
 
   function handle_drop_element(e)
   {
     _survey_tree.find('.drop-target').removeClass('drop-target');
-    handle_drag_element_to_new_section(e) || handle_drag_element_to_new_position(e);
-    _cand_drop_section = {};
-  }
 
-  function handle_drag_element_to_new_section(e)
-  {
-    const bbox = _cand_drop_section.bbox ?? null;
-    if(!bbox) { return false; }
-
-    const x = e.originalEvent.clientX;
-    const y = e.originalEvent.clientY;
-    if( x < bbox.left || x > bbox.right  ) { return false; }
-    if( y < bbox.top  || y > bbox.bottom ) { return false; }
-
-    const action = {
-      element: $(e.item),
-      from: $(e.from),
-      to: _cand_drop_section.li.find('ul'),
-      oldIndex: e.oldIndex,
-      redo() {
-        console.log('handle redo');
-        this.element.appendTo(this.to);
-      },
-      undo() {
-        const peers = this.from.children('li');
-        if(this.oldIndex >= peers.length) {
-          console.log('handle undo... append');
-          this.element.appendTo(this.from);
-        } else {
-          console.log('handle undo... insert at '+this.oldIndex);
-          this.element.insertBefore(peers.eq(this.oldIndex));
-        }
-      },
-    };
-
-    action.redo();
-    action.undo();
-    action.redo();
-
-    $(document).trigger(
-      'ContentModifiedByUser',
-      { 
-        what:'element_dropped_on_section', 
-        evt: e,
-      }
-    );
-    return true;
-  }
-
-  function handle_drag_element_to_new_position(e)
-  {
-    if(e.from === e.to && e.oldIndex === e.newIndex) {
-      alert('No change in element position');
-      return;
-    }
+    if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
     const action = {
       element: e.item,
@@ -291,15 +259,34 @@ export default function survey_editor(ce)
       to: e.to,
       oldIndex: e.oldIndex,
       newIndex: e.newIndex,
+      undo() {
+        var tgt_index = this.oldIndex;
+        if( tgt_index > this.newIndex ) { tgt_index +=1; }
+        const peers = this.from.children;
+        if( tgt_index >= peers.length ) {
+          console.log('undo append');
+          this.from.appendChild(this.element);
+        } else {
+          console.log('undo insert at ' + tgt_index);
+          this.from.insertBefore(this.element, peers[tgt_index]);
+        }
+      },
+      redo() {
+        var tgt_index = this.newIndex;
+        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
+        const peers = this.to.children;
+        if( tgt_index >= peers.length ) {
+          console.log('redo append');
+          this.to.appendChild(this.element);
+        } else {
+          console.log('redo insert at ' + tgt_index);
+          this.to.insertBefore(this.element, peers[tgt_index]);
+        }
+      },
     };
- 
-    $(document).trigger(
-      'ContentModifiedByUser',
-      { 
-        what:'elements_reordered', 
-        evt: e,
-      }
-    );
+
+    ce.undo_manager.add(action);
+
     return true;
   }
 
