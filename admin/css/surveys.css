@@ -201,6 +201,18 @@
 }
 
 /***************************************
+ * Content Editor
+ ***************************************/
+
+#ttt-body form #content-editor
+{
+  flex-grow:1;
+  display:flex;
+  flex-direction:column;
+  margin:0;
+}
+
+/***************************************
  * Content Editor Menubar
  ***************************************/
 
