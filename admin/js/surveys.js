@@ -108,6 +108,7 @@ $(document).ready(
   ce.revert     = $('#changes-revert');
 
   ce.has_admin_lock = admin_lock.has_lock;
+  ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 
   // event handlers
 

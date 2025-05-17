@@ -67,10 +67,8 @@ export default function undo_manager(ce)
     });
   }
 
-  const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-
   $(document).on('keydown', function(e) {
-    const ctrlOrCmd = isMac ? e.metaKey : e.ctrlKey;
+    const ctrlOrCmd = ce.isMac ? e.metaKey : e.ctrlKey;
     if (ctrlOrCmd && e.key.toLowerCase() === 'z' && !e.shiftKey) {
       console.log('undo keypress');
       e.preventDefault();
@@ -78,7 +76,7 @@ export default function undo_manager(ce)
     }
     if (
       (ctrlOrCmd && e.key.toLowerCase() === 'z' && e.shiftKey) ||
-      (!isMac && e.ctrlKey && e.key.toLowerCase() === 'y')
+      (!ce.isMac && e.ctrlKey && e.key.toLowerCase() === 'y')
     ) {
       console.log('redo keypress');
       e.preventDefault();
@@ -93,5 +91,7 @@ export default function undo_manager(ce)
     undo: undo,
     revert: revert,
     empty: empty,
+    hasUndo() { return _undo_stack.length > 0; },
+    hasRedo() { return _redo_stack.length > 0; },
   };
 }

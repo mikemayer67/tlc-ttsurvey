@@ -206,9 +206,10 @@
 
 #ttt-body form #content-editor
 {
-  flex-grow:1;
+  flex: 1 1 auto;
   display:flex;
   flex-direction:column;
+  min-height:0;
   margin:0;
 }
 
@@ -233,6 +234,13 @@
   height: 30px;
   margin: 3px 0;
 }
+#ttt-body form  #content-editor div.menubar button:disabled {
+  border: 1px solid black;
+  box-shadow: none;
+  background-color:#ddd;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 #ttt-body form  #content-editor div.menubar button.up,
 #ttt-body form  #content-editor div.menubar button.add.below,
@@ -249,18 +257,31 @@
   margin-right:0.5em;
 }
 
-#ttt-body form  #content-editor div.menubar button img {
+#ttt-body form  #content-editor div.menubar button .icon {
   width:24px;
   height:24px;
+  display: inline-block;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
+#ttt-body .menubar .up                .icon {background-image:url('../../img/icons8/up.png');}
+#ttt-body .menubar .down              .icon {background-image:url('../../img/icons8/down.png');}
+#ttt-body .menubar .add.section.below .icon {background-image:url('../../img/icons8/add_list.png');}
+#ttt-body .menubar .add.section.above .icon {background-image:url('../../img/icons8/add_list_above.png');}
+#ttt-body .menubar .add.element.below .icon {background-image:url('../../img/icons8/add_row.png');}
+#ttt-body .menubar .add.element.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
+#ttt-body .menubar .add.element.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
+#ttt-body .menubar .delete            .icon {background-image:url('../../img/icons8/trash.png');}
+#ttt-body .menubar .undo              .icon {background-image:url('../../img/icons8/undo.png');}
+#ttt-body .menubar .redo              .icon {background-image:url('../../img/icons8/redo.png');}
 
 /***************************************
  * Content Editor
  ***************************************/
 
 #ttt-body form  #content-editor div.body {
-  flex-grow:1;
+  flex: 1 1 auto;
   padding-top:0;
   background:inherit;
   overflow:auto;
@@ -274,6 +295,8 @@
 
 #ttt-body form #content-editor #survey-tree {
   width:25%;
+  height:100%;
+  min-height:0;
   background:white;
   border: 1px solid black;
   overflow-y:auto;
@@ -318,6 +341,10 @@
 
 #ttt-body form #content-editor #survey-tree li.section div.selected {
   background-color:#ffe41f;  /* from TLC logo */
+}
+
+#ttt-body form #content-editor #survey-tree li.selected-child div {
+  background-color:#fff5b0;
 }
 
 #ttt-body form #content-editor #survey-tree li.element.selected {
