@@ -92,12 +92,29 @@ echo <<<HTML
 
 <!--Survey Content-->
 <div id='content-editor'>
-  <div id='survey-tree'>
-    <div class='info'>Drag to Reorder</div>
-    <ul class='sections'></ul>
+
+  <div class='menubar'>
+    <button class='up' title='Move selection up'><img src='img/icons8/up.png'></button>
+    <button class='down' title='Move selection down'><img src='img/icons8/down.png'></button>
+    <button class='add section below' title='Insert new section below'><img src='img/icons8/add_list.png'></button>
+    <button class='add section above' title='Insert new section above'><img src='img/icons8/add_list_above.png'></button>
+    <button class='add element below' title='Insert new survey item below'><img src='img/icons8/add_row.png'></button>
+    <button class='add element above' title='Insert new survey item above'><img src='img/icons8/add_row_above.png'></button>
+    <button class='add element clone' title='Duplicate survey item'><img src='img/tlc/duplicate_row.png'></button>
+    <button class='delete' title='Delete selection'><img src='img/icons8/trash.png'><span class='shortcut'></span></button>
+    <button class='undo' title='Undo edit'><img src='img/icons8/undo.png'><span class='shortcut'></span></button>
+    <button class='redo' title='Redo edit'><img src='img/icons8/redo.png'><span class='shortcut'></span></button>
+    </div>
+  
+  <div class='body'>
+    <div id='survey-tree'>
+      <div class='info'>Drag to Reorder</div>
+      <ul class='sections'></ul>
+    </div>
+    <div class='resizer'></div>
+    <div id='element-editor'></div>
   </div>
-  <div class='resizer'></div>
-  <div id='element-editor'></div>
+
 </div>
 
 <!--Button Bar-->

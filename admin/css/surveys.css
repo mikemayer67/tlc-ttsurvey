@@ -201,12 +201,55 @@
 }
 
 /***************************************
+ * Content Editor Menubar
+ ***************************************/
+
+#ttt-body form  #content-editor div.menubar {
+  background-color:#ccc;
+  margin: 0.5em 0.5em 0 0.5em;;
+  border: solid black 1px;
+  padding 0.2em 0.5em;
+
+  display:flex;
+  flex-direction:row;
+}
+
+#ttt-body form  #content-editor div.menubar button {
+  background-color:white;
+  padding:0;
+  width: 30px;
+  height: 30px;
+  margin: 3px 0;
+}
+
+#ttt-body form  #content-editor div.menubar button.up,
+#ttt-body form  #content-editor div.menubar button.add.below,
+#ttt-body form  #content-editor div.menubar button.delete
+{
+  margin-left:0.5em;
+}
+
+#ttt-body form  #content-editor div.menubar button.undo {
+  margin-left:auto;
+}
+
+#ttt-body form  #content-editor div.menubar button.redo {
+  margin-right:0.5em;
+}
+
+#ttt-body form  #content-editor div.menubar button img {
+  width:24px;
+  height:24px;
+}
+
+
+/***************************************
  * Content Editor
  ***************************************/
 
-#ttt-body form  #content-editor {
+#ttt-body form  #content-editor div.body {
   flex-grow:1;
-  margin: 0 0.5em;
+  padding-top:0;
   background:inherit;
   overflow:auto;
   display:flex;
@@ -318,20 +361,20 @@
   vertical-align: middle;
 }
 #ttt-body form #content-editor #survey-tree li.element.info::before {
-  background-image: url('../../img/icons8-paragraph.png');
+  background-image: url('../../img/icons8/paragraph.png');
 }
 
 #ttt-body form #content-editor #survey-tree li.element.bool::before {
-  background-image: url('../../img/icons8-checked_checkbox.png');
+  background-image: url('../../img/icons8/checked_checkbox.png');
 }
 #ttt-body form #content-editor #survey-tree li.element.options::before {
-  background-image: url('../../img/icons8-unchecked_radio_button.png');
+  background-image: url('../../img/icons8/unchecked_radio_button.png');
 }
 #ttt-body form #content-editor #survey-tree li.element.options.multi::before {
-  background-image: url('../../img/icons8-multiple_choice.png');
+  background-image: url('../../img/icons8/multiple_choice.png');
 }
 #ttt-body form #content-editor #survey-tree li.element.freetext::before {
-  background-image: url('../../img/icons8-pencil.png');
+  background-image: url('../../img/icons8/pencil.png');
 }
 
 #ttt-body form #content-editor #survey-tree li.drop-target {

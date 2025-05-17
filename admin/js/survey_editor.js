@@ -3,11 +3,13 @@ import Sortable from '../../js/sortable.esm.js';
 export default function survey_editor(ce)
 {
   const _content_editor  = $('#content-editor');
-  const _tree_box        = _content_editor.find('#survey-tree');
+  const _editor_mbar     = _content_editor.find('div.menubar');
+  const _editor_body     = _content_editor.find('div.body');
+  const _tree_box        = _editor_body.find('#survey-tree');
   const _tree_info       = _tree_box.find('.info');
   const _survey_tree     = _tree_box.find('ul.sections');
-  const _element_editor  = _content_editor.find('#element-editor');
-  const _resizer         = _content_editor.find('.resizer');
+  const _element_editor  = _editor_body.find('#element-editor');
+  const _resizer         = _editor_body.find('.resizer');
 
   let _editable = false;
   let _content = null;
@@ -18,7 +20,7 @@ export default function survey_editor(ce)
 
   function start_resize(e) {
     e.preventDefault();
-    _content_editor.css('cursor','col-resize');
+    _editor_body.css('cursor','col-resize');
     _resize_data = { 
       min_x : 200 - _tree_box.width(),
       max_x : _element_editor.width() - 300,
@@ -27,8 +29,8 @@ export default function survey_editor(ce)
       in_editor : true,
       last_move : 0,
     };
-    _content_editor.on('mouseenter', function(e) { _resize_data.in_editor = true;  } );
-    _content_editor.on('mouseleave', function(e) { _resize_data.in_editor = false; } );
+    _editor_body.on('mouseenter', function(e) { _resize_data.in_editor = true;  } );
+    _editor_body.on('mouseleave', function(e) { _resize_data.in_editor = false; } );
     $(document).on('mousemove',track_mouse);
     $(document).on('mouseup',stop_tracking_mouse);
   }
@@ -51,12 +53,12 @@ export default function survey_editor(ce)
   function stop_tracking_mouse(e) {
     e.preventDefault();
     if(_resize_data) {
-      _content_editor.css('cursor','');
+      _editor_body.css('cursor','');
       if(!_resize_data.in_editor) { 
         _tree_box.width(_resize_data.start_w); 
       }
-      _content_editor.off('mouseenter');
-      _content_editor.off('mouseleave');
+      _editor_body.off('mouseenter');
+      _editor_body.off('mouseleave');
       _resize_data = null;
     }
     $(document).off('mousemove',track_mouse);
@@ -136,6 +138,7 @@ export default function survey_editor(ce)
 
     // Tree sorting
     if( _editable ) {
+      _editor_mbar.show();
       setup_tree_sorting();
       enable_tree_sorting();
     }
@@ -186,6 +189,7 @@ export default function survey_editor(ce)
     _element_sorters = [];
     _survey_tree.empty();
     _tree_info.hide();
+    _editor_mbar.hide();
   }
 
   function setup_tree_sorting()

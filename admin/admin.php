@@ -141,7 +141,7 @@ if($admin_id) {
 echo "</div>";
 echo "</form>";
 
-$img=img_uri("icons8-info.png");
+$img=img_uri("icons8/info.png");
 echo <<<HTMLMODAL
 <!-- Tab Switch Modal -->
 <div id='tab-switch-modal'>
