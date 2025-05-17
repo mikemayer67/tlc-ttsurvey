@@ -1,4 +1,4 @@
-export default function active_controller(ce)
+export default function locked_controller(ce)
 {
   function select_survey()
   { 
@@ -7,7 +7,7 @@ export default function active_controller(ce)
   }
 
   return {
-    state:'active',
+    state:'locked',
     select_survey: select_survey,
   }
 }

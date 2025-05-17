@@ -1,10 +1,9 @@
 import survey_data from './survey_data.js';
 import survey_controls from './survey_controls.js';
 import survey_info from './survey_info.js';
-import active_controller from './surveys_active.js';
-import draft_controller from './surveys_draft.js';
-import closed_controller from './surveys_closed.js';
+import locked_controller from './surveys_locked.js';
 import new_controller from './surveys_new.js';
+import draft_controller from './surveys_draft.js';
 import survey_editor from './survey_editor.js';
 import undo_manager from './undo_manager.js';
 
@@ -60,9 +59,17 @@ function handle_revert(e)
 
 // Survey status dependencies
 
+function dispatch_status()
+{
+  if(!ce.has_admin_lock) { return 'locked'; }
+  if(ce.cur_survey.status === 'active') { return 'locked'; }
+  if(ce.cur_survey.status === 'closed') { return 'locked'; }
+  return ce.cur_survey.status;
+}
+
 function dispatch(f,...args)
 {
-  const status = ce.cur_survey.status;
+  const status = dispatch_status();
   if( status in ce.surveyControllers && f in ce.surveyControllers[status] ) {
     return ce.surveyControllers[status][f](...args);
   }
@@ -71,7 +78,7 @@ function dispatch(f,...args)
 
 async function dispatch_async(f,...args)
 {
-  const status = ce.cur_survey.status;
+  const status = dispatch_status();
   if( status in ce.surveyControllers && f in ce.surveyControllers[status] ) {
     return ce.surveyControllers[status][f](...args);
   }
@@ -100,6 +107,8 @@ $(document).ready(
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
 
+  ce.has_admin_lock = admin_lock.has_lock;
+
   // event handlers
 
   ce.handle_input = handle_input;
@@ -116,9 +125,8 @@ $(document).ready(
   ce.dispatch_async = dispatch_async;
   
   ce.surveyControllers = {};
-  ce.surveyControllers['active'] = active_controller(ce);
   ce.surveyControllers['draft']  = draft_controller(ce);
-  ce.surveyControllers['closed'] = closed_controller(ce);
+  ce.surveyControllers['locked'] = locked_controller(ce);
   ce.surveyControllers['new']    = new_controller(ce);
 
   ce.survey_data     = survey_data(ce);

@@ -17,13 +17,15 @@ export default function survey_controls(ce)
     }));
   }
 
-  _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
-  _survey_select.append($('<option>',{ 
-    'value':  'new', 
-    'text':   'Open New Survey...', 
-    'class':  'new', 
-    'status': 'new'
-  }));
+  if( ce.has_admin_lock ) {
+    _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
+    _survey_select.append($('<option>',{ 
+      'value':  'new', 
+      'text':   'Open New Survey...', 
+      'class':  'new', 
+      'status': 'new'
+    }));
+  }
 
   const draft_surveys = ce.survey_data.drafts();
   if( draft_surveys.length > 0 ) {
@@ -56,7 +58,9 @@ export default function survey_controls(ce)
   //
 
   function select_survey(id) {
-    hide_status();  // global scope 
+    if(ce.has_admin_lock) {
+      hide_status();  // global scope 
+    }
 
     const prior_survey = ce.cur_survey;
 

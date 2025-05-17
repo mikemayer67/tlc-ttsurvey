@@ -48,7 +48,6 @@ export default function survey_data(ce)
 
     if('content' in _surveys[id]) { return _surveys[id].content; }
 
-    show_status('warning','Retrieving survey content from server');
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
@@ -62,7 +61,6 @@ export default function survey_data(ce)
     .done( function(data,status,jqXHR) {
       if (data.success) {
         _surveys[id].content = data.content;
-        setTimeout( function() {hide_status();}, 1000);
         $(document).trigger('NewContentData',[id]);
       }
       else if( 'bad_nonce' in data ) {
@@ -70,7 +68,8 @@ export default function survey_data(ce)
         location.reload();
       } 
       else {
-        show_status('warning',data.error);
+        alert("Data got out of sync with database: " + data.error);
+        location.reload();
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
