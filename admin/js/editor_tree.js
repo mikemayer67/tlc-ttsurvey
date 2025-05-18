@@ -1,6 +1,6 @@
 import Sortable from '../../js/sortable.esm.js';
 
-export default function editor_tree(ce,buttons)
+export default function editor_tree(ce,menubar)
 {
   const _box  = $('#survey-tree');
   const _info = $('#survey-tree .info');
@@ -77,7 +77,7 @@ export default function editor_tree(ce,buttons)
     const li = $(this).parent().parent();
     const sid = li.data('section');
 
-    buttons.new_section_selected(sid);
+    menubar.new_section_selected(sid);
   }
 
   function new_element_selected(e)
@@ -88,7 +88,7 @@ export default function editor_tree(ce,buttons)
     const eid = $(this).data('element');
     $(this).parent().parent().addClass('selected-child');
 
-    buttons.new_element_selected(eid);
+    menubar.new_element_selected(eid);
   }
   
   _section_sorter = new Sortable( _tree[0],
@@ -213,7 +213,7 @@ export default function editor_tree(ce,buttons)
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
-    buttons.clear_selection();
+    menubar.clear_selection();
   }
 
   _box.on('click', function(e) {
