@@ -1,4 +1,4 @@
-import editor_tree from './editor_tree.js');
+import editor_tree from './editor_tree.js';
 import { deepCopy } from './utils.js';
 
 function setup_buttons(ce)
@@ -130,7 +130,7 @@ export default function survey_editor(ce)
     e.preventDefault();
     _editor_body.css('cursor','col-resize');
     _resize_data = { 
-      min_x : 200 - _editor_tree.box.width(),
+      min_x : 200 - _editor_tree.box_width(),
       max_x : _element_editor.width() - 300,
       start_x : e.pageX,
       start_w : _editor_tree.box_width(),
@@ -178,21 +178,18 @@ export default function survey_editor(ce)
   // editor content
 
   function update_content(survey_id) {
-    console.log('update all content');
     const survey = ce.survey_data.lookup(survey_id);
     const content = ce.survey_data.content(survey_id);
-
-    _editor_tree.reset();
 
     if(!content)  { _content=null; return; }
     if(_editable) { _content = deepCopy(content) }
     else          { _content = content; }
 
+    _editor_tree.reset();
     _editor_tree.update_content(_content, _editable);
     
-    if(_editable) { 
-      _editor_mbar.show();
-    }
+    if(_editable) { _editor_mbar.show(); }
+    else          { _editor_mbar.hide(); }
   }
 
   $(document).on('NewContentData', function(e,survey_id) {

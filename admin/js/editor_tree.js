@@ -64,8 +64,8 @@ export default function editor_tree(ce,buttons)
 
     // Tree sorting
     if( editable ) {
-      setup_tree_sorting();
-      enable_tree_sorting();
+      setup_sorting();
+      enable_sorting();
     }
   }
 
@@ -91,8 +91,7 @@ export default function editor_tree(ce,buttons)
     buttons.new_element_selected(eid);
   }
   
-  _section_sorter = new Sortable(
-    _survey_tree[0],
+  _section_sorter = new Sortable( _tree[0],
     {
       group: 'sections',
       animation: 150,
@@ -106,8 +105,7 @@ export default function editor_tree(ce,buttons)
   {
     _section_sorter.option('disabled',false);
     _tree.find('ul.elements').each( function() {
-      const sorter = new Sortable(
-        this,
+      const sorter = new Sortable( this,
         {
           group: { name:'elements', pull:true, pust:true },
           animation: 150,
@@ -226,10 +224,12 @@ export default function editor_tree(ce,buttons)
   });
 
 
-
-  retuurn {
+  return {
     reset: reset,
     update_content: update_content,
-    box_width() { return _tree_box.width(); },
+    box_width(w) { 
+      if(w===undefined) { return _box.width(); }
+      else { _box.width(w); }
+    },
   };
 }
