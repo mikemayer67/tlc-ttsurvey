@@ -1,4 +1,4 @@
-import Sortable from '../../js/sortable.esm.js';
+import editor_tree from './editor_tree.js');
 import { deepCopy } from './utils.js';
 
 function setup_buttons(ce)
@@ -113,13 +113,11 @@ export default function survey_editor(ce)
   const _content_editor  = $('#content-editor');
   const _editor_mbar     = _content_editor.find('div.menubar');
   const _editor_body     = _content_editor.find('div.body');
-  const _tree_box        = _editor_body.find('#survey-tree');
-  const _tree_info       = _tree_box.find('.info');
-  const _survey_tree     = _tree_box.find('ul.sections');
   const _element_editor  = _editor_body.find('#element-editor');
   const _resizer         = _editor_body.find('.resizer');
 
   const _buttons = setup_buttons(ce);
+  const _editor_tree = editor_tree(ce,_buttons);
 
   let _editable = false;
   let _content = null;
@@ -132,10 +130,10 @@ export default function survey_editor(ce)
     e.preventDefault();
     _editor_body.css('cursor','col-resize');
     _resize_data = { 
-      min_x : 200 - _tree_box.width(),
+      min_x : 200 - _editor_tree.box.width(),
       max_x : _element_editor.width() - 300,
       start_x : e.pageX,
-      start_w : _tree_box.width(),
+      start_w : _editor_tree.box_width(),
       in_editor : true,
       last_move : 0,
     };
@@ -154,7 +152,7 @@ export default function survey_editor(ce)
 
        const dx = e.pageX - _resize_data.start_x;
        if( dx > _resize_data.min_x && dx < _resize_data.max_x ) {
-         _tree_box.width(_resize_data.start_w + dx);
+         _editor_tree.box_width(_resize_data.start_w + dx);
        }
       }
     }
@@ -165,7 +163,7 @@ export default function survey_editor(ce)
     if(_resize_data) {
       _editor_body.css('cursor','');
       if(!_resize_data.in_editor) { 
-        _tree_box.width(_resize_data.start_w); 
+        _editor_tree.box_width(_resize_data.start_w); 
       }
       _editor_body.off('mouseenter');
       _editor_body.off('mouseleave');
@@ -184,62 +182,16 @@ export default function survey_editor(ce)
     const survey = ce.survey_data.lookup(survey_id);
     const content = ce.survey_data.content(survey_id);
 
-    reset_survey_tree();
+    _editor_tree.reset();
 
     if(!content)  { _content=null; return; }
     if(_editable) { _content = deepCopy(content) }
     else          { _content = content; }
 
-    // Add sections to the survey tree
-
-    Object.keys(content.sections)
-    .map(Number)
-    .sort((a,b) => a-b)
-    .forEach( sid => { // section id
-      const section = content.sections[sid];
-
-      const btn = $('<button>').addClass('toggle');
-      const span = $('<span>').text(section.name).addClass('name');
-      const div = $('<div>').append(btn,span);
-
-      const li = $('<li>')
-        .addClass('section closed')
-        .attr('data-section',sid)
-        .html(div)
-        .appendTo(_survey_tree);
-
-      const ul = $('<ul>').addClass('elements').appendTo(li);
-
-      btn.on('click', function(e) {
-        const li = $(this).parent().parent();
-        if( li.hasClass('closed') ) { li.removeClass('closed'); }
-        else                        { li.addClass('closed');    }
-      });
-      span.on('click', new_section_selected);
-
-      Object.entries(content.elements)
-      .filter( ([eid,element]) => element.section == sid )
-      .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
-      .forEach( ([eid,element]) => {
-
-        const eli = $('<li>')
-        .addClass('element')
-        .addClass(element.type.toLowerCase())
-        .attr('data-element',eid)
-        .text(element.label);
-        if(element.multiple) { 
-          eli.addClass('multi'); 
-        }
-        eli.appendTo(ul);
-        eli.on('click',new_element_selected);
-      });
-    });
-
-    // Tree sorting
-    if( _editable ) {
+    _editor_tree.update_content(_content, _editable);
+    
+    if(_editable) { 
       _editor_mbar.show();
-      setup_tree_sorting();
-      enable_tree_sorting();
     }
   }
 
@@ -247,200 +199,13 @@ export default function survey_editor(ce)
     update_content(survey_id);
   });
 
-  // update handlers
-
-  function clear_current_selection()
-  {
-    _survey_tree.find('.selected').removeClass('selected');
-    _survey_tree.find('.selected-child').removeClass('selected-child');
-    _buttons.clear_selection();
-  }
-
-  function new_section_selected(e)
-  {
-    clear_current_selection();
-
-    $(this).parent().addClass('selected');
-    const li = $(this).parent().parent();
-    const sid = li.data('section');
-    _buttons.new_section_selected(sid);
-  }
-
-  function new_element_selected(e)
-  {
-    clear_current_selection();
-
-    $(this).addClass('selected');
-    const eid = $(this).data('element');
-    $(this).parent().parent().addClass('selected-child');
-    _buttons.new_element_selected(eid);
-  }
-  
-//  function send_change_notification(what,info)
-//  {
-//    if(info !== undefined) {
-//      $(document).trigger('ContentModifiedByUser',{what:what,info:info});
-//    } else {
-//      $(document).trigger('ContentModifiedByUser',{what:what});
-//    }
-//  }
-//  
-//  function handle_user_updates(info)
-//  {
-//    console.log('handle user updates: ' + info.what);
-//  }
-//
-//  $(document).on('ContentModifiedByUser', function(e,info) {
-//    handle_user_updates(info);
-//  });
-
   // survey tree 
-
-  let _element_sorters = [];
-
-  const _section_sorter = new Sortable(
-    _survey_tree[0],
-    {
-      group: 'sections',
-      animation: 150,
-      filter: '.element',
-      onEnd: handle_drop_section,
-    }
-  );
 
   function reset_survey_tree()
   {
-    _section_sorter.option('disabled',true);
-    _element_sorters.forEach( (s) => s.destroy() );
-    _element_sorters = [];
-    _survey_tree.empty();
-    _tree_info.hide();
+    _editor_tree.reset();
     _editor_mbar.hide();
   }
-
-  function setup_tree_sorting()
-  {
-    _section_sorter.option('disabled',false);
-    _survey_tree.find('ul.elements').each( function() {
-      const sorter = new Sortable(
-        this,
-        {
-          group: { name:'elements', pull:true, pust:true },
-          animation: 150,
-          onEnd: handle_drop_element,
-        }
-      );
-      _element_sorters.push(sorter);
-    });
-  }
-
-  function handle_drop_section(e)
-  {
-    _survey_tree.find('.drop-target').removeClass('drop-target');
-
-    if(e.oldIndex === e.newIndex) { return false; }
-
-    const action = {
-      element: e.item,
-      oldIndex: e.oldIndex,
-      newIndex: e.newIndex,
-      undo() {
-        const st = _survey_tree[0];
-        const peers = st.children;
-        var tgt_index = this.oldIndex;
-        if( tgt_index > this.newIndex ) { tgt_index +=1; }
-        if( tgt_index >= peers.length ) {
-          console.log('undo append');
-          st.appendChild(this.element);
-        } else {
-          console.log('undo insert at ' + tgt_index);
-          st.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-      redo() {
-        const st = _survey_tree[0];
-        const peers = st.children;
-        var tgt_index = this.newIndex;
-        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
-        if( tgt_index >= peers.length ) {
-          console.log('undo append');
-          st.appendChild(this.element);
-        } else {
-          console.log('redo insert at ' + tgt_index);
-          st.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-    };
-
-    ce.undo_manager.add(action);
-
-    return true;
-  }
-
-  function handle_drop_element(e)
-  {
-    _survey_tree.find('.drop-target').removeClass('drop-target');
-
-    if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
-
-    const action = {
-      element: e.item,
-      from: e.from,
-      to: e.to,
-      oldIndex: e.oldIndex,
-      newIndex: e.newIndex,
-      undo() {
-        var tgt_index = this.oldIndex;
-        if( tgt_index > this.newIndex ) { tgt_index +=1; }
-        const peers = this.from.children;
-        if( tgt_index >= peers.length ) {
-          console.log('undo append');
-          this.from.appendChild(this.element);
-        } else {
-          console.log('undo insert at ' + tgt_index);
-          this.from.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-      redo() {
-        var tgt_index = this.newIndex;
-        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
-        const peers = this.to.children;
-        if( tgt_index >= peers.length ) {
-          console.log('redo append');
-          this.to.appendChild(this.element);
-        } else {
-          console.log('redo insert at ' + tgt_index);
-          this.to.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-    };
-
-    ce.undo_manager.add(action);
-
-    return true;
-  }
-
-  function disable_tree_sorting()
-  {
-    _tree_info.hide();
-    _section_sorter.option('disabled',true);
-    _element_sorters.forEach( (s) => s.option('disabled',true) );
-  }
-
-  function enable_tree_sorting()
-  {
-    _tree_info.show();
-    _section_sorter.option('disabled',false);
-    _element_sorters.forEach( (s) => s.option('disabled',false) );
-  }
-
-  _tree_box.on('click', function(e) {
-    const clicked_li = $(e.target).closest('li');
-    if(clicked_li.length === 0) {
-      clear_current_selection();
-    }
-  });
-
 
   // return editor object
 
