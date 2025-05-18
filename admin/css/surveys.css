@@ -339,7 +339,7 @@
   cursor:pointer;
 }
 
-#ttt-body form #content-editor #survey-tree li.section div.selected {
+#ttt-body form #content-editor #survey-tree li.section.selected div {
   background-color:#ffe41f;  /* from TLC logo */
 }
 

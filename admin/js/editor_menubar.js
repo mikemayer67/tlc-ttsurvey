@@ -42,6 +42,9 @@ export default function editor_menubar(ce)
   _undo.on('click', function() { ce.undo_manager.undo(); } );
   _redo.on('click', function() { ce.undo_manager.redo(); } );
 
+  _up.on('click',-1,move_selected);
+  _down.on('click',1,move_selected);
+
   function new_section_selected(sid) {
     const sections = _tree.find('li.section');
     const first_sid = sections.first().data('section');
@@ -103,6 +106,45 @@ export default function editor_menubar(ce)
       _add_section_below, _add_section_above,
       _add_element_below, _add_element_above, _add_element_clone,
     ].forEach( (b) => { b.attr('disabled',true); });
+  }
+
+  function move_selected(e) {
+    const delta = e.data;
+    const selected_item = _tree.find('li.selected');
+    if(selected_item.hasClass('section')) {
+      // handle section move
+      const sid = selected_item.data('section');
+      const all_sections = _tree.find('li.section');
+      const num_sections = all_sections.length;
+      const oldIndex = all_sections.index(selected_item);
+      const newIndex = oldIndex + delta;
+
+      if(newIndex < 0 || newIndex >= num_sections) { return; }
+      const action = {
+        item:  selected_item,
+        delta: delta,
+        ref:   all_sections[newIndex],
+        redo() {
+          if(this.delta<0) { this.item.insertBefore(this.ref); }
+          else             { this.item.insertAfter(this.ref); }
+          new_section_selected(this.item.data('section'));
+        },
+        undo() {
+          if(this.delta<0) { this.item.insertAfter(this.ref); }
+          else             { this.item.insertBefore(this.ref); }
+          new_section_selected(this.item.data('section'));
+        },
+      };
+      ce.undo_manager.add_and_exec(action);
+    } 
+    else if(selected_item.hasClass('element')) {
+      const eid = selected_item.data('section');
+      alert(`Move element ${eid}: ${delta}`);
+    } 
+    else {
+      // should never get here... but just in case,
+      return;
+    }
   }
 
   return {

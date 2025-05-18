@@ -73,8 +73,8 @@ export default function editor_tree(ce,menubar)
   {
     clear_selection();
 
-    $(this).parent().addClass('selected');
     const li = $(this).parent().parent();
+    li.addClass('selected');
     const sid = li.data('section');
 
     menubar.new_section_selected(sid);
