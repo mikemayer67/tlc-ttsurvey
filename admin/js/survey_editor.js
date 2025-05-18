@@ -1,5 +1,6 @@
 import editor_tree from './editor_tree.js';
 import editor_menubar from './editor_menubar.js';
+import setup_editor_resizer from './editor_resizer.js';
 import { deepCopy } from './utils.js';
 
 export default function survey_editor(ce)
@@ -8,7 +9,6 @@ export default function survey_editor(ce)
   const _editor_mbar     = _content_editor.find('div.menubar');
   const _editor_body     = _content_editor.find('div.body');
   const _element_editor  = _editor_body.find('#element-editor');
-  const _resizer         = _editor_body.find('.resizer');
 
   const _editor_menubar = editor_menubar(ce);
   const _editor_tree    = editor_tree(ce,_editor_menubar);
@@ -16,58 +16,7 @@ export default function survey_editor(ce)
   let _editable = false;
   let _content = null;
 
-  // editor pane resizing
-
-  var _resize_data = null;
-
-  function start_resize(e) {
-    e.preventDefault();
-    _editor_body.css('cursor','col-resize');
-    _resize_data = { 
-      min_x : 200 - _editor_tree.box_width(),
-      max_x : _element_editor.width() - 300,
-      start_x : e.pageX,
-      start_w : _editor_tree.box_width(),
-      in_editor : true,
-      last_move : 0,
-    };
-    _editor_body.on('mouseenter', function(e) { _resize_data.in_editor = true;  } );
-    _editor_body.on('mouseleave', function(e) { _resize_data.in_editor = false; } );
-    $(document).on('mousemove',track_mouse);
-    $(document).on('mouseup',stop_tracking_mouse);
-  }
-
-  function track_mouse(e) {
-    e.preventDefault();
-    if(_resize_data) {
-      const now = Date.now();
-      if( now > _resize_data.last_move + 10 ) {
-       _resize_data.last_move = now;
-
-       const dx = e.pageX - _resize_data.start_x;
-       if( dx > _resize_data.min_x && dx < _resize_data.max_x ) {
-         _editor_tree.box_width(_resize_data.start_w + dx);
-       }
-      }
-    }
-  }
-
-  function stop_tracking_mouse(e) {
-    e.preventDefault();
-    if(_resize_data) {
-      _editor_body.css('cursor','');
-      if(!_resize_data.in_editor) { 
-        _editor_tree.box_width(_resize_data.start_w); 
-      }
-      _editor_body.off('mouseenter');
-      _editor_body.off('mouseleave');
-      _resize_data = null;
-    }
-    $(document).off('mousemove',track_mouse);
-    $(document).off('mouseup',stop_tracking_mouse);
-  }
-
-  _resizer.on('mousedown',start_resize);
+  setup_editor_resizer(ce,_editor_tree);
 
   // editor content
 

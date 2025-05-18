@@ -227,9 +227,5 @@ export default function editor_tree(ce,menubar)
   return {
     reset: reset,
     update_content: update_content,
-    box_width(w) { 
-      if(w===undefined) { return _box.width(); }
-      else { _box.width(w); }
-    },
   };
 }
