@@ -6,9 +6,6 @@ import { deepCopy } from './utils.js';
 export default function survey_editor(ce)
 {
   const _content_editor  = $('#content-editor');
-  const _editor_mbar     = _content_editor.find('div.menubar');
-  const _editor_body     = _content_editor.find('div.body');
-  const _element_editor  = _editor_body.find('#element-editor');
 
   const _editor_menubar = editor_menubar(ce);
   const _editor_tree    = editor_tree(ce,_editor_menubar);
@@ -30,9 +27,8 @@ export default function survey_editor(ce)
 
     _editor_tree.reset();
     _editor_tree.update_content(_content, _editable);
-    
-    if(_editable) { _editor_mbar.show(); }
-    else          { _editor_mbar.hide(); }
+
+    _editor_menubar.show(_editable);
   }
 
   $(document).on('NewContentData', function(e,survey_id) {
@@ -43,8 +39,9 @@ export default function survey_editor(ce)
 
   function reset_survey_tree()
   {
+    alert('rset_survey_tree');
     _editor_tree.reset();
-    _editor_mbar.hide();
+    _editor_menubar.hide();
   }
 
   // return editor object

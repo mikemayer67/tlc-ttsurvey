@@ -1,7 +1,7 @@
 export default function editor_menubar(ce)
 {
   const _mbar = $('#content-editor div.menubar');
-  const _tree = $('survey-tree ul.sections');
+  const _tree = $('#survey-tree ul.sections');
 
   const _up                = _mbar.find('button.up');
   const _down              = _mbar.find('button.down');
@@ -108,6 +108,8 @@ export default function editor_menubar(ce)
   return {
     new_section_selected: new_section_selected,
     new_element_selected: new_element_selected,
-    clear_slection: clear_selection,
+    clear_selection: clear_selection,
+    show(v=true) { if(v) { _mbar.show() } else { _mbar.hide() } },
+    hide()  { _mbar.hide() },
   };
 }

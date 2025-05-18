@@ -4,7 +4,7 @@ export default function editor_tree(ce,menubar)
 {
   const _box  = $('#survey-tree');
   const _info = $('#survey-tree .info');
-  const _tree      = $('#survey-tree ul.sections');
+  const _tree = $('#survey-tree ul.sections');
 
   let _section_sorter = null;
   let _element_sorters = [];
@@ -191,6 +191,7 @@ export default function editor_tree(ce,menubar)
         } else {
           this.from.insertBefore(this.element, peers[tgt_index]);
         }
+        update_selected_child(this.element);
       },
       redo() {
         var tgt_index = this.newIndex;
@@ -201,12 +202,20 @@ export default function editor_tree(ce,menubar)
         } else {
           this.to.insertBefore(this.element, peers[tgt_index]);
         }
+        update_selected_child(this.element);
       },
     };
 
+    update_selected_child(e.item);
     ce.undo_manager.add(action);
 
     return true;
+  }
+
+  function update_selected_child(element_li)
+  {
+    _tree.find('.selected-child').removeClass('selected-child');
+    $(element_li).parent().parent().addClass('selected-child');
   }
 
   function clear_selection()
