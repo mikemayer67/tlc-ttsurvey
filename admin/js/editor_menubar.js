@@ -14,6 +14,9 @@ export default function editor_menubar(ce)
   const _undo              = _mbar.find('button.undo');
   const _redo              = _mbar.find('button.redo');
 
+  let move_section = null;
+  let move_element = null;
+
   const _buttons = [
     _up, _down,
     _add_section_below, _add_section_above,
@@ -111,40 +114,81 @@ export default function editor_menubar(ce)
   function move_selected(e) {
     const delta = e.data;
     const selected_item = _tree.find('li.selected');
-    if(selected_item.hasClass('section')) {
-      // handle section move
-      const sid = selected_item.data('section');
-      const all_sections = _tree.find('li.section');
-      const num_sections = all_sections.length;
-      const oldIndex = all_sections.index(selected_item);
-      const newIndex = oldIndex + delta;
 
-      if(newIndex < 0 || newIndex >= num_sections) { return; }
-      const action = {
-        item:  selected_item,
-        delta: delta,
-        ref:   all_sections[newIndex],
-        redo() {
-          if(this.delta<0) { this.item.insertBefore(this.ref); }
-          else             { this.item.insertAfter(this.ref); }
-          new_section_selected(this.item.data('section'));
-        },
-        undo() {
-          if(this.delta<0) { this.item.insertAfter(this.ref); }
-          else             { this.item.insertBefore(this.ref); }
-          new_section_selected(this.item.data('section'));
-        },
-      };
-      ce.undo_manager.add_and_exec(action);
-    } 
-    else if(selected_item.hasClass('element')) {
-      const eid = selected_item.data('section');
-      alert(`Move element ${eid}: ${delta}`);
-    } 
-    else {
-      // should never get here... but just in case,
-      return;
+    // there is an implicit design assumption that any selected item will have 
+    //   either the 'section' or 'element' class and never both
+    const isSection = selected_item.hasClass('section');
+    if(isSection) { move_selected_section(selected_item,delta); } 
+    else          { move_selected_element(selected_item,delta); }
+  }
+
+  function move_selected_section(item,delta) {
+    // input item should be a li.section jquery object
+
+    // but only do something if the hook into editor_tree was set.
+    if(!move_section) { return false; }
+    
+    const allSections = _tree.children('li.section');
+    const curIndex    = allSections.index(item);
+    const newIndex    = curIndex + delta;
+
+    // If the UI is working correctly, the following test should never
+    // fail, but let's not take that chance.  Only move to a valid index.
+    if(newIndex < 0 || newIndex >= allSections.length) { return false; }
+
+    const sectionId = item.data('section');
+    // note below that while we're moving the selected section and not actually
+    //   selecting a new section, the new_section_selected function captures all
+    //   the necessary DOM element state updates associated with a move.
+    ce.undo_manager.add_and_exec( {
+      redo() { move_section(sectionId,newIndex); new_section_selected(sectionId); },
+      undo() { move_section(sectionId,curIndex); new_section_selected(sectionId); },
+    });
+
+    return true;
+  }
+
+  function move_selected_element(item,delta) {
+    // input item should be a li.element jquery object
+    // input delta must be +/- 1.  Other values could break moving between sections
+
+    // but only do something if the hook into editor_tree was set.
+    if(!move_element) { return false; }
+    
+    const elementId    = item.data('element');
+    const curSectionLI = item.parent().parent();
+    const curSectionId = curSectionLI.data('section');
+    const curPeers     = curSectionLI.find('li.element');
+    const curIndex     = curPeers.index(item);
+
+    // assume for a second that we're moving the element within the current section
+    let newIndex     = curIndex + delta;
+    let newSectionId = curSectionId;
+
+    if(newIndex < 0 || newIndex >= curPeers.length) {
+      // nope, we're attempting to move the element to a different section
+      // see if we can move the item to prior (delta<0) or next (delta>0) section
+      const allSections     = _tree.children('li.section');
+      const curSectionIndex = allSections.index(curSectionLI);
+      const newSectionIndex = curSectionIndex + delta;
+      const newSectionLI    = allSections.eq(newSectionIndex);
+
+      // if the UI is working correctly, the following test should never
+      // fail, but let's not take that chance.  Only move to a valid section
+      if( newSectionLI.length !== 1 ) { return false; }
+
+      newSectionId = newSectionLI.data('section');
+
+      if( delta > 0 ) { newIndex = 0;                                      } // start of next section
+      else            { newIndex = newSectionLI.find('li.element').length; } // end of prior section
     }
+       
+    ce.undo_manager.add_and_exec( {
+      redo() { move_element(elementId,newSectionId,newIndex); new_element_selected(elementId); },
+      undo() { move_element(elementId,curSectionId,curIndex); new_element_selected(elementId); },
+    });
+
+    return true;
   }
 
   return {
@@ -153,5 +197,7 @@ export default function editor_menubar(ce)
     clear_selection: clear_selection,
     show(v=true) { if(v) { _mbar.show() } else { _mbar.hide() } },
     hide()  { _mbar.hide() },
+    set_move_tree_section_hook(f) { move_section = f; },
+    set_move_tree_element_hook(f) { move_element = f; },
   };
 }

@@ -100,6 +100,92 @@ export default function editor_tree(ce,menubar)
     }
   );
 
+  function move_section(sectionId,toIndex) 
+  {
+    const all_sections = _tree.children('li.section');
+    if( toIndex >= all_sections.length) { return false; }
+
+    const tgt_li  = all_sections.eq(toIndex);
+
+    const move_li = all_sections.filter('[data-section='+sectionId+']');
+    if( move_li.length !== 1 ) { return false; }
+
+    const fromIndex = all_sections.index(move_li);
+
+    // test case 1: move up the list (toIndex < fromIndex)
+    //    Before: 0 1 2 3 4 5 6 7 8 9
+    //    move("5",2) {tgt_li="2" / move_li="5" / fromIndex=5}
+    //      "5".insertBefore("2")
+    //    result: 0 1 5 2 3 4 6 7 8 9
+    //
+    // test case 2: move down the list (toIndex > fromIndex)
+    //    Before: 0 1 2 3 4 5 6 7 8 9
+    //    move("4",9) { tgt_li="9" / move_li="4" / fromIndex=4}
+    //      "4".insertAfter("9")
+    //    result: 0 1 2 3 5 6 7 8 9 4
+    //
+    // test case 3: no move needed (toIndex === fromIndex)
+    //    do nothing other than raturn true (the section is at the requested position)
+
+    if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
+    if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
+
+    return true;
+  }
+
+  function move_element(elementId,toSectionId,toIndex)
+  {
+    // notation:
+    //   sul = ul.sections <--- only one of these in the DOM (aka _tree)
+    //   sli = li.section
+    //   eul = ul.elements <--- only one of these per li.section
+    //   eli = li.element
+
+    const all_eli = _tree.find('li.element');
+    const move_eli = all_eli.filter('[data-element='+elementId+']');
+    if(move_eli.length != 1) {
+      // length should only ever be 1... but just in case it's not
+      //   If it's 0, then something broke in the view controller
+      //   If it's >1, then something broke in the underlying app logic
+      return false;
+    }
+
+    // move_eli parent      is ul.elements
+    // move_eli grandparent is li.section
+    const fromSectionId = move_eli.parent().parent().data('section');
+
+    const dst_sli = _tree.find('li.section[data-section='+toSectionId+']');
+    const dst_eli = dst_sli.find('li.element');
+
+    const tgt_eli = dst_eli.eq(toIndex);  // could be empty
+
+    if(toSectionId === fromSectionId) { // moving li.element within its current ul.eleemnts
+      // the logic is identical to moving sections around in the sections ul
+      if(tgt_eli.length !=1 ) { return false; }  // empty not allowed in this case
+
+      const fromIndex = dst_eli.index(move_eli);
+      if(toIndex < fromIndex) { move_eli.insertBefore(tgt_eli); }
+      if(toIndex > fromIndex) { move_eli.insertAfter(tgt_eli); }
+    }
+    else { // moving li.element to a new ul.elements
+      if(tgt_eli.length === 0) {
+        // allow inserting at dst_eli.length (i.e., append to end), but not beyond it
+        if( toIndex > dst_eli.length ) { return false; } 
+
+        const dst_eul = dst_sli.children('ul.elements').first(); // should only be one and only one
+        move_eli.appendTo(dst_eul);
+      }
+      else {
+        move_eli.insertBefore(tgt_eli);
+      }
+    }
+
+    update_selected_child();
+    return true;
+  }
+
+  menubar.set_move_tree_section_hook(move_section);
+  menubar.set_move_tree_element_hook(move_element);
 
   function setup_sorting()
   {
@@ -130,92 +216,40 @@ export default function editor_tree(ce,menubar)
     _element_sorters.forEach( (s) => s.option('disabled',false) );
   }
 
-
   function handle_drop_section(e)
   {
-    _tree.find('.drop-target').removeClass('drop-target');
-
     if(e.oldIndex === e.newIndex) { return false; }
 
-    const action = {
-      element: e.item,
-      oldIndex: e.oldIndex,
-      newIndex: e.newIndex,
-      undo() {
-        const tree = _tree[0];
-        const peers = tree.children;
-        var tgt_index = this.oldIndex;
-        if( tgt_index > this.newIndex ) { tgt_index +=1; }
-        if( tgt_index >= peers.length ) {
-          tree.appendChild(this.element);
-        } else {
-          tree.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-      redo() {
-        const tree = _tree[0];
-        const peers = tree.children;
-        var tgt_index = this.newIndex;
-        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
-        if( tgt_index >= peers.length ) {
-          tree.appendChild(this.element);
-        } else {
-          tree.insertBefore(this.element, peers[tgt_index]);
-        }
-      },
-    };
-
-    ce.undo_manager.add(action);
+    const sectionId = $(e.item).data('section');
+    ce.undo_manager.add( {
+      undo() { move_section(sectionId,e.oldIndex); },
+      redo() { move_section(sectionId,e.newIndex); },
+    });
 
     return true;
   }
 
   function handle_drop_element(e)
   {
-    _tree.find('.drop-target').removeClass('drop-target');
-
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
-    const action = {
-      element: e.item,
-      from: e.from,
-      to: e.to,
-      oldIndex: e.oldIndex,
-      newIndex: e.newIndex,
-      undo() {
-        var tgt_index = this.oldIndex;
-        if( tgt_index > this.newIndex ) { tgt_index +=1; }
-        const peers = this.from.children;
-        if( tgt_index >= peers.length ) {
-          this.from.appendChild(this.element);
-        } else {
-          this.from.insertBefore(this.element, peers[tgt_index]);
-        }
-        update_selected_child(this.element);
-      },
-      redo() {
-        var tgt_index = this.newIndex;
-        if( tgt_index > this.oldIndex ) { tgt_index +=1; }
-        const peers = this.to.children;
-        if( tgt_index >= peers.length ) {
-          this.to.appendChild(this.element);
-        } else {
-          this.to.insertBefore(this.element, peers[tgt_index]);
-        }
-        update_selected_child(this.element);
-      },
-    };
+    const elementId    = $(e.item).data('element');
+    const from_section = $(e.from).parent().data('section');
+    const to_section   = $(e.to).parent().data('section');
+    ce.undo_manager.add( {
+      undo() { move_element(elementId,from_section,e.oldIndex); },
+      redo() { move_element(elementId,to_section,e.newIndex); },
+    });
 
-    update_selected_child(e.item);
-    ce.undo_manager.add(action);
-
+    update_selected_child();
     return true;
   }
 
-  function update_selected_child(element_li)
+  function update_selected_child()
   {
     _tree.find('.selected-child').removeClass('selected-child');
-    $(element_li).parent().parent().addClass('selected-child');
+    const selected_element = _tree.find('li.element.selected');
+    selected_element.parent().parent().addClass('selected-child');
   }
 
   function clear_selection()
@@ -231,7 +265,6 @@ export default function editor_tree(ce,menubar)
       clear_selection();
     }
   });
-
 
   return {
     reset: reset,
