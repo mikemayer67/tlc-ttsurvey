@@ -25,24 +25,33 @@ export default function survey_editor(ce)
     if(_editable) { _content = deepCopy(content) }
     else          { _content = content; }
 
-    _editor_tree.reset();
-    _editor_tree.update_content(_content, _editable);
-
-    _editor_menubar.show(_editable);
+    revert();
   }
 
   $(document).on('NewContentData', function(e,survey_id) {
     update_content(survey_id);
   });
 
-  // survey tree 
-
-  function reset_survey_tree()
-  {
-    alert('rset_survey_tree');
+  function revert() {
     _editor_tree.reset();
-    _editor_menubar.hide();
+    _editor_tree.update_content(_content,_editable);
+    _editor_menubar.show(_editable);
+    ce.undo_manager?.revert();
   }
+
+
+  // deletion handlers
+
+  function delete_section(sectionId) {
+    alert(`delete section ${sectionId}`);
+  }
+
+  function delete_element(elementId) {
+    alert(`delete element ${elementId}`);
+  }
+
+  _editor_menubar.set_delete_section_hook(delete_section);
+  _editor_menubar.set_delete_element_hook(delete_element);
 
   // return editor object
 
@@ -52,5 +61,6 @@ export default function survey_editor(ce)
     disable() { _editable = false },
     enable() { _editable = true },
     update_content: update_content,
+    revert: revert,
   }
 };

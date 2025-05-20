@@ -91,7 +91,11 @@ export default function draft_controller(ce)
   {
     ce.survey_info.validate_survey_name();
     validate_pdf_action();
+    update_submit_revert();
+  }
 
+  function update_submit_revert()
+  {
     const dirty = has_changes();
     const has_errors = ce.form.find('.invalid-value').length > 0;
 
@@ -104,6 +108,8 @@ export default function draft_controller(ce)
 
     ce.submit.prop('disabled',has_errors || !dirty);
   }
+
+  $(document).on('SurveyContentReordered',update_submit_revert);
 
   function validate_pdf_action()
   {
@@ -143,16 +149,21 @@ export default function draft_controller(ce)
 
   function has_changes()
   {
-    return Object.keys(_changes).length > 0;
+    if( Object.keys(_changes).length > 0 ) { return true; }
+    if( ce.undo_manager?.hasUndo() ) { return true; }
+    return false;
   }
 
   function handle_revert()
   {
+    console.log('survey_draft handle_revert');
     for( let key in _changes ) {
       ce.form.find(`[name=${key}]`).val(_last_saved[key]);
     }
     if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
     else                                     { _survey_pdf.hide(); }
+
+    ce.survey_editor.revert();
 
     _changes = {};
     $(document).trigger('SurveyDataChanged');

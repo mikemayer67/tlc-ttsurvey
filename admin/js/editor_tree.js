@@ -130,6 +130,8 @@ export default function editor_tree(ce,menubar)
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
+    $(document).trigger('SurveyContentReordered');
+
     return true;
   }
 
@@ -181,11 +183,13 @@ export default function editor_tree(ce,menubar)
     }
 
     update_selected_child();
+
+    $(document).trigger('SurveyContentReordered');
     return true;
   }
 
-  menubar.set_move_tree_section_hook(move_section);
-  menubar.set_move_tree_element_hook(move_element);
+  menubar.set_move_section_hook(move_section);
+  menubar.set_move_element_hook(move_element);
 
   function setup_sorting()
   {
@@ -226,6 +230,7 @@ export default function editor_tree(ce,menubar)
       redo() { move_section(sectionId,e.newIndex); },
     });
 
+    $(document).trigger('SurveyContentReordered');
     return true;
   }
 
@@ -242,6 +247,7 @@ export default function editor_tree(ce,menubar)
     });
 
     update_selected_child();
+    $(document).trigger('SurveyContentReordered');
     return true;
   }
 
