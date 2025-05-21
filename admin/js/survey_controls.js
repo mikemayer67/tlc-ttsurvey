@@ -79,7 +79,7 @@ export default function survey_controls(ce)
 
     // perform common config... status controllers can override these later
     ce.survey_editor.show();
-    ce.button_bar.hide();
+    ce.submit_bar.hide();
     ce.form.find('input.watch').off('input').off('change');
     ce.form.find('select.watch').off('change');
 

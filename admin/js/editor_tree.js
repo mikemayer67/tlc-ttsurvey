@@ -1,25 +1,47 @@
 import Sortable from '../../js/sortable.esm.js';
 
-export default function editor_tree(ce,menubar)
+export default function editor_tree(ce)
 {
   const _box  = $('#survey-tree');
   const _info = $('#survey-tree .info');
   const _tree = $('#survey-tree ul.sections');
 
-  let _section_sorter = null;
-  let _element_sorters = [];
+  // sorter for ul.sections
+  const _section_sorter = new Sortable( _tree[0],
+    {
+      group: 'sections',
+      animation: 150,
+      filter: '.element',
+      disabled: true,
+      onEnd: handle_drop_section,
+    }
+  );
 
+  // sorters for each of the ul.elements
+  let _element_sorters = {};
+
+  // reset clears out the tree
+  //   section sorter is disabled
+  //   all element sorters are released
+  //   the "drag-n-drop" info box is hidden
   function reset()
   {
     _section_sorter.option('disabled',true);
-    _element_sorters.forEach( (s) => s.destroy() );
-    _element_sorters = [];
+    Object.values(_element_sorters).forEach((s) => s.destroy());
+    _element_sorters = {};
     _tree.empty();
     _info.hide();
   }
 
-  function update_content(content,editable)
+  // update repopulates the tree based on new survey content
+  //   the current tree content is cleared out (via reset)
+  //   an element sorter is attached to each ul.elements
+  function update(content)
   {
+    reset();
+
+    if(!content) { return; }
+
     Object.keys(content.sections)
     .map(Number)
     .sort((a,b) => a-b)
@@ -31,19 +53,28 @@ export default function editor_tree(ce,menubar)
       const div = $('<div>').append(btn,span);
 
       const li = $('<li>')
-        .addClass('section closed')
-        .attr('data-section',sid)
-        .html(div)
-        .appendTo(_tree);
-
-      const ul = $('<ul>').addClass('elements').appendTo(li);
+      .addClass('section closed')
+      .attr('data-section',sid)
+      .html(div)
+      .appendTo(_tree);
 
       btn.on('click', function(e) {
         const li = $(this).parent().parent();
         if( li.hasClass('closed') ) { li.removeClass('closed'); }
         else                        { li.addClass('closed');    }
       });
-      span.on('click', new_section_selected);
+      span.on('click',section_selected);
+
+      const ul = $('<ul>').addClass('elements').appendTo(li);
+
+      _element_sorters[sid] = new Sortable( ul[0],
+        {
+          group: { name:'elements', pull:true, pust:true },
+          animation: 150,
+          disabled: true,
+          onEnd: handle_drop_element,
+        }
+      );
 
       Object.entries(content.elements)
       .filter( ([eid,element]) => element.section == sid )
@@ -58,18 +89,34 @@ export default function editor_tree(ce,menubar)
           eli.addClass('multi'); 
         }
         eli.appendTo(ul);
-        eli.on('click',new_element_selected);
+        eli.on('click',element_selected);
       });
     });
-
-    // Tree sorting
-    if( editable ) {
-      setup_sorting();
-      enable_sorting();
-    }
   }
 
-  function new_section_selected(e)
+  // disable_sorting pretty much does what it says
+  //   it disables sorting of both ul.sections and ul.elements
+  //   it hides the "drag-n-drop" info box
+  function disable_sorting()
+  {
+    _info.hide();
+    _section_sorter.option('disabled',true);
+    Object.values(_element_sorters).forEach( (s) => s.option('disabled',true) );
+  }
+
+  // enable_sorting pretty much does what it says
+  //   it enables sorting of both ul.sections and ul.elements
+  //   it shows the "drag-n-drop" info box
+  function enable_sorting()
+  {
+    _info.show();
+    _section_sorter.option('disabled',false);
+    Object.values(_element_sorters).forEach( (s) => s.option('disabled',false) );
+  }
+
+
+  // handles clicks on any of the li.section in the editor tree
+  function section_selected(e)
   {
     clear_selection();
 
@@ -77,10 +124,11 @@ export default function editor_tree(ce,menubar)
     li.addClass('selected');
     const sid = li.data('section');
 
-    menubar.new_section_selected(sid);
+    $(document).trigger('UserSelectedSection',{sid:sid});
   }
 
-  function new_element_selected(e)
+  // handles clicks on any of the li.element in the editor tree
+  function element_selected(e)
   {
     clear_selection();
 
@@ -88,18 +136,22 @@ export default function editor_tree(ce,menubar)
     const eid = $(this).data('element');
     $(this).parent().parent().addClass('selected-child');
 
-    menubar.new_element_selected(eid);
+    $(document).trigger('UserSelectedElement',{eid:eid});
   }
-  
-  _section_sorter = new Sortable( _tree[0],
-    {
-      group: 'sections',
-      animation: 150,
-      filter: '.element',
-      onEnd: handle_drop_section,
-    }
-  );
 
+  //
+  // User driven reordering of the editor tree
+  //
+  
+  // move_section function handles requests to move a li.section DOM element
+  //   to a new location under the ul.sections DOM element.
+  // This function does not care where the request came from.  It could be
+  //   the result of a SortableJS drag-n-drop.  It could be the result of
+  //   the user clicking on the up|down arrows in the menubar.
+  // This function simply works out the necessary jquery calls necessary
+  //   to update the DOM.
+  // It triggers a SurveyContentWasReordered custom event on success
+  //   and returns true.  It returns false on failure.
   function move_section(sectionId,toIndex) 
   {
     const all_sections = _tree.children('li.section');
@@ -112,29 +164,29 @@ export default function editor_tree(ce,menubar)
 
     const fromIndex = all_sections.index(move_li);
 
-    // test case 1: move up the list (toIndex < fromIndex)
-    //    Before: 0 1 2 3 4 5 6 7 8 9
-    //    move("5",2) {tgt_li="2" / move_li="5" / fromIndex=5}
-    //      "5".insertBefore("2")
-    //    result: 0 1 5 2 3 4 6 7 8 9
-    //
-    // test case 2: move down the list (toIndex > fromIndex)
-    //    Before: 0 1 2 3 4 5 6 7 8 9
-    //    move("4",9) { tgt_li="9" / move_li="4" / fromIndex=4}
-    //      "4".insertAfter("9")
-    //    result: 0 1 2 3 5 6 7 8 9 4
-    //
-    // test case 3: no move needed (toIndex === fromIndex)
-    //    do nothing other than raturn true (the section is at the requested position)
-
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
-    $(document).trigger('SurveyContentReordered');
+    $(document).trigger('SurveyContentWasReordered');
 
     return true;
   }
 
+  // Watch for any RequestMoveSection events and unpackage it to
+  //   make the desired call to move_section.
+  $(document).on('RequestMoveSection', function(e,kwargs) {
+    move_section(kwargs.sectionId, kwargs.toIndex);
+  });
+
+  // move_element function handles requests to move a li.element DOM element
+  //   to a new location under any of the ul.elements DOM element.
+  // This function does not care where the request came from.  It could be
+  //   the result of a SortableJS drag-n-drop.  It could be the result of
+  //   the user clicking on the up|down arrows in the menubar.
+  // This function simply works out the necessary jquery calls necessary
+  //   to update the DOM.
+  // It triggers a SurveyContentWasReordered custom event on success
+  //   and returns true.  It returns false on failure.
   function move_element(elementId,toSectionId,toIndex)
   {
     // notation:
@@ -182,44 +234,23 @@ export default function editor_tree(ce,menubar)
       }
     }
 
-    update_selected_child();
+    update_parent_section();
 
-    $(document).trigger('SurveyContentReordered');
+    $(document).trigger('SurveyContentWasReordered');
     return true;
   }
 
-  menubar.set_move_section_hook(move_section);
-  menubar.set_move_element_hook(move_element);
+  // Watch for any RequestMoveElement events and unpackage it to
+  //   make the desired call to move_element.
+  $(document).on('RequestMoveElement', function(e,kwargs) {
+    move_element(kwargs.elementId, kwargs.toSectionId, kwargs.toIndex);
+  });
 
-  function setup_sorting()
-  {
-    _section_sorter.option('disabled',false);
-    _tree.find('ul.elements').each( function() {
-      const sorter = new Sortable( this,
-        {
-          group: { name:'elements', pull:true, pust:true },
-          animation: 150,
-          onEnd: handle_drop_element,
-        }
-      );
-      _element_sorters.push(sorter);
-    });
-  }
 
-  function disable_sorting()
-  {
-    _info.hide();
-    _section_sorter.option('disabled',true);
-    _element_sorters.forEach( (s) => s.option('disabled',true) );
-  }
-
-  function enable_sorting()
-  {
-    _info.show();
-    _section_sorter.option('disabled',false);
-    _element_sorters.forEach( (s) => s.option('disabled',false) );
-  }
-
+  // Handle SortableJS onEnd from the ul.sections sorter.
+  //   Unpacks the onEnd custom event in order to add the move section action
+  //   to the undo manager.
+  // It also triggers a SurveyContentWasReordered custom event
   function handle_drop_section(e)
   {
     if(e.oldIndex === e.newIndex) { return false; }
@@ -230,10 +261,14 @@ export default function editor_tree(ce,menubar)
       redo() { move_section(sectionId,e.newIndex); },
     });
 
-    $(document).trigger('SurveyContentReordered');
+    $(document).trigger('SurveyContentWasReordered');
     return true;
   }
 
+  // Handle SortableJS onEnd from any of the ul.elements sorters.
+  //   Unpacks the onEnd custom event in order to add the move element action
+  //   to the undo manager.
+  // It also triggers a SurveyContentWasReordered custom event
   function handle_drop_element(e)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
@@ -246,34 +281,48 @@ export default function editor_tree(ce,menubar)
       redo() { move_element(elementId,to_section,e.newIndex); },
     });
 
-    update_selected_child();
-    $(document).trigger('SurveyContentReordered');
+    update_parent_section();
+    $(document).trigger('SurveyContentWasReordered');
     return true;
   }
 
-  function update_selected_child()
+  //
+  // User section/element selection handlers
+  //
+  
+  // if the selected item is an li.element, adds the selected-child class
+  //   to the li.section that contains the selected li.element
+  function update_parent_section()
   {
     _tree.find('.selected-child').removeClass('selected-child');
+
     const selected_element = _tree.find('li.element.selected');
-    selected_element.parent().parent().addClass('selected-child');
+    if( selected_element.length === 1 ) {
+      selected_element.parent().parent().addClass('selected-child');
+    }
   }
 
+  // clears all class attributes associated with section/element selection
   function clear_selection()
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
-    menubar.clear_selection();
   }
 
+  // clicking anywhere in the editor tree box other than on one of the sections
+  //   or elements clears the current selection
   _box.on('click', function(e) {
     const clicked_li = $(e.target).closest('li');
     if(clicked_li.length === 0) {
       clear_selection();
+      $(document).trigger('UserClearedSelection');
     }
   });
 
   return {
-    reset: reset,
-    update_content: update_content,
+    reset:  reset,               // clears the tree and disables user sorting
+    update: update,              // updates content of the survey tree
+    enable:  enable_sorting,     // enables sorting
+    disable: disable_sorting,    // disables sorting
   };
 }

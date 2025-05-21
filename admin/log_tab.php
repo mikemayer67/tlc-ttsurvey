@@ -101,7 +101,7 @@ echo <<<HTMLCTRLS
 <div class='content-box'>
   <textarea id='log-display' readonly rows=20></textarea>
 </div>
-<div class='log-button-bar'>
+<div class='log-submit-bar'>
   <a id='log-download-link' href='$download_uri' class='left' download>Download</a>
   <a id='log-newtab-link' href='$newtab_uri' class='left' target='blank_'>Open in New Tab</a>
   <input id='log-refesh-button' type='submit'  class='right' name='refresh' value='Refresh Now'>

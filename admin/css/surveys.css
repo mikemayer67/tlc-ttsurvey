@@ -83,13 +83,13 @@
   align-self: flex-start;
 }
 
-#ttt-body div.body form div.button-bar {
+#ttt-body div.body form div.submit-bar {
   overflow:none;
   transition: all 0.25s ease;
   height:2em;
 }
 
-#ttt-body div.body form div.button-bar.hidden {
+#ttt-body div.body form div.submit-bar.hidden {
   opacity:0;
   transform: scaleY(0);
   height:0;

@@ -14,17 +14,16 @@ export default function editor_menubar(ce)
   const _undo              = _mbar.find('button.undo');
   const _redo              = _mbar.find('button.redo');
 
-  // callback hooks
-  let move_section = null;
-  let move_element = null;
-  let delete_section = null;
-  let delete_element = null;
-
   const _buttons = [
-    _up, _down,
+    _up, _down, _delete, _undo, _redo,
     _add_section_below, _add_section_above,
     _add_element_below, _add_element_above, _add_element_clone,
-    _delete, _undo, _redo,
+  ];
+
+  const _selection_buttons = [
+    _up, _down, _delete,
+    _add_section_below, _add_section_above,
+    _add_element_below, _add_element_above, _add_element_clone,
   ];
 
   if(ce.isMac) {
@@ -56,33 +55,33 @@ export default function editor_menubar(ce)
 
   _delete.on('click', function() {
     const item = _tree.find('li.selected');
-    const isSection = item.hasClass('section');
-    if(isSection) { if(delete_section) { delete_section(item.data('section')); } }
-    else          { if(delete_element) { delete_element(item.data('element')); } }
-  });
 
+    const isSection = item.hasClass('section');
+    if( isSection ) { $(document).trigger('RequestDeleteSection', [item.data('section')]) } 
+    else            { $(document).trigger('RequestDeleteElement', [item.data('element')]) }
+  });
 
   // Up/Down Buttons
 
-  _up.on('click',-1,move_selected);
-  _down.on('click',1,move_selected);
+  _up.on(  'click', -1, request_move);
+  _down.on('click',  1, request_move);
 
-  function move_selected(e) {
+  function request_move(e) {
     const delta = e.data;
-    const selected_item = _tree.find('li.selected');
 
-    // there is an implicit design assumption that any selected item will have 
-    //   either the 'section' or 'element' class and never both
+    // if everything is working, there will never be more than one <li> selected
+    const selected_item = _tree.find('li.selected');
+    if(selected_item.length !== 1) { return; }
+
+    // there is an implicit design assumption and that selected <li> will have 
+    //   either the 'section'  or 'element' class and never both.
     const isSection = selected_item.hasClass('section');
-    if(isSection) { move_selected_section(selected_item,delta); } 
-    else          { move_selected_element(selected_item,delta); }
+    if(isSection) { request_move_section(selected_item,delta); } 
+    else          { request_move_element(selected_item,delta); }
   }
 
-  function move_selected_section(item,delta) {
+  function request_move_section(item,delta) {
     // input item should be a li.section jquery object
-
-    // but only do something if the hook into editor_tree was set.
-    if(!move_section) { return false; }
 
     const allSections = _tree.children('li.section');
     const curIndex    = allSections.index(item);
@@ -97,19 +96,26 @@ export default function editor_menubar(ce)
     //   selecting a new section, the new_section_selected function captures all
     //   the necessary DOM element state updates associated with a move.
     ce.undo_manager.add_and_exec( {
-      redo() { move_section(sectionId,newIndex); new_section_selected(sectionId); },
-      undo() { move_section(sectionId,curIndex); new_section_selected(sectionId); },
-    });
+      redo() { 
+        $(document).trigger('RequestMoveSection', {
+          sectionId:sectionId,
+          toIndex:newIndex,
+        });
+      },
+      undo() { 
+        $(document).trigger('RequestMoveSection', {
+          sectionId:sectionId,
+          toIndex:curIndex,
+        });
+      },
+    } );
 
     return true;
   }
 
-  function move_selected_element(item,delta) {
+  function request_move_element(item,delta) {
     // input item should be a li.element jquery object
     // input delta must be +/- 1.  Other values could break moving between sections
-
-    // but only do something if the hook into editor_tree was set.
-    if(!move_element) { return false; }
 
     const elementId    = item.data('element');
     const curSectionLI = item.parent().parent();
@@ -140,88 +146,116 @@ export default function editor_menubar(ce)
     }
 
     ce.undo_manager.add_and_exec( {
-      redo() { move_element(elementId,newSectionId,newIndex); new_element_selected(elementId); },
-      undo() { move_element(elementId,curSectionId,curIndex); new_element_selected(elementId); },
-    });
+      redo() { 
+        $(document).trigger('RequestMoveElement', {
+          elementId:elementId,
+          toSectionId:newSectionId,
+          toIndex:newIndex,
+        });
+      },
+      undo() { 
+        $(document).trigger('RequestMoveElement', {
+          elementId:elementId,
+          toSectionId:curSectionId,
+          toIndex:curIndex,
+        });
+      },
+    } );
 
     return true;
   }
 
 
-  // Exported Methods
+  //
+  // Selection change handlers
+  //
 
-  function new_section_selected(sid) {
-    const sections = _tree.find('li.section');
-    const first_sid = sections.first().data('section');
-    const last_sid = sections.last().data('section');
+  function update_selection_buttons()
+  {
+    const selected_item = _tree.find('li.selected');
 
-    _up.attr('disabled',sid===first_sid);
-    _down.attr('disabled',sid===last_sid);
+    if(selected_item.length !== 1) {
+      _selection_buttons.forEach( (b) => b.attr('disabled',true) );
+    }
+    else if(selected_item.hasClass('section')) {
+      _add_section_below.attr('disabled',false);
+      _add_section_above.attr('disabled',false);
+      _add_element_below.attr('disabled',false);
+      _add_element_above.attr('disabled',true);
+      _add_element_clone.attr('disabled',true);
+      _delete.attr('disabled',false);
+    }
+    else { // element selected
+      _add_section_below.attr('disabled',true);
+      _add_section_above.attr('disabled',true);
+      _add_element_below.attr('disabled',false);
+      _add_element_above.attr('disabled',false);
+      _add_element_clone.attr('disabled',false);
+      _delete.attr('disabled',false);
+    }
 
-    _add_section_below.attr('disabled',false);
-    _add_section_above.attr('disabled',false);
-    _add_element_below.attr('disabled',false);
-    _add_element_above.attr('disabled',true);
-    _add_element_clone.attr('disabled',true);
-    _delete.attr('disabled',false);
+    update_up_down_buttons();
   }
+  $(document).on('UserSelectedSection',update_selection_buttons);
+  $(document).on('UserSelectedElement',update_selection_buttons);
+  $(document).on('UserClearedSelection',update_selection_buttons);
 
-  function new_element_selected(eid) {
-    const sections = _tree.find('li.section');
-    const elements = _tree.find('li.element');
-    const first_eid = elements.first().data('element');
-    const last_eid = elements.last().data('element');
+  function update_up_down_buttons()
+  {
+    const selected_item = _tree.find('li.selected');
 
-    if(eid!==first_eid) {
-      _up.attr('disabled',false);
-    } else if(sections.first().find('li').length==0) {
-      // we're first, but there is at least one section above the current
-      // that is empty, we can move the element up there
-      _up.attr('disabled',false);
-    } else {
-      // we're the very first element and the first section has elements,
-      // so we must be the first element in the first section.
-      // there is nowhere to move the element up to
+    if(selected_item.length !== 1) {
       _up.attr('disabled',true);
-    }
-
-    if(eid!==last_eid) {
-      _down.attr('disabled',false);
-    } else if(sections.last().find('li').length==0) {
-      // we're last, but there is at least one section below the current
-      // that is empty, we can move the element down there
-      _down.attr('disabled',false);
-    } else {
-      // we're the very last element and the last section has elements,
-      // so we must be the last element in the last section.
-      // there is nowhere to move the element down to
       _down.attr('disabled',true);
+      return;
+    } 
+
+    // there has to be at least one section, otherwise selected_item would be empty
+    const sections  = _tree.find('li.section');
+    const first_section = sections.first();
+    const last_section  = sections.last();
+
+    if(selected_item.hasClass('section')) {
+      // handle case where selected item is a section
+      _up.attr(  'disabled', selected_item.is(first_section));  // cannot move first section up
+      _down.attr('disabled', selected_item.is(last_section));   // cannot move last section down
+    } 
+    else {
+      // handle case where selected item is an element
+      const elements = _tree.find('li.element');
+      const first_element = elements.first();
+      const last_element  = elements.last();
+
+      if(!selected_item.is(first_element)) { // not first element, can move up
+        _up.attr('disabled',false);
+      } else if( first_section.find('li.element').length == 0 ) {
+        // the selected item is first, but there is at least one section above
+        // that is empty, we can move the element up there
+        _up.attr('disabled',false);
+      } else {
+        // the selected item is the first element in the first section
+        // there is nowhere to move it up to
+        _up.attr('disabled',true);
+      }
+
+      if(!selected_item.is(last_element)) { // not last element, can move down
+        _down.attr('disabled',false);
+      } else if( last_section.find('li.element').length == 0 ) {
+        // the selected item is last, but there is at least one section below
+        // that is empty, we can move the element down there
+        _down.attr('disabled',false);
+      } else {
+        // the selected item is the last element in the last section
+        // there is nowhere to move it down to
+        _down.attr('disabled',true);
+      }
     }
-
-    _add_section_below.attr('disabled',true);
-    _add_section_above.attr('disabled',true);
-    _add_element_below.attr('disabled',false);
-    _add_element_above.attr('disabled',false);
-    _add_element_clone.attr('disabled',false);
-    _delete.attr('disabled',false);
   }
+  $(document).on('SurveyContentWasReordered',update_up_down_buttons);
 
-  function clear_selection() {
-    [ _up, _down, _delete,
-      _add_section_below, _add_section_above,
-      _add_element_below, _add_element_above, _add_element_clone,
-    ].forEach( (b) => { b.attr('disabled',true); });
-  }
 
   return {
-    new_section_selected: new_section_selected,
-    new_element_selected: new_element_selected,
-    clear_selection: clear_selection,
     show(v=true) { if(v) { _mbar.show() } else { _mbar.hide() } },
-    hide()  { _mbar.hide() },
-    set_move_section_hook(f)   { move_section   = f; },
-    set_move_element_hook(f)   { move_element   = f; },
-    set_delete_section_hook(f) { delete_section = f; },
-    set_delete_element_hook(f) { delete_element = f; },
+    hide()       { _mbar.hide() },
   };
 }

@@ -165,6 +165,7 @@ function survey_content($survey_id)
     'sections' => $sections,
     'options'  => $options,
     'elements' => $elements,
+    'next_ids' => ['survey'=>100, 'element'=>200, 'option'=>50],
   ];
 }
 

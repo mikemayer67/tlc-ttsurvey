@@ -103,7 +103,7 @@ $(document).ready(
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 
-  ce.button_bar = ce.form.find('div.button-bar');
+  ce.submit_bar = ce.form.find('div.submit-bar');
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
 

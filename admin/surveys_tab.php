@@ -119,7 +119,7 @@ echo <<<HTML
 
 <!--Button Bar-->
 </div>
-<div class='button-bar'>
+<div class='submit-bar'>
   <input id='changes-submit' class='submit' type='submit' value='Save Changes'>
   <input id='changes-revert' class='revert' type='submit' value='Revert' formnovalidate>
 </div>

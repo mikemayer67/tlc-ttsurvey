@@ -36,16 +36,26 @@ export default function draft_controller(ce)
     ce.form.find('input.watch').on('input',ce.handle_input).on('change',ce.handle_change);
     ce.form.find('select.watch').on('change',ce.handle_change);
 
-    ce.button_bar.show();
+    ce.submit_bar.show();
     ce.submit.val('Save Changes').prop('disabled',true);
     ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
 
-    const content = ce.survey_data.content(ce.cur_survey.id);
-    ce.survey_editor.enable();
-    ce.survey_editor.update_content(ce.cur_survey.id);
+    // note that if the content associated with the current survey has not yet been
+    //   retrieved from the server, the returned content value will be null and an
+    //   AJAX call will be issued to retrieve the data.  On completion of retrieving
+    //   the data, a ContentDataLoaded event will be triggered.
+    const content = ce.survey_data.content( ce.cur_survey.id );
 
+    ce.survey_editor.enable();
+    ce.survey_editor.update(content);
     validate_all();
   }
+
+  $(document).on('ContentDataLoaded', function(e,id,data) { 
+    ce.survey_editor.update(data);
+    validate_all();
+  } );
+
 
   function update_info()
   {
@@ -109,7 +119,7 @@ export default function draft_controller(ce)
     ce.submit.prop('disabled',has_errors || !dirty);
   }
 
-  $(document).on('SurveyContentReordered',update_submit_revert);
+  $(document).on('SurveyContentWasReordered',update_submit_revert);
 
   function validate_pdf_action()
   {
@@ -163,7 +173,8 @@ export default function draft_controller(ce)
     if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
     else                                     { _survey_pdf.hide(); }
 
-    ce.survey_editor.revert();
+    const content = ce.survey_data.content( ce.cur_survey.id );
+    ce.survey_editor.update(content);
 
     _changes = {};
     $(document).trigger('SurveyDataChanged');
