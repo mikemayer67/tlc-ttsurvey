@@ -165,6 +165,21 @@ export default function editor_menubar(ce)
     return true;
   }
 
+  // Add section buttons
+
+  _add_section_above.on('click', () => request_new_section(-1) );
+  _add_section_below.on('click', () => request_new_section( 1) );
+
+  function request_new_section(delta) {
+    const curSelection = _tree.find('li.section.selected'); 
+    if(curSelection.length === 1) {
+      $(document).trigger('AddNewSection',{
+        section_id:ce.survey_editor.next_section_id(),
+        direction:delta,
+        relativeTo:curSelection,
+      });
+    }
+  }
 
   //
   // Selection change handlers

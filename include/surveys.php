@@ -68,14 +68,14 @@ function survey_content($survey_id)
 {
   todo('remove bogus survey content');
   $sections = [
-    1 => [ 'name' => 'Welcome', 'show' => 0, 'feedback' => 0 ],
-    2 => [ 'name' => 'Section 1', 'description' => "some words about section 1", 'show' => 1, 'feedback' => 0 ],
-    3 => [ 'name' => 'Section Deux', 'description' => "But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'show' => 1, 'feedback' => 1 ],
-    4 => [ 'name' => 'Section 3', 'description' => "some words about section 3", 'show' => 1, 'feedback' => 0 ],
-    5 => [ 'name' => 'Section 4', 'description' => "some words about section 4", 'show' => 1, 'feedback' => 0 ],
-    7 => [ 'name' => 'Section 5', 'description' => "some words about section 5", 'show' => 1, 'feedback' => 0 ],
-    9 => [ 'name' => 'Section 6', 'description' => "some words about section 6", 'show' => 1, 'feedback' => 0 ],
-    8 => [ 'name' => 'Section 7', 'description' => "some words about section 7", 'show' => 1, 'feedback' => 0 ],
+    1 => [ 'name'=>'Welcome', 'show'=>0, 'feedback'=>0 ],
+    2 => [ 'name'=>'Section 1', 'description'=>"some words about section 1", 'show'=>1, 'feedback'=>0 ],
+    3 => [ 'name'=>'Section Deux', 'description'=>"But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'show'=>1, 'feedback'=>1 ],
+    4 => [ 'name'=>'Section 3', 'description'=>"some words about section 3", 'show'=>1, 'feedback'=>0 ],
+    5 => [ 'name'=>'Section 4', 'description'=>"some words about section 4", 'show'=>1, 'feedback'=>0 ],
+    7 => [ 'name'=>'Section 5', 'description'=>"some words about section 5", 'show'=>1, 'feedback'=>0 ],
+    9 => [ 'name'=>'Section 6', 'description'=>"some words about section 6", 'show'=>1, 'feedback'=>0 ],
+    8 => [ 'name'=>'Section 7', 'description'=>"some words about section 7", 'show'=>1, 'feedback'=>0 ],
   ];
   $options = [
     1 => 'neative i^2',

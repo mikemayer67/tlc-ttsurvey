@@ -47,34 +47,8 @@ export default function editor_tree(ce)
     .sort((a,b) => a-b)
     .forEach( sid => { // section id
       const section = content.sections[sid];
-
-      const btn = $('<button>').addClass('toggle');
-      const span = $('<span>').text(section.name).addClass('name');
-      const div = $('<div>').append(btn,span);
-
-      const li = $('<li>')
-      .addClass('section closed')
-      .attr('data-section',sid)
-      .html(div)
-      .appendTo(_tree);
-
-      btn.on('click', function(e) {
-        const li = $(this).parent().parent();
-        if( li.hasClass('closed') ) { li.removeClass('closed'); }
-        else                        { li.addClass('closed');    }
-      });
-      span.on('click',section_selected);
-
-      const ul = $('<ul>').addClass('elements').appendTo(li);
-
-      _element_sorters[sid] = new Sortable( ul[0],
-        {
-          group: { name:'elements', pull:true, pust:true },
-          animation: 150,
-          disabled: true,
-          onEnd: handle_drop_element,
-        }
-      );
+      const [li,ul] = create_section_li(sid,section.name);
+      li.appendTo(_tree);
 
       Object.entries(content.elements)
       .filter( ([eid,element]) => element.section == sid )
@@ -92,6 +66,48 @@ export default function editor_tree(ce)
         eli.on('click',element_selected);
       });
     });
+  }
+
+  function create_section_li(sid,name)
+  {
+    const btn = $('<button>').addClass('toggle');
+
+    const span = $('<span>').addClass('name');
+    if(name) {
+      span.text(name);
+    } else {
+      span.text('[needs name]');
+    }
+
+    const div = $('<div>').append(btn,span);
+
+    const li = $('<li>')
+    .addClass('section closed')
+    .attr('data-section',sid)
+    .html(div)
+
+    if(!name) {
+      span.addClass('incomplete').addClass('missing');
+    }
+
+    btn.on('click', function(e) {
+      const li = $(this).parent().parent();
+      if( li.hasClass('closed') ) { li.removeClass('closed'); }
+      else                        { li.addClass('closed');    }
+    });
+    span.on('click',section_selected);
+
+    const ul = $('<ul>').addClass('elements').appendTo(li);
+    _element_sorters[sid] = new Sortable( ul[0],
+      {
+        group: { name:'elements', pull:true, put:true },
+        animation: 150,
+        disabled: true,
+        onEnd: handle_drop_element,
+      }
+    );
+
+    return [li,ul];
   }
 
   // disable_sorting pretty much does what it says
@@ -318,6 +334,24 @@ export default function editor_tree(ce)
       $(document).trigger('UserClearedSelection');
     }
   });
+
+  //
+  // Insertions and Deletions
+  //
+
+  $(document).on('AddNewSection', function(e,data) {
+    const [li,ul] = create_section_li(data.section_id)
+    if(data.direction<0) { li.insertBefore(data.relativeTo); }
+    else                 { li.insertAfter(data.relativeTo); }
+    // if we got here, editing must be enabled.
+    _element_sorters[data.section_id].option('disabled',false);
+
+    $(document).trigger('SurveyContentWasModified');
+  });
+
+  //
+  // Return
+  //
 
   return {
     reset:  reset,               // clears the tree and disables user sorting

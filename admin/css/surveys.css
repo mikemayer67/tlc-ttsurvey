@@ -204,7 +204,7 @@
  * Content Editor
  ***************************************/
 
-#ttt-body form #content-editor
+#ttt-body #content-editor
 {
   flex: 1 1 auto;
   display:flex;
@@ -217,7 +217,7 @@
  * Content Editor Menubar
  ***************************************/
 
-#ttt-body form  #content-editor div.menubar {
+#ttt-body #content-editor div.menubar {
   background-color:#ccc;
   margin: 0.5em 0.5em 0 0.5em;;
   border: solid black 1px;
@@ -227,14 +227,14 @@
   flex-direction:row;
 }
 
-#ttt-body form  #content-editor div.menubar button {
+#ttt-body #content-editor div.menubar button {
   background-color:white;
   padding:0;
   width: 30px;
   height: 30px;
   margin: 3px 0;
 }
-#ttt-body form  #content-editor div.menubar button:disabled {
+#ttt-body #content-editor div.menubar button:disabled {
   border: 1px solid black;
   box-shadow: none;
   background-color:#ddd;
@@ -242,22 +242,22 @@
   cursor: not-allowed;
 }
 
-#ttt-body form  #content-editor div.menubar button.up,
-#ttt-body form  #content-editor div.menubar button.add.below,
-#ttt-body form  #content-editor div.menubar button.delete
+#ttt-body #content-editor div.menubar button.up,
+#ttt-body #content-editor div.menubar button.add.below,
+#ttt-body #content-editor div.menubar button.delete
 {
   margin-left:0.5em;
 }
 
-#ttt-body form  #content-editor div.menubar button.undo {
+#ttt-body #content-editor div.menubar button.undo {
   margin-left:auto;
 }
 
-#ttt-body form  #content-editor div.menubar button.redo {
+#ttt-body #content-editor div.menubar button.redo {
   margin-right:0.5em;
 }
 
-#ttt-body form  #content-editor div.menubar button .icon {
+#ttt-body #content-editor div.menubar button .icon {
   width:24px;
   height:24px;
   display: inline-block;
@@ -280,7 +280,7 @@
  * Content Editor
  ***************************************/
 
-#ttt-body form  #content-editor div.body {
+#ttt-body #content-editor div.body {
   flex: 1 1 auto;
   padding-top:0;
   background:inherit;
@@ -293,7 +293,7 @@
   overflow:hidden;
 }
 
-#ttt-body form #content-editor #survey-tree {
+#ttt-body #survey-tree {
   width:25%;
   height:100%;
   min-height:0;
@@ -302,13 +302,13 @@
   overflow-y:auto;
 }
 
-#ttt-body form #content-editor div.resizer {
+#ttt-body #content-editor div.resizer {
   width:2px;
   background:#888;
   cursor:col-resize;
 }
 
-#ttt-body form #content-editor #element-editor {
+#ttt-body #content-editor #element-editor {
   flex:1;
   min-width:0;
   width:calc(75% - 3px);
@@ -316,42 +316,42 @@
   border: 1px solid black;
 }
 
-#ttt-body form #content-editor #survey-tree div.info {
+#ttt-body #survey-tree div.info {
   font-size:85%;
   font-style:italic;
 }
 
-#ttt-body form #content-editor #survey-tree ul {
+#ttt-body #survey-tree ul {
   padding-left:10px;
   margin-top:0;
 }
 
-#ttt-body form #content-editor #survey-tree ul ul {
+#ttt-body #survey-tree ul ul {
   padding-left:20px;
 }
 
-#ttt-body form #content-editor #survey-tree li.section {
+#ttt-body #survey-tree li.section {
   list-style-type:none;
 }
 
-#ttt-body form #content-editor #survey-tree li.section div {
+#ttt-body #survey-tree li.section div {
   display:flex;
   cursor:pointer;
 }
 
-#ttt-body form #content-editor #survey-tree li.section.selected div {
+#ttt-body #survey-tree li.section.selected div {
   background-color:#ffe41f;  /* from TLC logo */
 }
 
-#ttt-body form #content-editor #survey-tree li.selected-child div {
+#ttt-body #survey-tree li.selected-child div {
   background-color:#fff5b0;
 }
 
-#ttt-body form #content-editor #survey-tree li.element.selected {
+#ttt-body #survey-tree li.element.selected {
   background-color:#ffe41f;  /* from TLC logo */
 }
 
-#ttt-body form #content-editor #survey-tree li.section div button.toggle {
+#ttt-body #survey-tree li.section div button.toggle {
   background:none;
   border:none;
   padding:0;
@@ -362,34 +362,41 @@
   line-height:1;
 }
 
-#ttt-body form #content-editor #survey-tree li.section div button.toggle::before {
+#ttt-body #survey-tree li.section div button.toggle::before {
   content: "\25BC"; /* down arrow */
   display: inline-block;
 }
-#ttt-body form #content-editor #survey-tree li.section.closed div button.toggle::before {
+#ttt-body #survey-tree li.section.closed div button.toggle::before {
   content: "\25B6"; /* right arrow */
   display: inline-block;
 }
 
-#ttt-body form #content-editor #survey-tree li.section div span.name {
+#ttt-body #survey-tree li.section div span.name {
   font-weight:bolder;
 }
 
-#ttt-body form #content-editor #survey-tree li.section div span.name.header {
+#ttt-body #survey-tree li.section div span.name.header {
   font-style:italic;
 }
 
-#ttt-body form #content-editor #survey-tree li.section.closed ul {
+#ttt-body #survey-tree li.section.closed ul {
   display:none;
 }
 
-#ttt-body form #content-editor #survey-tree li.element {
+#ttt-body #survey-tree li.element {
   list-style-type:none;
   cursor:pointer;
-
 }
 
-#ttt-body form #content-editor #survey-tree li.element::before {
+#ttt-body #survey-tree .incomplete {
+  color:#b00;
+}
+
+#ttt-body #survey-tree .missing {
+  font-style:italic;
+}
+
+#ttt-body #survey-tree li.element::before {
   content: "";
   display: inline-block;
   background-size: contain;
@@ -399,23 +406,23 @@
   margin-right:0.25em;
   vertical-align: middle;
 }
-#ttt-body form #content-editor #survey-tree li.element.info::before {
+#ttt-body #survey-tree li.element.info::before {
   background-image: url('../../img/icons8/paragraph.png');
 }
 
-#ttt-body form #content-editor #survey-tree li.element.bool::before {
+#ttt-body #survey-tree li.element.bool::before {
   background-image: url('../../img/icons8/checked_checkbox.png');
 }
-#ttt-body form #content-editor #survey-tree li.element.options::before {
+#ttt-body #survey-tree li.element.options::before {
   background-image: url('../../img/icons8/unchecked_radio_button.png');
 }
-#ttt-body form #content-editor #survey-tree li.element.options.multi::before {
+#ttt-body #survey-tree li.element.options.multi::before {
   background-image: url('../../img/icons8/multiple_choice.png');
 }
-#ttt-body form #content-editor #survey-tree li.element.freetext::before {
+#ttt-body #survey-tree li.element.freetext::before {
   background-image: url('../../img/icons8/pencil.png');
 }
 
-#ttt-body form #content-editor #survey-tree li.drop-target {
+#ttt-body #survey-tree li.drop-target {
   background-color:pink;
 }

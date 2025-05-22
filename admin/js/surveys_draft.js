@@ -108,6 +108,7 @@ export default function draft_controller(ce)
   {
     const dirty = has_changes();
     const has_errors = ce.form.find('.invalid-value').length > 0;
+    const has_incomplete = ce.form.find('.incomplete').length > 0;
 
     if(dirty) {
       ce.revert.prop('disabled',false).css('opacity',1);
@@ -116,10 +117,11 @@ export default function draft_controller(ce)
       ce.revert.prop('disabled',true).css('opacity',0);
     }
 
-    ce.submit.prop('disabled',has_errors || !dirty);
+    ce.submit.prop('disabled',has_errors || has_incomplete || !dirty);
   }
 
   $(document).on('SurveyContentWasReordered',update_submit_revert);
+  $(document).on('SurveyContentWasModified',update_submit_revert);
 
   function validate_pdf_action()
   {

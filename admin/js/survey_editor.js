@@ -12,6 +12,7 @@ export default function survey_editor(ce)
 
   let _editable = false;
   let _content = null;
+  let _next_section_id = 1;
 
   setup_editor_resizer(ce,_editor_tree);
 
@@ -30,6 +31,10 @@ export default function survey_editor(ce)
       _editor_tree.update(_content);
 
       if(_editable) {
+        const sections = $('#survey-tree li.section').map(function() { 
+          return Number($(this).data('section')); 
+        }).get();
+        _next_section_id = 1 + Math.max(...sections)
         _editor_tree.enable(); 
       }
 
@@ -42,6 +47,12 @@ export default function survey_editor(ce)
 
     ce.undo_manager?.revert();
   }
+
+  // insertion handlers
+  
+  $(document).on('AddNewSection',function(e,data) {
+    _content.sections[ data.section_id ] = { name:"", description:"", show:false, feedback:false };
+  });
 
   // deletion handlers
 
@@ -63,5 +74,6 @@ export default function survey_editor(ce)
     disable() { _editable = false },
     enable() { _editable = true },
     update: update,
-  }
+    next_section_id() { return _next_section_id++ },
+  };
 };
