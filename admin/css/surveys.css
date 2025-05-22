@@ -422,6 +422,9 @@
 #ttt-body #survey-tree li.element.freetext::before {
   background-image: url('../../img/icons8/pencil.png');
 }
+#ttt-body #survey-tree li.element.missing::before {
+  background-image: url('../../img/icons8/missing.png');
+}
 
 #ttt-body #survey-tree li.drop-target {
   background-color:pink;

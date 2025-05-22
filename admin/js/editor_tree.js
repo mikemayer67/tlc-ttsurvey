@@ -54,16 +54,7 @@ export default function editor_tree(ce)
       .filter( ([eid,element]) => element.section == sid )
       .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
       .forEach( ([eid,element]) => {
-        const eli = $('<li>')
-        .addClass('element')
-        .addClass(element.type.toLowerCase())
-        .attr('data-element',eid)
-        .text(element.label);
-        if(element.multiple) { 
-          eli.addClass('multi'); 
-        }
-        eli.appendTo(ul);
-        eli.on('click',element_selected);
+        create_element_li(eid,element).appendTo(ul);
       });
     });
   }
@@ -108,6 +99,31 @@ export default function editor_tree(ce)
     );
 
     return [li,ul];
+  }
+
+  function create_element_li(eid,details)
+  {
+    const li = $('<li>').addClass('element').attr('data-element',eid);
+    li.on('click',element_selected);
+
+    if(details.label) {
+      li.text(details.label);
+    } else {
+      li.text('[needs label]');
+      li.addClass('incomplete');
+    }
+
+    if(details.type) {
+      li.addClass(details.type.toLowerCase());
+    } else {
+      li.addClass('missing');
+    }
+
+    if(details.multiple) {
+      li.addClass('multi');
+    }
+
+    return li;
   }
 
   // disable_sorting pretty much does what it says
@@ -340,11 +356,26 @@ export default function editor_tree(ce)
   //
 
   $(document).on('AddNewSection', function(e,data) {
-    const [li,ul] = create_section_li(data.section_id)
+    const [li,ul] = create_section_li(data.section_id);
     if(data.direction<0) { li.insertBefore(data.relativeTo); }
     else                 { li.insertAfter(data.relativeTo); }
     // if we got here, editing must be enabled.
     _element_sorters[data.section_id].option('disabled',false);
+
+    clear_selection();
+    li.addClass('selected');
+
+    $(document).trigger('SurveyContentWasModified');
+  });
+
+  $(document).on('AddNewElement', function(e,data) {
+    const li = create_element_li(data.element_id,data);
+    if(data.relativeTo.hasClass('section')) { li.prependTo(data.relativeTo.find('ul')); }
+    else if(data.direction<0)               { li.insertBefore(data.relativeTo); }
+    else                                    { li.insertAfter(data.relativeTo); }
+
+    clear_selection();
+    li.addClass('selected');
 
     $(document).trigger('SurveyContentWasModified');
   });

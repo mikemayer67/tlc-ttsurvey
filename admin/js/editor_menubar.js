@@ -181,6 +181,20 @@ export default function editor_menubar(ce)
     }
   }
 
+  _add_element_above.on('click', () => request_new_element(-1) );
+  _add_element_below.on('click', () => request_new_element( 1) );
+
+  function request_new_element(delta) {
+    const curSelection = _tree.find('li.selected');
+    if(curSelection.length === 1) { 
+      $(document).trigger('AddNewElement', {
+        element_id:ce.survey_editor.next_element_id(),
+        direction:delta,
+        relativeTo:curSelection,
+      });
+    }
+  }
+
   //
   // Selection change handlers
   //
