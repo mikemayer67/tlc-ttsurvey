@@ -108,9 +108,9 @@ IF version < 1 THEN
   CREATE TABLE tlc_tt_survey_sections (
     survey_id   int          NOT NULL,
     survey_rev  int          NOT NULL,
-    section     int                             COMMENT 'Order this section will appear in the survey form. (NULL excludes section).'
+    sequence    int                             COMMENT 'Order this section will appear in the survey form. (NULL excludes section).'
     name        varchar(45)  NOT NULL           COMMENT 'Section name that will appear in the editor and on survey tabs'
-    show        tinyint      NOT NULL DEFAULT 1 COMMENT 'Whether to include the name as a section header'
+    show_name   tinyint      NOT NULL DEFAULT 1 COMMENT 'Whether to include the name as a section header'
     description varchar(512) DEFAULT NULL       COMMENT 'Section description that will appear in the survey form',
     feedback    tinyint      NOT NULL DEFAULT 0 COMMENT 'Include a general feedback textarea for this section',
     PRIMARY KEY (survey_id,survey_rev,section),

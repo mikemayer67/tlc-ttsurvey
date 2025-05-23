@@ -1,6 +1,6 @@
 export default function undo_manager(ce)
 {
-  const MAX_UNDO_DEPTH = 200;
+  const MAX_UNDO_DEPTH = 1000;
   const MAX_REVERT_DEPTH = 25;
 
   const _undo_stack = [];

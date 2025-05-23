@@ -86,7 +86,10 @@ export default function editor_tree(ce)
       if( li.hasClass('closed') ) { li.removeClass('closed'); }
       else                        { li.addClass('closed');    }
     });
-    span.on('click',section_selected);
+    span.on('click',function(e) {
+      // li.section is grandparent of span
+      section_selected($(this).parent().parent());
+    });
 
     const ul = $('<ul>').addClass('elements').appendTo(li);
     _element_sorters[sid] = new Sortable( ul[0],
@@ -104,7 +107,9 @@ export default function editor_tree(ce)
   function create_element_li(eid,details)
   {
     const li = $('<li>').addClass('element').attr('data-element',eid);
-    li.on('click',element_selected);
+    li.on('click',function() {
+      element_selected($(this));
+    });
 
     if(details.label) {
       li.text(details.label);
@@ -148,27 +153,23 @@ export default function editor_tree(ce)
 
 
   // handles clicks on any of the li.section in the editor tree
-  function section_selected(e)
+  function section_selected(li)
   {
-    clear_selection();
+    highlight_selection(li);
 
-    const li = $(this).parent().parent();
-    li.addClass('selected');
-    const sid = li.data('section');
-
-    $(document).trigger('UserSelectedSection',{sid:sid});
+    $(document).trigger('UserSelectedSection',{
+      sid:li.data('section'),
+    });
   }
 
   // handles clicks on any of the li.element in the editor tree
   function element_selected(e)
   {
-    clear_selection();
+    highlight_selection(e);
 
-    $(this).addClass('selected');
-    const eid = $(this).data('element');
-    $(this).parent().parent().addClass('selected-child');
-
-    $(document).trigger('UserSelectedElement',{eid:eid});
+    $(document).trigger('UserSelectedElement',{
+      eid:$(this).data('element'),
+    });
   }
 
   //
@@ -199,6 +200,7 @@ export default function editor_tree(ce)
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
+    highlight_selection(move_li);
     $(document).trigger('SurveyContentWasReordered');
 
     return true;
@@ -266,8 +268,7 @@ export default function editor_tree(ce)
       }
     }
 
-    update_parent_section();
-
+    highlight_selection(move_eli);
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -293,6 +294,7 @@ export default function editor_tree(ce)
       redo() { move_section(sectionId,e.newIndex); },
     });
 
+    highlight_selection($(e.item));
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -313,7 +315,7 @@ export default function editor_tree(ce)
       redo() { move_element(elementId,to_section,e.newIndex); },
     });
 
-    update_parent_section();
+    highlight_selection($(e.item));
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -341,6 +343,18 @@ export default function editor_tree(ce)
     _tree.find('.selected-child').removeClass('selected-child');
   }
 
+  function highlight_selection(e)
+  {
+    clear_selection();
+    if(e) {
+      e.addClass('selected');
+      if(e.hasClass('element')) {
+        e.parent().parent().addClass('selected-child');
+      }
+    }
+  }
+
+
   // clicking anywhere in the editor tree box other than on one of the sections
   //   or elements clears the current selection
   _box.on('click', function(e) {
@@ -355,39 +369,82 @@ export default function editor_tree(ce)
   // Insertions and Deletions
   //
 
-  $(document).on('AddNewSection', function(e,data) {
-    const [li,ul] = create_section_li(data.section_id);
-    if(data.direction<0) { li.insertBefore(data.relativeTo); }
-    else                 { li.insertAfter(data.relativeTo); }
-    // if we got here, editing must be enabled.
-    _element_sorters[data.section_id].option('disabled',false);
+  function add_section(section_id, section, where)
+  {
+    const [new_li,] = create_section_li(section_id);
+    const existing_li = _tree.find(`li.section[data-section=${where.section_id}]`);
+    if(where.offset < 0) { new_li.insertBefore(existing_li); }
+    else                 { new_li.insertAfter(existing_li); }
 
-    clear_selection();
-    li.addClass('selected');
+    // if we got here, editing must be enabled, turn on sorting in new ul.elements
+    _element_sorters[section_id].option('disabled',false);
 
+    highlight_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
-  });
+  }
 
-  $(document).on('AddNewElement', function(e,data) {
-    const li = create_element_li(data.element_id,data);
-    if(data.relativeTo.hasClass('section')) { li.prependTo(data.relativeTo.find('ul')); }
-    else if(data.direction<0)               { li.insertBefore(data.relativeTo); }
-    else                                    { li.insertAfter(data.relativeTo); }
+  function add_element(element_id, element, where)
+  {
+    const new_li = create_element_li(element_id,element);
+    if(where.section_id) {
+      const section_li = _tree.find(`li.section[data-section=${where.section_id}]`);
+      const elements_ul = section_li.children('ul.elements');
+      new_li.prependTo(elements_ul);
+    } else {
+      const existing_li = _tree.find(`li.element[data-element=${where.element_id}]`);
+      if(where.offset < 0) { new_li.insertBefore(existing_li); }
+      else                 { new_li.insertAfter(existing_li); }
+    }
 
-    clear_selection();
-    li.addClass('selected');
-
+    highlight_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
-  });
+  }
+
+  function remove_section(section_id)
+  {
+    _element_sorters[section_id].destroy();
+    _tree.find(`li.section[data-section=${section_id}]`).remove();
+    clear_selection();
+    $(document).trigger('SurveyContentWasModified');
+  }
+
+  function remove_element(element_id)
+  {
+    _tree.find(`li.element[data-element=${element_id}]`).remove();
+    clear_selection();
+    $(document).trigger('SurveyContentWasModified');
+  }
+
+  function cache_highlight()
+  {
+    const curSelection = _tree.find('li.selected');
+    return {
+      section_id: curSelection.data('section'),
+      element_id: curSelection.data('element'),
+    };
+  }
+
+  function restore_highlight(cache)
+  {
+    if(cache.section_id) {
+      highlight_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
+    }
+  }
 
   //
   // Return
   //
 
   return {
-    reset:  reset,               // clears the tree and disables user sorting
-    update: update,              // updates content of the survey tree
-    enable:  enable_sorting,     // enables sorting
-    disable: disable_sorting,    // disables sorting
+    reset:  reset,                        // clears the tree and disables user sorting
+    update: update,                       // updates content of the survey tree
+    enable:  enable_sorting,              // enables sorting
+    disable: disable_sorting,             // disables sorting
+    add_section: add_section,             // (new_section_id, new_section object, where)
+    add_element: add_element,             // (new_element_id, new_element object, where)
+    remove_section: remove_section,       // (section_id)
+    remove_element: remove_element,       // (element_id)
+    cache_highlight: cache_highlight,     // returns object to pass to restore_highlight
+    restore_highlight: restore_highlight, // (object returned by cache_highlight)
   };
 }

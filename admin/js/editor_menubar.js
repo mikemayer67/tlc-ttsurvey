@@ -165,7 +165,7 @@ export default function editor_menubar(ce)
     return true;
   }
 
-  // Add section buttons
+  // Add section/element buttons
 
   _add_section_above.on('click', () => request_new_section(-1) );
   _add_section_below.on('click', () => request_new_section( 1) );
@@ -174,9 +174,8 @@ export default function editor_menubar(ce)
     const curSelection = _tree.find('li.section.selected'); 
     if(curSelection.length === 1) {
       $(document).trigger('AddNewSection',{
-        section_id:ce.survey_editor.next_section_id(),
-        direction:delta,
-        relativeTo:curSelection,
+        offset:delta,
+        section_id:curSelection.data('section'),
       });
     }
   }
@@ -188,12 +187,21 @@ export default function editor_menubar(ce)
     const curSelection = _tree.find('li.selected');
     if(curSelection.length === 1) { 
       $(document).trigger('AddNewElement', {
-        element_id:ce.survey_editor.next_element_id(),
-        direction:delta,
-        relativeTo:curSelection,
+        offset:delta,
+        section_id:curSelection.data('section'),
+        element_id:curSelection.data('element'),
       });
     }
   }
+
+  _add_element_clone.on('click', function() {
+    const curSelection = _tree.find('li.element.selected');
+    if(curSelection.length === 1) {
+      $(document).trigger('CloneElement', {
+        parent_id: curSelection.data('element'),
+      });
+    }
+  });
 
   //
   // Selection change handlers

@@ -52,12 +52,67 @@ export default function survey_editor(ce)
 
   // insertion handlers
   
-  $(document).on('AddNewSection',function(e,data) {
-    _content.sections[ data.section_id ] = { name:"", description:"", show:false, feedback:false };
+  $(document).on('AddNewSection',function(e,where) {
+    const new_section_id = _next_section_id++;
+    const new_section = { name:"", description:"", show:false, feedback:false };
+    const cur_highlight = _editor_tree.cache_highlight();
+
+    _content.sections[ new_section_id ] = new_section;
+
+    ce.undo_manager.add_and_exec( {
+      redo() {
+        _editor_tree.add_section( new_section_id, new_section, where );
+      },
+      undo() {
+        _editor_tree.remove_section(new_section_id);
+        _editor_tree.restore_highlight(cur_highlight);
+      },
+    });
   });
 
-  $(document).on('AddNewElement',function(e,data) {
-    _content.elements[ data.element_id ] = { type:null };
+  $(document).on('AddNewElement',function(e,where) {
+    const new_element_id = _next_element_id++;
+    const new_element = { type:null };
+    const cur_highlight = _editor_tree.cache_highlight();
+
+    _content.elements[ new_element_id ] = new_element;
+
+    ce.undo_manager.add_and_exec( {
+      redo() { 
+        _editor_tree.add_element(new_element_id, new_element, where);
+      },
+      undo() {
+        _editor_tree.remove_element(new_element_id);
+        _editor_tree.restore_highlight(cur_highlight);
+      },
+    });
+  });
+
+  $(document).on('CloneElement',function(e,data) {
+    if( data.parent_id in _content.elements ) {
+      const new_element_id = _next_element_id++;
+      const new_element = deepCopy( _content.elements[data.parent_id] );
+      new_element.label = null;
+      const cur_highlight = _editor_tree.cache_highlight();
+
+      _content.elements[new_element_id] = new_element; 
+
+      const where = { offset:1, element_id:data.parent_id };
+
+      ce.undo_manager.add_and_exec( {
+        redo() {
+          _editor_tree.add_element(new_element_id, new_element, where);
+        },
+        undo() {
+          // note that we are leaving the new element in _content.elements
+          //   this will make it more efficient to redo the clone later...
+          //   If the form is submitted without readding it to the DOM, it
+          //   simply will not be part of what gets submitted.
+          _editor_tree.remove_element(new_element_id);
+          _editor_tree.restore_highlight(cur_highlight);
+        },
+      });
+    }
   });
 
   // deletion handlers
@@ -80,7 +135,5 @@ export default function survey_editor(ce)
     disable() { _editable = false },
     enable() { _editable = true },
     update: update,
-    next_section_id() { return _next_section_id++ },
-    next_element_id() { return _next_element_id++ },
   };
 };
