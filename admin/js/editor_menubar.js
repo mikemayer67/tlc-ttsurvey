@@ -236,6 +236,7 @@ export default function editor_menubar(ce)
   $(document).on('UserSelectedSection',update_selection_buttons);
   $(document).on('UserSelectedElement',update_selection_buttons);
   $(document).on('UserClearedSelection',update_selection_buttons);
+  $(document).on('UserSelectionCleared',update_selection_buttons);
 
   function update_up_down_buttons()
   {

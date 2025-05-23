@@ -47,7 +47,7 @@ export default function survey_editor(ce)
 
     _editor_menubar.show(_editable);
 
-    ce.undo_manager?.revert();
+    ce.undo_manager?.empty();
   }
 
   // insertion handlers
@@ -117,10 +117,45 @@ export default function survey_editor(ce)
 
   // deletion handlers
 
-  function delete_section(sectionId) {
-    alert(`delete section ${sectionId}`);
+  function delete_section(to_delete) {
+    if( to_delete.length !== 1 ) { return; }
+    const section_id = to_delete.data('section');
+    const section = _content.sections[section_id];
+
+    const elements = to_delete.find('li.element');
+    const element_ids = elements.map( function() { return $(this).data('element') } ).get();
+
+    const cur_highlight = _editor_tree.cache_highlight();
+    const was_closed = to_delete.hasClass('closed');
+
+    const prev = to_delete.prev();
+    const where = {};
+    if(prev.length === 1 ) { 
+      where.offset = 1;
+      where.section_id = prev.data('section');
+    }
+
+    ce.undo_manager.add_and_exec({
+      redo() {
+        _editor_tree.remove_section(section_id);
+      },
+      undo() {
+        const [tgt_li,tgt_ul] = _editor_tree.add_section(section_id,section,where);
+        if(was_closed) { tgt_li.addClass('closed') } else { tgt_li.removeClass('closed') }
+        element_ids.forEach( (element_id) => {
+          _editor_tree.add_element(
+            element_id,
+            _content.elements[element_id],
+            { section_id:section_id, at_end:true },
+          );
+        });
+        _editor_tree.restore_highlight(cur_highlight);
+      },
+    });
+
   }
   $(document).on('RequestDeleteSection',function(e,sid) { delete_section(sid); } );
+
 
   function delete_element(to_delete) {
     if( to_delete.length !== 1 ) { return; }
@@ -128,27 +163,26 @@ export default function survey_editor(ce)
     const element_id = to_delete.data('element');
     const element = _content.elements[element_id];
 
+    const cur_highlight = _editor_tree.cache_highlight();
+
     const prev = to_delete.prev();
-    if( prev.length === 1 ) { 
-      ce.undo_manager.add_and_exec({
-        redo() { 
-          _editor_tree.remove_element(element_id);
-        },
-        undo() {
-          _editor_tree.add_element(element_id, element, {offset:1, element_id:prev.data('element')});
-        },
-      });
+    const where = {};
+    if( prev.length === 1 ) {
+      where.offset=1;
+      where.element_id = prev.data('element');
     } else {
-      const sectionId = to_delete.parent().parent().data('section');
-      ce.undo_manager.add_and_exec({
-        redo() { 
-          _editor_tree.remove_element(element_id);
-        },
-        undo() {
-          _editor_tree.add_element(element_id, element, {section_id:sectionId});
-        },
-      });
+      where.section_id = to_delete.parent().parent().data('section');
     }
+
+    ce.undo_manager.add_and_exec({
+      redo() { 
+        _editor_tree.remove_element(element_id);
+      },
+      undo() {
+        _editor_tree.add_element(element_id, element, where);
+        _editor_tree.restore_highlight(cur_highlight);
+      },
+    });
   }
   $(document).on('RequestDeleteElement',function(e,eid) { delete_element(eid); } );
 

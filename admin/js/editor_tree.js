@@ -341,6 +341,7 @@ export default function editor_tree(ce)
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
+    $(document).trigger('UserSelectionCleared');
   }
 
   function highlight_selection(e)
@@ -371,16 +372,22 @@ export default function editor_tree(ce)
 
   function add_section(section_id, section, where)
   {
-    const [new_li,] = create_section_li(section_id);
-    const existing_li = _tree.find(`li.section[data-section=${where.section_id}]`);
-    if(where.offset < 0) { new_li.insertBefore(existing_li); }
-    else                 { new_li.insertAfter(existing_li); }
+    const [new_li,new_ul] = create_section_li(section_id,section.name);
+    if(where.section_id) {
+      const existing_li = _tree.find(`li.section[data-section=${where.section_id}]`);
+      if(where.offset < 0) { new_li.insertBefore(existing_li); }
+      else                 { new_li.insertAfter(existing_li); }
+    } else {
+      new_li.prependTo(_tree);
+    }
 
     // if we got here, editing must be enabled, turn on sorting in new ul.elements
     _element_sorters[section_id].option('disabled',false);
 
     highlight_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
+
+    return [new_li,new_ul];
   }
 
   function add_element(element_id, element, where)
@@ -389,7 +396,8 @@ export default function editor_tree(ce)
     if(where.section_id) {
       const section_li = _tree.find(`li.section[data-section=${where.section_id}]`);
       const elements_ul = section_li.children('ul.elements');
-      new_li.prependTo(elements_ul);
+      if(where.at_end) { new_li.appendTo(elements_ul);  }
+      else             { new_li.prependTo(elements_ul); }
     } else {
       const existing_li = _tree.find(`li.element[data-element=${where.element_id}]`);
       if(where.offset < 0) { new_li.insertBefore(existing_li); }
@@ -398,11 +406,15 @@ export default function editor_tree(ce)
 
     highlight_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
+
+    return new_li;
   }
 
   function remove_section(section_id)
   {
     _element_sorters[section_id].destroy();
+    delete _element_sorters[section_id];
+
     _tree.find(`li.section[data-section=${section_id}]`).remove();
     clear_selection();
     $(document).trigger('SurveyContentWasModified');
