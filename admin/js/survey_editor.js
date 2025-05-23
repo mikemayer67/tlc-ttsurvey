@@ -122,8 +122,33 @@ export default function survey_editor(ce)
   }
   $(document).on('RequestDeleteSection',function(e,sid) { delete_section(sid); } );
 
-  function delete_element(elementId) {
-    alert(`delete element ${elementId}`);
+  function delete_element(to_delete) {
+    if( to_delete.length !== 1 ) { return; }
+
+    const element_id = to_delete.data('element');
+    const element = _content.elements[element_id];
+
+    const prev = to_delete.prev();
+    if( prev.length === 1 ) { 
+      ce.undo_manager.add_and_exec({
+        redo() { 
+          _editor_tree.remove_element(element_id);
+        },
+        undo() {
+          _editor_tree.add_element(element_id, element, {offset:1, element_id:prev.data('element')});
+        },
+      });
+    } else {
+      const sectionId = to_delete.parent().parent().data('section');
+      ce.undo_manager.add_and_exec({
+        redo() { 
+          _editor_tree.remove_element(element_id);
+        },
+        undo() {
+          _editor_tree.add_element(element_id, element, {section_id:sectionId});
+        },
+      });
+    }
   }
   $(document).on('RequestDeleteElement',function(e,eid) { delete_element(eid); } );
 

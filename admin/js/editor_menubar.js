@@ -57,8 +57,8 @@ export default function editor_menubar(ce)
     const item = _tree.find('li.selected');
 
     const isSection = item.hasClass('section');
-    if( isSection ) { $(document).trigger('RequestDeleteSection', [item.data('section')]) } 
-    else            { $(document).trigger('RequestDeleteElement', [item.data('element')]) }
+    if( isSection ) { $(document).trigger('RequestDeleteSection', [item]) } 
+    else            { $(document).trigger('RequestDeleteElement', [item]) }
   });
 
   // Up/Down Buttons
