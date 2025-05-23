@@ -341,7 +341,7 @@ export default function editor_tree(ce)
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
-    $(document).trigger('UserSelectionCleared');
+    $(document).trigger('UserSelectionChanged');
   }
 
   function highlight_selection(e)
@@ -352,6 +352,7 @@ export default function editor_tree(ce)
       if(e.hasClass('element')) {
         e.parent().parent().addClass('selected-child');
       }
+      $(document).trigger('UserSelectionChanged');
     }
   }
 
@@ -440,6 +441,7 @@ export default function editor_tree(ce)
   {
     if(cache.section_id) {
       highlight_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
+      $(document).trigger('UserSelectionChanged');
     }
   }
 
