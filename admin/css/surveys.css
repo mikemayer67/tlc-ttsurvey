@@ -269,9 +269,9 @@
 #ttt-body .menubar .down              .icon {background-image:url('../../img/icons8/down.png');}
 #ttt-body .menubar .add.section.below .icon {background-image:url('../../img/icons8/add_list.png');}
 #ttt-body .menubar .add.section.above .icon {background-image:url('../../img/icons8/add_list_above.png');}
-#ttt-body .menubar .add.element.below .icon {background-image:url('../../img/icons8/add_row.png');}
-#ttt-body .menubar .add.element.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
-#ttt-body .menubar .add.element.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
+#ttt-body .menubar .add.question.below .icon {background-image:url('../../img/icons8/add_row.png');}
+#ttt-body .menubar .add.question.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
+#ttt-body .menubar .add.question.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
 #ttt-body .menubar .delete            .icon {background-image:url('../../img/icons8/trash.png');}
 #ttt-body .menubar .undo              .icon {background-image:url('../../img/icons8/undo.png');}
 #ttt-body .menubar .redo              .icon {background-image:url('../../img/icons8/redo.png');}
@@ -347,7 +347,7 @@
   background-color:#fff5b0;
 }
 
-#ttt-body #survey-tree li.element.selected {
+#ttt-body #survey-tree li.question.selected {
   background-color:#ffe41f;  /* from TLC logo */
 }
 
@@ -383,7 +383,7 @@
   display:none;
 }
 
-#ttt-body #survey-tree li.element {
+#ttt-body #survey-tree li.question {
   list-style-type:none;
   cursor:pointer;
 }
@@ -396,7 +396,7 @@
   font-style:italic;
 }
 
-#ttt-body #survey-tree li.element::before {
+#ttt-body #survey-tree li.question::before {
   content: "";
   display: inline-block;
   background-size: contain;
@@ -406,23 +406,23 @@
   margin-right:0.25em;
   vertical-align: middle;
 }
-#ttt-body #survey-tree li.element.info::before {
+#ttt-body #survey-tree li.question.info::before {
   background-image: url('../../img/icons8/paragraph.png');
 }
 
-#ttt-body #survey-tree li.element.bool::before {
+#ttt-body #survey-tree li.question.bool::before {
   background-image: url('../../img/icons8/checked_checkbox.png');
 }
-#ttt-body #survey-tree li.element.options::before {
+#ttt-body #survey-tree li.question.options::before {
   background-image: url('../../img/icons8/unchecked_radio_button.png');
 }
-#ttt-body #survey-tree li.element.options.multi::before {
+#ttt-body #survey-tree li.question.options.multi::before {
   background-image: url('../../img/icons8/multiple_choice.png');
 }
-#ttt-body #survey-tree li.element.freetext::before {
+#ttt-body #survey-tree li.question.freetext::before {
   background-image: url('../../img/icons8/pencil.png');
 }
-#ttt-body #survey-tree li.element.missing::before {
+#ttt-body #survey-tree li.question.missing::before {
   background-image: url('../../img/icons8/missing.png');
 }
 

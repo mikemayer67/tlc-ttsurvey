@@ -85,19 +85,19 @@ function survey_content($survey_id)
   ];
 
   $id = 0;
-  $elements = array();
+  $questions = array();
   for($i=1; $i<=count($sections); ++$i)
   {
     $s = $i > 5 ? 1+$i : $i;
 
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'INFO', 
       'label' => 'Info Text', 
       'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'BOOL', 
@@ -106,7 +106,7 @@ function survey_content($survey_id)
       'description' => 'Blah blah blah... This is important because',
       'info'=>'This is popup info.  Just here to see if popups are working',
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
@@ -118,7 +118,7 @@ function survey_content($survey_id)
       'info'=>'This is popup info.  Just here to see if popups are working',
       'options' => [ [3, false], [2, false], [1,false], ],
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
@@ -129,7 +129,7 @@ function survey_content($survey_id)
       'info'=>'This is popup info.  Just here to see if popups are working',
       'options' => [ [3, false], [2, false], [1,true], ],
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
@@ -141,7 +141,7 @@ function survey_content($survey_id)
       'info'=>'This is popup info.  Just here to see if popups are working',
       'options' => [ [1, false], [2, false], [3,true], [4,true] ],
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
@@ -152,7 +152,7 @@ function survey_content($survey_id)
       'info'=>'This is popup info.  Just here to see if popups are working',
       'options' => [ [1, false], [2, false], [3,true], [4,true] ],
     ];
-    $elements[++$id] = [
+    $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'FREETEXT', 
@@ -162,10 +162,10 @@ function survey_content($survey_id)
     ];
   }
   return [
-    'sections' => $sections,
-    'options'  => $options,
-    'elements' => $elements,
-    'next_ids' => ['survey'=>100, 'element'=>200, 'option'=>50],
+    'sections'  => $sections,
+    'options'   => $options,
+    'questions' => $questions,
+    'next_ids'  => ['survey'=>100, 'question'=>200, 'option'=>50],
   ];
 }
 
@@ -212,8 +212,8 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
 
       clone_survey_options($parent_id,$new_id);
       clone_survey_sections($parent_id,$new_id);
-      clone_survey_elements($parent_id,$new_id);
-      clone_element_options($parent_id,$new_id);
+      clone_survey_questions($parent_id,$new_id);
+      clone_question_options($parent_id,$new_id);
     }
 
     if($pdf_file) {
@@ -273,45 +273,45 @@ function clone_survey_sections($parent_id,$child_id)
   }
 }
 
-function clone_survey_elements($parent_id,$child_id)
+function clone_survey_questions($parent_id,$child_id)
 {
   $query = <<<SQL
-  INSERT into tlc_tt_survey_elements
+  INSERT into tlc_tt_survey_questions
   SELECT a.id, $child_id, 1, 
          a.section, a.sequence, a.label, 
-         a.element_type, a.multiple, a.other, a.qualifier, a.description, a.info
-    FROM tlc_tt_survey_elements a
+         a.question_type, a.multiple, a.other, a.qualifier, a.description, a.info
+    FROM tlc_tt_survey_questions a
    WHERE a.survey_id=$parent_id
      AND a.survey_rev = (
            SELECT MAX(b.survey_rev)
-             FROM tlc_tt_survey_elements b
+             FROM tlc_tt_survey_questions b
             WHERE b.survey_id=$parent_id
               AND b.id=a.id )
     ;
   SQL;
   if(!MySQLExecute($query)) {
-    throw new FailedToCreate('Failed to copy survey elements from cloned survey');
+    throw new FailedToCreate('Failed to copy survey questions from cloned survey');
   }
 }
 
-function clone_element_options($parent_id,$child_id)
+function clone_question_options($parent_id,$child_id)
 {
   $query = <<<SQL
-  INSERT into tlc_tt_element_options
-  SELECT $child_id, 1, a.element_id, a.sequence, a.option_id, a.secondary
-    FROM tlc_tt_element_options a
+  INSERT into tlc_tt_question_options
+  SELECT $child_id, 1, a.question_id, a.sequence, a.option_id, a.secondary
+    FROM tlc_tt_question_options a
    WHERE a.survey_id=$parent_id
      AND a.sequence is not NULL
      AND a.survey_rev = (
            SELECT MAX(b.survey_rev)
-             FROM tlc_tt_element_options b
+             FROM tlc_tt_question_options b
             WHERE b.survey_id=$parent_id
-              AND a.element_id=b.element_id
+              AND a.question_id=b.question_id
               AND a.option_id=b.option_id )
     ;
   SQL;
   if(!MySQLExecute($query)) {
-    throw new FailedToCreate('Failed to copy survey elements from cloned survey');
+    throw new FailedToCreate('Failed to copy survey questions from cloned survey');
   }
 }
 

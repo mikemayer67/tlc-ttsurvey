@@ -98,9 +98,9 @@ echo <<<HTML
     <button class='down' title='Move selection down'><span class=icon></span></button>
     <button class='add section below' title='Insert new section below'><span class=icon></span></button>
     <button class='add section above' title='Insert new section above'><span class=icon></span></button>
-    <button class='add element below' title='Insert new survey item below'><span class=icon></span></button>
-    <button class='add element above' title='Insert new survey item above'><span class=icon></span></button>
-    <button class='add element clone' title='Duplicate survey item'><span class=icon></span></button>
+    <button class='add question below' title='Insert new survey item below'><span class=icon></span></button>
+    <button class='add question above' title='Insert new survey item above'><span class=icon></span></button>
+    <button class='add question clone' title='Duplicate survey item'><span class=icon></span></button>
     <button class='delete' title='Delete selection'><span class=icon></span></button>
     <button class='undo' title='Undo edit'><span class=icon></span></button>
     <button class='redo' title='Redo edit'><span class=icon></span></button>

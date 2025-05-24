@@ -15,7 +15,7 @@ export default function survey_editor(ce)
   let _editable = false;
   let _content = null;
   let _next_section_id = 1;
-  let _next_element_id = 1;
+  let _next_question_id = 1;
 
   setup_editor_resizer(ce,_editor_tree);
 
@@ -39,7 +39,7 @@ export default function survey_editor(ce)
           return Number($(this).data('section')); 
         }).get();
         _next_section_id = 1 + Math.max(...sections)
-        _next_element_id = _content.next_ids.element;
+        _next_question_id = _content.next_ids.question;
         _editor_tree.enable(); 
       }
 
@@ -73,45 +73,45 @@ export default function survey_editor(ce)
     });
   });
 
-  $(document).on('AddNewElement',function(e,where) {
-    const new_element_id = _next_element_id++;
-    const new_element = { type:null };
+  $(document).on('AddNewQuestion',function(e,where) {
+    const new_question_id = _next_question_id++;
+    const new_question = { type:null };
     const cur_highlight = _editor_tree.cache_selection();
 
-    _content.elements[ new_element_id ] = new_element;
+    _content.questions[ new_question_id ] = new_question;
 
     ce.undo_manager.add_and_exec( {
       redo() { 
-        _editor_tree.add_element(new_element_id, new_element, where);
+        _editor_tree.add_question(new_question_id, new_question, where);
       },
       undo() {
-        _editor_tree.remove_element(new_element_id);
+        _editor_tree.remove_question(new_question_id);
         _editor_tree.restore_selection(cur_highlight);
       },
     });
   });
 
-  $(document).on('CloneElement',function(e,data) {
-    if( data.parent_id in _content.elements ) {
-      const new_element_id = _next_element_id++;
-      const new_element = deepCopy( _content.elements[data.parent_id] );
-      new_element.label = null;
+  $(document).on('CloneQuestion',function(e,data) {
+    if( data.parent_id in _content.questions ) {
+      const new_question_id = _next_question_id++;
+      const new_question = deepCopy( _content.questions[data.parent_id] );
+      new_question.label = null;
       const cur_highlight = _editor_tree.cache_selection();
 
-      _content.elements[new_element_id] = new_element; 
+      _content.questions[new_question_id] = new_question; 
 
-      const where = { offset:1, element_id:data.parent_id };
+      const where = { offset:1, question_id:data.parent_id };
 
       ce.undo_manager.add_and_exec( {
         redo() {
-          _editor_tree.add_element(new_element_id, new_element, where);
+          _editor_tree.add_question(new_question_id, new_question, where);
         },
         undo() {
-          // note that we are leaving the new element in _content.elements
+          // note that we are leaving the new question in _content.questions
           //   this will make it more efficient to redo the clone later...
           //   If the form is submitted without readding it to the DOM, it
           //   simply will not be part of what gets submitted.
-          _editor_tree.remove_element(new_element_id);
+          _editor_tree.remove_question(new_question_id);
           _editor_tree.restore_selection(cur_highlight);
         },
       });
@@ -125,8 +125,8 @@ export default function survey_editor(ce)
     const section_id = to_delete.data('section');
     const section = _content.sections[section_id];
 
-    const elements = to_delete.find('li.element');
-    const element_ids = elements.map( function() { return $(this).data('element') } ).get();
+    const questions = to_delete.find('li.question');
+    const question_ids = questions.map( function() { return $(this).data('question') } ).get();
 
     const cur_highlight = _editor_tree.cache_selection();
     const was_closed = to_delete.hasClass('closed');
@@ -145,10 +145,10 @@ export default function survey_editor(ce)
       undo() {
         const [tgt_li,tgt_ul] = _editor_tree.add_section(section_id,section,where);
         if(was_closed) { tgt_li.addClass('closed') } else { tgt_li.removeClass('closed') }
-        element_ids.forEach( (element_id) => {
-          _editor_tree.add_element(
-            element_id,
-            _content.elements[element_id],
+        question_ids.forEach( (question_id) => {
+          _editor_tree.add_question(
+            question_id,
+            _content.questions[question_id],
             { section_id:section_id, at_end:true },
           );
         });
@@ -160,11 +160,11 @@ export default function survey_editor(ce)
   $(document).on('RequestDeleteSection',function(e,sid) { delete_section(sid); } );
 
 
-  function delete_element(to_delete) {
+  function delete_question(to_delete) {
     if( to_delete.length !== 1 ) { return; }
 
-    const element_id = to_delete.data('element');
-    const element = _content.elements[element_id];
+    const question_id = to_delete.data('question');
+    const question = _content.questions[question_id];
 
     const cur_highlight = _editor_tree.cache_selection();
 
@@ -172,22 +172,22 @@ export default function survey_editor(ce)
     const where = {};
     if( prev.length === 1 ) {
       where.offset=1;
-      where.element_id = prev.data('element');
+      where.question_id = prev.data('question');
     } else {
       where.section_id = to_delete.parent().parent().data('section');
     }
 
     ce.undo_manager.add_and_exec({
       redo() { 
-        _editor_tree.remove_element(element_id);
+        _editor_tree.remove_question(question_id);
       },
       undo() {
-        _editor_tree.add_element(element_id, element, where);
+        _editor_tree.add_question(question_id, question, where);
         _editor_tree.restore_selection(cur_highlight);
       },
     });
   }
-  $(document).on('RequestDeleteElement',function(e,eid) { delete_element(eid); } );
+  $(document).on('RequestDeleteQuestion',function(e,eid) { delete_question(eid); } );
 
   // selection handlers
 
@@ -196,9 +196,9 @@ export default function survey_editor(ce)
     _editors.edit_section(section_id,section)
   });
 
-  $(document).on('ElementSelected', function(e,element_id) { 
-    const element = _content.elements[element_id];
-    _editors.edit_element(element_id,element)
+  $(document).on('QuestionSelected', function(e,question_id) { 
+    const question = _content.questions[question_id];
+    _editors.edit_question(question_id,question)
   });
 
   $(document).on('SelectionCleared', function(e) { 
