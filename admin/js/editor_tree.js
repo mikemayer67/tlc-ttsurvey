@@ -155,8 +155,7 @@ export default function editor_tree(ce)
   // handles clicks on any of the li.section in the editor tree
   function section_selected(li)
   {
-    highlight_selection(li);
-
+    set_selection(li);
     $(document).trigger('UserSelectedSection',{
       sid:li.data('section'),
     });
@@ -165,8 +164,7 @@ export default function editor_tree(ce)
   // handles clicks on any of the li.element in the editor tree
   function element_selected(e)
   {
-    highlight_selection(e);
-
+    set_selection(e);
     $(document).trigger('UserSelectedElement',{
       eid:$(this).data('element'),
     });
@@ -200,7 +198,7 @@ export default function editor_tree(ce)
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
-    highlight_selection(move_li);
+    set_selection(move_li);
     $(document).trigger('SurveyContentWasReordered');
 
     return true;
@@ -268,7 +266,7 @@ export default function editor_tree(ce)
       }
     }
 
-    highlight_selection(move_eli);
+    set_selection(move_eli);
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -294,7 +292,7 @@ export default function editor_tree(ce)
       redo() { move_section(sectionId,e.newIndex); },
     });
 
-    highlight_selection($(e.item));
+    set_selection($(e.item));
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -315,7 +313,7 @@ export default function editor_tree(ce)
       redo() { move_element(elementId,to_section,e.newIndex); },
     });
 
-    highlight_selection($(e.item));
+    set_selection($(e.item));
     $(document).trigger('SurveyContentWasReordered');
     return true;
   }
@@ -344,7 +342,7 @@ export default function editor_tree(ce)
     $(document).trigger('UserSelectionChanged');
   }
 
-  function highlight_selection(e)
+  function set_selection(e)
   {
     clear_selection();
     if(e) {
@@ -385,7 +383,7 @@ export default function editor_tree(ce)
     // if we got here, editing must be enabled, turn on sorting in new ul.elements
     _element_sorters[section_id].option('disabled',false);
 
-    highlight_selection(new_li);
+    set_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
 
     return [new_li,new_ul];
@@ -405,7 +403,7 @@ export default function editor_tree(ce)
       else                 { new_li.insertAfter(existing_li); }
     }
 
-    highlight_selection(new_li);
+    set_selection(new_li);
     $(document).trigger('SurveyContentWasModified');
 
     return new_li;
@@ -428,7 +426,7 @@ export default function editor_tree(ce)
     $(document).trigger('SurveyContentWasModified');
   }
 
-  function cache_highlight()
+  function cache_selection()
   {
     const curSelection = _tree.find('li.selected');
     return {
@@ -437,10 +435,10 @@ export default function editor_tree(ce)
     };
   }
 
-  function restore_highlight(cache)
+  function restore_selection(cache)
   {
     if(cache.section_id) {
-      highlight_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
+      set_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
       $(document).trigger('UserSelectionChanged');
     }
   }
@@ -458,7 +456,7 @@ export default function editor_tree(ce)
     add_element: add_element,             // (new_element_id, new_element object, where)
     remove_section: remove_section,       // (section_id)
     remove_element: remove_element,       // (element_id)
-    cache_highlight: cache_highlight,     // returns object to pass to restore_highlight
-    restore_highlight: restore_highlight, // (object returned by cache_highlight)
+    cache_selection: cache_selection,     // returns object to pass to restore_selection
+    restore_selection: restore_selection, // (object returned by cache_selection)
   };
 }

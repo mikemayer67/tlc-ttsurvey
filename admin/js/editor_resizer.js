@@ -1,9 +1,9 @@
 export default function setup_editor_resizer(ce,editor_tree)
 {
-  const _resizer        = $('#content-editor .resizer');
-  const _editor_body    = $('#content-editor div.body');
-  const _survey_tree    = $('#survey-tree');
-  const _element_editor = $('#element-editor');
+  const _resizer      = $('#content-editor .resizer');
+  const _editor_body  = $('#content-editor div.body');
+  const _survey_tree  = $('#survey-tree');
+  const _editor_frame = $('#editor-frame');
 
   let _tracking = null;
 
@@ -12,7 +12,7 @@ export default function setup_editor_resizer(ce,editor_tree)
     _editor_body.css('cursor','col-resize');
     _tracking = { 
       min_x : 200 - _survey_tree.width(),
-      max_x : _element_editor.width() - 300,
+      max_x : _editor_frame.width() - 300,
       start_x : e.pageX,
       start_w : _survey_tree.width(),
       in_editor : true,

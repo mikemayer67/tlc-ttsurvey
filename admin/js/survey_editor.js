@@ -1,6 +1,7 @@
 import editor_tree from './editor_tree.js';
 import editor_menubar from './editor_menubar.js';
 import setup_editor_resizer from './editor_resizer.js';
+import editor from './editor.js';
 import { deepCopy } from './utils.js';
 
 export default function survey_editor(ce)
@@ -9,6 +10,7 @@ export default function survey_editor(ce)
 
   const _editor_tree    = editor_tree(ce);
   const _editor_menubar = editor_menubar(ce);
+  const _editor         = editor(ce);
 
   let _editable = false;
   let _content = null;
@@ -55,7 +57,7 @@ export default function survey_editor(ce)
   $(document).on('AddNewSection',function(e,where) {
     const new_section_id = _next_section_id++;
     const new_section = { name:"", description:"", show:false, feedback:false };
-    const cur_highlight = _editor_tree.cache_highlight();
+    const cur_highlight = _editor_tree.cache_selection();
 
     _content.sections[ new_section_id ] = new_section;
 
@@ -65,7 +67,7 @@ export default function survey_editor(ce)
       },
       undo() {
         _editor_tree.remove_section(new_section_id);
-        _editor_tree.restore_highlight(cur_highlight);
+        _editor_tree.restore_selection(cur_highlight);
       },
     });
   });
@@ -73,7 +75,7 @@ export default function survey_editor(ce)
   $(document).on('AddNewElement',function(e,where) {
     const new_element_id = _next_element_id++;
     const new_element = { type:null };
-    const cur_highlight = _editor_tree.cache_highlight();
+    const cur_highlight = _editor_tree.cache_selection();
 
     _content.elements[ new_element_id ] = new_element;
 
@@ -83,7 +85,7 @@ export default function survey_editor(ce)
       },
       undo() {
         _editor_tree.remove_element(new_element_id);
-        _editor_tree.restore_highlight(cur_highlight);
+        _editor_tree.restore_selection(cur_highlight);
       },
     });
   });
@@ -93,7 +95,7 @@ export default function survey_editor(ce)
       const new_element_id = _next_element_id++;
       const new_element = deepCopy( _content.elements[data.parent_id] );
       new_element.label = null;
-      const cur_highlight = _editor_tree.cache_highlight();
+      const cur_highlight = _editor_tree.cache_selection();
 
       _content.elements[new_element_id] = new_element; 
 
@@ -109,7 +111,7 @@ export default function survey_editor(ce)
           //   If the form is submitted without readding it to the DOM, it
           //   simply will not be part of what gets submitted.
           _editor_tree.remove_element(new_element_id);
-          _editor_tree.restore_highlight(cur_highlight);
+          _editor_tree.restore_selection(cur_highlight);
         },
       });
     }
@@ -125,7 +127,7 @@ export default function survey_editor(ce)
     const elements = to_delete.find('li.element');
     const element_ids = elements.map( function() { return $(this).data('element') } ).get();
 
-    const cur_highlight = _editor_tree.cache_highlight();
+    const cur_highlight = _editor_tree.cache_selection();
     const was_closed = to_delete.hasClass('closed');
 
     const prev = to_delete.prev();
@@ -149,7 +151,7 @@ export default function survey_editor(ce)
             { section_id:section_id, at_end:true },
           );
         });
-        _editor_tree.restore_highlight(cur_highlight);
+        _editor_tree.restore_selection(cur_highlight);
       },
     });
 
@@ -163,7 +165,7 @@ export default function survey_editor(ce)
     const element_id = to_delete.data('element');
     const element = _content.elements[element_id];
 
-    const cur_highlight = _editor_tree.cache_highlight();
+    const cur_highlight = _editor_tree.cache_selection();
 
     const prev = to_delete.prev();
     const where = {};
@@ -180,7 +182,7 @@ export default function survey_editor(ce)
       },
       undo() {
         _editor_tree.add_element(element_id, element, where);
-        _editor_tree.restore_highlight(cur_highlight);
+        _editor_tree.restore_selection(cur_highlight);
       },
     });
   }

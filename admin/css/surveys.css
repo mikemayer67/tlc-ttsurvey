@@ -308,7 +308,7 @@
   cursor:col-resize;
 }
 
-#ttt-body #content-editor #element-editor {
+#ttt-body #content-editor #editor-frame {
   flex:1;
   min-width:0;
   width:calc(75% - 3px);

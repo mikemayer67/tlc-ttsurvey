@@ -112,7 +112,7 @@ echo <<<HTML
       <ul class='sections'></ul>
     </div>
     <div class='resizer'></div>
-    <div id='element-editor'></div>
+    <div id='editor-frame'></div>
   </div>
 
 </div>
