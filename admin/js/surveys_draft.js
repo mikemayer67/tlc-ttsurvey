@@ -40,6 +40,14 @@ export default function draft_controller(ce)
     ce.submit.val('Save Changes').prop('disabled',true);
     ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
 
+    // change the ContentDataLoaded handler
+    $(document)
+    .off('ContentDataLoaded')
+    .on('ContentDataLoaded', function(e,id,data) { 
+      ce.survey_editor.update(data);
+      validate_all();
+    } );
+
     // note that if the content associated with the current survey has not yet been
     //   retrieved from the server, the returned content value will be null and an
     //   AJAX call will be issued to retrieve the data.  On completion of retrieving
@@ -50,11 +58,6 @@ export default function draft_controller(ce)
     ce.survey_editor.update(content);
     validate_all();
   }
-
-  $(document).on('ContentDataLoaded', function(e,id,data) { 
-    ce.survey_editor.update(data);
-    validate_all();
-  } );
 
 
   function update_info()

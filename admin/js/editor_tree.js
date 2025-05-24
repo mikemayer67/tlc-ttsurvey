@@ -331,10 +331,10 @@ export default function editor_tree(ce)
     _tree.find('.selected-child').removeClass('selected-child');
     e.addClass('selected');
     if(e.hasClass('section')) {
-      $(document).trigger('SectionSelected');
+      $(document).trigger('SectionSelected',[e.data('section')]);
     } else {
       e.parent().parent().addClass('selected-child'); 
-      $(document).trigger('ElementSelected');
+      $(document).trigger('ElementSelected',[e.data('element')]);
     }
   }
 
