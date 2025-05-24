@@ -88,7 +88,7 @@ export default function editor_tree(ce)
     });
     span.on('click',function(e) {
       // li.section is grandparent of span
-      section_selected($(this).parent().parent());
+      set_selection($(this).parent().parent());
     });
 
     const ul = $('<ul>').addClass('elements').appendTo(li);
@@ -107,9 +107,7 @@ export default function editor_tree(ce)
   function create_element_li(eid,details)
   {
     const li = $('<li>').addClass('element').attr('data-element',eid);
-    li.on('click',function() {
-      element_selected($(this));
-    });
+    li.on('click',function() { set_selection($(this)); } );
 
     if(details.label) {
       li.text(details.label);
@@ -151,25 +149,6 @@ export default function editor_tree(ce)
     Object.values(_element_sorters).forEach( (s) => s.option('disabled',false) );
   }
 
-
-  // handles clicks on any of the li.section in the editor tree
-  function section_selected(li)
-  {
-    set_selection(li);
-    $(document).trigger('UserSelectedSection',{
-      sid:li.data('section'),
-    });
-  }
-
-  // handles clicks on any of the li.element in the editor tree
-  function element_selected(e)
-  {
-    set_selection(e);
-    $(document).trigger('UserSelectedElement',{
-      eid:$(this).data('element'),
-    });
-  }
-
   //
   // User driven reordering of the editor tree
   //
@@ -181,7 +160,7 @@ export default function editor_tree(ce)
   //   the user clicking on the up|down arrows in the menubar.
   // This function simply works out the necessary jquery calls necessary
   //   to update the DOM.
-  // It triggers a SurveyContentWasReordered custom event on success
+  // It triggers a SurveyWasReordered custom event on success
   //   and returns true.  It returns false on failure.
   function move_section(sectionId,toIndex) 
   {
@@ -199,7 +178,7 @@ export default function editor_tree(ce)
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
     set_selection(move_li);
-    $(document).trigger('SurveyContentWasReordered');
+    $(document).trigger('SurveyWasReordered');
 
     return true;
   }
@@ -217,7 +196,7 @@ export default function editor_tree(ce)
   //   the user clicking on the up|down arrows in the menubar.
   // This function simply works out the necessary jquery calls necessary
   //   to update the DOM.
-  // It triggers a SurveyContentWasReordered custom event on success
+  // It triggers a SurveyWasReordered custom event on success
   //   and returns true.  It returns false on failure.
   function move_element(elementId,toSectionId,toIndex)
   {
@@ -267,7 +246,7 @@ export default function editor_tree(ce)
     }
 
     set_selection(move_eli);
-    $(document).trigger('SurveyContentWasReordered');
+    $(document).trigger('SurveyWasReordered');
     return true;
   }
 
@@ -281,7 +260,7 @@ export default function editor_tree(ce)
   // Handle SortableJS onEnd from the ul.sections sorter.
   //   Unpacks the onEnd custom event in order to add the move section action
   //   to the undo manager.
-  // It also triggers a SurveyContentWasReordered custom event
+  // It also triggers a SurveyWasReordered custom event
   function handle_drop_section(e)
   {
     if(e.oldIndex === e.newIndex) { return false; }
@@ -293,14 +272,14 @@ export default function editor_tree(ce)
     });
 
     set_selection($(e.item));
-    $(document).trigger('SurveyContentWasReordered');
+    $(document).trigger('SurveyWasReordered');
     return true;
   }
 
   // Handle SortableJS onEnd from any of the ul.elements sorters.
   //   Unpacks the onEnd custom event in order to add the move element action
   //   to the undo manager.
-  // It also triggers a SurveyContentWasReordered custom event
+  // It also triggers a SurveyWasReordered custom event
   function handle_drop_element(e)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
@@ -314,7 +293,7 @@ export default function editor_tree(ce)
     });
 
     set_selection($(e.item));
-    $(document).trigger('SurveyContentWasReordered');
+    $(document).trigger('SurveyWasReordered');
     return true;
   }
 
@@ -339,18 +318,23 @@ export default function editor_tree(ce)
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
-    $(document).trigger('UserSelectionChanged');
+    $(document).trigger('SelectionCleared');
   }
 
   function set_selection(e)
   {
-    clear_selection();
-    if(e) {
-      e.addClass('selected');
-      if(e.hasClass('element')) {
-        e.parent().parent().addClass('selected-child');
-      }
-      $(document).trigger('UserSelectionChanged');
+    if(!e) {
+      clear_selection;
+      return;
+    }
+    _tree.find('.selected').removeClass('selected');
+    _tree.find('.selected-child').removeClass('selected-child');
+    e.addClass('selected');
+    if(e.hasClass('section')) {
+      $(document).trigger('SectionSelected');
+    } else {
+      e.parent().parent().addClass('selected-child'); 
+      $(document).trigger('ElementSelected');
     }
   }
 
@@ -361,7 +345,6 @@ export default function editor_tree(ce)
     const clicked_li = $(e.target).closest('li');
     if(clicked_li.length === 0) {
       clear_selection();
-      $(document).trigger('UserClearedSelection');
     }
   });
 
@@ -384,7 +367,7 @@ export default function editor_tree(ce)
     _element_sorters[section_id].option('disabled',false);
 
     set_selection(new_li);
-    $(document).trigger('SurveyContentWasModified');
+    $(document).trigger('SurveyWasModified');
 
     return [new_li,new_ul];
   }
@@ -404,7 +387,7 @@ export default function editor_tree(ce)
     }
 
     set_selection(new_li);
-    $(document).trigger('SurveyContentWasModified');
+    $(document).trigger('SurveyWasModified');
 
     return new_li;
   }
@@ -416,14 +399,14 @@ export default function editor_tree(ce)
 
     _tree.find(`li.section[data-section=${section_id}]`).remove();
     clear_selection();
-    $(document).trigger('SurveyContentWasModified');
+    $(document).trigger('SurveyWasModified');
   }
 
   function remove_element(element_id)
   {
     _tree.find(`li.element[data-element=${element_id}]`).remove();
     clear_selection();
-    $(document).trigger('SurveyContentWasModified');
+    $(document).trigger('SurveyWasModified');
   }
 
   function cache_selection()
@@ -439,7 +422,6 @@ export default function editor_tree(ce)
   {
     if(cache.section_id) {
       set_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
-      $(document).trigger('UserSelectionChanged');
     }
   }
 

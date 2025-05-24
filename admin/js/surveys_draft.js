@@ -120,8 +120,8 @@ export default function draft_controller(ce)
     ce.submit.prop('disabled',has_errors || has_incomplete || !dirty);
   }
 
-  $(document).on('SurveyContentWasReordered',update_submit_revert);
-  $(document).on('SurveyContentWasModified',update_submit_revert);
+  $(document).on('SurveyWasReordered',update_submit_revert);
+  $(document).on('SurveyWasModified',update_submit_revert);
 
   function validate_pdf_action()
   {

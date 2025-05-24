@@ -233,10 +233,9 @@ export default function editor_menubar(ce)
 
     update_up_down_buttons();
   }
-  $(document).on('UserSelectedSection',update_selection_buttons);
-  $(document).on('UserSelectedElement',update_selection_buttons);
-  $(document).on('UserClearedSelection',update_selection_buttons);
-  $(document).on('UserSelectionChanged',update_selection_buttons);
+  $(document).on('SectionSelected',update_selection_buttons);
+  $(document).on('ElementSelected',update_selection_buttons);
+  $(document).on('SelectionCleared',update_selection_buttons);
 
   function update_up_down_buttons()
   {
@@ -289,7 +288,7 @@ export default function editor_menubar(ce)
       }
     }
   }
-  $(document).on('SurveyContentWasReordered',update_up_down_buttons);
+  $(document).on('SurveyWasReordered',update_up_down_buttons);
 
 
   return {
