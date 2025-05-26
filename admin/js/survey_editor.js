@@ -95,7 +95,7 @@ export default function survey_editor(ce)
     if( data.parent_id in _content.questions ) {
       const new_question_id = _next_question_id++;
       const new_question = deepCopy( _content.questions[data.parent_id] );
-      new_question.label = null;
+      new_question.wording = null;
       const cur_highlight = _editor_tree.cache_selection();
 
       _content.questions[new_question_id] = new_question; 
@@ -193,12 +193,12 @@ export default function survey_editor(ce)
 
   $(document).on('SectionSelected', function(e,section_id) { 
     const section = _content.sections[section_id];
-    _editors.edit_section(section_id,section)
+    _editors.show_section(section_id,section)
   });
 
   $(document).on('QuestionSelected', function(e,question_id) { 
     const question = _content.questions[question_id];
-    _editors.edit_question(question_id,question)
+    _editors.show_question(question_id,question)
   });
 
   $(document).on('SelectionCleared', function(e) { 

@@ -131,7 +131,7 @@ IF version < 1 THEN
     survey_rev    int          NOT NULL,
     section       int                                  COMMENT 'Which survey section the question is included in.',
     sequence      int                                  COMMENT 'Order this question will appear in the survey section.  (NULL excludes the question).',
-    label         varchar(128) NOT NULL                COMMENT 'The label for this question shown in the survey',
+    wording       varchar(128) NOT NULL                COMMENT 'The wording of this question shown in the survey',
     question_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
     multiple      tinyint     DEFAULT NULL             COMMENT 'For OPTIONS type, multiple options can be selected',
     other         varchar(45) DEFAULT NULL             COMMENT 'For OPTIONS type, provide an "other" option with the specified label',

@@ -109,10 +109,10 @@ export default function editor_tree(ce)
     const li = $('<li>').addClass('question').attr('data-question',eid);
     li.on('click',function() { set_selection($(this)); } );
 
-    if(details.label) {
-      li.text(details.label);
+    if(details.wording) {
+      li.text(details.wording);
     } else {
-      li.text('[needs label]');
+      li.text('[needs wording]');
       li.addClass('incomplete');
     }
 

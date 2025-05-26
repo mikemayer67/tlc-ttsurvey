@@ -112,7 +112,9 @@ echo <<<HTML
       <ul class='sections'></ul>
     </div>
     <div class='resizer'></div>
-    <div id='editor-frame'></div>
+HTML;
+require(app_file('admin/survey_frame.php'));
+echo <<<HTML
   </div>
 
 </div>

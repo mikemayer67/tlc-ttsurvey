@@ -316,6 +316,10 @@
   border: 1px solid black;
 }
 
+/***************************************
+ * Survey Tree
+ ***************************************/
+
 #ttt-body #survey-tree div.info {
   font-size:85%;
   font-style:italic;
@@ -429,3 +433,75 @@
 #ttt-body #survey-tree li.drop-target {
   background-color:pink;
 }
+
+/***************************************
+ * Editor Frame (editors)
+ ***************************************/
+
+#editor-frame div.grid  {
+  display:none;
+  flex-direction:column;
+  margin: 1.5em 0;
+}
+
+#editor-frame.section.locked        div.grid.section.viewer  { display:flex; }
+#editor-frame.question.locked       div.grid.question.viewer { display:flex; }
+#editor-frame.section:not(.locked)  div.grid.section.editor  { display:flex; }
+#editor-frame.question:not(.locked) div.grid.question.editor { display:flex; }
+
+#editor-frame div.grid-row {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5em;
+  margin: 0.35em 0;
+  align-items: start;
+}
+
+#editor-frame .label {
+  font-weight: bold;
+  text-align: right;
+}
+
+#editor-frame .value {
+  display: flex;
+  align-items: center;
+}
+
+#editor-frame div.grid .grid-row.name .value .hide {
+  margin-left:1em;
+  font-style:italic;
+  font-size:85%;
+  color:#600;
+}
+
+#editor-frame .grid .option.grid {
+  display:flex;
+  margin:0;
+}
+
+/*
+#editor-frame div.grid .grid-row.options ul.value {
+  margin:0;
+}
+
+#editor-frame div.grid .grid-row.options ul.value li {
+  margin:0.5em 0 0.5em 0;
+}
+
+#editor-frame div.grid .grid-row.options ul.value li:first-child {
+  margin-top:0;
+}
+
+#editor-frame ul.value {
+  display:block;
+  list-style-type:none;
+  padding:0;
+}
+
+#editor-frame ul.value li span.option-label {
+  display:inline-block;
+  font-weight:bold;
+  width:100px;
+  text-align:right;
+}
+*/

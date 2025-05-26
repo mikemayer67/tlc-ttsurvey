@@ -94,14 +94,14 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'INFO', 
-      'label' => 'Info Text', 
+      'wording' => 'Info Text', 
       'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
     ];
     $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'BOOL', 
-      'label' => 'Yes/No Questions',
+      'wording' => 'Yes/No Questions',
       'qualifier' => 'Why or why not?',
       'description' => 'Blah blah blah... This is important because',
       'info'=>'This is popup info.  Just here to see if popups are working',
@@ -110,7 +110,7 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
-      'label' => 'Select Question #1',
+      'wording' => 'Select Question #1',
       'multiple' => 0,
       'other' => 'Other',
       'qualifier' => 'Anything we should know?',
@@ -122,7 +122,7 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
-      'label' => 'Select Question #2',
+      'wording' => 'Select Question #2',
       'multiple' => 0,
       'qualifier' => 'Anything we should know?',
       'description' => 'Pick whichever answer best applies.',
@@ -133,7 +133,7 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
-      'label' => 'Multi Select #1',
+      'wording' => 'Multi Select #1',
       'multiple' => 1,
       'other' => 'Other',
       'qualifier' => 'Anything we should know?',
@@ -145,7 +145,7 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'OPTIONS', 
-      'label' => 'Multi Select #2',
+      'wording' => 'Multi Select #2',
       'multiple' => 1,
       'qualifier' => 'Anything we should know?',
       'description' => 'Pick whichever answer or answers best apply.',
@@ -156,7 +156,7 @@ function survey_content($survey_id)
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
       'type' => 'FREETEXT', 
-      'label' => 'Your thoughts?',
+      'wording' => 'Your thoughts?',
       'description' => 'What else would you like us to know?',
       'info'=>'This is popup info.  Just here to see if popups are working',
     ];
@@ -278,7 +278,7 @@ function clone_survey_questions($parent_id,$child_id)
   $query = <<<SQL
   INSERT into tlc_tt_survey_questions
   SELECT a.id, $child_id, 1, 
-         a.section, a.sequence, a.label, 
+         a.section, a.sequence, a.wording, 
          a.question_type, a.multiple, a.other, a.qualifier, a.description, a.info
     FROM tlc_tt_survey_questions a
    WHERE a.survey_id=$parent_id
