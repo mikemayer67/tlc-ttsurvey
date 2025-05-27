@@ -37,9 +37,9 @@ export default function editors(ce)
   const _sv_name_value        = _sv_name.find('span.value');
   const _sv_name_hide         = _sv_name.find('span.note');
   const _sv_description       = _section_viewer.children('.description');
-  const _sv_description_value = _sv_description.filter('.value');
+  const _sv_description_value = _sv_description.find('div.text');
   const _sv_feedback          = _section_viewer.children('.feedback');
-  const _sv_feedback_value    = _sv_feedback.filter('.value');
+  const _sv_feedback_value    = _sv_feedback.find('div.text');
 
   function show_section_viewer(section_id,section)
   {

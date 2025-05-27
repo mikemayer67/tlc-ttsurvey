@@ -467,6 +467,8 @@ export default function editor_tree(ce)
       default: delta =  0; break;
     }
     if( delta === 0 ) { return; }
+    e.stopPropagation();
+    e.preventDefault();
 
     const full_tree = _tree.find('li');
     const vis_tree = full_tree.filter( function() {

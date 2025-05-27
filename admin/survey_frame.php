@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 echo <<<HTML
 <div id='editor-frame'>
-  <div class='content-header'>Section/Question Editor</div>
+  <div class='content-header'>Section/Question Details</div>
 
   <!--Section Editor-->
   <div class='grid section editor'>
@@ -18,10 +18,18 @@ echo <<<HTML
       <span class='value'></span>
       <span class='note'>(not shown in survey)</span>
     </div>
-    <span class='description label'>Description:</span>
-    <span class='description value'></span>
-    <span class='feedback label'>Feedback:</span>
-    <span class='feedback value'></span>
+    <label class='description label' for='sv-description-cb'>Description:</label>
+    <div class='description value'>
+      <div class='text'></div>
+      <input id='sv-description-cb' type='checkbox' class='hint-cb'></input>
+      <div class='hint'>This field is optional.  If provided, it will be displayed in the survey before any of the questions or info text within this section.  The text can be stylized using markdown.</div>
+    </div>
+    <label class='feedback label' for='sv-feedback-cb'>Feedback:</label>
+    <div class='feedback value'>
+      <div class='text'></div>
+      <input id='sv-feedback-cb' type='checkbox' class='hint-cb'></input>
+      <div class='hint'>This field is optional.  It sepecifies the label used to introduce a free text entry at the end of the section. If this field is empty, no such free text entry will be included in the survey for this section.</div>
+   </div>
   </div>
 
   <!--Question Editor-->
