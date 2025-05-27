@@ -387,6 +387,7 @@
 
 #ttt-body #survey-tree li.section div span.name {
   font-weight:bolder;
+  flex-grow: 1;
 }
 
 #ttt-body #survey-tree li.section div span.name.header {

@@ -6,6 +6,8 @@ export default function editor_tree(ce)
   const _info = $('#survey-tree .info');
   const _tree = $('#survey-tree ul.sections');
 
+  let _keyboardNav = false;
+
   // sorter for ul.sections
   const _section_sorter = new Sortable( _tree[0],
     {
@@ -82,13 +84,16 @@ export default function editor_tree(ce)
     }
 
     btn.on('click', function(e) {
+      e.stopPropagation();
       const li = $(this).parent().parent();
       if( li.hasClass('closed') ) { li.removeClass('closed'); }
       else                        { li.addClass('closed');    }
     });
     span.on('click',function(e) {
+      e.stopPropagation();
       // li.section is grandparent of span
       set_selection($(this).parent().parent());
+      start_keyboard_navigation(e);
     });
 
     const ul = $('<ul>').addClass('questions').appendTo(li);
@@ -107,7 +112,11 @@ export default function editor_tree(ce)
   function create_question_li(eid,details)
   {
     const li = $('<li>').addClass('question').attr('data-question',eid);
-    li.on('click',function() { set_selection($(this)); } );
+    li.on('click',function(e) { 
+      e.stopPropagation();
+      set_selection($(this)); 
+      start_keyboard_navigation(e);
+    } );
 
     if(details.wording) {
       li.text(details.wording);
@@ -423,6 +432,55 @@ export default function editor_tree(ce)
     if(cache.section_id) {
       set_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
     }
+  }
+
+  //
+  // Keyboard up|down arrow navigation
+  //
+
+  function start_keyboard_navigation(e)
+  {
+    if(!_keyboardNav) { 
+      _keyboardNav = true;
+      $(document).on('keydown', handle_keyboard_navigation);
+    }
+  }
+
+  function stop_keyboard_navigation(e)
+  {
+    if(_keyboardNav) {
+      _keyboardNav = false;
+      $(document).off('keydown', handle_keyboard_navigation);
+    }
+  }
+
+  $(document).on('click', stop_keyboard_navigation);
+
+  function handle_keyboard_navigation(e)
+  {
+    const cur_selection = _tree.find('.selected');
+    if(cur_selection.length !== 1 ) { return;}
+    var delta = 0;
+    switch(e.keyCode) {
+      case 38: delta = -1; break;
+      case 40: delta =  1; break;
+      default: delta =  0; break;
+    }
+    if( delta === 0 ) { return; }
+
+    const full_tree = _tree.find('li');
+    const vis_tree = full_tree.filter( function() {
+      if( $(this).hasClass('section') ) { return true; }
+      if( $(this).parent().parent().hasClass('closed') ) { return false; }
+      return true;
+    })
+
+    const cur_index = vis_tree.index(cur_selection);
+    const new_index = cur_index + delta;
+
+    if(new_index < 0 || new_index >= vis_tree.length) { return; }
+    const new_selection = vis_tree.eq(new_index);
+    set_selection(new_selection);
   }
 
   //
