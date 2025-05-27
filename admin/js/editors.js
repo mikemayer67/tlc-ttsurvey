@@ -48,7 +48,7 @@ export default function editors(ce)
     else                  { _sv_name_hide.show() }
 
     _sv_description_value.html( section.description || '' );
-    _sv_feedback_value.html( section.feedback ? 'YES' : 'NO');
+    _sv_feedback_value.html( section.feedback || '' );
   }
 
   function show_question_editor(question_id,question,options)
