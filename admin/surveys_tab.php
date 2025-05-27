@@ -108,6 +108,7 @@ echo <<<HTML
   
   <div class='body'>
     <div id='survey-tree'>
+      <div class='content-header'>Structure</div>
       <div class='info'>Drag to Reorder</div>
       <ul class='sections'></ul>
     </div>

@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 echo <<<HTML
 <div id='editor-frame'>
+  <div class='content-header'>Section/Question Editor</div>
 
   <!--Section Editor-->
   <div class='grid section editor'>
@@ -42,17 +43,14 @@ echo <<<HTML
     <span class='description label'>Description:</span>
     <span class='description value'></span>
 
-    <span class='options label'>Options:</span>
-    <div class='options value grid'>
-      <span class='primary label'>Primary:</span>
-      <span class='primary options'></span>
-      <span class='secondary label'>Secondary:</span>
-      <span class='secondary options'></span>
-      <span class='multiple label'>Multiple:</span>
-      <span class='multiple value'></span>
-      <span class='other label'>Other:</span>
-      <span class='other value'></span>
-    </div>
+    <span class='primary options label'>Primary Options:</span>
+    <div class='primary options value'></div>
+
+    <span class='secondary options label'>Secondary Options:</span>
+    <div class='secondary options value'></div>
+
+    <span class='other options label'>Prompt for Other:</span>
+    <span class='other options value'></span>
 
     <span class='qualifier label'>Qualifier:</span>
     <span class='qualifier value'></span>

@@ -316,6 +316,15 @@
   border: 1px solid black;
 }
 
+#ttt-body #content-editor .content-header {
+  font-weight:bold;
+  font-size:1.1em;
+  color:white;
+  background-color:#888;
+  margin: 2px;
+  padding: 2px 0.5em;
+}
+
 /***************************************
  * Survey Tree
  ***************************************/
@@ -323,6 +332,7 @@
 #ttt-body #survey-tree div.info {
   font-size:85%;
   font-style:italic;
+  margin-left:0.5em;
 }
 
 #ttt-body #survey-tree ul {
@@ -476,41 +486,14 @@
   margin-left:1em;
 }
 
-#editor-frame .grid .options.grid {
-  display:grid;
-  grid-row-gap:0;
-  grid-column-gap:0.5em;
+#editor-frame .grid.viewer .value:empty::before {
+  content: "— no value —";
+  color: #888;
+  font-style: italic;
+}
+
+#editor-frame .grid.viewer ul.options {
   margin:0;
-}
-
-#editor-frame .grid .options.grid .label {
-  font-weight:normal;
-}
-
-
-/*
-#editor-frame div.grid .grid-row.options ul.value {
-  margin:0;
-}
-
-#editor-frame div.grid .grid-row.options ul.value li {
-  margin:0.5em 0 0.5em 0;
-}
-
-#editor-frame div.grid .grid-row.options ul.value li:first-child {
-  margin-top:0;
-}
-
-#editor-frame ul.value {
-  display:block;
   list-style-type:none;
   padding:0;
 }
-
-#editor-frame ul.value li span.option-label {
-  display:inline-block;
-  font-weight:bold;
-  width:100px;
-  text-align:right;
-}
-*/
