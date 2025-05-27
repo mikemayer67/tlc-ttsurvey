@@ -1,5 +1,3 @@
-/* login color palette */
-
 * {
   --empty-field-color:#ffffe0;
   --login-background:#ddd;
@@ -22,13 +20,15 @@
   margin-top: 1em;
   margin-left: auto;
   margin-right: auto;
+}
 
+#ttt-login .ttt-card {
   background: var(--login-background);
 }
 
-#ttt-login * { background:inherit; }
+#ttt-login .ttt-card * { background:inherit; }
 
-#ttt-login header {
+#ttt-login .ttt-card header {
   font-size: large ;
   font-weight:bold;
   color:var(--header-foreground);
@@ -36,7 +36,22 @@
   background: var(--header-background);
 }
 
-#ttt-login form {
+#ttt-login div.help {
+  display:flex;
+  align-items:center;
+  font-size:90%;
+  font-style:italic;
+  font-weight:bold;
+  color: var(--header-background);
+}
+
+#ttt-login div.help img {
+  margin:0 0.25em;
+  width:1em;
+  height:1em;
+}
+
+#ttt-login .ttt-card form {
   margin:1em;
 }
 
@@ -132,8 +147,8 @@
   margin: 5px 0;
 }
 #ttt-login .input .info-trigger img {
-  width:0.9em;
-  height:0.9em;
+  width:1em;
+  height:1em;
   position:absolute;
   top:0.25em;
 }

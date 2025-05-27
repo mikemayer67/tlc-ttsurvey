@@ -21,7 +21,8 @@ function start_login_form($header,$name)
     $q = "?admin";
   }
 
-  echo "<div id='ttt-login' class='$name ttt-card'>";
+  echo "<div id='ttt-login' class='$name'>";
+  echo "<div class='$name ttt-card'>";
   echo "<header>$header</header>";
   echo "<form class='login' method='post' action='$form_uri$q'>";
   add_hidden_input('nonce',$nonce);
@@ -32,10 +33,13 @@ function start_login_form($header,$name)
 function close_login_form()
 {
   // must close all DOM elements opened in ttt-login
+  $icon_url = img_uri('icons8/info.png');
+  $info_icon = "<img src='$icon_url'>";
+
   echo "</form>";
-  echo "<span class='login help inside'>Help</span>";
-  echo "</div>";
-  echo "<span class='login help outside'>Help</span>";
+  echo "</div>";  // ttt-card
+  echo "<div class='help'>For hints on using this form, click or hover on any of the $info_icon icons</div>";
+  echo "</div>";  // ttt-card-wrapper
 }
 
 function add_resume_buttons($nonce)
