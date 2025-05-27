@@ -32,7 +32,10 @@ function start_login_form($header,$name)
 function close_login_form()
 {
   // must close all DOM elements opened in ttt-login
-  echo "</form></div>";
+  echo "</form>";
+  echo "<span class='login help inside'>Help</span>";
+  echo "</div>";
+  echo "<span class='login help outside'>Help</span>";
 }
 
 function add_resume_buttons($nonce)

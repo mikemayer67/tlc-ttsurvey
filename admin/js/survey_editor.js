@@ -198,7 +198,7 @@ export default function survey_editor(ce)
 
   $(document).on('QuestionSelected', function(e,question_id) { 
     const question = _content.questions[question_id];
-    _editors.show_question(question_id,question)
+    _editors.show_question(question_id,question,_content.options)
   });
 
   $(document).on('SelectionCleared', function(e) { 
