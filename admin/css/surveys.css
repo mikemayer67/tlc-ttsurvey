@@ -324,6 +324,14 @@
   margin: 2px;
   padding: 2px 0.5em;
 }
+#ttt-body #content-editor .hint-hint {
+  float:right;
+  font-size:85%;
+  font-style:italic;
+  color:#888;
+  margin: 0 1em;
+}
+
 
 /***************************************
  * Survey Tree
@@ -455,6 +463,7 @@
   grid-template-columns: max-content 1fr;
   grid-row-gap:0.5em;
   grid-column-gap:0.5em;
+  width:fit-content;
 }
 
 #editor-frame.section.locked        div.grid.section.viewer  { display:grid; }
@@ -491,6 +500,11 @@
   display:block;
 }
 
+#editor-frame b, #editor-frame i {
+  font-weight:revert;
+  font-style:revert;
+}
+
 #editor-frame .grid.viewer .value:empty::before,
 #editor-frame .grid.viewer div.text:empty::before {
   content: "— no value —";
@@ -520,6 +534,7 @@
   border-radius: 5px;
   width:max(600px, 85%);
   font-size:85%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
 #editor-frame .grid.viewer input.hint-cb:checked ~ div.hint {
@@ -530,4 +545,12 @@
   margin:0;
   list-style-type:none;
   padding:0;
+}
+
+#editor-frame .viewer .hint p {
+  margin:0 0 0 2em;
+}
+
+#editor-frame .viewer .hint p:first-child {
+  margin-top:0.25em;
 }
