@@ -56,6 +56,7 @@ export default function draft_controller(ce)
 
     ce.survey_editor.enable();
     ce.survey_editor.update(content);
+    _last_saved = current_values();
     validate_all();
   }
 
@@ -90,13 +91,6 @@ export default function draft_controller(ce)
   function validate_input(sender,event)
   {
     hide_status();
-    // before validating the input/select, record changes
-    const key   = sender.attr('name');
-    const value = sender.val();
-    if( _last_saved[key] !== value ) { _changes[key] = value; } 
-    else                             { delete _changes[key];  }
-
-    // now let's validatehe input change
     validate_all();
   }
 
@@ -130,15 +124,12 @@ export default function draft_controller(ce)
   {
     if(ce.cur_survey.has_pdf) {
       const action = _pdf_action.val();
-      if(action !==_last_saved.pdf_action) { _changes.pdf_action = action; } 
-      else                                 { delete _changes.pdf_action;   }
 
       var ok = true;
       if( action === "replace" ) {
         if( !_survey_pdf.val() ) { ok = false; }
       } else {
         _survey_pdf.val('');
-        delete _changes.survey_pdf;
       }
 
       if(ok) { _survey_pdf.removeClass('invalid-value'); }
@@ -164,15 +155,24 @@ export default function draft_controller(ce)
 
   function has_changes()
   {
-    if( Object.keys(_changes).length > 0 ) { return true; }
+    let found_change = false;
+    Object.entries(_last_saved).forEach(([key,value]) => {
+      const e = ce.form.find(`[name=${key}]`);
+      if( value !== e.val() ) {
+        found_change = true; 
+        return false;  // no need to continue loop
+      }
+    });
+    if(found_change) { return true; }
+
     if( ce.undo_manager?.hasUndo() ) { return true; }
+
     return false;
   }
 
   function handle_revert()
   {
-    console.log('survey_draft handle_revert');
-    for( let key in _changes ) {
+    for( let key in _last_saved ) {
       ce.form.find(`[name=${key}]`).val(_last_saved[key]);
     }
     if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
@@ -181,7 +181,6 @@ export default function draft_controller(ce)
     const content = ce.survey_data.content( ce.cur_survey.id );
     ce.survey_editor.update(content);
 
-    _changes = {};
     $(document).trigger('SurveyDataChanged');
     validate_all();
   }
@@ -261,7 +260,6 @@ export default function draft_controller(ce)
   }
 
   var _last_saved = current_values();
-  var _changes    = {};
 
   return {
     state:'draft',
