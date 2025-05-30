@@ -297,7 +297,7 @@
   width:25%;
   height:100%;
   min-height:0;
-  background:white;
+  background:#f8f8f8;
   border: 1px solid black;
   overflow-y:auto;
 }
@@ -312,7 +312,7 @@
   flex:1;
   min-width:0;
   width:calc(75% - 3px);
-  background:white;
+  background:#f8f8f8;
   border: 1px solid black;
 }
 
@@ -459,11 +459,19 @@
 
 #editor-frame div.grid  {
   display:none;
-  margin:1em;
+  margin:2em 1em 1em 1em;
   grid-template-columns: max-content 1fr;
-  grid-row-gap:0.5em;
   grid-column-gap:0.5em;
-  width:fit-content;
+  width: calc(100% - 2em);
+  max-width: calc(100% - 2em);
+}
+
+#editor-frame div.grid.viewer  {
+  grid-row-gap:0.5em;
+}
+
+#editor-frame div.grid.editor  {
+  grid-row-gap:1em;
 }
 
 #editor-frame.section.locked        div.grid.section.viewer  { display:grid; }
@@ -471,9 +479,9 @@
 #editor-frame.section:not(.locked)  div.grid.section.editor  { display:grid; }
 #editor-frame.question:not(.locked) div.grid.question.editor { display:grid; }
 
-#editor-frame .label {
+#editor-frame .label span {
   font-weight: bold;
-  text-align: right;
+  float:right;
 }
 
 #editor-frame .value {
@@ -496,11 +504,8 @@
   margin-left:1em;
 }
 
-#editor-frame .grid.viewer .label:hover + .value div.hint {
-  display:block;
-}
-
-#editor-frame b, #editor-frame i {
+#editor-frame b, 
+#editor-frame i {
   font-weight:revert;
   font-style:revert;
 }
@@ -512,20 +517,19 @@
   font-style: italic;
 }
 
+#editor-frame .grid.editor div.value,
 #editor-frame .grid.viewer div.value {
   display:flex;
   flex-direction:column;
   align-items:start;
 }
 
+#editor-frame .grid.editor div.value > *,
 #editor-frame .grid.viewer div.value > * {
   width:100%;
 }
 
-#editor-frame .grid.viewer input.hint-cb {
-  display:none;
-}
-
+#editor-frame .grid.editor div.hint,
 #editor-frame .grid.viewer div.hint {
   display:none;
   margin:0.5em 1em;
@@ -537,20 +541,65 @@
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-#editor-frame .grid.viewer input.hint-cb:checked ~ div.hint {
+#editor-frame .grid.editor div.hint.hover,
+#editor-frame .grid.editor div.hint.locked,
+#editor-frame .grid.viewer div.hint.hover,
+#editor-frame .grid.viewer div.hint.locked {
   display:block;
 }
 
+#editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {
   margin:0;
   list-style-type:none;
   padding:0;
 }
 
-#editor-frame .viewer .hint p {
+#editor-frame .grid.editor .hint p,
+#editor-frame ..gridviewer .hint p {
   margin:0 0 0 2em;
 }
 
-#editor-frame .viewer .hint p:first-child {
+#editor-frame .grid.editor .hint p:first-child,
+#editor-frame .grid.viewer .hint p:first-child {
   margin-top:0.25em;
+}
+
+#editor-frame .grid.editor div.value input {
+  background:white;
+  width:75%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor .textarea-wrapper {
+  position:relative;
+  width:100%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor div.value textarea {
+  background:white;
+  width:100%;
+}
+
+#editor-frame .grid.editor div.value select {
+  background:white;
+  width:fit-content;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count {
+  position:absolute;
+  right:10px;
+  bottom:5px;
+  background:none;
+  color:green;
+  font-size:85%;
+  font-style:italic;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.warning {
+  color:orange;
+}
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.danger {
+  color:red;
 }

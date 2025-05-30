@@ -7,6 +7,9 @@ export default function editors(ce)
   const _question_viewer = _frame.find('div.grid.question.viewer');
 
   let _editable = false;
+  let _cur_section = null;
+  let _cur_question = null;
+  let _undo_action = null;
 
   function reset(editable)
   {
@@ -29,8 +32,24 @@ export default function editors(ce)
   }
 
 
+  const _se_name              = _section_editor.children('.name');
+  const _se_name_value        = _se_name.find('input');
+  const _se_show_name         = _section_editor.children('.show-name');
+  const _se_show_name_value   = _se_show_name.find('select');
+  const _se_description       = _section_editor.children('.description');
+  const _se_description_value = _se_description.find('textarea');
+  const _se_feedback          = _section_editor.children('.feedback');
+  const _se_feedback_value    = _se_feedback.find('input');
+
   function show_section_editor(section_id,section)
   {
+    _se_name_value.val(section.name || '');
+    _se_show_name_value.val(section.show_name ? 'YES' : 'NO');
+    _se_description_value.val(section.description || '');
+    _se_feedback_value.val(section.feedback || '')
+    _section_editor.find('div.hint').removeClass('locked');
+
+    _se_description_value.on('input change',update_character_count);
   }
 
   const _sv_name              = _section_viewer.children('.name');
@@ -44,10 +63,11 @@ export default function editors(ce)
 
   function show_section_viewer(section_id,section)
   {
-    _sv_name_value.html(section.name);
+    _sv_name_value.html(section.name || '');
     _sv_show_name_value.html(section.show_name ? "YES" : "NO");
     _sv_description_value.html( section.description || '' );
     _sv_feedback_value.html( section.feedback || '' );
+    _section_viewer.find('div.hint').removeClass('locked');
   }
 
   function show_question_editor(question_id,question,options)
@@ -82,6 +102,7 @@ export default function editors(ce)
     _qv_type.show();
     _qv_info_label.html('Popup Hint:');
     _qv_info_hint.hide();
+    _question_viewer.find('div.hint').removeClass('locked');
     switch(question.type) {
       case 'INFO':
         _qv_type_value.html('Info Block');
@@ -150,13 +171,57 @@ export default function editors(ce)
 
         break;
     }
-
   }
 
   function hide() 
   { 
     _frame.removeClass('section question'); 
   }
+
+  // hint handlers
+
+  function update_character_count(e)
+  {
+    const cur_length = $(this).val().length;
+    const max_length = $(this).attr('maxlength');
+    const cc = $(this).parent().children('.char-count');
+
+    cc.children('.cur').text(cur_length);
+
+    if(cur_length > 0.9*max_length) {
+      cc.addClass('danger').removeClass('warning');
+    } else if(cur_length > 0.75*max_length) {
+      cc.addClass('warning').removeClass('danger');
+    } else {
+      cc.removeClass('warning danger');
+    }
+  }
+
+  _frame.find('.viewer, .editor').find('div.label span')
+  .on('mouseenter', function(e) {
+    const timeout_id = $(this).data('timeout');
+    if(timeout_id) {
+      clearTimeout(timeout_id);
+    }
+    const hint = $(this).parent().next().children('div.hint');
+    $(this).data(
+      'timeout',
+      setTimeout(() => { hint.addClass('hover') }, 250),
+    );
+  })
+  .on('mouseleave', function(e) {
+    const timeout_id = $(this).data('timeout');
+    if(timeout_id) {
+      clearTimeout(timeout_id);
+      $(this).data('timeout',0);
+    }
+    $(this).parent().next().children('div.hint').removeClass('hover');
+  })
+  .on('click', function(e) {
+    $(this).parent().next().children('div.hint').toggleClass('locked');
+  })
+  ;
+  
 
   return {
     reset:reset,
