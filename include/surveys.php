@@ -68,14 +68,14 @@ function survey_content($survey_id)
 {
   todo('remove bogus survey content');
   $sections = [
-    1 => [ 'name'=>'Welcome', 'show_name'=>0, 'feedback'=>'' ],
-    2 => [ 'name'=>'Section 1', 'description'=>"some words about section 1", 'show_name'=>1, 'feedback'=>'' ],
-    3 => [ 'name'=>'Section Deux', 'description'=>"But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'show_name'=>1, 'feedback'=>'So, what iss up?' ],
-    4 => [ 'name'=>'Section 3', 'description'=>"some words about section 3", 'show_name'=>1, 'feedback'=>'' ],
-    5 => [ 'name'=>'Section 4', 'description'=>"some words about section 4", 'show_name'=>1, 'feedback'=>'' ],
-    7 => [ 'name'=>'Section 5', 'description'=>"some words about section 5", 'show_name'=>1, 'feedback'=>'' ],
-    9 => [ 'name'=>'Section 6', 'description'=>"some words about section 6", 'show_name'=>1, 'feedback'=>'' ],
-    8 => [ 'name'=>'Section 7', 'description'=>"some words about section 7", 'show_name'=>1, 'feedback'=>'' ],
+    1 => [ 'name'=>'Welcome', 'labeled'=>0, 'feedback'=>'' ],
+    2 => [ 'name'=>'Section 1', 'description'=>"some words about section 1", 'labeled'=>1, 'feedback'=>'' ],
+    3 => [ 'name'=>'Section Deux', 'description'=>"But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'labeled'=>1, 'feedback'=>'So, what iss up?' ],
+    4 => [ 'name'=>'Section 3', 'description'=>"some words about section 3", 'labeled'=>1, 'feedback'=>'' ],
+    5 => [ 'name'=>'Section 4', 'description'=>"some words about section 4", 'labeled'=>1, 'feedback'=>'' ],
+    7 => [ 'name'=>'Section 5', 'description'=>"some words about section 5", 'labeled'=>1, 'feedback'=>'' ],
+    9 => [ 'name'=>'Section 6', 'description'=>"some words about section 6", 'labeled'=>1, 'feedback'=>'' ],
+    8 => [ 'name'=>'Section 7', 'description'=>"some words about section 7", 'labeled'=>1, 'feedback'=>'' ],
   ];
   $options = [
     1 => 'neative i^2',

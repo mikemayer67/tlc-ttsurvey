@@ -8,7 +8,7 @@ $hints = [
     'name' => ( 
       'Name used to identify this section.  If Show Name is YES, the section name will be included in the '.
       'survey. Otherwise, it will only be used in the Admin Dashboard'),
-    'show-name' => ( 
+    'labeled' => ( 
       'Whether or not to show the section name in the survey'),
     'description' => ( 
       '<b>This field is optional.</b>  If provided, it will be displayed in the survey before '.
@@ -66,7 +66,7 @@ $hints = [
 $labels = [
   'section' => [
     'name'        => 'Name',
-    'show-name'   => 'Show Name',
+    'labeled'   => 'Show Name',
     'description' => 'Description',
     'feedback'    => 'Feedback',
   ],
@@ -110,7 +110,7 @@ function add_editor_input($scope, $key, $kwargs=[])
 
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
-  echo "  <input class='$scope $key' name='$name' placeholder='$placeholder'></input>";
+  echo "  <input class='$scope $key' name='$name' data-key='$key' placeholder='$placeholder'></input>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
 }
@@ -133,7 +133,7 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <div class='textarea-wrapper'>";
-  echo "    <textarea class='$scope $key' name=$name placeholder='$placeholder' maxlength='$maxlen'></textarea>";
+  echo "    <textarea class='$scope $key' name=$name data-key='$key' placeholder='$placeholder' maxlength='$maxlen'></textarea>";
   echo "    <div class='char-count'><span class='cur'>0</span>/$maxlen</div>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
@@ -154,9 +154,9 @@ function add_editor_select($scope, $key, $options, $kwargs=[])
 
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
-  echo "  <select class='$scope $key' name=$name>";
-  foreach($options as $option) {
-    echo "    <option value=$option>$option</option>";
+  echo "  <select class='$scope $key' name='$name' data-key='$key'>";
+  foreach($options as [$value,$label]) {
+    echo "    <option value=$value>$label</option>";
   }
   echo "  </select>";
   echo "  <div class='hint'>$hint</div>";
@@ -172,7 +172,7 @@ echo "  <div class='hint-hint'>Click or hover on any of the entry labels for mor
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true]);
-add_editor_select('section','show-name',["YES","NO"]);
+add_editor_select('section','labeled',[[1,"YES"],[0,"NO"]]);
 add_editor_textarea('section','description',['maxlen'=>512]);
 add_editor_input('section','feedback');
 echo "</div>";
@@ -181,7 +181,7 @@ echo "</div>";
 echo "<!--Section Viewer-->";
 echo "<div class='grid section viewer'>";
 add_viewer_entry('section','name');
-add_viewer_entry('section','show-name');
+add_viewer_entry('section','labeled');
 add_viewer_entry('section','description');
 add_viewer_entry('section','feedback');
 echo "  </div>";

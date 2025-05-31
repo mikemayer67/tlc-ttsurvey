@@ -1,7 +1,7 @@
 import editor_tree from './editor_tree.js';
 import editor_menubar from './editor_menubar.js';
 import setup_editor_resizer from './editor_resizer.js';
-import editors from './editors.js';
+import editor_frame from './editors.js';
 import { deepCopy } from './utils.js';
 
 export default function survey_editor(ce)
@@ -10,7 +10,7 @@ export default function survey_editor(ce)
 
   const _editor_tree    = editor_tree(ce);
   const _editor_menubar = editor_menubar(ce);
-  const _editors        = editors(ce);
+  const _editor_frame   = editor_frame(ce);
 
   let _editable = false;
   let _content = null;
@@ -24,7 +24,7 @@ export default function survey_editor(ce)
   function update(content) {
 
     _editor_tree.reset();
-    _editors.reset(_editable);
+    _editor_frame.reset(_editable);
 
     if(content) {
       // if editing is enabled, we want to work on a copy of the content.
@@ -193,16 +193,16 @@ export default function survey_editor(ce)
 
   $(document).on('SectionSelected', function(e,section_id) { 
     const section = _content.sections[section_id];
-    _editors.show_section(section_id,section)
+    _editor_frame.show_section(section_id,section)
   });
 
   $(document).on('QuestionSelected', function(e,question_id) { 
     const question = _content.questions[question_id];
-    _editors.show_question(question_id,question,_content.options)
+    _editor_frame.show_question(question_id,question,_content.options)
   });
 
   $(document).on('SelectionCleared', function(e) { 
-    _editors.hide();
+    _editor_frame.hide();
   });
 
   // return editor object

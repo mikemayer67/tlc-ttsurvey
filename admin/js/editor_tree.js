@@ -347,6 +347,15 @@ export default function editor_tree(ce)
     }
   }
 
+  $(document).on('SelectSectionRequest',function(e,section_id) {
+    const item = _tree.find(`li.section[data-section=${section_id}]`);
+    set_selection(item);
+  });
+
+  $(document).on('SelectQuestionRequest',function(e,question_id) {
+    console.log('Question Selection Requested');
+  });
+
 
   // clicking anywhere in the editor tree box other than on one of the sections
   //   or questions clears the current selection

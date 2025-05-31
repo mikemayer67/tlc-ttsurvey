@@ -41,6 +41,10 @@ export default function undo_manager(ce)
     return true;
   }
 
+  function isCurrent(a) {
+    return (_undo_stack.length>0) && (a === _undo_stack[_undo_stack.length-1]);
+  }
+
   function revert() {
     // Note that this returns true if the undo stack is empty
     if( _undo_stack.length > MAX_REVERT_DEPTH ) { return false; }
@@ -93,5 +97,6 @@ export default function undo_manager(ce)
     empty: empty,
     hasUndo() { return _undo_stack.length > 0; },
     hasRedo() { return _redo_stack.length > 0; },
+    isCurrent:isCurrent,
   };
 }
