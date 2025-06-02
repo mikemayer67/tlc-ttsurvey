@@ -419,6 +419,17 @@
   font-style:italic;
 }
 
+#ttt-body #survey-tree li.section.error div,
+#ttt-body #survey-tree li.question.error div
+{
+  font-weight:bold;
+  color:#b00; 
+  background-color:pink;
+}
+#ttt-body #survey-tree li.section.child-error div {
+  background-color:#ffe8e8;
+}
+
 #ttt-body #survey-tree li.question::before {
   content: "";
   display: inline-block;
@@ -447,10 +458,6 @@
 }
 #ttt-body #survey-tree li.question.missing::before {
   background-image: url('../../img/icons8/missing.png');
-}
-
-#ttt-body #survey-tree li.drop-target {
-  background-color:pink;
 }
 
 /***************************************
@@ -548,6 +555,22 @@
   display:block;
 }
 
+#editor-frame .grid.editor .value .wrapper {
+  position:relative;
+  width:75%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor .value .error {
+  position:absolute;
+  top:0;
+  right:2px;
+  width:fit-content;
+  font-size:80%;
+  font-style:italic;
+  color:darkred;
+}
+
 #editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {
   margin:0;
@@ -567,8 +590,7 @@
 
 #editor-frame .grid.editor div.value input {
   background:white;
-  width:75%;
-  min-width:300px;
+  width:100%;
 }
 
 #editor-frame .grid.editor .textarea-wrapper {

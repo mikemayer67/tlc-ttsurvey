@@ -108,9 +108,17 @@ function add_editor_input($scope, $key, $kwargs=[])
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
 
+  $attributes = "name='$name' data-key='$key' placeholder='$placeholder'";
+
+  $maxlen = $kwargs['maxlen'] ?? 0;
+  if($maxlen) { $attributes .= " maxlength='$maxlen'"; }
+
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
-  echo "  <input class='$scope $key' name='$name' data-key='$key' placeholder='$placeholder'></input>";
+  echo "  <div class='wrapper'>";
+  echo "    <input class='$scope $key' $attributes></input>";
+  echo "    <span class='error'></span>";
+  echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
 }
@@ -171,10 +179,10 @@ echo "  <div class='hint-hint'>Click or hover on any of the entry labels for mor
 
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
-add_editor_input('section','name',['required'=>true]);
+add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
 add_editor_select('section','labeled',[[1,"YES"],[0,"NO"]]);
 add_editor_textarea('section','description',['maxlen'=>512]);
-add_editor_input('section','feedback');
+add_editor_input('section','feedback',['maxlen'=>128]);
 echo "</div>";
 
 

@@ -495,6 +495,62 @@ export default function editor_tree(ce)
   }
 
   //
+  // Error Markup
+  //
+  
+  function add_error(scope,id,key) {
+    const item = 
+      scope === 'section'
+      ? _tree.find(`li.section[data-section=${id}]`)
+      : _tree.find(`li.question[data-question=${id}]`) ;
+
+    if(item.length === 0) { return; }
+
+    item.addClass('error');
+    const bad_keys = item.data('bad_keys') ?? new Set();
+    bad_keys.add(key);
+    item.data('bad_keys',bad_keys);
+
+    if(scope === 'question') {
+      item.closest('li.section').addClass('child-error');
+    }
+  }
+
+  function clear_error(scope,id,key) {
+    const item = 
+      scope === 'section'
+      ? _tree.find(`li.section[data-section=${id}]`)
+      : _tree.find(`li.question[data-question=${id}]`) ;
+
+    if(item.length === 0) { return; }
+
+    const bad_keys = item.data('bad_keys');
+    if(bad_keys) {
+      bad_keys.delete(key);
+      if(bad_keys.size === 0) {
+        item.data('bad_keys',undefined);
+        item.removeClass('error');
+      } else {
+        item.data('bad_keys',bad_keys);
+      }
+    } else {
+      item.removeClass('error');
+    }
+
+    if(scope === 'question') {
+      const section_li = item.closest('li.section');
+      const errant_children = section_li.find('li.question.error');
+      if( errant_children.length === 0 ) { 
+        section_li.removeClass('child-error'); 
+      }
+    }
+  }
+
+  function has_errors() {
+    return _tree.find('li.error').length > 0;
+  }
+
+  //
   // Return
   //
 
@@ -509,5 +565,8 @@ export default function editor_tree(ce)
     remove_question: remove_question,     // (question_id)
     cache_selection: cache_selection,     // returns object to pass to restore_selection
     restore_selection: restore_selection, // (object returned by cache_selection)
+    add_error: add_error,                 // (scope, id, key) <- scope = 'section' or 'question'
+    clear_error: clear_error,             // (scope, id, key)
+    has_errors: has_errors,               // ()
   };
 }

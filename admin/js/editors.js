@@ -23,7 +23,7 @@ function update_character_count(e)
 
 // section viewer
 
-function section_viewer(ce,frame)
+function section_viewer(ce,tree)
 {
   const _box = $('#editor-frame div.grid.section.viewer');
 
@@ -38,6 +38,8 @@ function section_viewer(ce,frame)
 
   const _feedback          = _box.children('.feedback');
   const _feedback_value    = _feedback.find('div.text');
+
+  const _hints             = _box.find('div.hint');
 
   function show(id,data)
   {
@@ -56,12 +58,13 @@ function section_viewer(ce,frame)
 
 // section editor
 
-function section_editor(ce,frame)
+function section_editor(ce,tree)
 {
   const _box = $('#editor-frame div.grid.section.editor');
 
   const _name              = _box.children('.name');
   const _name_value        = _name.find('input');
+  const _name_error        = _name.find('.error');
 
   const _labeled           = _box.children('.labeled');
   const _labeled_value     = _labeled.find('select');
@@ -71,6 +74,7 @@ function section_editor(ce,frame)
 
   const _feedback          = _box.children('.feedback');
   const _feedback_value    = _feedback.find('input');
+  const _feedback_error    = _feedback.find('.error');
 
   const _hints             = _box.find('div.hint');
   const _fields            = _box.find('input,textarea,select');
@@ -79,14 +83,54 @@ function section_editor(ce,frame)
   let _cur_section_data = null;
   let _cur_undo_action  = null;
 
-  _description_value.on('input change',update_character_count);
+  _description_value.on('input',update_character_count);
 
-  _fields.on('change input', function(e) {
+  let _trigger_timer = null;
+  _box.find('input,textarea').on('input', function(e) {
     const key   = $(this).data('key');
     const value = $(this).val();
     _cur_section_data[key] = value;
     _cur_undo_action.update(key,value);
+    if(_trigger_timer) {
+      clearTimeout(_trigger_timer);
+    }
+    _trigger_timer = setTimeout( function() { 
+      _trigger_timer = null;
+      validate_input(key,value);
+      $(document).trigger('SurveyWasModified');
+    }, 500);
+
   });
+
+  _box.find('select').on('change', function(e) {
+    const key   = $(this).data('key');
+    const value = $(this).val();
+    _cur_section_data[key] = value;
+    _cur_undo_action.update(key,value);
+
+    $(document).trigger('SurveyWasModified');
+  });
+
+  const _name_regex  = new RegExp("^[\\w\\s,:&-]*$");
+  function validate_input(key,value) {
+    const len = value.trim().length;
+    let error = '';
+    switch(key) {
+      case 'name':
+        if( !_name_regex.test(value) ) { error = 'invalid';   }
+        else if(len==0)                { error = 'missing';   } 
+        else if(len<4)                 { error = 'too short'; }
+        _name_error.text(error);
+        break;
+      case 'feedback':
+        if( !_name_regex.test(value) ) { error = 'invalid';   }
+        else if(len>0 && len<4)        { error = 'too short'; }
+        _feedback_error.text(error);
+        break;
+    }
+    if(error) { tree.add_error(  'section', _cur_section_id, key); }
+    else      { tree.clear_error('section', _cur_section_id, key); }
+  }
 
   function show(id,data)
   {
@@ -150,6 +194,7 @@ function section_editor(ce,frame)
           _box.find('.'+key).val(value);
           this.section_data[key] = value;
         });
+        $(document).trigger('SurveyWasModified');
         if(this.section_id !== _cur_section_id) {
           $(document).trigger('SelectSectionRequest',[this.section_id]);
         }
@@ -160,6 +205,7 @@ function section_editor(ce,frame)
           _box.find('.'+key).val(value);
           this.section_data[key] = value;
         });
+        $(document).trigger('SurveyWasModified');
         if(this.section_id !== _cur_section_id) {
           $(document).trigger('SelectSectionRequest',[this.section_id]);
         }
@@ -185,7 +231,7 @@ function section_editor(ce,frame)
 
 // question viewer
 
-function question_viewer(ce,frame)
+function question_viewer(ce,tree)
 {
   const _box = $('#editor-frame div.grid.question.viewer');
 
@@ -218,7 +264,7 @@ function question_viewer(ce,frame)
 
   const _hints             = _box.find('div.hint');
 
-  function show(id,data)
+  function show(id,data,options)
   {
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
@@ -313,9 +359,11 @@ function question_viewer(ce,frame)
 
 // question editor
 
-function question_editor(ce,frame)
+function question_editor(ce,tree)
 {
   const _box = $('#editor-frame div.grid.question.editor');
+
+  const _hints             = _box.find('div.hint');
 
   function show(id,data)
   {
@@ -328,14 +376,14 @@ function question_editor(ce,frame)
 
 // editors frame 
 
-export default function editor_frame(ce)
+export default function editor_frame(ce,tree)
 {
   const _frame = $('#editor-frame');
 
-  const _section_viewer  = section_viewer(ce,this);
-  const _section_editor  = section_editor(ce,this);
-  const _question_viewer = question_viewer(ce,this);
-  const _question_editor = question_editor(ce,this);
+  const _section_viewer  = section_viewer(ce,tree);
+  const _section_editor  = section_editor(ce,tree);
+  const _question_viewer = question_viewer(ce,tree);
+  const _question_editor = question_editor(ce,tree);
 
   let _editable = false;
 
@@ -369,11 +417,11 @@ export default function editor_frame(ce)
     else          { _section_viewer.show(section_id,section) }
   }
 
-  function show_question(question_id,question)
+  function show_question(question_id,question,options)
   {
-    _frame.removeClass('question').addClass('question');
-    if(_editable) { _question_editor.show(question_id,question) }
-    else          { _question_viewer.show(question_id,question) }
+    _frame.removeClass('section').addClass('question');
+    if(_editable) { _question_editor.show(question_id,question,options) }
+    else          { _question_viewer.show(question_id,question,options) }
   }
 
   function hide() 

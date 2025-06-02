@@ -109,10 +109,10 @@ IF version < 1 THEN
     survey_id   int          NOT NULL,
     survey_rev  int          NOT NULL,
     sequence    int                             COMMENT 'Order this section will appear in the survey form. (NULL excludes section).'
-    name        varchar(45)  NOT NULL           COMMENT 'Section name that will appear in the editor and on survey tabs'
+    name        varchar(128) NOT NULL           COMMENT 'Section name that will appear in the editor and on survey tabs'
     show_name   tinyint      NOT NULL DEFAULT 1 COMMENT 'Whether to include the name as a section header'
     description varchar(512) DEFAULT NULL       COMMENT 'Section description that will appear in the survey form',
-    feedback    varchar(512) DEFAULT NULL       COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
+    feedback    varchar(128) DEFAULT NULL       COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
     PRIMARY KEY (survey_id,survey_rev,section),
     FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(id) ON UPDATE RESTRICT ON DELETE CASCADE
   );

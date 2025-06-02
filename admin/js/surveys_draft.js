@@ -104,17 +104,18 @@ export default function draft_controller(ce)
   function update_submit_revert()
   {
     const dirty = has_changes();
-    const has_errors = ce.form.find('.invalid-value').length > 0;
-    const has_incomplete = ce.form.find('.incomplete').length > 0;
 
-    if(dirty) {
-      ce.revert.prop('disabled',false).css('opacity',1);
-    }
-    else {
-      ce.revert.prop('disabled',true).css('opacity',0);
-    }
+    const can_submit = (
+      dirty &&
+      ( ce.form.find('.invalid-value').length === 0) &&
+      ( ce.form.find('.incomplete').length    === 0) &&
+      ( ce.survey_editor.can_submit() )
+    );
 
-    ce.submit.prop('disabled',has_errors || has_incomplete || !dirty);
+    if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
+    else      { ce.revert.prop('disabled',true).css('opacity',0); }
+
+    ce.submit.prop('disabled', can_submit === false);
   }
 
   $(document).on('SurveyWasReordered',update_submit_revert);
@@ -231,11 +232,8 @@ export default function draft_controller(ce)
         ce.cur_survey.has_pdf = data.has_pdf;
 
         _survey_name.val('');
-//        _survey_pdf.val('');
-//        _pdf_action.val('keep');
 
         $(document).trigger('SurveyDataChanged');
-
         show_status('info','Changes Saved');
       } 
       else {

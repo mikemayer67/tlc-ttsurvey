@@ -4,13 +4,14 @@ import setup_editor_resizer from './editor_resizer.js';
 import editor_frame from './editors.js';
 import { deepCopy } from './utils.js';
 
+
 export default function survey_editor(ce)
 {
   const _content_editor  = $('#content-editor');
 
   const _editor_tree    = editor_tree(ce);
   const _editor_menubar = editor_menubar(ce);
-  const _editor_frame   = editor_frame(ce);
+  const _editor_frame   = editor_frame(ce,_editor_tree);
 
   let _editable = false;
   let _content = null;
@@ -51,6 +52,10 @@ export default function survey_editor(ce)
     _editor_menubar.show(_editable);
 
     ce.undo_manager?.empty();
+  }
+
+  function can_submit() {
+    return !_editor_tree.has_errors();
   }
 
   // insertion handlers
@@ -213,5 +218,6 @@ export default function survey_editor(ce)
     disable() { _editable = false },
     enable() { _editable = true },
     update: update,
+    can_submit:can_submit,
   };
 };
