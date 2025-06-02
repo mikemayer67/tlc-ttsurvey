@@ -96,7 +96,7 @@ function section_editor(ce,tree)
     }
     _trigger_timer = setTimeout( function() { 
       _trigger_timer = null;
-      validate_input(key,value);
+      validate_input(_cur_section_id,key,value);
       $(document).trigger('SurveyWasModified');
     }, 500);
 
@@ -111,25 +111,28 @@ function section_editor(ce,tree)
     $(document).trigger('SurveyWasModified');
   });
 
-  const _name_regex  = new RegExp("^[\\w\\s,:&-]*$");
-  function validate_input(key,value) {
-    const len = value.trim().length;
+  const _invalid_name_regex      = new RegExp("[^\\w\\s&-]");
+  const _invalid_feedback_regex  = new RegExp("[^\\w\\s.,;:&-]");
+  function validate_input(section_id,key,value) {
+    const len = String(value).trim().length;
     let error = '';
     switch(key) {
       case 'name':
-        if( !_name_regex.test(value) ) { error = 'invalid';   }
-        else if(len==0)                { error = 'missing';   } 
-        else if(len<4)                 { error = 'too short'; }
+        const invalid_name_char = value.match(_invalid_name_regex);
+        if(invalid_name_char)    { error = `invalid char(${invalid_name_char[0]})`; }
+        else if(len==0)          { error = 'missing';   } 
+        else if(len<4)           { error = 'too short'; }
         _name_error.text(error);
         break;
       case 'feedback':
-        if( !_name_regex.test(value) ) { error = 'invalid';   }
-        else if(len>0 && len<4)        { error = 'too short'; }
+        const invalid_feedback_char = value.match(_invalid_feedback_regex);
+        if(invalid_feedback_char) { error = `invalid char(${invalid_feedback_char[0]})`; }
+        else if(len>0 && len<4)   { error = 'too short'; }
         _feedback_error.text(error);
         break;
     }
-    if(error) { tree.add_error(  'section', _cur_section_id, key); }
-    else      { tree.clear_error('section', _cur_section_id, key); }
+    if(error) { tree.add_error(  'section', section_id, key); }
+    else      { tree.clear_error('section', section_id, key); }
   }
 
   function show(id,data)
@@ -147,6 +150,7 @@ function section_editor(ce,tree)
     _labeled_value.val(data.labeled ? 1 : 0);
     _description_value.val(data.description || '');
     _feedback_value.val(data.feedback || '')
+    update_character_count();
 
     _hints.removeClass('locked');
   }
@@ -193,6 +197,7 @@ function section_editor(ce,tree)
         Object.entries(this.orig_values).forEach(([key,value]) => {
           _box.find('.'+key).val(value);
           this.section_data[key] = value;
+          validate_input(this.section_id,key,value);
         });
         $(document).trigger('SurveyWasModified');
         if(this.section_id !== _cur_section_id) {
@@ -204,6 +209,7 @@ function section_editor(ce,tree)
         Object.entries(this.cur_values).forEach(([key,value]) => {
           _box.find('.'+key).val(value);
           this.section_data[key] = value;
+          validate_input(this.section_id,key,value);
         });
         $(document).trigger('SurveyWasModified');
         if(this.section_id !== _cur_section_id) {
