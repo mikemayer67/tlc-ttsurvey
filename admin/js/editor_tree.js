@@ -6,6 +6,12 @@ export default function editor_tree(ce,controller)
   const _info = $('#survey-tree .info');
   const _tree = $('#survey-tree ul.sections');
 
+  // Start the returned editor_tree object.
+  //    We'll add more properties/methods below
+
+  const self = {
+  };
+
   let _keyboardNav = false;
 
   // sorter for ul.sections
@@ -26,7 +32,7 @@ export default function editor_tree(ce,controller)
   //   section sorter is disabled
   //   all question sorters are released
   //   the "drag-n-drop" info box is hidden
-  function reset()
+  self.reset = function()
   {
     _section_sorter.option('disabled',true);
     Object.values(_question_sorters).forEach((s) => s.destroy());
@@ -38,9 +44,9 @@ export default function editor_tree(ce,controller)
   // update repopulates the tree based on new survey content
   //   the current tree content is cleared out (via reset)
   //   an question sorter is attached to each ul.questions
-  function update(content)
+  self.update = function(content)
   {
-    reset();
+    self.reset();
 
     if(!content) { return; }
 
@@ -61,7 +67,7 @@ export default function editor_tree(ce,controller)
     });
   }
 
-  function update_section(section_id,key,value)
+  self.update_section = function(section_id,key,value)
   {
     if(key === 'name') {
       const name_str = value.trim();
@@ -143,7 +149,7 @@ export default function editor_tree(ce,controller)
   // disable_sorting pretty much does what it says
   //   it disables sorting of both ul.sections and ul.questions
   //   it hides the "drag-n-drop" info box
-  function disable_sorting()
+  self.disable = function()
   {
     _info.hide();
     _section_sorter.option('disabled',true);
@@ -153,7 +159,7 @@ export default function editor_tree(ce,controller)
   // enable_sorting pretty much does what it says
   //   it enables sorting of both ul.sections and ul.questions
   //   it shows the "drag-n-drop" info box
-  function enable_sorting()
+  self.enable = function()
   {
     _info.show();
     _section_sorter.option('disabled',false);
@@ -173,7 +179,7 @@ export default function editor_tree(ce,controller)
   //   to update the DOM.
   // It triggers a SurveyWasReordered custom event on success
   //   and returns true.  It returns false on failure.
-  function move_section(sectionId,toIndex) 
+  self.move_section = function(sectionId,toIndex) 
   {
     const all_sections = _tree.children('li.section');
     if( toIndex >= all_sections.length) { return false; }
@@ -203,7 +209,7 @@ export default function editor_tree(ce,controller)
   //   to update the DOM.
   // It triggers a SurveyWasReordered custom event on success
   //   and returns true.  It returns false on failure.
-  function move_question(questionId,toSectionId,toIndex)
+  self.move_question = function(questionId,toSectionId,toIndex)
   {
     // notation:
     //   sul = ul.sections <--- only one of these in the DOM (aka _tree)
@@ -265,8 +271,8 @@ export default function editor_tree(ce,controller)
 
     const sectionId = $(e.item).data('section');
     ce.undo_manager.add( {
-      undo() { move_section(sectionId,e.oldIndex); },
-      redo() { move_section(sectionId,e.newIndex); },
+      undo() { self.move_section(sectionId,e.oldIndex); },
+      redo() { self.move_section(sectionId,e.newIndex); },
     });
 
     set_selection($(e.item));
@@ -286,8 +292,8 @@ export default function editor_tree(ce,controller)
     const from_section = $(e.from).parent().data('section');
     const to_section   = $(e.to).parent().data('section');
     ce.undo_manager.add( {
-      undo() { move_question(questionId,from_section,e.oldIndex); },
-      redo() { move_question(questionId,to_section,e.newIndex); },
+      undo() { self.move_question(questionId,from_section,e.oldIndex); },
+      redo() { self.move_question(questionId,to_section,e.newIndex); },
     });
 
     set_selection($(e.item));
@@ -311,7 +317,7 @@ export default function editor_tree(ce,controller)
   //  }
   //}
  
-  function select_section(section_id)
+  self.select_section = function(section_id)
   {
     const e = _tree.find(`.section[data-section=${section_id}]`);
     _tree.find('.selected').removeClass('selected');
@@ -319,7 +325,7 @@ export default function editor_tree(ce,controller)
     e.addClass('selected');
   }
 
-  function select_question(question_id)
+  self.select_question = function(question_id)
   {
     const e = _tree.find(`.question[data-question=${question_id}]`);
     _tree.find('.selected').removeClass('selected');
@@ -366,7 +372,7 @@ export default function editor_tree(ce,controller)
   // Insertions and Deletions
   //
 
-  function add_section(section_id, section, where)
+  self.add_section = function(section_id, section, where)
   {
     const [new_li,new_ul] = create_section_li(section_id,section.name);
     if(where.section_id) {
@@ -386,7 +392,7 @@ export default function editor_tree(ce,controller)
     return [new_li,new_ul];
   }
 
-  function add_question(question_id, question, where)
+  self.add_question = function(question_id, question, where)
   {
     const new_li = create_question_li(question_id,question);
     if(where.section_id) {
@@ -406,7 +412,7 @@ export default function editor_tree(ce,controller)
     return new_li;
   }
 
-  function remove_section(section_id)
+  self.remove_section = function(section_id)
   {
     _question_sorters[section_id].destroy();
     delete _question_sorters[section_id];
@@ -416,14 +422,14 @@ export default function editor_tree(ce,controller)
     $(document).trigger('SurveyWasModified');
   }
 
-  function remove_question(question_id)
+  self.remove_question = function(question_id)
   {
     _tree.find(`li.question[data-question=${question_id}]`).remove();
     clear_selection();
     $(document).trigger('SurveyWasModified');
   }
 
-  function cache_selection()
+  self.cache_selection = function()
   {
     const curSelection = _tree.find('li.selected');
     return {
@@ -432,7 +438,7 @@ export default function editor_tree(ce,controller)
     };
   }
 
-  function restore_selection(cache)
+  self.restore_selection = function(cache)
   {
     if(cache.section_id) {
       set_selection(_tree.find(`li.section[data-section=${cache.section_id}]`));
@@ -494,7 +500,7 @@ export default function editor_tree(ce,controller)
   // Error Markup
   //
   
-  function add_error(scope,id,key) {
+  self.add_error = function(scope,id,key) {
     const item = 
       scope === 'section'
       ? _tree.find(`li.section[data-section=${id}]`)
@@ -512,7 +518,7 @@ export default function editor_tree(ce,controller)
     }
   }
 
-  function clear_error(scope,id,key) {
+  self.clear_error = function(scope,id,key) {
     const item = 
       scope === 'section'
       ? _tree.find(`li.section[data-section=${id}]`)
@@ -542,7 +548,7 @@ export default function editor_tree(ce,controller)
     }
   }
 
-  function has_errors() {
+  self.has_errors = function() {
     return _tree.find('li.error').length > 0;
   }
 
@@ -550,24 +556,5 @@ export default function editor_tree(ce,controller)
   // Return
   //
 
-  return {
-    reset:  reset,                        // clears the tree and disables user sorting
-    update: update,                       // updates content of the survey tree
-    enable:  enable_sorting,              // enables sorting
-    disable: disable_sorting,             // disables sorting
-    add_section: add_section,             // (new_section_id, new_section object, where)
-    add_question: add_question,           // (new_question_id, new_question object, where)
-    move_section: move_section,           // (section_id, to_index)
-    move_question: move_question,         // (question_id, to_section_id, to_index)
-    select_section: select_section,       // (section_id)
-    select_question: select_question,     // (question_id)
-    remove_section: remove_section,       // (section_id)
-    remove_question: remove_question,     // (question_id)
-    update_section: update_section,       // (section_id,key,value)
-    cache_selection: cache_selection,     // returns object to pass to restore_selection
-    restore_selection: restore_selection, // (object returned by cache_selection)
-    add_error:   add_error,               // (scope, id, key) <- scope = 'section' or 'question'
-    clear_error: clear_error,             // (scope, id, key)
-    has_errors:  has_errors,              // ()
-  };
+  return self;
 }
