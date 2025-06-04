@@ -64,9 +64,12 @@ export default function editor_tree(ce,controller)
   function update_section(section_id,key,value)
   {
     if(key === 'name') {
+      const name_str = value.trim();
       const name = _tree.find(`.section[data-section=${section_id}]`);
       const span = name.find('span.name');
-      span.text(value.trim());
+      span.text(name_str);
+      if(name_str.length === 0) { span.addClass('missing'); }
+      else                      { span.removeClass('missing'); }
     }
   }
 
@@ -89,7 +92,7 @@ export default function editor_tree(ce,controller)
     .html(div)
 
     if(!name) {
-      span.addClass('incomplete').addClass('missing');
+      span.addClass('missing incomplete');
     }
 
     btn.on('click', function(e) {
