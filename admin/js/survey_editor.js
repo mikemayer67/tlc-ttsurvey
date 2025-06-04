@@ -1,47 +1,102 @@
 import editor_tree from './editor_tree.js';
 import editor_menubar from './editor_menubar.js';
 import setup_editor_resizer from './editor_resizer.js';
-import editor_frame from './editors.js';
+import section_viewer from './section_viewer.js';
+import section_editor from './section_editor.js';
+import question_viewer from './question_viewer.js';
+import question_editor from './question_editor.js';
+
 import { deepCopy } from './utils.js';
+
+function setup_hint_handler() 
+{
+  const triggers = $('#editor-frame').find('.viewer, .editor').find('div.label span')
+
+  let _timeout_id = null;
+
+  triggers.on('mouseenter', function(e) {
+    if(_timeout_id) { clearTimeout(_timeout_id) }
+    const hint = $(this).parent().next().children('div.hint');
+    _timeout_id = setTimeout( function() { 
+      hint.addClass('hover') 
+    }, 250 );
+  });
+
+  triggers.on('mouseleave', function(e) {
+    if(_timeout_id) {
+      clearTimeout(_timeout_id);
+      _timeout_id = null;
+    }
+    const hint = $(this).parent().next().children('div.hint');
+    hint.removeClass('hover');
+  });
+
+  triggers.on('click', function(e) {
+    const hint = $(this).parent().next().children('div.hint');
+    hint.toggleClass('locked');
+  });
+}
 
 
 export default function survey_editor(ce)
 {
-  const _content_editor  = $('#content-editor');
+  const _box   = $('#content-editor');
+  const _frame = $('#editor-frame');
 
-  const _editor_tree    = editor_tree(ce);
-  const _editor_menubar = editor_menubar(ce);
-  const _editor_frame   = editor_frame(ce,_editor_tree);
+  // Start the returned survey_editor object.
+  //    We'll add more properties/methods below
+  const self = {
+    editable:false,
+    enable()  { this.editable = true; },
+    disable() { this.editable = false; },
+    show()    { _box.show(); },
+    hide()    { _box.hide(); },
+  };
+  
+  const _tree     = editor_tree(ce,self);
+  const _menubar  = editor_menubar(ce,self);
+  const _sv       = section_viewer(ce,self);
+  const _qv       = question_viewer(ce,self);
+  const _se       = section_editor(ce,self);
+  const _qe       = question_editor(ce,self);
 
-  let _editable = false;
   let _content = null;
-  let _next_section_id = 1;
-  let _next_question_id = 1;
+  let _next_section_id  = 1;  // assigned to next new section
+  let _next_question_id = 1;  // assigned to next new question
+  
+  // start the return survey_editor object with public accessors
+  //   will add more properties/methods as we continue through this "constructor"
+  // TODO:: REMOVE THESES
+  // self.tree = _tree;
+  // self.menubar = _menubar;
 
-  setup_editor_resizer(ce,_editor_tree);
+  setup_editor_resizer(ce,_tree);
+  setup_hint_handler();
 
   // editor content
 
-  function update(content) {
-
-    _editor_tree.reset();
-    _editor_frame.reset(_editable);
+  self.update = function(content) 
+  {
+    _tree.reset();
+    _frame.removeClass('section question');
+    if(self.editable) { _frame.addClass('editable').removeClass('locked') }
+    else          { _frame.addClass('locked').removeClass('editable') }
 
     if(content) {
       // if editing is enabled, we want to work on a copy of the content.
       // if editing is disabled, it's ok to view the content directly.
-      if(_editable) { _content = deepCopy(content) }
-      else          { _content = content; }
+      if(self.editable) { _content = deepCopy(content) }
+      else              { _content = content; }
 
-      _editor_tree.update(_content);
+      _tree.update(_content);
 
-      if(_editable) {
+      if(self.editable) {
         const sections = $('#survey-tree li.section').map(function() { 
           return Number($(this).data('section')); 
         }).get();
         _next_section_id = 1 + Math.max(...sections)
         _next_question_id = _content.next_ids.question;
-        _editor_tree.enable(); 
+        _tree.enable(); 
       }
 
     } else {
@@ -49,59 +104,74 @@ export default function survey_editor(ce)
       _content = null;
     }
 
-    _editor_menubar.show(_editable);
+    _menubar.show(self.editable);
 
     ce.undo_manager?.empty();
+  };
+
+  self.can_submit = function() {
+    return !_tree.has_errors();
+  };
+
+  self.update_section_data = function(section_id, key, value)
+  {
+    _content.sections[section_id][key] = value;
+    _tree.update_section(section_id,key,value);
   }
 
-  function can_submit() {
-    return !_editor_tree.has_errors();
+  self.update_section_error = function(section_id, key, value, error )
+  {
+    if(error) { _tree.add_error('section',section_id,key); }
+    else      { _tree.clear_error('section',section_id,key); }
   }
 
   // insertion handlers
   
-  $(document).on('AddNewSection',function(e,where) {
+  self.add_new_section = function(where)
+  {
     const new_section_id = _next_section_id++;
     const new_section = { name:"", description:"", show:false, feedback:false };
-    const cur_highlight = _editor_tree.cache_selection();
+    const cur_highlight = _tree.cache_selection();
 
     _content.sections[ new_section_id ] = new_section;
 
     ce.undo_manager.add_and_exec( {
       redo() {
-        _editor_tree.add_section( new_section_id, new_section, where );
+        _tree.add_section( new_section_id, new_section, where );
       },
       undo() {
-        _editor_tree.remove_section(new_section_id);
-        _editor_tree.restore_selection(cur_highlight);
+        _tree.remove_section(new_section_id);
+        _tree.restore_selection(cur_highlight);
       },
     });
-  });
+  };
 
-  $(document).on('AddNewQuestion',function(e,where) {
+  self.add_new_question = function(where)
+  {
     const new_question_id = _next_question_id++;
     const new_question = { type:null };
-    const cur_highlight = _editor_tree.cache_selection();
+    const cur_highlight = _tree.cache_selection();
 
     _content.questions[ new_question_id ] = new_question;
 
     ce.undo_manager.add_and_exec( {
       redo() { 
-        _editor_tree.add_question(new_question_id, new_question, where);
+        _tree.add_question(new_question_id, new_question, where);
       },
       undo() {
-        _editor_tree.remove_question(new_question_id);
-        _editor_tree.restore_selection(cur_highlight);
+        _tree.remove_question(new_question_id);
+        _tree.restore_selection(cur_highlight);
       },
     });
-  });
+  };
 
-  $(document).on('CloneQuestion',function(e,data) {
+  self.clone_question = function(data)
+  {
     if( data.parent_id in _content.questions ) {
       const new_question_id = _next_question_id++;
       const new_question = deepCopy( _content.questions[data.parent_id] );
       new_question.wording = null;
-      const cur_highlight = _editor_tree.cache_selection();
+      const cur_highlight = _tree.cache_selection();
 
       _content.questions[new_question_id] = new_question; 
 
@@ -109,23 +179,24 @@ export default function survey_editor(ce)
 
       ce.undo_manager.add_and_exec( {
         redo() {
-          _editor_tree.add_question(new_question_id, new_question, where);
+          _tree.add_question(new_question_id, new_question, where);
         },
         undo() {
           // note that we are leaving the new question in _content.questions
           //   this will make it more efficient to redo the clone later...
           //   If the form is submitted without readding it to the DOM, it
           //   simply will not be part of what gets submitted.
-          _editor_tree.remove_question(new_question_id);
-          _editor_tree.restore_selection(cur_highlight);
+          _tree.remove_question(new_question_id);
+          _tree.restore_selection(cur_highlight);
         },
       });
     }
-  });
+  };
 
   // deletion handlers
 
-  function delete_section(to_delete) {
+  self.delete_section = function(to_delete) 
+  {
     if( to_delete.length !== 1 ) { return; }
     const section_id = to_delete.data('section');
     const section = _content.sections[section_id];
@@ -133,7 +204,7 @@ export default function survey_editor(ce)
     const questions = to_delete.find('li.question');
     const question_ids = questions.map( function() { return $(this).data('question') } ).get();
 
-    const cur_highlight = _editor_tree.cache_selection();
+    const cur_highlight = _tree.cache_selection();
     const was_closed = to_delete.hasClass('closed');
 
     const prev = to_delete.prev();
@@ -145,33 +216,32 @@ export default function survey_editor(ce)
 
     ce.undo_manager.add_and_exec({
       redo() {
-        _editor_tree.remove_section(section_id);
+        _tree.remove_section(section_id);
       },
       undo() {
-        const [tgt_li,tgt_ul] = _editor_tree.add_section(section_id,section,where);
+        const [tgt_li,tgt_ul] = _tree.add_section(section_id,section,where);
         if(was_closed) { tgt_li.addClass('closed') } else { tgt_li.removeClass('closed') }
         question_ids.forEach( (question_id) => {
-          _editor_tree.add_question(
+          _tree.add_question(
             question_id,
             _content.questions[question_id],
             { section_id:section_id, at_end:true },
           );
         });
-        _editor_tree.restore_selection(cur_highlight);
+        _tree.restore_selection(cur_highlight);
       },
     });
 
   }
-  $(document).on('RequestDeleteSection',function(e,sid) { delete_section(sid); } );
 
-
-  function delete_question(to_delete) {
+  self.delete_question = function(to_delete) 
+  {
     if( to_delete.length !== 1 ) { return; }
 
     const question_id = to_delete.data('question');
     const question = _content.questions[question_id];
 
-    const cur_highlight = _editor_tree.cache_selection();
+    const cur_highlight = _tree.cache_selection();
 
     const prev = to_delete.prev();
     const where = {};
@@ -184,40 +254,49 @@ export default function survey_editor(ce)
 
     ce.undo_manager.add_and_exec({
       redo() { 
-        _editor_tree.remove_question(question_id);
+        _tree.remove_question(question_id);
       },
       undo() {
-        _editor_tree.add_question(question_id, question, where);
-        _editor_tree.restore_selection(cur_highlight);
+        _tree.add_question(question_id, question, where);
+        _tree.restore_selection(cur_highlight);
       },
     });
   }
-  $(document).on('RequestDeleteQuestion',function(e,eid) { delete_question(eid); } );
 
   // selection handlers
 
-  $(document).on('SectionSelected', function(e,section_id) { 
+  self.select_section = function(section_id) 
+  {
     const section = _content.sections[section_id];
-    _editor_frame.show_section(section_id,section)
-  });
+    _frame.removeClass('question').addClass('section');
+    if(self.editable) { _se.show(section_id,section); }
+    else              { _sv.show(section_id,section); }
+    _tree.select_section(section_id);
+    _menubar.update_selection();
+  }
 
-  $(document).on('QuestionSelected', function(e,question_id) { 
+  self.select_question = function(question_id) 
+  {
     const question = _content.questions[question_id];
-    _editor_frame.show_question(question_id,question,_content.options)
-  });
+    _frame.removeClass('question').addClass('question');
+    if(self.editable) { _se.show(question_id,question); }
+    else              { _sv.show(question_id,question); }
+    _tree.select_question(question_id);
+    _menubar.update_selection();
+  }
 
-  $(document).on('SelectionCleared', function(e) { 
-    _editor_frame.hide();
-  });
+  self.clear_selection = function()
+  {
+    _frame.removeClass('section question');
+    _menubar.update_selection();
+  }
+
+  // pass-trhough handlers
+
+  self.move_section  = _tree.move_section;
+  self.move_question = _tree.move_question;
 
   // return editor object
 
-  return {
-    show() { _content_editor.show(); },
-    hide() { _content_editor.hide(); },
-    disable() { _editable = false },
-    enable() { _editable = true },
-    update: update,
-    can_submit:can_submit,
-  };
+  return self;
 };

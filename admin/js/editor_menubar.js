@@ -1,4 +1,4 @@
-export default function editor_menubar(ce)
+export default function editor_menubar(ce,controller)
 {
   const _mbar = $('#content-editor div.menubar');
   const _tree = $('#survey-tree ul.sections');
@@ -57,8 +57,8 @@ export default function editor_menubar(ce)
     const item = _tree.find('li.selected');
 
     const isSection = item.hasClass('section');
-    if( isSection ) { $(document).trigger('RequestDeleteSection', [item]) } 
-    else            { $(document).trigger('RequestDeleteQuestion', [item]) }
+    if( isSection ) { controller.delete_section(item); }
+    else            { controller.delete_question(item); }
   });
 
   // Up/Down Buttons
@@ -96,18 +96,8 @@ export default function editor_menubar(ce)
     //   selecting a new section, the new_section_selected function captures all
     //   the necessary DOM element state updates associated with a move.
     ce.undo_manager.add_and_exec( {
-      redo() { 
-        $(document).trigger('RequestMoveSection', {
-          sectionId:sectionId,
-          toIndex:newIndex,
-        });
-      },
-      undo() { 
-        $(document).trigger('RequestMoveSection', {
-          sectionId:sectionId,
-          toIndex:curIndex,
-        });
-      },
+      redo() { controller.move_section(sectionId,newIndex) },
+      undo() { controller.move_section(sectionId,curIndex) },
     } );
 
     return true;
@@ -146,20 +136,8 @@ export default function editor_menubar(ce)
     }
 
     ce.undo_manager.add_and_exec( {
-      redo() { 
-        $(document).trigger('RequestMoveQuestion', {
-          questionId:questionId,
-          toSectionId:newSectionId,
-          toIndex:newIndex,
-        });
-      },
-      undo() { 
-        $(document).trigger('RequestMoveQuestion', {
-          questionId:questionId,
-          toSectionId:curSectionId,
-          toIndex:curIndex,
-        });
-      },
+      redo() { controller.move_question(questionId,newSectionId,newIndex) },
+      undo() { controller.move_question(questionId,curSectionId,curIndex) },
     } );
 
     return true;
@@ -173,7 +151,7 @@ export default function editor_menubar(ce)
   function request_new_section(delta) {
     const curSelection = _tree.find('li.section.selected'); 
     if(curSelection.length === 1) {
-      $(document).trigger('AddNewSection',{
+      controller.add_new_section({
         offset:delta,
         section_id:curSelection.data('section'),
       });
@@ -186,7 +164,7 @@ export default function editor_menubar(ce)
   function request_new_question(delta) {
     const curSelection = _tree.find('li.selected');
     if(curSelection.length === 1) { 
-      $(document).trigger('AddNewQuestion', {
+      controller.add_new_question({
         offset:delta,
         section_id:curSelection.data('section'),
         question_id:curSelection.data('question'),
@@ -197,7 +175,7 @@ export default function editor_menubar(ce)
   _add_question_clone.on('click', function() {
     const curSelection = _tree.find('li.question.selected');
     if(curSelection.length === 1) {
-      $(document).trigger('CloneQuestion', {
+      controller.clone_question({
         parent_id: curSelection.data('question'),
       });
     }
@@ -207,7 +185,7 @@ export default function editor_menubar(ce)
   // Selection change handlers
   //
 
-  function update_selection_buttons()
+  function update_selection()
   {
     const selected_item = _tree.find('li.selected');
 
@@ -233,10 +211,6 @@ export default function editor_menubar(ce)
 
     update_up_down_buttons();
   }
-  $(document).on('SectionSelected',update_selection_buttons);
-  $(document).on('QuestionSelected',update_selection_buttons);
-  $(document).on('SelectionCleared',update_selection_buttons);
-
   function update_up_down_buttons()
   {
     const selected_item = _tree.find('li.selected');
@@ -294,5 +268,6 @@ export default function editor_menubar(ce)
   return {
     show(v=true) { if(v) { _mbar.show() } else { _mbar.hide() } },
     hide()       { _mbar.hide() },
+    update_selection:update_selection,
   };
 }

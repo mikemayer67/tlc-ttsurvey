@@ -1,6 +1,6 @@
 import Sortable from '../../js/sortable.esm.js';
 
-export default function editor_tree(ce)
+export default function editor_tree(ce,controller)
 {
   const _box  = $('#survey-tree');
   const _info = $('#survey-tree .info');
@@ -59,6 +59,15 @@ export default function editor_tree(ce)
         create_question_li(eid,question).appendTo(ul);
       });
     });
+  }
+
+  function update_section(section_id,key,value)
+  {
+    if(key === 'name') {
+      const name = _tree.find(`.section[data-section=${section_id}]`);
+      const span = name.find('span.name');
+      span.text(value.trim());
+    }
   }
 
   function create_section_li(sid,name)
@@ -192,12 +201,6 @@ export default function editor_tree(ce)
     return true;
   }
 
-  // Watch for any RequestMoveSection events and unpackage it to
-  //   make the desired call to move_section.
-  $(document).on('RequestMoveSection', function(e,kwargs) {
-    move_section(kwargs.sectionId, kwargs.toIndex);
-  });
-
   // move_question function handles requests to move a li.question DOM element
   //   to a new location under any of the ul.questions DOM element.
   // This function does not care where the request came from.  It could be
@@ -259,13 +262,6 @@ export default function editor_tree(ce)
     return true;
   }
 
-  // Watch for any RequestMoveQuestion events and unpackage it to
-  //   make the desired call to move_question.
-  $(document).on('RequestMoveQuestion', function(e,kwargs) {
-    move_question(kwargs.questionId, kwargs.toSectionId, kwargs.toIndex);
-  });
-
-
   // Handle SortableJS onEnd from the ul.sections sorter.
   //   Unpacks the onEnd custom event in order to add the move section action
   //   to the undo manager.
@@ -312,14 +308,31 @@ export default function editor_tree(ce)
   
   // if the selected item is an li.question, adds the selected-child class
   //   to the li.section that contains the selected li.question
-  function update_parent_section()
+  //function update_parent_section()
+  //{
+  //  _tree.find('.selected-child').removeClass('selected-child');
+  //
+  //  const selected_question = _tree.find('li.question.selected');
+  //  if( selected_question.length === 1 ) {
+  //    selected_question.parent().parent().addClass('selected-child');
+  //  }
+  //}
+ 
+  function select_section(section_id)
   {
+    const e = _tree.find(`.section[data-section=${section_id}]`);
+    _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
+    e.addClass('selected');
+  }
 
-    const selected_question = _tree.find('li.question.selected');
-    if( selected_question.length === 1 ) {
-      selected_question.parent().parent().addClass('selected-child');
-    }
+  function select_question(question_id)
+  {
+    const e = _tree.find(`.question[data-question=${question_id}]`);
+    _tree.find('.selected').removeClass('selected');
+    _tree.find('.selected-child').removeClass('selected-child');
+    e.addClass('selected');
+    e.closest('li.section').addClass('selected-child');
   }
 
   // clears all class attributes associated with section/question selection
@@ -327,7 +340,7 @@ export default function editor_tree(ce)
   {
     _tree.find('.selected').removeClass('selected');
     _tree.find('.selected-child').removeClass('selected-child');
-    $(document).trigger('SelectionCleared');
+    controller.clear_selection();
   }
 
   function set_selection(e)
@@ -340,22 +353,12 @@ export default function editor_tree(ce)
     _tree.find('.selected-child').removeClass('selected-child');
     e.addClass('selected');
     if(e.hasClass('section')) {
-      $(document).trigger('SectionSelected',[e.data('section')]);
+      controller.select_section(e.data('section'));
     } else {
-      e.parent().parent().addClass('selected-child'); 
-      $(document).trigger('QuestionSelected',[e.data('question')]);
+      e.closest('li.section').addClass('selected-child'); 
+      controller.select_question(e.data('question'));
     }
   }
-
-  $(document).on('SelectSectionRequest',function(e,section_id) {
-    const item = _tree.find(`li.section[data-section=${section_id}]`);
-    set_selection(item);
-  });
-
-  $(document).on('SelectQuestionRequest',function(e,question_id) {
-    console.log('Question Selection Requested');
-  });
-
 
   // clicking anywhere in the editor tree box other than on one of the sections
   //   or questions clears the current selection
@@ -561,12 +564,17 @@ export default function editor_tree(ce)
     disable: disable_sorting,             // disables sorting
     add_section: add_section,             // (new_section_id, new_section object, where)
     add_question: add_question,           // (new_question_id, new_question object, where)
+    move_section: move_section,           // (section_id, to_index)
+    move_question: move_question,         // (question_id, to_section_id, to_index)
+    select_section: select_section,       // (section_id)
+    select_question: select_question,     // (question_id)
     remove_section: remove_section,       // (section_id)
     remove_question: remove_question,     // (question_id)
+    update_section: update_section,       // (section_id,key,value)
     cache_selection: cache_selection,     // returns object to pass to restore_selection
     restore_selection: restore_selection, // (object returned by cache_selection)
-    add_error: add_error,                 // (scope, id, key) <- scope = 'section' or 'question'
+    add_error:   add_error,               // (scope, id, key) <- scope = 'section' or 'question'
     clear_error: clear_error,             // (scope, id, key)
-    has_errors: has_errors,               // ()
+    has_errors:  has_errors,              // ()
   };
 }
