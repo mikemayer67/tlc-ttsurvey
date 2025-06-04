@@ -412,11 +412,15 @@
 }
 
 #ttt-body #survey-tree .incomplete {
-  color:#b00;
 }
 
 #ttt-body #survey-tree .missing {
+  color:#b00;
   font-style:italic;
+  font-weight:normal;
+}
+#ttt-body #survey-tree .section .missing::before {
+  content:"[missing name]";
 }
 
 #ttt-body #survey-tree li.section.error div,

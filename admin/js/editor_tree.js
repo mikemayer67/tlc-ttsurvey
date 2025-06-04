@@ -75,25 +75,14 @@ export default function editor_tree(ce,controller)
 
   function create_section_li(sid,name)
   {
-    const btn = $('<button>').addClass('toggle');
-
+    const btn  = $('<button>').addClass('toggle');
     const span = $('<span>').addClass('name');
-    if(name) {
-      span.text(name);
-    } else {
-      span.text('[needs name]');
-    }
+    const div  = $('<div>').append(btn,span);
 
-    const div = $('<div>').append(btn,span);
+    if(name) { span.text(name)                   } 
+    else     { span.text('').addClass('missing') }
 
-    const li = $('<li>')
-    .addClass('section closed')
-    .attr('data-section',sid)
-    .html(div)
-
-    if(!name) {
-      span.addClass('missing incomplete');
-    }
+    const li = $('<li>').addClass('section closed').attr('data-section',sid).html(div);
 
     btn.on('click', function(e) {
       e.stopPropagation();
@@ -101,6 +90,7 @@ export default function editor_tree(ce,controller)
       if( li.hasClass('closed') ) { li.removeClass('closed'); }
       else                        { li.addClass('closed');    }
     });
+
     span.on('click',function(e) {
       e.stopPropagation();
       // li.section is grandparent of span
