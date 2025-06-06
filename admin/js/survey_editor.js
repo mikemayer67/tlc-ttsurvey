@@ -79,8 +79,7 @@ export default function survey_editor(ce)
   {
     _tree.reset();
     _frame.removeClass('section question');
-    if(self.editable) { _frame.addClass('editable').removeClass('locked') }
-    else          { _frame.addClass('locked').removeClass('editable') }
+    _frame.toggleClass('editable',self.editable).toggleClass('locked',!self.editable);
 
     if(content) {
       // if editing is enabled, we want to work on a copy of the content.
@@ -220,7 +219,7 @@ export default function survey_editor(ce)
       },
       undo() {
         const [tgt_li,tgt_ul] = _tree.add_section(section_id,section,where);
-        if(was_closed) { tgt_li.addClass('closed') } else { tgt_li.removeClass('closed') }
+        tgt_li.toggleClass('closed',was_closed);
         question_ids.forEach( (question_id) => {
           _tree.add_question(
             question_id,
@@ -278,9 +277,9 @@ export default function survey_editor(ce)
   self.select_question = function(question_id) 
   {
     const question = _content.questions[question_id];
-    _frame.removeClass('question').addClass('question');
-    if(self.editable) { _se.show(question_id,question); }
-    else              { _sv.show(question_id,question); }
+    _frame.removeClass('section').addClass('question');
+    if(self.editable) { _qe.show(question_id,question,_content.options); }
+    else              { _qv.show(question_id,question,_content.options); }
     _tree.select_question(question_id);
     _menubar.update_selection();
   }

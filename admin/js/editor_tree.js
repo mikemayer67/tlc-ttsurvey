@@ -72,10 +72,9 @@ export default function editor_tree(ce,controller)
     if(key === 'name') {
       const name_str = value.trim();
       const name = _tree.find(`.section[data-section=${section_id}]`);
-      const span = name.find('span.name');
+      const span = name.find('span');
       span.text(name_str);
-      if(name_str.length === 0) { span.addClass('missing'); }
-      else                      { span.removeClass('missing'); }
+      span.toggleClass('needs-name',name_str.length === 0);
     }
   }
 
@@ -86,15 +85,14 @@ export default function editor_tree(ce,controller)
     const div  = $('<div>').append(btn,span);
 
     if(name) { span.text(name)                   } 
-    else     { span.text('').addClass('missing') }
+    else     { span.text('').addClass('needs-name') }
 
     const li = $('<li>').addClass('section closed').attr('data-section',sid).html(div);
 
     btn.on('click', function(e) {
       e.stopPropagation();
       const li = $(this).parent().parent();
-      if( li.hasClass('closed') ) { li.removeClass('closed'); }
-      else                        { li.addClass('closed');    }
+      li.toggleClass('closed');
     });
 
     span.on('click',function(e) {
@@ -126,17 +124,13 @@ export default function editor_tree(ce,controller)
       start_keyboard_navigation(e);
     } );
 
-    if(details.wording) {
-      li.text(details.wording);
-    } else {
-      li.text('[needs wording]');
-      li.addClass('incomplete');
-    }
+    if(details.wording) { li.text(details.wording)        }
+    else                { li.text('').addClass('needs-wording') }
 
     if(details.type) {
       li.addClass(details.type.toLowerCase());
     } else {
-      li.addClass('missing');
+      li.addClass('needs-type');
     }
 
     if(details.multiple) {
@@ -305,23 +299,10 @@ export default function editor_tree(ce,controller)
   // User section/question selection handlers
   //
   
-  // if the selected item is an li.question, adds the selected-child class
-  //   to the li.section that contains the selected li.question
-  //function update_parent_section()
-  //{
-  //  _tree.find('.selected-child').removeClass('selected-child');
-  //
-  //  const selected_question = _tree.find('li.question.selected');
-  //  if( selected_question.length === 1 ) {
-  //    selected_question.parent().parent().addClass('selected-child');
-  //  }
-  //}
- 
   self.select_section = function(section_id)
   {
     const e = _tree.find(`.section[data-section=${section_id}]`);
     _tree.find('.selected').removeClass('selected');
-    _tree.find('.selected-child').removeClass('selected-child');
     e.addClass('selected');
   }
 
@@ -329,16 +310,13 @@ export default function editor_tree(ce,controller)
   {
     const e = _tree.find(`.question[data-question=${question_id}]`);
     _tree.find('.selected').removeClass('selected');
-    _tree.find('.selected-child').removeClass('selected-child');
     e.addClass('selected');
-    e.closest('li.section').addClass('selected-child');
   }
 
   // clears all class attributes associated with section/question selection
   function clear_selection()
   {
     _tree.find('.selected').removeClass('selected');
-    _tree.find('.selected-child').removeClass('selected-child');
     controller.clear_selection();
   }
 
@@ -349,12 +327,10 @@ export default function editor_tree(ce,controller)
       return;
     }
     _tree.find('.selected').removeClass('selected');
-    _tree.find('.selected-child').removeClass('selected-child');
     e.addClass('selected');
     if(e.hasClass('section')) {
       controller.select_section(e.data('section'));
     } else {
-      e.closest('li.section').addClass('selected-child'); 
       controller.select_question(e.data('question'));
     }
   }
@@ -499,8 +475,47 @@ export default function editor_tree(ce,controller)
   //
   // Error Markup
   //
+
+  const _observer = new MutationObserver((mutations) => {
+    for(const m of mutations) {
+      const tgt = $(m.target);
+      switch(m.type) {
+        case 'childList': {
+          if(!tgt.is('ul.questions')) { continue; }
+          break;
+        }
+        case 'attributes': {
+          if(!tgt.is('li.question')) { continue; }
+          if(m.attributeName !== 'class' ) { continue; }
+          break;
+        }
+        default: {
+          continue;
+          break;
+        }
+      }
+      console.log('observer triggered');
+      const section_li = tgt.closest('li.section');
+      if( section_li.length !== 1 ) { continue }
+
+      section_li.toggleClass(
+        'child-error',
+        section_li.find('li.question').filter('.error,.needs').length > 0,
+      );
+      section_li.toggleClass(
+        'child-selected',
+        section_li.find('li.question.selected').length > 0,
+      );
+    }
+  });
+  _observer.observe( $(_tree)[0], {
+    attributes: true,
+    subtree: true,
+    childList: true,
+    attributeFilter: ['class'],
+  });
   
-  self.add_error = function(scope,id,key) {
+  self.set_error = function(scope,id,key,error) {
     const item = 
       scope === 'section'
       ? _tree.find(`li.section[data-section=${id}]`)
@@ -508,44 +523,7 @@ export default function editor_tree(ce,controller)
 
     if(item.length === 0) { return; }
 
-    item.addClass('error');
-    const bad_keys = item.data('bad_keys') ?? new Set();
-    bad_keys.add(key);
-    item.data('bad_keys',bad_keys);
-
-    if(scope === 'question') {
-      item.closest('li.section').addClass('child-error');
-    }
-  }
-
-  self.clear_error = function(scope,id,key) {
-    const item = 
-      scope === 'section'
-      ? _tree.find(`li.section[data-section=${id}]`)
-      : _tree.find(`li.question[data-question=${id}]`) ;
-
-    if(item.length === 0) { return; }
-
-    const bad_keys = item.data('bad_keys');
-    if(bad_keys) {
-      bad_keys.delete(key);
-      if(bad_keys.size === 0) {
-        item.data('bad_keys',undefined);
-        item.removeClass('error');
-      } else {
-        item.data('bad_keys',bad_keys);
-      }
-    } else {
-      item.removeClass('error');
-    }
-
-    if(scope === 'question') {
-      const section_li = item.closest('li.section');
-      const errant_children = section_li.find('li.question.error');
-      if( errant_children.length === 0 ) { 
-        section_li.removeClass('child-error'); 
-      }
-    }
+    item.toggleClass('error',error);
   }
 
   self.has_errors = function() {

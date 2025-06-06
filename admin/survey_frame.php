@@ -197,7 +197,14 @@ echo "  </div>";
 
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
-echo "    Question Editor";
+add_viewer_entry('question','type');
+add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
+add_editor_textarea('question','description',['maxlen'=>'512']);
+add_viewer_entry('question','primary','options');
+add_viewer_entry('question','secondary','options');
+add_editor_input('question','other','options');
+add_editor_input('question','qualifier');
+add_editor_textarea('question','info',['maxlen'=>1024]);
 echo "  </div>";
 
 

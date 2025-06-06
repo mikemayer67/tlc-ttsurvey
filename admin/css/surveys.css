@@ -314,6 +314,7 @@
   width:calc(75% - 3px);
   background:#f8f8f8;
   border: 1px solid black;
+  overflow-y: auto;
 }
 
 #ttt-body #content-editor .content-header {
@@ -365,7 +366,7 @@
   background-color:#ffe41f;  /* from TLC logo */
 }
 
-#ttt-body #survey-tree li.selected-child div {
+#ttt-body #survey-tree li.child-selected div {
   background-color:#fff5b0;
 }
 
@@ -414,13 +415,19 @@
 #ttt-body #survey-tree .incomplete {
 }
 
-#ttt-body #survey-tree .missing {
+#ttt-body #survey-tree .needs-name,
+#ttt-body #survey-tree .needs-wording,
+#ttt-body #survey-tree .needs-type
+{
   color:#b00;
   font-style:italic;
   font-weight:normal;
 }
-#ttt-body #survey-tree .section .missing::before {
-  content:"[missing name]";
+#ttt-body #survey-tree li.section .needs-name::before {
+  content:"[needs name]";
+}
+#ttt-body #survey-tree li.question.needs-wording::after {
+  content:"[needs wording]";
 }
 
 #ttt-body #survey-tree li.section.error div,
@@ -460,7 +467,7 @@
 #ttt-body #survey-tree li.question.freetext::before {
   background-image: url('../../img/icons8/pencil.png');
 }
-#ttt-body #survey-tree li.question.missing::before {
+#ttt-body #survey-tree li.question.needs-type::before {
   background-image: url('../../img/icons8/missing.png');
 }
 
@@ -583,7 +590,7 @@
 }
 
 #editor-frame .grid.editor .hint p,
-#editor-frame ..gridviewer .hint p {
+#editor-frame .grid.viewer .hint p {
   margin:0 0 0 2em;
 }
 

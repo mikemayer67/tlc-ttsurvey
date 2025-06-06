@@ -38,7 +38,7 @@ export default function question_viewer(ce)
     //   question type.
     _box.children().hide();
     _type.show();
-    _hints.hide();
+    _hints.removeClass('locked');
 
     // The info field actually has a different interpretation based on if it's
     //   a real question or an information block.  We'll assume it's a real
