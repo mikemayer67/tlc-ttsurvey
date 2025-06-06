@@ -109,9 +109,8 @@ function survey_content($survey_id)
     $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
-      'type' => 'OPTIONS', 
+      'type' => 'SELECT_ONE', 
       'wording' => 'Select Question #1',
-      'multiple' => 0,
       'other' => 'Other',
       'qualifier' => 'Anything we should know?',
       'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
@@ -121,9 +120,8 @@ function survey_content($survey_id)
     $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
-      'type' => 'OPTIONS', 
+      'type' => 'SELECT_ONE', 
       'wording' => 'Select Question #2',
-      'multiple' => 0,
       'qualifier' => 'Anything we should know?',
       'description' => 'Pick whichever answer best applies.',
       'info'=>'This is popup info.  Just here to see if popups are working',
@@ -132,9 +130,8 @@ function survey_content($survey_id)
     $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
-      'type' => 'OPTIONS', 
+      'type' => 'SELECT_MULTI', 
       'wording' => 'Multi Select #1',
-      'multiple' => 1,
       'other' => 'Other',
       'qualifier' => 'Anything we should know?',
       'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
@@ -144,9 +141,8 @@ function survey_content($survey_id)
     $questions[++$id] = [
       'section' => $s,
       'sequence' => 1 + ($id -1)%10,
-      'type' => 'OPTIONS', 
+      'type' => 'SELECT_MULTI', 
       'wording' => 'Multi Select #2',
-      'multiple' => 1,
       'qualifier' => 'Anything we should know?',
       'description' => 'Pick whichever answer or answers best apply.',
       'info'=>'This is popup info.  Just here to see if popups are working',

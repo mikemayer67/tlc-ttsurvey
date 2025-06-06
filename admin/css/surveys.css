@@ -429,6 +429,9 @@
 #ttt-body #survey-tree li.question.needs-wording::after {
   content:"[needs wording]";
 }
+#ttt-body #survey-tree li.question.needs-type::after {
+  content:"[needs type]";
+}
 
 #ttt-body #survey-tree li.section.error div,
 #ttt-body #survey-tree li.question.error div
@@ -463,10 +466,10 @@
 #ttt-body #survey-tree li.question.bool::before {
   background-image: url('../../img/icons8/checked_checkbox.png');
 }
-#ttt-body #survey-tree li.question.options::before {
+#ttt-body #survey-tree li.question.select_one::before {
   background-image: url('../../img/icons8/unchecked_radio_button.png');
 }
-#ttt-body #survey-tree li.question.options.multi::before {
+#ttt-body #survey-tree li.question.select_multi::before {
   background-image: url('../../img/icons8/multiple_choice.png');
 }
 #ttt-body #survey-tree li.question.freetext::before {

@@ -67,18 +67,7 @@ export default function editor_tree(ce,controller)
     });
   }
 
-  self.update_section = function(section_id,key,value)
-  {
-    if(key === 'name') {
-      const name_str = value.trim();
-      const name = _tree.find(`.section[data-section=${section_id}]`);
-      const span = name.find('span');
-      span.text(name_str);
-      span.toggleClass('needs-name',name_str.length === 0);
-    }
-  }
-
-  function create_section_li(sid,name)
+  function create_section_li(section_id,name)
   {
     const btn  = $('<button>').addClass('toggle');
     const span = $('<span>').addClass('name');
@@ -87,7 +76,7 @@ export default function editor_tree(ce,controller)
     if(name) { span.text(name)                   } 
     else     { span.text('').addClass('needs-name') }
 
-    const li = $('<li>').addClass('section closed').attr('data-section',sid).html(div);
+    const li = $('<li>').addClass('section closed').attr('data-section',section_id).html(div);
 
     btn.on('click', function(e) {
       e.stopPropagation();
@@ -103,7 +92,7 @@ export default function editor_tree(ce,controller)
     });
 
     const ul = $('<ul>').addClass('questions').appendTo(li);
-    _question_sorters[sid] = new Sortable( ul[0],
+    _question_sorters[section_id] = new Sortable( ul[0],
       {
         group: { name:'questions', pull:true, put:true },
         animation: 150,
@@ -115,29 +104,44 @@ export default function editor_tree(ce,controller)
     return [li,ul];
   }
 
-  function create_question_li(eid,details)
+  self.update_section = function(section_id,key,value)
   {
-    const li = $('<li>').addClass('question').attr('data-question',eid);
+    if(key === 'name') {
+      const name_str = value.trim();
+      const name = _tree.find(`.section[data-section=${section_id}]`);
+      const span = name.find('span');
+      span.text(name_str);
+      span.toggleClass('needs-name',name_str.length === 0);
+    }
+  }
+
+  function create_question_li(question_id,details)
+  {
+    const li = $('<li>').addClass('question').attr('data-question',question_id);
     li.on('click',function(e) { 
       e.stopPropagation();
       set_selection($(this)); 
       start_keyboard_navigation(e);
     } );
 
-    if(details.wording) { li.text(details.wording)        }
+    if(details.wording) { li.text(details.wording)              }
     else                { li.text('').addClass('needs-wording') }
 
-    if(details.type) {
-      li.addClass(details.type.toLowerCase());
+    if(details.type) { li.addClass(details.type.toLowerCase()); } 
+    else             { li.addClass('needs-type');               }
+
+    return li;
+  }
+
+  self.update_question_type = function(question_id,type,old_type)
+  {
+    const li = _tree.find(`.question[data-question=${question_id}]`);
+    if(old_type) { li.removeClass(old_type.toLowerCase()); }
+    if(type) { 
+      li.removeClass('needs-type').addClass(type.toLowerCase());
     } else {
       li.addClass('needs-type');
     }
-
-    if(details.multiple) {
-      li.addClass('multi');
-    }
-
-    return li;
   }
 
   // disable_sorting pretty much does what it says

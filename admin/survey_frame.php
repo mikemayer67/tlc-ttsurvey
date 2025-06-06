@@ -3,6 +3,16 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+$type_labels = [
+  'INFO' => 'Info Block',
+  'BOOL' => 'Simple Checkbox',
+  'SELECT_ONE' => 'Single Selection',
+  'SELECT_MULTI' => 'Multiple Selections',
+  'FREETEXT' => 'Free Text',
+];
+
+echo "<script>\n const typeLabels = " . json_encode($type_labels) . ";\n</script>\n";
+
 $hints = [
   'section' => [
     'name' => ( 
@@ -23,11 +33,11 @@ $hints = [
   'question' => [
     'type' => (
        'Type of "question" entry in the survey. Possible values are: '.
-       '<p><b>Info Block</b> - Not actually a question.  This is a block of information included in the survey.</p> '.
-       '<p><b>Simple Checkbox</b> - For use with Yes/No questions.</p> '.
-       '<p><b>Single Selection</b> - Participant can select no more than one option</p> '.
-       '<p><b>Multiple Selections</b> - Participant can select as many options as apply</p> '.
-       '<p><b>Free Text</b> - A text box is provided for participant to provide a response in their own words.</p> '),
+       '<p><b>'.$type_labels['INFO'].'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
+       '<p><b>'.$type_labels['BOOL'].'</b> - For use with Yes/No questions.</p>'.
+       '<p><b>'.$type_labels['SELECT_ONE'].'</b> - Participant can select no more than one option</p>'.
+       '<p><b>'.$type_labels['SELECT_MULTI'].'</b> - Participant can select as many options as apply</p>'.
+       '<p><b>'.$type_labels['FREETEXT'].'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
     'wording' => (
       'The actual wording of the question on the survey'),
     'description' => (
@@ -66,7 +76,7 @@ $hints = [
 $labels = [
   'section' => [
     'name'        => 'Name',
-    'labeled'   => 'Show Name',
+    'labeled'     => 'Show Name',
     'description' => 'Description',
     'feedback'    => 'Feedback',
   ],
@@ -171,6 +181,30 @@ function add_editor_select($scope, $key, $options, $kwargs=[])
   echo "</div>";
 }
 
+function add_type_select()
+{
+  global $hints;
+  global $labels;
+  global $type_labels;
+
+  $label = $labels['question']['type'];
+  $hint  = $hints['question']['type'];
+
+  echo "<div class='type label'><span>$label</span></div>";
+  echo "<div class='type value'>";
+  echo "  <div class='type-wrapper'>";
+  echo "    <div class='text'></div>";
+  echo "    <select class='question type' name='question-type' data-key='type'>";
+  echo "      <option value=''>Required...</option>";
+  foreach($type_labels as $key => $value) {
+    echo "    <option value='$key'>$value</option>";
+  }
+  echo "    </select>";
+  echo "  </div>";
+  echo "  <div class='hint'>$hint</div>";
+  echo "</div>";
+}
+
 
 echo "<div id='editor-frame'>";
 echo "  <div class='content-header'>Section/Question Details</div>";
@@ -197,12 +231,12 @@ echo "  </div>";
 
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
-add_viewer_entry('question','type');
+add_type_select();
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_viewer_entry('question','primary','options');
 add_viewer_entry('question','secondary','options');
-add_editor_input('question','other','options');
+add_editor_input('question','other',['extra_classes'=>'options']);
 add_editor_input('question','qualifier');
 add_editor_textarea('question','info',['maxlen'=>1024]);
 echo "  </div>";

@@ -15,7 +15,7 @@ export default function question_viewer(ce)
   const _description_value = _description.find('div.text');
 
   const _info              = _box.children('.info');
-  const _info_label        = _info.filter('label');
+  const _info_label        = _info.filter('.label').find('span');
   const _info_value        = _info.find('div.text');
   const _info_hint         = _info.find('.hint > div');
   const _info_hint_info    = _info_hint.filter('.info-block');
@@ -43,21 +43,21 @@ export default function question_viewer(ce)
     // The info field actually has a different interpretation based on if it's
     //   a real question or an information block.  We'll assume it's a real
     //   question for now and modify it for an information block if necessary
-    _info_label.html('Popup Hint:');
+    _info_label.text('Popup Hint:');
     _info_hint.hide();
 
     // Now we can customize what is shown based on the question type
+    _type_value.text( typeLabels[data.type] );
+
     switch(data.type) {
       case 'INFO':
-        _type_value.html('Info Block');
         _info.show();
-        _info_label.html('Info Text:');
-        _info_value.html(data.info || '');
+        _info_label.text('Info Text:');
+        _info_value.text(data.info || '');
         _info_hint_info.show();
         break;
 
       case 'BOOL':
-        _type_value.html('Simple Checkbox');
         _wording.show();
         _wording_value.html(data.wording || '');
         _qualifier.show();
@@ -65,23 +65,22 @@ export default function question_viewer(ce)
         _description.show();
         _description_value.html(data.description || '');
         _info.show();
-        _info_value.html(data.info || '');
+        _info_value.text(data.info || '');
         _info_hint_other.show();
         break;
 
       case 'FREETEXT':
-        _type_value.html('Free text');
         _wording.show();
         _wording_value.html(data.wording || '');
         _description.show();
         _description_value.html(data.description || '');
         _info.show();
-        _info_value.html(data.info || '');
+        _info_value.text(data.info || '');
         _info_hint_other.show();
         break;
 
-      case 'OPTIONS':
-        _type_value.html( data.multiple ? 'Multiple Selections' : 'Single Select' );
+      case 'SELECT_ONE':
+      case 'SELECT_MULTI':
         _wording.show();
         _wording_value.html(data.wording || '');
         _qualifier.show();
@@ -89,7 +88,7 @@ export default function question_viewer(ce)
         _description.show();
         _description_value.html(data.description || '');
         _info.show();
-        _info_value.html(data.info || '');
+        _info_value.text(data.info || '');
         _info_hint_other.show();
         _options.show();
 

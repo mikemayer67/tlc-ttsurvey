@@ -123,6 +123,11 @@ export default function survey_editor(ce)
     _tree.set_error('section',section_id,key,error);
   }
 
+  self.update_question_type = function(question_id,type,old_type) {
+    _content.questions[question_id]['type'] = type;
+    _tree.update_question_type(question_id,type,old_type);
+  }
+
   // insertion handlers
   
   self.add_new_section = function(where)
