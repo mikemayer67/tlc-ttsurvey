@@ -31,6 +31,10 @@ $hints = [
     ),
   ],
   'question' => [
+    'archive' => (
+      'Adds an existing question into the survey.  This option should be used whenever possible as it '.
+      'maintains continuity between this survey and the survey(s) from which it was cloned.'
+    ),
     'type' => (
        'Type of "question" entry in the survey. Possible values are: '.
        '<p><b>'.$type_labels['INFO'].'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
@@ -81,6 +85,7 @@ $labels = [
     'feedback'    => 'Feedback',
   ],
   'question' => [
+    'archive'     => 'Archive',
     'type'        => 'Type',
     'wording'     => 'Wording',
     'description' => 'Description',
@@ -143,7 +148,12 @@ function add_editor_textarea($scope, $key, $kwargs=[])
 
   $extra = $kwargs['extra_classes'] ?? '';
   $required = $kwargs['required'] ?? false;
+
   $maxlen = $kwargs['maxlen'] ?? 1024;
+  $maxlen_attr = "maxlength='$maxlen'";
+  foreach( $kwargs['altmax'] ?? [] as $scope => $altmax) {
+    $maxlen_attr .= " data-maxlen-$scope='$altmax'";
+  }
 
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
@@ -151,8 +161,8 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <div class='textarea-wrapper'>";
-  echo "    <textarea class='$scope $key' name=$name data-key='$key' placeholder='$placeholder' maxlength='$maxlen'></textarea>";
-  echo "    <div class='char-count'><span class='cur'>0</span>/$maxlen</div>";
+  echo "    <textarea class='$scope $key' name=$name data-key='$key' placeholder='$placeholder' $maxlen_attr></textarea>";
+  echo "    <div class='char-count'><span class='cur'>0</span>/<span class='max'>$maxlen</span></div>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
@@ -179,6 +189,25 @@ function add_editor_select($scope, $key, $options, $kwargs=[])
   echo "  </select>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
+}
+
+function add_archive_select()
+{
+  global $hints;
+  global $labels;
+
+  $label = $labels['question']['archive'];
+  $hint  = $hints['question']['archive'];
+
+  echo "<div class='archive label'><span>$label</span></div>";
+  echo "<div class='archive value'>";
+  echo "  <select class='question archive' name='question-archive' data-key='archive'>";
+  echo "    <option value=''>Select Question...</option>";
+  echo "  </select>";
+  echo "  <div class='hint'>$hint</div>";
+  echo "</div>";
+  echo "<div class='archive or'><span>or</span></div>";
+  echo "<div class='archive'><span></span></div>";
 }
 
 function add_type_select()
@@ -231,6 +260,7 @@ echo "  </div>";
 
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
+add_archive_select();
 add_type_select();
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
@@ -238,7 +268,7 @@ add_viewer_entry('question','primary','options');
 add_viewer_entry('question','secondary','options');
 add_editor_input('question','other',['extra_classes'=>'options']);
 add_editor_input('question','qualifier');
-add_editor_textarea('question','info',['maxlen'=>1024]);
+add_editor_textarea('question','info',['maxlen'=>1024, 'altmax'=>['info'=>1024,'other'=>128]]);
 echo "  </div>";
 
 

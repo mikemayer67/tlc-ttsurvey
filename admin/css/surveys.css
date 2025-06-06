@@ -510,6 +510,10 @@
   float:right;
 }
 
+#editor-frame .or span {
+  float:right;
+}
+
 #editor-frame .value {
   display: flex;
   align-items: center;

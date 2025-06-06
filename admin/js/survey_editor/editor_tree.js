@@ -533,6 +533,31 @@ export default function editor_tree(ce,controller)
     return _tree.find('li.error').length > 0;
   }
 
+  // 
+  // Question Handling
+  //
+
+  self.all_questions = function() {
+    return new Set( _tree.find('li.question').map((_,el) => Number($(el).data('question'))));
+  }
+
+  self.replace_question = function(old_id, new_id, old_data, new_data) {
+    const li = _tree.find(`li.question[data-question=${old_id}]`);
+    if(li.length !== 1) { return; }
+
+    li.data('question',new_id).attr('data-question',new_id);
+
+    const old_type = old_data.type ?? null;
+    if(old_type) { li.removeClass(old_type.toLowerCase()) }
+
+    const new_type = new_data.type ?? null;
+    if(new_type) { li.removeClass('needs-type').addClass(new_type.toLowerCase()) }
+    else         { li.addClass('needs-type');          }
+
+    if(new_data.wording) { li.removeClass('needs-wording').text(new_data.wording) }
+    else                 { li.addClass('needs-wording').text('')                  }
+  }
+
   //
   // Return
   //

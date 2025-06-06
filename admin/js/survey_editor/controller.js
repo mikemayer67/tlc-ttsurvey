@@ -294,6 +294,30 @@ export default function survey_editor(ce)
     _menubar.update_selection();
   }
 
+  // content methods
+
+  self.unused_questions = function() 
+  {
+    const cur_questions = _tree.all_questions();
+    const rval = {};
+    for( const [id,data] of Object.entries(_content.questions) ) {
+      if(!cur_questions.has(Number(id))) {
+        if(data.type && data.wording) {
+          rval[id] = data;
+        }
+      }
+    }
+    return rval;
+  }
+
+  self.replace_question = function(old_id, new_id) 
+  {
+    const old_data = _content.questions[old_id];
+    const new_data = _content.questions[new_id];
+    _tree.replace_question(old_id, new_id, old_data, new_data);
+    return new_data;
+  }
+
   // pass-trhough handlers
 
   self.move_section  = _tree.move_section;

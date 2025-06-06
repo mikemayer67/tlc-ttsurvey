@@ -50,43 +50,43 @@ export default function question_viewer(ce)
     _type_value.text( typeLabels[data.type] );
 
     switch(data.type) {
-      case 'INFO':
+      case 'INFO': {
         _info.show();
         _info_label.text('Info Text:');
         _info_value.text(data.info || '');
         _info_hint_info.show();
         break;
-
-      case 'BOOL':
+      }
+      case 'BOOL': {
         _wording.show();
-        _wording_value.html(data.wording || '');
+        _wording_value.text(data.wording || '');
         _qualifier.show();
-        _qualifier_value.html(data.qualifier || '');
+        _qualifier_value.text(data.qualifier || '');
         _description.show();
-        _description_value.html(data.description || '');
+        _description_value.text(data.description || '');
         _info.show();
         _info_value.text(data.info || '');
         _info_hint_other.show();
         break;
-
-      case 'FREETEXT':
+      }
+      case 'FREETEXT': {
         _wording.show();
-        _wording_value.html(data.wording || '');
+        _wording_value.text(data.wording || '');
         _description.show();
-        _description_value.html(data.description || '');
+        _description_value.text(data.description || '');
         _info.show();
         _info_value.text(data.info || '');
         _info_hint_other.show();
         break;
-
+      }
       case 'SELECT_ONE':
-      case 'SELECT_MULTI':
+      case 'SELECT_MULTI': {
         _wording.show();
-        _wording_value.html(data.wording || '');
+        _wording_value.text(data.wording || '');
         _qualifier.show();
-        _qualifier_value.html(data.qualifier || '');
+        _qualifier_value.text(data.qualifier || '');
         _description.show();
-        _description_value.html(data.description || '');
+        _description_value.text(data.description || '');
         _info.show();
         _info_value.text(data.info || '');
         _info_hint_other.show();
@@ -110,9 +110,10 @@ export default function question_viewer(ce)
           .forEach((opt) => $('<li>').text(opt).appendTo(ul));
         }
 
-        _other_value.html(data.other || '');
+        _other_value.text(data.other || '');
 
         break;
+      }
     }
   }
 

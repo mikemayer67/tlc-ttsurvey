@@ -157,6 +157,18 @@ function survey_content($survey_id)
       'info'=>'This is popup info.  Just here to see if popups are working',
     ];
   }
+  $questions[++$id] = [
+    'type' => 'INFO', 
+    'wording' => 'Info Text (archived)', 
+    'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
+  ];
+  $questions[++$id] = [
+    'type' => 'BOOL', 
+    'wording' => 'Yes/No Question (archived)',
+    'qualifier' => 'Why or why not?',
+    'description' => 'Blah blah blah... This is important because',
+    'info'=>'This is popup info.  Just here to see if popups are working',
+  ];
   return [
     'sections'  => $sections,
     'options'   => $options,
