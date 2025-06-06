@@ -120,8 +120,7 @@ export default function survey_editor(ce)
 
   self.update_section_error = function(section_id, key, value, error )
   {
-    if(error) { _tree.add_error('section',section_id,key); }
-    else      { _tree.clear_error('section',section_id,key); }
+    _tree.set_error('section',section_id,key,error);
   }
 
   // insertion handlers

@@ -494,18 +494,17 @@ export default function editor_tree(ce,controller)
           break;
         }
       }
-      console.log('observer triggered');
       const section_li = tgt.closest('li.section');
       if( section_li.length !== 1 ) { continue }
 
-      section_li.toggleClass(
-        'child-error',
-        section_li.find('li.question').filter('.error,.needs').length > 0,
-      );
-      section_li.toggleClass(
-        'child-selected',
-        section_li.find('li.question.selected').length > 0,
-      );
+      const item_ok     = section_li.find('li.question').filter('.error,.needs-name,.needs-type').length === 0;
+      const children_ok = section_li.find('li.question .error').length === 0;
+      const all_ok      = item_ok && children_ok;
+
+      const child_selected = section_li.find('li.question.selected').length > 0;
+
+      section_li.toggleClass('child-error', !all_ok);
+      section_li.toggleClass('child-selected', all_ok && child_selected);
     }
   });
   _observer.observe( $(_tree)[0], {

@@ -440,6 +440,11 @@
 #ttt-body #survey-tree li.section.child-error div {
   background-color:#ffe8e8;
 }
+#ttt-body #survey-tree li.section.selected.child-error div,
+#ttt-body #survey-tree li.section.selected.error div
+{
+  background-color:#ffc000;
+}
 
 #ttt-body #survey-tree li.question::before {
   content: "";
