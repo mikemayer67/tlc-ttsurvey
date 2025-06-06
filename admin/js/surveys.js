@@ -4,7 +4,7 @@ import survey_info from './survey_info.js';
 import locked_controller from './surveys_locked.js';
 import new_controller from './surveys_new.js';
 import draft_controller from './surveys_draft.js';
-import survey_editor from './survey_editor.js';
+import survey_editor from './survey_editor/controller.js';
 import undo_manager from './undo_manager.js';
 
 const ce = (window._survey_ce = window._survey_ce || {});

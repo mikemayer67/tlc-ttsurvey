@@ -1,12 +1,12 @@
-import editor_tree from './editor_tree.js';
-import editor_menubar from './editor_menubar.js';
-import setup_editor_resizer from './editor_resizer.js';
-import section_viewer from './section_viewer.js';
-import section_editor from './section_editor.js';
+import editor_tree     from './editor_tree.js';
+import editor_menubar  from './editor_menubar.js';
+import setup_resizer   from './resizer.js';
+import section_viewer  from './section_viewer.js';
+import section_editor  from './section_editor.js';
 import question_viewer from './question_viewer.js';
 import question_editor from './question_editor.js';
 
-import { deepCopy } from './utils.js';
+import { deepCopy } from '../utils.js';
 
 function setup_hint_handler() 
 {
@@ -70,7 +70,7 @@ export default function survey_editor(ce)
   // self.tree = _tree;
   // self.menubar = _menubar;
 
-  setup_editor_resizer(ce,_tree);
+  setup_resizer(ce, _box.find('div.body'), $('#survey-tree'), $('#editor-frame'));
   setup_hint_handler();
 
   // editor content

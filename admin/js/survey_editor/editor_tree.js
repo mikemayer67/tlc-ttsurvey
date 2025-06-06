@@ -1,4 +1,4 @@
-import Sortable from '../../js/sortable.esm.js';
+import Sortable from '../../../js/sortable.esm.js';
 
 export default function editor_tree(ce,controller)
 {

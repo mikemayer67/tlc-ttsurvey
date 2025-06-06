@@ -1,4 +1,4 @@
-import { deepCopy, update_character_count } from './utils.js';
+import { deepCopy, update_character_count } from '../utils.js';
 
 
 function validate_input(key,value) 
