@@ -25,7 +25,7 @@ function validate_input(key,value)
     if(invalid_char) { return `invalid char (${invalid_char})`; }
   }
 
-  return undefined;
+  return '';
 }
 
 

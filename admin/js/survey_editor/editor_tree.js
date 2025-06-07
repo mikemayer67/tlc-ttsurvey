@@ -501,7 +501,12 @@ export default function editor_tree(ce,controller)
       const section_li = tgt.closest('li.section');
       if( section_li.length !== 1 ) { continue }
 
-      const item_ok     = section_li.find('li.question').filter('.error,.needs-name,.needs-type').length === 0;
+      const item_ok = (
+        section_li
+        .find('li.question')
+        .filter('.error,.needs-name,.needs-type,.needs-wording')
+        .length === 0
+      );
       const children_ok = section_li.find('li.question .error').length === 0;
       const all_ok      = item_ok && children_ok;
 
@@ -526,7 +531,7 @@ export default function editor_tree(ce,controller)
 
     if(item.length === 0) { return; }
 
-    item.toggleClass('error',error);
+    item.toggleClass('error',Boolean(error));
   }
 
   self.has_errors = function() {

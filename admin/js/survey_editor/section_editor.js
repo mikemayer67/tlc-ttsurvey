@@ -23,7 +23,7 @@ function validate_input(key,value)
     if(invalid_char) { return `invalid char (${invalid_char})`; }
   }
 
-  return undefined;
+  return '';
 }
 
 export default function section_editor(ce,controller)
@@ -139,6 +139,21 @@ export default function section_editor(ce,controller)
     //      first edit actually occurs. There is no need to require that the user
     //      hit the undo button multiple times if there is nothing to undo. The
     //      first edit is identified by the lack of a new_values property.
+    
+    function apply_action(section_id, values)
+    {
+      if(section_id !== _cur_id) {
+        controller.select_section(section_id);
+      }
+      Object.entries(values).forEach(([key,value]) => {
+        const input = _box.find('.section.'+key).val(value);
+        const error = validate_input(key,value);
+        _box.children('.value.'+key).find('span.error').text(error?? '');
+        controller.update_section_error(_cur_id,key,value,error);
+        controller.update_section_data(_cur_id,key,value);
+        $(document).trigger('SurveyWasModified');
+      });
+    }
 
     _cur_undo = {
       section_id:id,
@@ -152,31 +167,11 @@ export default function section_editor(ce,controller)
         return ce.undo_manager.isCurrent(this) && (id === this.section_id);
       },
       undo() {
-        if(this.section_id !== _cur_id) {
-          controller.select_section(this.section_id);
-        }
-        Object.entries(this.orig_values).forEach(([key,value]) => {
-          const input = _box.find('.section.'+key).val(value);
-          const error = validate_input(key,value);
-          _box.children('.value.'+key).find('span.error').text(error?? '');
-          controller.update_section_error(_cur_id,key,value,error);
-          controller.update_section_data(_cur_id,key,value);
-          $(document).trigger('SurveyWasModified');
-        });
+        apply_action(this.section_id, this.orig_values);
         create_undo(id,data,controller);
       },
       redo() { 
-        if(this.section_id !== _cur_id) {
-          controller.select_section(this.section_id);
-        }
-        Object.entries(this.new_values).forEach(([key,value]) => {
-          const input = _box.find('.section.'+key).val(value);
-          const error = validate_input(key,value);
-          _box.children('.value.'+key).find('span.error').text(error?? '');
-          controller.update_section_error(_cur_id,key,value,error);
-          controller.update_section_data(_cur_id,key,value);
-          $(document).trigger('SurveyWasModified');
-        });
+        apply_action(this.section_id, this.new_values);
         _cur_undo = this;
       },
       update(key,value) {
