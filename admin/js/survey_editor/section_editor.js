@@ -97,7 +97,7 @@ export default function section_editor(ce,controller)
     $(document).trigger('SurveyWasModified');
   }
 
-  function show(id,data)
+  function show(id,data,options)
   {
     // Determine if we can continue with the current undo action.
     //   Can do so only if it is the newest action on the undo stack.

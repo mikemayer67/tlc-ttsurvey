@@ -318,6 +318,10 @@ export default function survey_editor(ce)
     return new_data;
   }
 
+  self.all_options = function() {
+    return _content.options;
+  }
+
   // pass-trhough handlers
 
   self.move_section  = _tree.move_section;

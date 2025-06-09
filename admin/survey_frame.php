@@ -52,10 +52,24 @@ $hints = [
     'primary' => (
       'For multiple choice questions, this is the primary list of options available to choose from. '.
       'There must be at least one option provided for the question to be valid.  Ideally, there '.
-      'will be more than one option.  Otherwise, consider using a Simple Checkbox question.' ),
+      'will be more than one option.  Otherwise, consider using a Simple Checkbox question.'.
+      '<p class="editor-only"><b>Click</b> in the box above to get a list of available options</p>'.
+      '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
+      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
+    ),
     'secondary' => (
       '<b>This field is optional.</b>  Secondary options are only shown to the participant if they have  '.
-      'selected at least one of the primary options (assuming Javascript is enabled).'),
+      'selected at least one of the primary options (assuming Javascript is enabled).'.
+      '<p class="editor-only"><b>Click</b> in the box above to get a list of available options</p>'.
+      '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
+      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
+    ),
+    'available' => (
+      'This is the list of available options.  Drag/Drop these to either the primary or secondary option list '.
+      'to add these as possible responses to the current question.'.
+      '<p><b>Click</b> on the <b>+</b> button to add new options.</p>'.
+      '<p><b>Double Click</b> an option to edit its text.</p>'
+    ),
     'other' => (
       '<b>This field is optional.</b>  This used for multiple choice questions where the participant '.
       'should be allowed to fill in their own option.  If specified, this field provides the '.
@@ -91,6 +105,7 @@ $labels = [
     'description' => 'Description',
     'primary'     => 'Primary Options',
     'secondary'   => 'Seconday Options',
+    'available'   => 'Available Options',
     'other'       => 'Other Option',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
@@ -199,7 +214,7 @@ function add_archive_select()
   $label = $labels['question']['archive'];
   $hint  = $hints['question']['archive'];
 
-  echo "<div class='archive label'><span>$label</span></div>";
+  echo "<div class='archive label'><span>$label:</span></div>";
   echo "<div class='archive value'>";
   echo "  <select class='question archive' name='question-archive' data-key='archive'>";
   echo "    <option value=''>Select Question...</option>";
@@ -219,7 +234,7 @@ function add_type_select()
   $label = $labels['question']['type'];
   $hint  = $hints['question']['type'];
 
-  echo "<div class='type label'><span>$label</span></div>";
+  echo "<div class='type label'><span>$label:</span></div>";
   echo "<div class='type value'>";
   echo "  <div class='type-wrapper'>";
   echo "    <div class='text'></div>";
@@ -233,6 +248,28 @@ function add_type_select()
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
 }
+
+function add_option_entry($key)
+{
+  global $hints;
+  global $labels;
+
+  $label = $labels['question'][$key];
+  $hint  = $hints['question'][$key];
+
+  echo "<div class='$key options label'><span>$label:</span></div>";
+  echo "<div class='$key options value'>";
+  echo "  <div class='$key option wrapper'>";
+  echo "    <div class='$key option selected'></div>";
+  echo "    <div class='$key option pool'></div>";
+  echo "  </div>";
+  echo "  <div class='hint'>$hint</div>";
+  echo "</div>";
+}
+
+// 
+// Start of the actual html generation
+//
 
 
 echo "<div id='editor-frame'>";
@@ -264,8 +301,8 @@ add_archive_select();
 add_type_select();
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
-add_viewer_entry('question','primary','options');
-add_viewer_entry('question','secondary','options');
+add_option_entry('primary');
+add_option_entry('secondary');
 add_editor_input('question','other',['extra_classes'=>'options']);
 add_editor_input('question','qualifier');
 add_editor_textarea('question','info',['maxlen'=>1024, 'altmax'=>['info'=>1024,'other'=>128]]);

@@ -35,39 +35,46 @@ export default function question_editor(ce,controller)
 {
   const _box = $('#editor-frame div.grid.question.editor');
 
-  const _archive           = _box.children('.archive');
-  const _archive_select    = _archive.filter('.value').find('select');
+  const _archive            = _box.children('.archive');
+  const _archive_select     = _archive.filter('.value').find('select');
 
-  const _type              = _box.children('.type');
-  const _type_value        = _type.filter('.value').find('div.text');
-  const _type_select       = _type.filter('.value').find('select');
+  const _type               = _box.children('.type');
+  const _type_value         = _type.filter('.value').find('div.text');
+  const _type_select        = _type.filter('.value').find('select');
 
-  const _wording           = _box.children('.wording');
-  const _wording_value     = _wording.find('input');
+  const _wording            = _box.children('.wording');
+  const _wording_value      = _wording.find('input');
 
-  const _qualifier         = _box.children('.qualifier');
-  const _qualifier_value   = _qualifier.find('input');
+  const _qualifier          = _box.children('.qualifier');
+  const _qualifier_value    = _qualifier.find('input');
 
-  const _description       = _box.children('.description');
-  const _description_value   = _description.find('textarea');
+  const _description        = _box.children('.description');
+  const _description_value  = _description.find('textarea');
 
-  const _info              = _box.children('.info');
-  const _info_label        = _info.filter('.label').find('span');
-  const _info_value        = _info.find('textarea');
-  const _info_maxlen       = _info.find('.char-count span.max');
-  const _info_hint         = _info.find('.hint > div');
-  const _info_hint_info    = _info_hint.filter('.info-block');
-  const _info_hint_other   = _info_hint.filter('.other-type');
+  const _info               = _box.children('.info');
+  const _info_label         = _info.filter('.label').find('span');
+  const _info_value         = _info.find('textarea');
+  const _info_maxlen        = _info.find('.char-count span.max');
+  const _info_hint          = _info.find('.hint > div');
+  const _info_hint_info     = _info_hint.filter('.info-block');
+  const _info_hint_other    = _info_hint.filter('.other-type');
 
-  const _options           = _box.children('.options');
-  const _primary           = _options.filter('.primary');
-  const _secondary         = _options.filter('.secondary');
-  const _other             = _options.filter('.other');
+  const _options            = _box.children('.options');
+  const _primary            = _options.filter('.primary');
+  const _primary_selected   = _primary.find('.selected');
+  const _primary_pool       = _primary.find('.pool');
+  const _secondary          = _options.filter('.secondary');
+  const _secondary_selected = _secondary.find('.selected');
+  const _secondary_pool     = _secondary.find('.pool');
+  const _other              = _options.filter('.other');
 
-  const _hints             = _box.find('div.hint');
+  const _hints              = _box.find('div.hint');
 
   let _cur_id   = null;
   let _cur_undo = null;
+
+  _primary.find(  '.selected,.pool').on('mousedown', toggle_option_pool);
+  _secondary.find('.selected,.pool').on('mousedown', toggle_option_pool);
 
   function show(id,data)
   {
@@ -136,6 +143,19 @@ export default function question_editor(ce,controller)
       }
       case 'SELECT_ONE':
       case 'SELECT_MULTI': {
+        _wording.show();
+        _wording_value.val(data.wording || '');
+        _description.show();
+        _description_value.val(data.description || '');
+        _qualifier.show();
+        _qualifier_value.val(data.qualifier || '');
+        _info.show();
+        _info_value.val(data.info || '');
+        _info_hint_other.show();
+        _options.show();
+        _primary_pool.hide();
+        _secondary_pool.hide();
+
         break;
       }
     }
@@ -159,6 +179,33 @@ export default function question_editor(ce,controller)
 
     _type_value.hide();
     _type_select.val('').on('change',[id,data],handle_type).show();
+  }
+
+  //
+  // option pool
+  //
+
+  function toggle_option_pool(e) {
+    const is_primary = $(this).hasClass('primary');
+    
+    if(is_primary) { _secondary_pool.hide(); } else { _primary_pool.hide(); }
+
+    const pool = is_primary ? _primary_pool : _secondary_pool;
+    if(pool.is(':visible')) {
+      pool.hide();
+    } else {
+      const all_options = controller.all_options();
+      pool.find('.chip').remove();
+      Object.entries(all_options).forEach( ([id,label]) => {
+        const chip = $("<div>");
+        chip.addClass('chip');
+        chip.data(id);
+        const span = $("<span>").text(label);
+        const close = $("<button class='option' type='button'>x</button>");
+        chip.append(span).append(close).appendTo(pool);
+      });
+      pool.show();
+    }
   }
 
   function handle_archive(e)

@@ -64,6 +64,7 @@
 }
 
 #ttt-body form div.content-box {
+  font-size:14px;
   width:100%;
   height:calc(100vh - 300px);
   border-style:ridge;
@@ -96,7 +97,7 @@
 }
 
 #ttt-body div.body form table {
-  font-size:90%;
+  font-size:100%;
   margin:0.25em 1em 0 1em;
   table-layout:auto;
 }
@@ -172,12 +173,10 @@
 
 #ttt-body div.body form .info-bar label {
   font-weight:bold;
-  font-size:90%;
   margin-right:1em;
 }
 
 #ttt-body div.body form .info-bar .date {
-  font-size:90%;
   margin-left:0.5em;
 }
 
@@ -606,6 +605,11 @@
   margin:0 0 0 2em;
 }
 
+#editor-frame .grid.editor .hint p.viewer-only,
+#editor-frame .grid.viewer .hint p.editor-only {
+  display:none;
+}
+
 #editor-frame .grid.editor .hint p:first-child,
 #editor-frame .grid.viewer .hint p:first-child {
   margin-top:0.25em;
@@ -647,4 +651,45 @@
 }
 #editor-frame .grid.editor div.value .textarea-wrapper .char-count.danger {
   color:red;
+}
+
+#editor-frame .grid.editor div.options .option.wrapper {
+  width:100%;
+}
+
+#editor-frame .grid.editor div.option.selected {
+  min-height:2em;
+  background:white;
+  border: solid 1px darkgray;
+}
+
+#editor-frame .grid.editor div.option.pool {
+  min-height:2em;
+}
+
+#editor-frame .grid.editor .option.pool {
+  display:flex;
+  flex-direction:row;
+  padding: 2px 0.5em;
+  column-gap: 2px;
+}
+
+#editor-frame .grid.editor .option div.chip {
+  background:white;
+  border: solid 1px black;
+  width: fit-content;
+  height: fit-content;
+  padding: 0 3px;
+  font-size: 90%;
+  border-radius: 5px;
+}
+
+#editor-frame .grid.editor .option .chip button {
+  border:none;
+  padding:0;
+  margin-left:3px;
+}
+
+#editor-frame .grid.editor .option.pool .chip button {
+  display:none;
 }
