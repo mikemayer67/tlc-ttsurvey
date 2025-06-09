@@ -74,9 +74,6 @@ export default function question_editor(ce,controller)
   let _cur_id   = null;
   let _cur_undo = null;
 
-  _primary.find(  '.selected,.pool').on('mousedown', toggle_option_pool);
-  _secondary.find('.selected,.pool').on('mousedown', toggle_option_pool);
-
   const _primary_selected_sorter = new Sortable( _primary_selected[0], 
     {
       group: {name:'primary_selected', put:['primary_pool','secondary_selected']},
@@ -217,9 +214,14 @@ export default function question_editor(ce,controller)
   // option pool
   //
 
+  _options.on('mousedown', '.selected,.pool', toggle_option_pool);
+  _options.on('click','.selected .chip button',handle_close_chip);
+  _options.on('dblclick','.chip',handle_edit_chip);
+
   function toggle_option_pool(e) {
     // We want to yield to SortableJS if the mouse down occured in a chip element.
     if( $(e.target).closest('.chip').length > 0) { return; }
+    if( $(e.target).closest('.add.option').length > 0) { return; }
 
     const is_primary = $(this).hasClass('primary');
     
@@ -252,15 +254,45 @@ export default function question_editor(ce,controller)
         const span = $("<span>").text(label);
         const close = $("<button class='option' type='button'>x</button>");
         chip.append(span).append(close).insertBefore(add_button);
-
-        close.on('click',function() { 
-          chip.remove(); 
-          if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
-          if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
-        });
       }
     });
   }
+
+  function handle_close_chip(e) {
+    const chip = $(this).closest('.chip');
+    chip.remove(); 
+    if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
+    if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+  }
+
+  function handle_edit_chip(e) {
+    const chip = $(this).closest('.chip');
+    const span = chip.children('span');
+    const old_value = span.text();
+    const new_value = prompt('Edit option',old_value).trim();
+    if(new_value && (old_value !== new_value)) {
+      span.text(new_value);
+      const id = chip.data('id');
+      controller.update_option(id,new_value);
+      if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
+      if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+    }
+  }
+
+  _options.find('button.add.option').on('click', function(e) {
+    const new_option = prompt('New option').trim();
+    if(new_option) {
+      const new_id = controller.add_option(new_option);
+      if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
+      if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+    }
+  });
+
+
+
+
+
+
 
   function handle_archive(e)
   {

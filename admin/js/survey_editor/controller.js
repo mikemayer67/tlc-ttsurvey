@@ -322,6 +322,16 @@ export default function survey_editor(ce)
     return _content.options;
   }
 
+  self.add_option = function(new_value) {
+    const new_id = ++_content.next_ids.option;
+    _content.options[new_id] = new_value;
+    return new_id;
+  }
+
+  self.update_option = function(id,value) {
+    _content.options[id] = value;
+  }
+
   // pass-trhough handlers
 
   self.move_section  = _tree.move_section;
