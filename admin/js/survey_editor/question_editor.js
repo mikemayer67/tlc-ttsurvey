@@ -1,3 +1,4 @@
+import Sortable from '../../../js/sortable.esm.js';
 import { deepCopy, update_character_count } from '../utils.js';
 
 
@@ -75,6 +76,37 @@ export default function question_editor(ce,controller)
 
   _primary.find(  '.selected,.pool').on('mousedown', toggle_option_pool);
   _secondary.find('.selected,.pool').on('mousedown', toggle_option_pool);
+
+  const _primary_selected_sorter = new Sortable( _primary_selected[0], 
+    {
+      group: {name:'primary_selected', put:['primary_pool','secondary_selected']},
+      animation: 150,
+      draggable: '.chip',
+    },
+  );
+  const _primary_pool_sorter = new Sortable( _primary_pool[0], 
+    {
+      group: {name:'primary_pool', put:false},
+      animation: 150,
+      draggable: '.chip',
+      sort: false,
+    },
+  );
+  const _secondary_selected_sorter = new Sortable( _secondary_selected[0], 
+    {
+      group: {name:'secondary_selected', put:['secondary_pool','primary_selected']},
+      animation: 150,
+      draggable: '.chip',
+    },
+  );
+  const _secondary_pool_sorter = new Sortable( _secondary_pool[0], 
+    {
+      group: {name:'secondary_pool', put:false},
+      animation: 150,
+      draggable: '.chip',
+      sort: false,
+    },
+  );
 
   function show(id,data)
   {
@@ -186,6 +218,9 @@ export default function question_editor(ce,controller)
   //
 
   function toggle_option_pool(e) {
+    // We want to yield to SortableJS if the mouse down occured in a chip element.
+    if( $(e.target).closest('.chip').length > 0) { return; }
+
     const is_primary = $(this).hasClass('primary');
     
     if(is_primary) { _secondary_pool.hide(); } else { _primary_pool.hide(); }
@@ -194,18 +229,37 @@ export default function question_editor(ce,controller)
     if(pool.is(':visible')) {
       pool.hide();
     } else {
-      const all_options = controller.all_options();
-      pool.find('.chip').remove();
-      Object.entries(all_options).forEach( ([id,label]) => {
-        const chip = $("<div>");
-        chip.addClass('chip');
-        chip.data(id);
-        const span = $("<span>").text(label);
-        const close = $("<button class='option' type='button'>x</button>");
-        chip.append(span).append(close).appendTo(pool);
-      });
+      populate_option_pool(pool);
       pool.show();
     }
+  }
+
+  function populate_option_pool(pool) {
+    const all_options = controller.all_options();
+
+    const selected_options = new Set(
+      _options
+      .find('.selected .chip') 
+      .map(function() { return $(this).data('id') })
+      .get()
+    );
+
+    const add_button = pool.find('button.add.option');
+    pool.find('.chip').remove();
+    Object.entries(all_options).forEach( ([id,label]) => {
+      if( ! selected_options.has(id) ) {
+        const chip = $("<div>").addClass('chip').data('id',id);
+        const span = $("<span>").text(label);
+        const close = $("<button class='option' type='button'>x</button>");
+        chip.append(span).append(close).insertBefore(add_button);
+
+        close.on('click',function() { 
+          chip.remove(); 
+          if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
+          if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+        });
+      }
+    });
   }
 
   function handle_archive(e)

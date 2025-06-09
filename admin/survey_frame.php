@@ -261,7 +261,9 @@ function add_option_entry($key)
   echo "<div class='$key options value'>";
   echo "  <div class='$key option wrapper'>";
   echo "    <div class='$key option selected'></div>";
-  echo "    <div class='$key option pool'></div>";
+  echo "    <div class='$key option pool'>";
+  echo "      <button class='add option' type='button'>+</button>";
+  echo "    </div>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
