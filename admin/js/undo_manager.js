@@ -9,16 +9,36 @@ export default function undo_manager(ce)
   let _overflow = false;
 
   function add(a,exec) {
-    // the action a must support both the undo() and redo() methods
+    // - the action a must support both the undo() and redo() methods
+    //
+    // - if the exact same action is pushed onto the stack multiple times
+    //     in a row, only once instance will be added
 
-    _undo_stack.push(a);
+    if(_redo_stack.length > 0) {
+      _undo_stack.push(a);
+      redo_stack.length = 0;
+    } else if( a !== _undo_stack.at(-1) ) {
+      _undo_stack.push(a);
+    }
+
     while(_undo_stack.length > MAX_UNDO_DEPTH ) { 
       _overflow = true;
-      _undo.stack.shift(); 
+      _undo_stack.shift(); 
     }
-    _redo_stack.length = 0;
+
     if(exec) { a.redo(); }
     notify();
+  }
+
+  function pop(a) {
+    // if the provided action is the last on the undo stack, it is removed from the stack.
+    //   The redo stack is left unmodified as any actions on there would be older than the
+    //   one being popped off the undo stack
+    if( _undo_stack.at(-1) !== a ) { return false; }
+
+    _undo_stack.pop(); 
+    notify();
+    return true;
   }
 
   function redo() {
@@ -41,8 +61,12 @@ export default function undo_manager(ce)
     return true;
   }
 
-  function isCurrent(a) {
-    return (_undo_stack.length>0) && (a === _undo_stack[_undo_stack.length-1]);
+  function isHead(a) {
+    return (
+      (_undo_stack.length>0) 
+      && (_redo_stack.length==0) 
+      && (a === _undo_stack.at(-1))
+    );
   }
 
   function revert() {
@@ -91,12 +115,13 @@ export default function undo_manager(ce)
   return {
     add(a) { add(a,false); },
     add_and_exec(a) { add(a,true); },
+    pop: pop,
     redo: redo,
     undo: undo,
     revert: revert,
     empty: empty,
     hasUndo() { return _undo_stack.length > 0; },
     hasRedo() { return _redo_stack.length > 0; },
-    isCurrent:isCurrent,
+    isHead: isHead,
   };
 }

@@ -166,8 +166,8 @@ function add_editor_textarea($scope, $key, $kwargs=[])
 
   $maxlen = $kwargs['maxlen'] ?? 1024;
   $maxlen_attr = "maxlength='$maxlen'";
-  foreach( $kwargs['altmax'] ?? [] as $scope => $altmax) {
-    $maxlen_attr .= " data-maxlen-$scope='$altmax'";
+  foreach( $kwargs['altmax'] ?? [] as $s => $altmax) {
+    $maxlen_attr .= " data-maxlen-$s='$altmax'";
   }
 
   $placeholder = $required ? '[required]' : '[optional]';
@@ -221,8 +221,6 @@ function add_archive_select()
   echo "  </select>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
-  echo "<div class='archive or'><span>or</span></div>";
-  echo "<div class='archive'><span></span></div>";
 }
 
 function add_type_select()
@@ -299,8 +297,10 @@ echo "  </div>";
 
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
-add_archive_select();
 add_type_select();
+echo "<div class='archive or'><span>or</span></div>";
+echo "<div class='archive'><span></span></div>";
+add_archive_select();
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');

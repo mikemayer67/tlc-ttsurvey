@@ -144,6 +144,16 @@ export default function editor_tree(ce,controller)
     }
   }
 
+  self.update_question = function(question_id,key,value)
+  {
+    if(key === 'wording') {
+      const wording_str = value.trim();
+      const wording = _tree.find(`.question[data-question=${question_id}]`);
+      if(value) { wording.text(value).removeClass('needs-wording'); } 
+      else      { wording.text('').addClass('needs-wording');       }
+    }
+  }
+
   // disable_sorting pretty much does what it says
   //   it disables sorting of both ul.sections and ul.questions
   //   it hides the "drag-n-drop" info box

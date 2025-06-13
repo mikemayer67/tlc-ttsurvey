@@ -433,7 +433,7 @@
 }
 
 #ttt-body #survey-tree li.section.error div,
-#ttt-body #survey-tree li.question.error div
+#ttt-body #survey-tree li.question.error
 {
   font-weight:bold;
   color:#b00; 

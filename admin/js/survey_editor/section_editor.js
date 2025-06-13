@@ -114,37 +114,39 @@ export default function section_editor(ce,controller)
     _hints.removeClass('locked');
   }
 
+  //---------------------------------------------------------------------------------------
+  // This undo action accumulates changes to the section editor so that triggering
+  //   undo or redo will treat the entire sequence of edits as a single atomic action.
+  //  - When the undo manager triggers an undo, it moves the action to the redo stack.
+  //      If additional edits occur after an undo, we want to start a new undo action
+  //      rather than accumulating them on the current action (which has been undone)
+  //      We do not want to modify the current action as this would break its future
+  //      redo capability.
+  //  - When the redo manager triggers a redo, it moves the action back to the undo stack.
+  //      If additional edits occur after a redo, we want to continue the accumulation
+  //      of edits. Simply reconnect our current undo action pointer to the action
+  //      that was just moved back to the undo stack.  The following scenario illustrates
+  //      a series of edits and undo/redo actions that comes back to the original state:
+  //        [orig] > (edits) > undo > redo > (edits) > undo > [orig]
+  //      An alternative design which was rejected was to start a new undo action
+  //        after a redo to capture the next set of edits.  This would require multiple
+  //        undos simply because the user did an undo/redo sequence in the middle of
+  //        their edits:
+  //          [orig] > (edits) > undo > redo > (edits) > undo > undo > [orig].
+  //        While this is a plausible implementation, I opted for the first approach.
+  //  - Finally, this undo action will not be added to the undo manager until the
+  //      first edit actually occurs. There is no need to require that the user
+  //      hit the undo button multiple times if there is nothing to undo. The
+  //      first edit is identified by the lack of a new_values property.
+  //---------------------------------------------------------------------------------------
+    
   function create_undo(id,data,controller)
   {
-    // This undo action accumulates changes to the section editor so that triggering
-    //   undo or redo will treat the entire sequence of edits as a single atomic action.
-    //  - When the undo manager triggers an undo, it moves the action to the redo stack.
-    //      If additional edits occur after an undo, we want to start a new undo action
-    //      rather than accumulating them on the current action (which has been undone)
-    //      We do not want to modify the current action as this would break its future
-    //      redo capability.
-    //  - When the redo manager triggers a redo, it moves the action back to the undo stack.
-    //      If additional edits occur after a redo, we want to continue the accumulation
-    //      of edits. Simply reconnect our current undo action pointer to the action
-    //      that was just moved back to the undo stack.  The following scenario illustrates
-    //      a series of edits and undo/redo actions that comes back to the original state:
-    //        [orig] > (edits) > undo > redo > (edits) > undo > [orig]
-    //      An alternative design which was rejected was to start a new undo action
-    //        after a redo to capture the next set of edits.  This would require multiple
-    //        undos simply because the user did an undo/redo sequence in the middle of
-    //        their edits:
-    //          [orig] > (edits) > undo > redo > (edits) > undo > undo > [orig].
-    //        While this is a plausible implementation, I opted for the first approach.
-    //  - Finally, this undo action will not be added to the undo manager until the
-    //      first edit actually occurs. There is no need to require that the user
-    //      hit the undo button multiple times if there is nothing to undo. The
-    //      first edit is identified by the lack of a new_values property.
-    
+    console.log(`create_undo(${id})`);
     function apply_action(section_id, values)
     {
-      if(section_id !== _cur_id) {
-        controller.select_section(section_id);
-      }
+      controller.select_section(section_id);
+
       Object.entries(values).forEach(([key,value]) => {
         const input = _box.find('.section.'+key).val(value);
         const error = validate_input(key,value);
@@ -164,18 +166,22 @@ export default function section_editor(ce,controller)
         feedback:data.feedback || '',
       },
       can_continue(id) {
-        return ce.undo_manager.isCurrent(this) && (id === this.section_id);
+        return ce.undo_manager.isHead(this) && (id === this.section_id);
       },
       undo() {
+        console.log('undo... move to redo... create new action');
         apply_action(this.section_id, this.orig_values);
         create_undo(id,data,controller);
       },
       redo() { 
+        console.log('redo... return to undo... make action current');
         apply_action(this.section_id, this.new_values);
         _cur_undo = this;
       },
       update(key,value) {
+        console.log(`update(${key},${value})`);
         if(!('new_values' in this)) {
+          console.log('add to undo manager');
           this.new_values = deepCopy(this.orig_values);
           ce.undo_manager.add(this);
         }

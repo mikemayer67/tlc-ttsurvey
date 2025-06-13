@@ -118,9 +118,20 @@ export default function survey_editor(ce)
     _tree.update_section(section_id,key,value);
   }
 
-  self.update_section_error = function(section_id, key, value, error )
+  self.update_question_data = function(question_id, key, value)
+  {
+    _content.questions[question_id][key] = value;
+    _tree.update_question(question_id,key,value);
+  }
+
+  self.update_section_error = function(section_id, key, value, error)
   {
     _tree.set_error('section',section_id,key,error);
+  }
+
+  self.update_question_error = function(question_id, key, value, error)
+  {
+    _tree.set_error('question',question_id,key,error);
   }
 
   self.update_question_type = function(question_id,type,old_type) {
@@ -270,8 +281,11 @@ export default function survey_editor(ce)
 
   self.select_section = function(section_id) 
   {
+    if(_frame.hasClass('section') && _frame.data('id') === section_id ) { return; }
+
+    _frame.removeClass('question').addClass('section').data('id',section_id);
+
     const section = _content.sections[section_id];
-    _frame.removeClass('question').addClass('section');
     if(self.editable) { _se.show(section_id,section); }
     else              { _sv.show(section_id,section); }
     _tree.select_section(section_id);
@@ -280,8 +294,11 @@ export default function survey_editor(ce)
 
   self.select_question = function(question_id) 
   {
+    if(_frame.hasClass('question') && _frame.data('id') === question_id ) { return; }
+
+    _frame.removeClass('section').addClass('question').data('id',question_id);
+
     const question = _content.questions[question_id];
-    _frame.removeClass('section').addClass('question');
     if(self.editable) { _qe.show(question_id,question,_content.options); }
     else              { _qv.show(question_id,question,_content.options); }
     _tree.select_question(question_id);

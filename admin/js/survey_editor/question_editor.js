@@ -7,16 +7,10 @@ function validate_input(key,value)
   const len = String(value).trim().length;
   var invalid_char_regex = null;
 
-  alert('flesh out validate_input in question_editor.js');
-
   switch(key) {
-    case 'name':
+    case 'wording':
       if(len==0) { return 'missing';   } 
       if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s&-]");
-      break;
-    case 'feedback':
-      if(len>0 && len<4) { return 'too short'; }
       invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
       break;
   }
@@ -105,6 +99,59 @@ export default function question_editor(ce,controller)
     },
   );
 
+  _description_value.on('input change', update_character_count);
+  _info.on('input change', update_character_count);
+
+  _box.find('input,textarea')
+    .on('input',handle_input)
+    .on('blur',handle_input_change)
+    .on('change',handle_input_change);
+
+  function handle_input(e) 
+  {
+    const input = $(this);
+    const timer_id = input.data('timer');
+    clearTimeout(timer_id);
+    input.data('timer', setTimeout( function() {
+      input.removeData('timer');
+      validate_and_handle_update(input);
+    }, 500 ));
+  }
+
+  function handle_input_change(e)
+  {
+    const input = $(this);
+    const timer_id = input.data('timer') ?? undefined;
+    if(timer_id) {
+      input.removeData('timer');
+      validate_and_handle_update(input);
+    }
+  }
+
+  function validate_and_handle_update(input)
+  {
+    const key   = input.data('key');
+    const value = input.val();
+    const error = validate_input(key,value);
+    _box.children('.value.'+key).find('span.error').text(error?? '');
+    controller.update_question_error(_cur_id,key,value,error);
+    handle_update(key,value);
+  }
+
+  function handle_change(e)
+  {
+    const key      = $(this).data('key');
+    const value    = $(this).val();
+    handle_update(key,value);
+  }
+
+  function handle_update(key,value)
+  {
+    _cur_undo.update(key,value);
+    controller.update_question_data(_cur_id,key,value);
+    $(document).trigger('SurveyWasModified');
+  }
+
   function show(id,data)
   {
     // As the list of fields to show depend on question type, we start by hiding
@@ -181,13 +228,16 @@ export default function question_editor(ce,controller)
         _info.show();
         _info_value.val(data.info || '');
         _info_hint_other.show();
-        _options.show();
-        _primary_pool.hide();
-        _secondary_pool.hide();
-
+        show_options(id,data);
         break;
       }
     }
+
+    // Determine if we can continue with the current undo action.
+    //   Can do so only if it is the newest action on the undo stack.
+    //   Otherwise, create a new undo action.  Need to do this after
+    //   populating the option selection fields.
+    if( ! _cur_undo?.can_continue(id) ) { create_undo(id,data,controller); }
   }
 
   function show_new(id,data)
@@ -208,6 +258,24 @@ export default function question_editor(ce,controller)
 
     _type_value.hide();
     _type_select.val('').on('change',[id,data],handle_type).show();
+  }
+
+  function show_options(id,data)
+  {
+    _cur_id = id;
+    _primary_selected.empty();
+    _secondary_selected.empty();
+    const all_options = controller.all_options();
+    data.options.forEach( ([id,secondary]) => {
+      const label = all_options[id];
+      const chip = create_chip(id,label);
+      if(secondary) { _secondary_selected.append(chip); } 
+      else          { _primary_selected.append(chip); }
+    });
+
+    _options.show();
+    _primary_pool.hide();
+    _secondary_pool.hide();
   }
 
   //
@@ -239,23 +307,37 @@ export default function question_editor(ce,controller)
   function populate_option_pool(pool) {
     const all_options = controller.all_options();
 
-    const selected_options = new Set(
-      _options
-      .find('.selected .chip') 
-      .map(function() { return $(this).data('id') })
-      .get()
-    );
+    let in_use = selected_options();
+    in_use = in_use.map((x) => Number(x[0]));
+    in_use = new Set(in_use);
 
     const add_button = pool.find('button.add.option');
     pool.find('.chip').remove();
     Object.entries(all_options).forEach( ([id,label]) => {
-      if( ! selected_options.has(id) ) {
-        const chip = $("<div>").addClass('chip').data('id',id);
-        const span = $("<span>").text(label);
-        const close = $("<button class='option' type='button'>x</button>");
-        chip.append(span).append(close).insertBefore(add_button);
+      if( ! in_use.has(Number(id)) ) {
+        create_chip(id,label).insertBefore(add_button);
       }
     });
+  }
+
+  function selected_options() {
+    const rval = [];
+    _primary_selected.children('.chip').each( function(i) { 
+      const id = $(this).data('id');
+      rval.push([ id, false]);
+    });
+    _secondary_selected.children('.chip').each( function(i) { 
+      const id = $(this).data('id');
+      rval.push([ id, true]);
+    });
+    return rval;
+  }
+
+  function create_chip(id,label) {
+    const chip = $("<div>").addClass('chip').data('id',id);
+    const span = $("<span>").text(label);
+    const close = $("<button class='option' type='button'>x</button>");
+    return chip.append(span).append(close);
   }
 
   function handle_close_chip(e) {
@@ -288,11 +370,9 @@ export default function question_editor(ce,controller)
     }
   });
 
-
-
-
-
-
+  //
+  // New question handlers
+  //
 
   function handle_archive(e)
   {
@@ -328,9 +408,120 @@ export default function question_editor(ce,controller)
     });
   }
 
+  //---------------------------------------------------------------------------------------
+  // Undo events
+  //---------------------------------------------------------------------------------------
+  // The section editor accumulats all input field changes into a a single undo/redo
+  //   event.  The question editor, accumulates changes to each input field independently.
+  //   All changes to a given input field form the atomic actions.  
+  //
+  // In addition, there are different create_undo methods for input/textarea fields and
+  //   for option selection fields.
+  //
+  // This means we need to track which input the undo action is tracking.
+  //
+  // Other than that, see the section editor undo events for more info on how these
+  //   events work with the undo/redo manager.
+  //---------------------------------------------------------------------------------------
+  
+  function create_undo(id,data,controller,key,new_value)
+  {
+    console.log(`create_undo(...,${key},${new_value})`);
+    // The key and new_value fields are optional. If not specified, we are simply queueing
+    //   up an undo action that will be ready to handle any change to an input or 
+    //   textarea field.  If they are specified, then we need to cache both the current
+    //   and new values associated with the key
+
+    function apply_action(question_id, key, value)
+    {
+      // no matter if we are doing an undo or a redo, we need to make sure we're 
+      //   on the editor for the correct question
+      controller.select_question(question_id);
+
+      const input = _box.find('.question.'+key).val(value);
+      const error = validate_input(key,value)
+      _box.children('.value.'+key).find('span.error').text(error??'');
+      controller.update_question_error(_cur_id,key,value,error);
+      controller.update_question_data(_cur_id,key,value);
+      $(document).trigger('SurveyWasModified');
+    }
+
+    _cur_undo = {
+      question_id: id,
+      key: null,
+
+      can_continue(id) {
+        return ce.undo_manager.isHead(this) && (id === this.question_id);
+      },
+
+      undo() {
+        console.log(`undo: ${key}=${this.old_value}`);
+        // the undo manager will be moving this action to the redo stack.
+        //   We will need to create a new undo action to handle the next
+        //   input/textarea change (after applying the undo)
+        apply_action(this.question_id, this.key, this.old_value);
+        create_undo(id,data,controller);
+      },
+
+      redo() {
+        console.log(`redo: ${key}=${this.new_value}`);
+        // the undo manager will be moving this action back ot the undo stack.
+        //   We will need to point to that as the current action (after applying the redo)
+        apply_action(this.question_id, this.key, this.new_value);
+        _cur_undo = this;
+      },
+
+      update(key,value) {
+        const isCurrent = ce.undo_manager.isHead(this);
+        if(isCurrent && key === this.key) {
+          // we can continue to accumulate the changes on this action
+          if(value === this.old_value ) {
+            console.log(`pop action of undo stack: ${key}`);
+            // but if user manually undid the action, pop it off the undo stack
+            ce.undo_manager.pop(this);
+            this.key = null;
+            this.old_value = '';
+            this.new_vlaue = '';
+          } else {
+            console.log(`update action: ${key}=${value}`);
+            this.new_value = value;
+          }
+        } 
+        else if(this.key) {
+          console.log(`need to create new action for ${key}=${value}`);
+          // the current undo action is already on the undo or redo stack, 
+          //   but it is not on top of the undo stack
+          // we need to start a new undo action and seed it with the latest update
+          //   seeding it,
+          // create_undo will put it on the undo stack as a key/value is provided
+          create_undo(id,data,controller,key,value);
+        } 
+        else {
+          console.log(`initialize and queue action for ${key}=${value}`);
+          // the current undo action is not on the undo stack, i.e. it does
+          //   not yet represent a field change
+          // add the update key/value and put the action on the undo stack
+          this.key = key;
+          this.old_value = data[key];
+          this.new_value = value;
+          ce.undo_manager.add(this);
+        }
+      },
+    };
+
+    if(key) {
+      console.log(`enqueue new action for ${key}=${new_value}`);
+      // seed the undo action with an input/textarea field update
+      _cur_undo.key = key;
+      _cur_undo.old_value = data[key] || '';
+      _cur_undo.new_value  = new_value || '';
+      // and add it to the undo manager
+      ce.undo_manager.add(_cur_undo);
+    } 
+  }
+
   return {
     show:show,
   };
+
 }
-
-
