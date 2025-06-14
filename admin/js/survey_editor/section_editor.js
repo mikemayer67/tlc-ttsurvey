@@ -142,7 +142,6 @@ export default function section_editor(ce,controller)
     
   function create_undo(id,data,controller)
   {
-    console.log(`create_undo(${id})`);
     function apply_action(section_id, values)
     {
       controller.select_section(section_id);
@@ -169,19 +168,15 @@ export default function section_editor(ce,controller)
         return ce.undo_manager.isHead(this) && (id === this.section_id);
       },
       undo() {
-        console.log('undo... move to redo... create new action');
         apply_action(this.section_id, this.orig_values);
         create_undo(id,data,controller);
       },
       redo() { 
-        console.log('redo... return to undo... make action current');
         apply_action(this.section_id, this.new_values);
         _cur_undo = this;
       },
       update(key,value) {
-        console.log(`update(${key},${value})`);
         if(!('new_values' in this)) {
-          console.log('add to undo manager');
           this.new_values = deepCopy(this.orig_values);
           ce.undo_manager.add(this);
         }

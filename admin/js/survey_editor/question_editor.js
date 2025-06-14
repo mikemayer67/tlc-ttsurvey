@@ -62,6 +62,7 @@ export default function question_editor(ce,controller)
   const _secondary_selected = _secondary.find('.selected');
   const _secondary_pool     = _secondary.find('.pool');
   const _other              = _options.filter('.other');
+  const _other_value        = _other.find('input');
 
   const _hints              = _box.find('div.hint');
 
@@ -100,7 +101,7 @@ export default function question_editor(ce,controller)
   );
 
   _description_value.on('input change', update_character_count);
-  _info.on('input change', update_character_count);
+  _info_value.on('input change', update_character_count);
 
   _box.find('input,textarea')
     .on('input',handle_input)
@@ -154,6 +155,8 @@ export default function question_editor(ce,controller)
 
   function show(id,data)
   {
+    _cur_id = id;
+
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
     //   question type.
@@ -189,9 +192,9 @@ export default function question_editor(ce,controller)
         const maxlen_info = _info_value.data('maxlen-info');
         _info.show();
         _info_label.text('Info Text:');
-        _info_value.text(data.info || '');
-        _info_maxlen.text(maxlen_info);
         _info_value.attr('maxlength',maxlen_info);
+        _info_value.val(data.info || '').trigger('change');
+        _info_maxlen.text(maxlen_info);
         _info_hint_info.show();
         break;
       }
@@ -201,9 +204,9 @@ export default function question_editor(ce,controller)
         _qualifier.show();
         _qualifier_value.val(data.qualifier || '');
         _description.show();
-        _description_value.val(data.description || '');
+        _description_value.val(data.description || '').trigger('change');
         _info.show();
-        _info_value.val(data.info || '');
+        _info_value.val(data.info || '').trigger('change');
         _info_hint_other.show();
         break;
       }
@@ -211,9 +214,9 @@ export default function question_editor(ce,controller)
         _wording.show();
         _wording_value.val(data.wording || '');
         _description.show();
-        _description_value.val(data.description || '');
+        _description_value.val(data.description || '').trigger('change');
         _info.show();
-        _info_value.val(data.info || '');
+        _info_value.val(data.info || '').trigger('change');
         _info_hint_other.show();
         break;
       }
@@ -222,11 +225,11 @@ export default function question_editor(ce,controller)
         _wording.show();
         _wording_value.val(data.wording || '');
         _description.show();
-        _description_value.val(data.description || '');
+        _description_value.val(data.description || '').trigger('change');
         _qualifier.show();
         _qualifier_value.val(data.qualifier || '');
         _info.show();
-        _info_value.val(data.info || '');
+        _info_value.val(data.info || '').trigger('change');
         _info_hint_other.show();
         show_options(id,data);
         break;
@@ -262,7 +265,6 @@ export default function question_editor(ce,controller)
 
   function show_options(id,data)
   {
-    _cur_id = id;
     _primary_selected.empty();
     _secondary_selected.empty();
     const all_options = controller.all_options();
@@ -272,6 +274,8 @@ export default function question_editor(ce,controller)
       if(secondary) { _secondary_selected.append(chip); } 
       else          { _primary_selected.append(chip); }
     });
+
+    _other_value.val(data.other||'');
 
     _options.show();
     _primary_pool.hide();
@@ -426,7 +430,6 @@ export default function question_editor(ce,controller)
   
   function create_undo(id,data,controller,key,new_value)
   {
-    console.log(`create_undo(...,${key},${new_value})`);
     // The key and new_value fields are optional. If not specified, we are simply queueing
     //   up an undo action that will be ready to handle any change to an input or 
     //   textarea field.  If they are specified, then we need to cache both the current
@@ -441,8 +444,8 @@ export default function question_editor(ce,controller)
       const input = _box.find('.question.'+key).val(value);
       const error = validate_input(key,value)
       _box.children('.value.'+key).find('span.error').text(error??'');
-      controller.update_question_error(_cur_id,key,value,error);
-      controller.update_question_data(_cur_id,key,value);
+      controller.update_question_error(question_id,key,value,error);
+      controller.update_question_data(question_id,key,value);
       $(document).trigger('SurveyWasModified');
     }
 
@@ -455,7 +458,6 @@ export default function question_editor(ce,controller)
       },
 
       undo() {
-        console.log(`undo: ${key}=${this.old_value}`);
         // the undo manager will be moving this action to the redo stack.
         //   We will need to create a new undo action to handle the next
         //   input/textarea change (after applying the undo)
@@ -464,7 +466,6 @@ export default function question_editor(ce,controller)
       },
 
       redo() {
-        console.log(`redo: ${key}=${this.new_value}`);
         // the undo manager will be moving this action back ot the undo stack.
         //   We will need to point to that as the current action (after applying the redo)
         apply_action(this.question_id, this.key, this.new_value);
@@ -476,19 +477,16 @@ export default function question_editor(ce,controller)
         if(isCurrent && key === this.key) {
           // we can continue to accumulate the changes on this action
           if(value === this.old_value ) {
-            console.log(`pop action of undo stack: ${key}`);
             // but if user manually undid the action, pop it off the undo stack
             ce.undo_manager.pop(this);
             this.key = null;
             this.old_value = '';
             this.new_vlaue = '';
           } else {
-            console.log(`update action: ${key}=${value}`);
             this.new_value = value;
           }
         } 
         else if(this.key) {
-          console.log(`need to create new action for ${key}=${value}`);
           // the current undo action is already on the undo or redo stack, 
           //   but it is not on top of the undo stack
           // we need to start a new undo action and seed it with the latest update
@@ -497,7 +495,6 @@ export default function question_editor(ce,controller)
           create_undo(id,data,controller,key,value);
         } 
         else {
-          console.log(`initialize and queue action for ${key}=${value}`);
           // the current undo action is not on the undo stack, i.e. it does
           //   not yet represent a field change
           // add the update key/value and put the action on the undo stack
@@ -510,7 +507,6 @@ export default function question_editor(ce,controller)
     };
 
     if(key) {
-      console.log(`enqueue new action for ${key}=${new_value}`);
       // seed the undo action with an input/textarea field update
       _cur_undo.key = key;
       _cur_undo.old_value = data[key] || '';
