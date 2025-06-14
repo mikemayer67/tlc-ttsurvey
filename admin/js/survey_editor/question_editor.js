@@ -11,7 +11,7 @@ function validate_input(key,value)
     case 'wording':
       if(len==0) { return 'missing';   } 
       if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
+//      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?#]");
       break;
   }
 
@@ -74,6 +74,7 @@ export default function question_editor(ce,controller)
       group: {name:'primary_selected', put:['primary_pool','secondary_selected']},
       animation: 150,
       draggable: '.chip',
+      onEnd: handle_option_drag,
     },
   );
   const _primary_pool_sorter = new Sortable( _primary_pool[0], 
@@ -82,6 +83,7 @@ export default function question_editor(ce,controller)
       animation: 150,
       draggable: '.chip',
       sort: false,
+      onEnd: handle_option_drag,
     },
   );
   const _secondary_selected_sorter = new Sortable( _secondary_selected[0], 
@@ -89,6 +91,7 @@ export default function question_editor(ce,controller)
       group: {name:'secondary_selected', put:['secondary_pool','primary_selected']},
       animation: 150,
       draggable: '.chip',
+      onEnd: handle_option_drag,
     },
   );
   const _secondary_pool_sorter = new Sortable( _secondary_pool[0], 
@@ -97,6 +100,7 @@ export default function question_editor(ce,controller)
       animation: 150,
       draggable: '.chip',
       sort: false,
+      onEnd: handle_option_drag,
     },
   );
 
@@ -231,7 +235,8 @@ export default function question_editor(ce,controller)
         _info.show();
         _info_value.val(data.info || '').trigger('change');
         _info_hint_other.show();
-        show_options(id,data);
+        _other_value.val(data.other||'');
+        show_options(data.options);
         break;
       }
     }
@@ -263,23 +268,39 @@ export default function question_editor(ce,controller)
     _type_select.val('').on('change',[id,data],handle_type).show();
   }
 
-  function show_options(id,data)
+  function show_options(data)
+  {
+    populate_options(data);
+    _options.show();
+    _primary_pool.hide();
+    _secondary_pool.hide();
+  }
+
+  function populate_options(data)
   {
     _primary_selected.empty();
     _secondary_selected.empty();
     const all_options = controller.all_options();
-    data.options.forEach( ([id,secondary]) => {
+    data.forEach( ([id,secondary]) => {
       const label = all_options[id];
       const chip = create_chip(id,label);
       if(secondary) { _secondary_selected.append(chip); } 
       else          { _primary_selected.append(chip); }
     });
+  }
 
-    _other_value.val(data.other||'');
+  function update_options(options)
+  {
+    controller.update_question_data(_cur_id,'options',options); 
+    populate_options(options);
+    update_option_pools();
+  }
 
-    _options.show();
-    _primary_pool.hide();
-    _secondary_pool.hide();
+  function create_chip(id,label) {
+    const chip = $("<div>").addClass('chip').data('id',id);
+    const span = $("<span>").text(label);
+    const close = $("<button class='option' type='button'>x</button>");
+    return chip.append(span).append(close);
   }
 
   //
@@ -324,6 +345,11 @@ export default function question_editor(ce,controller)
     });
   }
 
+  function update_option_pools() {
+    if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
+    if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+  }
+
   function selected_options() {
     const rval = [];
     _primary_selected.children('.chip').each( function(i) { 
@@ -337,18 +363,22 @@ export default function question_editor(ce,controller)
     return rval;
   }
 
-  function create_chip(id,label) {
-    const chip = $("<div>").addClass('chip').data('id',id);
-    const span = $("<span>").text(label);
-    const close = $("<button class='option' type='button'>x</button>");
-    return chip.append(span).append(close);
-  }
-
   function handle_close_chip(e) {
     const chip = $(this).closest('.chip');
     chip.remove(); 
-    if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
-    if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+    handle_option_change();
+  }
+
+  function handle_option_change() {
+    const old_options = controller.cur_question_data(_cur_id,'options');
+    const new_options = selected_options();
+    ce.undo_manager.add({
+      undo() { update_options(old_options); },
+      redo() { update_options(new_options); },
+    });
+    
+    controller.update_question_data(_cur_id,'options',new_options); 
+    update_option_pools();
   }
 
   function handle_edit_chip(e) {
@@ -360,17 +390,19 @@ export default function question_editor(ce,controller)
       span.text(new_value);
       const id = chip.data('id');
       controller.update_option(id,new_value);
-      if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
-      if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+      update_option_pools();
     }
+  }
+
+  function handle_option_drag(e) {
+    handle_option_change();
   }
 
   _options.find('button.add.option').on('click', function(e) {
     const new_option = prompt('New option').trim();
     if(new_option) {
       const new_id = controller.add_option(new_option);
-      if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
-      if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+      update_option_pools();
     }
   });
 

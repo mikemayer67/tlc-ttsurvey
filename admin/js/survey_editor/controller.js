@@ -112,6 +112,16 @@ export default function survey_editor(ce)
     return !_tree.has_errors();
   };
 
+  self.cur_section_data = function(section_id, key)
+  {
+    return _content.sections[section_id]?.[key];
+  }
+
+  self.cur_question_data = function(question_id, key)
+  {
+    return _content.questions[question_id]?.[key];
+  }
+
   self.update_section_data = function(section_id, key, value)
   {
     _content.sections[section_id][key] = value;
