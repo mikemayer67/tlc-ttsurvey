@@ -16,7 +16,7 @@ export default function undo_manager(ce)
 
     if(_redo_stack.length > 0) {
       _undo_stack.push(a);
-      redo_stack.length = 0;
+      _redo_stack.length = 0;
     } else if( a !== _undo_stack.at(-1) ) {
       _undo_stack.push(a);
     }

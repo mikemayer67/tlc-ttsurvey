@@ -473,7 +473,7 @@ export default function question_editor(ce,controller)
       //   on the editor for the correct question
       controller.select_question(question_id);
 
-      const input = _box.find('.question.'+key).val(value);
+      const input = _box.find('.question.'+key).val(value).trigger('change');
       const error = validate_input(key,value)
       _box.children('.value.'+key).find('span.error').text(error??'');
       controller.update_question_error(question_id,key,value,error);

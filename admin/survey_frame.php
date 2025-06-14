@@ -305,8 +305,8 @@ add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');
 add_option_entry('secondary');
-add_editor_input('question','other',['extra_classes'=>'options']);
-add_editor_input('question','qualifier');
+add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
+add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','info',['maxlen'=>1024, 'altmax'=>['info'=>1024,'other'=>128]]);
 echo "  </div>";
 

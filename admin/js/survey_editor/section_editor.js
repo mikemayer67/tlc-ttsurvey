@@ -147,7 +147,7 @@ export default function section_editor(ce,controller)
       controller.select_section(section_id);
 
       Object.entries(values).forEach(([key,value]) => {
-        const input = _box.find('.section.'+key).val(value);
+        const input = _box.find('.section.'+key).val(value).trigger('change');
         const error = validate_input(key,value);
         _box.children('.value.'+key).find('span.error').text(error?? '');
         controller.update_section_error(_cur_id,key,value,error);
