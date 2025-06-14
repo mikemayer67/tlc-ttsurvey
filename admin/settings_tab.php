@@ -143,7 +143,7 @@ add_input_section('Email Server',[
   ],
 ]);
 
-echo "<div class='button-bar'>";
+echo "<div class='submit-bar'>";
 echo "<input id='changes-submit' class='submit' type='submit' value='Save Changes'>";
 echo "<input id='changes-revert' class='revert' type='submit' value='Revert' formnovalidate>";
 echo "</div>";

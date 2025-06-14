@@ -21,7 +21,8 @@ function start_login_form($header,$name)
     $q = "?admin";
   }
 
-  echo "<div id='ttt-login' class='$name ttt-card'>";
+  echo "<div id='ttt-login' class='$name'>";
+  echo "<div class='$name ttt-card'>";
   echo "<header>$header</header>";
   echo "<form class='login' method='post' action='$form_uri$q'>";
   add_hidden_input('nonce',$nonce);
@@ -32,7 +33,13 @@ function start_login_form($header,$name)
 function close_login_form()
 {
   // must close all DOM elements opened in ttt-login
-  echo "</form></div>";
+  $icon_url = img_uri('icons8/info.png');
+  $info_icon = "<img src='$icon_url'>";
+
+  echo "</form>";
+  echo "</div>";  // ttt-card
+  echo "<div class='help'>For hints on using this form, click or hover on any of the $info_icon icons</div>";
+  echo "</div>";  // ttt-card-wrapper
 }
 
 function add_resume_buttons($nonce)
@@ -40,7 +47,7 @@ function add_resume_buttons($nonce)
   $tokens = cached_tokens();
   if(!$tokens) { return; }
   
-  $icon = img_uri('icons8-delete_sign.png');
+  $icon = img_uri('icons8/delete_sign.png');
   $class = 'resume token';
   $uri = app_uri("ttt=$nonce");
 
@@ -90,7 +97,7 @@ function add_login_input($type,$kwargs=array())
   echo "<label for='$id'>$label</label>";
   if($info) { 
     $info_link = "ttt-$name-info";
-    $icon_url = img_uri('icons8-info.png');
+    $icon_url = img_uri('icons8/info.png');
     $info_icon = "<img src='$icon_url'>";
     echo" <label for='$info_cb' class='info-trigger'>$info_icon</label>";
   }
@@ -156,7 +163,7 @@ function add_login_checkbox($name, $kwargs=array())
   if($info)
   {
     $info_link = "ttt-$name-info";
-    $icon_url = img_uri('icons8-info.png');
+    $icon_url = img_uri('icons8/info.png');
     $info_icon = "<img src='$icon_url' width=18 height=18>";
     // close out the label-box with the info trigger
     echo "<label for='$info_cb' class='info-trigger'>$info_icon</label>";

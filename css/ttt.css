@@ -1,5 +1,11 @@
 /* common color palette */
 
+body {
+  display:flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 * {
   --navbar-color:white;
   --font-red:darkred;
@@ -149,6 +155,21 @@ div.ttt-splash img {
 
 #ttt-navbar .ttt-logo {
   height:clamp(25px,5vw,40px);
+}
+
+#ttt-footer {
+  margin-top:auto;
+  width:100%;
+  background-color:inherit;
+}
+#ttt-footer * {
+  background-color:inherit;
+}
+#ttt-footer .ttt-ack {
+  float:right;
+  margin:3px 2em;
+  font:sans-serif;
+  font-size:85%;
 }
 
 /**

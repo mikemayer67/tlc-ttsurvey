@@ -1,6 +1,6 @@
 
-delete from tlc_tt_element_options;
-delete from tlc_tt_survey_elements;
+delete from tlc_tt_question_options;
+delete from tlc_tt_survey_questions;
 delete from tlc_tt_survey_sections;
 delete from tlc_tt_survey_options;
 delete from tlc_tt_surveys;
@@ -14,7 +14,7 @@ delete from tlc_tt_settings;
 
 alter table tlc_tt_surveys AUTO_INCREMENT=1;
 alter table tlc_tt_survey_options AUTO_INCREMENT=1;
-alter table tlc_tt_survey_elements AUTO_INCREMENT=1;
+alter table tlc_tt_survey_questions AUTO_INCREMENT=1;
 
 
 insert into tlc_tt_settings (name,value) values
@@ -102,7 +102,7 @@ insert into tlc_tt_survey_sections (survey_id,survey_rev,sequence,name,descripti
   (4, 1, 2, 'Bells',           NULL, 0),
   (4, 1, 3, 'Instrumentalist', NULL, 0);
 
-insert into tlc_tt_survey_elements (id,survey_id,survey_rev,section_seq,sequence,label,element_type,other,qualifier,description,info) values
+insert into tlc_tt_survey_questions (id,survey_id,survey_rev,section_seq,sequence,label,question_type,other,qualifier,description,info) values
   -- Survey #1 --
   ( 1, 1, 1, 1, 1, 'Lector',          'BOOL',    NULL, NULL, NULL, 'Reads the lessons from the pulpit before the Gospel'),
   ( 2, 1, 1, 1, 2, 'Acolyte',         'BOOL',    NULL, NULL, NULL, 'Lights the candels'),
@@ -157,7 +157,7 @@ insert into tlc_tt_survey_elements (id,survey_id,survey_rev,section_seq,sequence
   (32, 4, 1, 3, 4, 'Would you like to see more or less bells?', 'FREETEXT', NULL, NULL, NULL, NULL),
   (33, 4, 1, 3, 5, 'Do you prefer piano or organ during worship?','FREETEXT', NULL, NULL, 'Marcello will continue to use both, but do you have a personal preference?',NULL);
 
-insert into tlc_tt_element_options (survey_id, survey_rev, element_id, sequence, option_id, secondary) values
+insert into tlc_tt_question_options (survey_id, survey_rev, question_id, sequence, option_id, secondary) values
   -- Survey #1 --
   (1, 1, 5, 1, 2, 0), (1, 1, 5, 2, 1, 0), 
   (1, 1, 6, 1, 2, 0), (1, 1, 6, 2, 1, 0), 

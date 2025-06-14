@@ -81,18 +81,32 @@ function start_page($context,$kwargs=[])
   // don't include css or javascript on print pages
   if($context !== 'print') {
     $ttt_uri = css_uri('ttt');
-    $context_uri = css_uri($context);
-    $js_uri = js_uri($context,$context);
+    $context_css_uri = css_uri($context);
+    $context_css_file = app_file("css/$context.css");
+    $context_js_uri = js_uri($context,$context);
+    $context_js_file = app_file("$context/js/$context.js");
     $jq_uri = js_uri('jquery-3.7.1.min');
+
+    if(file_exists($context_css_file)) {
+      $context_css = "<link rel='stylesheet' type='text/css' href='$context_css_uri'>";
+    } else {
+      $context_css = "";
+    }
+
+    if(file_exists($context_js_file)) {
+      $context_js = "<script src='$context_js_uri'></script>";
+    } else {
+      $context_js = "";
+    }
 
     echo <<<HTMLHEAD
     <!-- Javascript -->
     <script src='$jq_uri'></script>
-    <script src='$js_uri'></script>
+    $context_js
 
     <!-- Style -->
     <link rel='stylesheet' type='text/css' href='$ttt_uri'>
-    <link rel='stylesheet' type='text/css' href='$context_uri'>
+    $context_css
     HTMLHEAD;
 
     $css = $kwargs['css'] ?? null;
@@ -187,6 +201,17 @@ function end_page()
 {
   // close the body and html elements
   echo "</div>\n";  // #ttt-body
+
+  echo <<<HTMLFOOTER
+    <!-- Footer -->
+    <div id='ttt-footer'>
+      <span class='ttt-ack'>
+        icons by <a href='https://icons8.com' target='_blank'>icons8</a>
+      </span>
+    </div>
+    HTMLFOOTER;
+
+  // close the html elements
   echo "</body>\n"; // html body
   echo "</html>\n";
 }
