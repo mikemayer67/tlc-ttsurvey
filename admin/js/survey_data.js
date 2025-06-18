@@ -78,6 +78,16 @@ export default function survey_data(ce)
     return null;
   }
 
+  function set_content(id,content) 
+  {
+    // hopefully never hit this, but just in case...
+    if( ! id in _surveys ) { 
+      alert("Somthing got out of sync.  Reloading page.");
+      location.reload();
+    }
+    _surveys[id].content = content;
+  }
+
   // accessors
 
   function get_active_survey() { 
@@ -124,7 +134,11 @@ export default function survey_data(ce)
     drafts:  get_draft_surveys,
     closed:  get_closed_surveys,
     lookup:  get_survey_by_id,
-    content: get_content,
     add:     add_survey,
+
+    content(id,data) { 
+      if(data) { set_content(id,data);   }
+      else     { return get_content(id); }
+    },
   };
 };

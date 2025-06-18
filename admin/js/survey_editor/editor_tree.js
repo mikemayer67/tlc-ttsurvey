@@ -544,8 +544,8 @@ export default function editor_tree(ce,controller)
     item.toggleClass('error',Boolean(error));
   }
 
-  self.has_errors = function() {
-    return _tree.find('li.error').length > 0;
+  self.can_submit = function() {
+    return _tree.find('li.error, li.needs-wording, li.needs-type').length === 0;
   }
 
   // 
@@ -571,6 +571,26 @@ export default function editor_tree(ce,controller)
 
     if(new_data.wording) { li.removeClass('needs-wording').text(new_data.wording) }
     else                 { li.addClass('needs-wording').text('')                  }
+  }
+  
+
+  // 
+  // Section/Question structure
+  //
+
+  self.survey_structure = function() {
+    const rval = [];
+    const sections = _tree.find('li.section');
+    sections.each( function(index) {
+      const section = $(this);
+      const section_id = section.data('section');
+      const question_ids = section.find('li.question').map( function() {
+        return $(this).data('question');
+      }).get();
+      rval.push( {section_id:section_id, question_ids:question_ids} );
+    });
+
+    return rval;
   }
 
   //

@@ -16,6 +16,14 @@ $id      = $_POST['survey_id'] ?? null;
 $name    = $_POST['name'] ?? null;
 $cur_pdf = $_POST['existing_pdf'] ?? 'keep';
 $new_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
+$content = json_decode($_POST['content'],true);
+
+log_dev("update_survey: id = $id");
+log_dev("update_survey: name = $name");
+log_dev("update_survey: cur_pdf = $cur_pdf");
+log_dev("update_survey: new_pdf = $new_pdf");
+log_dev("update_survey: content = " . print_r($content,true));
+
 
 try {
   $error = null;
@@ -30,6 +38,7 @@ try {
   $rval = array(
     'success'=>true,
     'has_pdf'=>(null !== survey_pdf_file($id)),
+    'next_ids' => ['usrvey'=>101, 'queestion'=>200, 'option'=>50],
   );
 }
 catch(Exception $e)
