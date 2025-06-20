@@ -15,11 +15,9 @@ export default function question_viewer(ce)
   const _description_value = _description.find('div.text');
 
   const _info              = _box.children('.info');
-  const _info_label        = _info.filter('.label').find('span');
   const _info_value        = _info.find('div.text');
-  const _info_hint         = _info.find('.hint > div');
-  const _info_hint_info    = _info_hint.filter('.info-block');
-  const _info_hint_other   = _info_hint.filter('.other-type');
+  const _popup             = _box.children('.popup');
+  const _popup_value       = _popup.find('div.text');
 
   const _options           = _box.children('.options');
   const _primary           = _options.filter('.primary');
@@ -40,21 +38,13 @@ export default function question_viewer(ce)
     _type.show();
     _hints.removeClass('locked');
 
-    // The info field actually has a different interpretation based on if it's
-    //   a real question or an information block.  We'll assume it's a real
-    //   question for now and modify it for an information block if necessary
-    _info_label.text('Popup Hint:');
-    _info_hint.hide();
-
     // Now we can customize what is shown based on the question type
     _type_value.text( typeLabels[data.type] );
 
     switch(data.type) {
       case 'INFO': {
         _info.show();
-        _info_label.text('Info Text:');
         _info_value.text(data.info || '');
-        _info_hint_info.show();
         break;
       }
       case 'BOOL': {
@@ -64,9 +54,8 @@ export default function question_viewer(ce)
         _qualifier_value.text(data.qualifier || '');
         _description.show();
         _description_value.text(data.description || '');
-        _info.show();
-        _info_value.text(data.info || '');
-        _info_hint_other.show();
+        _popup.show();
+        _popup_value.text(data.popup || '');
         break;
       }
       case 'FREETEXT': {
@@ -74,9 +63,8 @@ export default function question_viewer(ce)
         _wording_value.text(data.wording || '');
         _description.show();
         _description_value.text(data.description || '');
-        _info.show();
-        _info_value.text(data.info || '');
-        _info_hint_other.show();
+        _popup.show();
+        _popup_value.text(data.popup || '');
         break;
       }
       case 'SELECT_ONE':
@@ -87,9 +75,8 @@ export default function question_viewer(ce)
         _qualifier_value.text(data.qualifier || '');
         _description.show();
         _description_value.text(data.description || '');
-        _info.show();
-        _info_value.text(data.info || '');
-        _info_hint_other.show();
+        _popup.show();
+        _popup_value.text(data.popup || '');
         _options.show();
 
         _primary_value.find('ul').remove();

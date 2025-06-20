@@ -23,12 +23,12 @@ function validate_input(key,value)
   return '';
 }
 
-
-
-
 export default function question_editor(ce,controller)
 {
   const _box = $('#editor-frame div.grid.question.editor');
+
+  const _inputs             = _box.find('input');
+  const _textareas          = _box.find('textarea');
 
   const _archive            = _box.children('.archive');
   const _archive_select     = _archive.filter('.value').find('select');
@@ -37,8 +37,11 @@ export default function question_editor(ce,controller)
   const _type_value         = _type.filter('.value').find('div.text');
   const _type_select        = _type.filter('.value').find('select');
 
+  const _infotag             = _box.children('.infotag');
+  const _infotag_value       = _infotag.find('input');
+
   const _wording            = _box.children('.wording');
-  const _wording_value      = _wording.find('input');
+  const _wording_value      = _wording.find('textarea');
 
   const _qualifier          = _box.children('.qualifier');
   const _qualifier_value    = _qualifier.find('input');
@@ -47,12 +50,9 @@ export default function question_editor(ce,controller)
   const _description_value  = _description.find('textarea');
 
   const _info               = _box.children('.info');
-  const _info_label         = _info.filter('.label').find('span');
   const _info_value         = _info.find('textarea');
-  const _info_maxlen        = _info.find('.char-count span.max');
-  const _info_hint          = _info.find('.hint > div');
-  const _info_hint_info     = _info_hint.filter('.info-block');
-  const _info_hint_other    = _info_hint.filter('.other-type');
+  const _popup              = _box.children('.popup');
+  const _popup_value        = _popup.find('textarea');
 
   const _options            = _box.children('.options');
   const _primary            = _options.filter('.primary');
@@ -104,8 +104,12 @@ export default function question_editor(ce,controller)
     },
   );
 
-  _description_value.on('input change', update_character_count);
-  _info_value.on('input change', update_character_count);
+  _textareas.on('input change', update_character_count)
+
+  _textareas.filter('.auto-resize').on('input change', function(e) {
+    this.style.height = 'auto';
+    this.style.height = this.scrollHeight + 'px';
+  });
 
   _box.find('input,textarea')
     .on('input',handle_input)
@@ -170,15 +174,6 @@ export default function question_editor(ce,controller)
     _type_select.off('change');
     _archive_select.off('change');
 
-    // The info field actually has a different interpretation based on if it's
-    //   a real question or an information block.  We'll assume it's a real
-    //   question for now and modify it for an information block if necessary
-    _info_label.text('Popup Hint:');
-    _info_hint.hide();
-    const maxlen_other = _info_value.data('maxlen-other');
-    _info_maxlen.text(maxlen_other);
-    _info_value.attr('maxlength',maxlen_other);
-
     // Now we can customize what is shown based on the question type
     //   We'll handle the case where the type is not specified first
     //   We'll then handle all the other case where the type is specified
@@ -193,49 +188,44 @@ export default function question_editor(ce,controller)
 
     switch(data.type) {
       case 'INFO': {
-        const maxlen_info = _info_value.data('maxlen-info');
+        _infotag.show();
+        _infotag_value.val(data.infotag || '').trigger('change');
+
         _info.show();
-        _info_label.text('Info Text:');
-        _info_value.attr('maxlength',maxlen_info);
         _info_value.val(data.info || '').trigger('change');
-        _info_maxlen.text(maxlen_info);
-        _info_hint_info.show();
         break;
       }
       case 'BOOL': {
         _wording.show();
-        _wording_value.val(data.wording || '');
+        _wording_value.val(data.wording || '').trigger('change');
         _qualifier.show();
         _qualifier_value.val(data.qualifier || '');
         _description.show();
         _description_value.val(data.description || '').trigger('change');
-        _info.show();
-        _info_value.val(data.info || '').trigger('change');
-        _info_hint_other.show();
+        _popup.show();
+        _popup_value.val(data.popup || '').trigger('change');
         break;
       }
       case 'FREETEXT': {
         _wording.show();
-        _wording_value.val(data.wording || '');
+        _wording_value.val(data.wording || '').trigger('change');
         _description.show();
         _description_value.val(data.description || '').trigger('change');
-        _info.show();
-        _info_value.val(data.info || '').trigger('change');
-        _info_hint_other.show();
+        _popup.show();
+        _popup_value.val(data.popup || '').trigger('change');
         break;
       }
       case 'SELECT_ONE':
       case 'SELECT_MULTI': {
         _wording.show();
-        _wording_value.val(data.wording || '');
+        _wording_value.val(data.wording || '').trigger('change');
         _description.show();
         _description_value.val(data.description || '').trigger('change');
         _qualifier.show();
         _qualifier_value.val(data.qualifier || '');
-        _info.show();
-        _info_value.val(data.info || '').trigger('change');
-        _info_hint_other.show();
         _other_value.val(data.other||'');
+        _popup.show();
+        _popup_value.val(data.popup || '').trigger('change');
         show_options(data.options);
         break;
       }

@@ -64,12 +64,6 @@ export default function survey_editor(ce)
   let _next_section_id  = 1;  // assigned to next new section
   let _next_question_id = 1;  // assigned to next new question
   
-  // start the return survey_editor object with public accessors
-  //   will add more properties/methods as we continue through this "constructor"
-  // TODO:: REMOVE THESES
-  // self.tree = _tree;
-  // self.menubar = _menubar;
-
   setup_resizer(ce, _box.find('div.body'), $('#survey-tree'), $('#editor-frame'));
   setup_hint_handler();
 
@@ -109,8 +103,37 @@ export default function survey_editor(ce)
   };
 
   self.can_submit = function() {
-    return !_tree.has_errors();
+    return _tree.can_submit();
   };
+
+  self.content = function()
+  {
+    const structure = _tree.survey_structure();
+    const rval = {
+      options: _content.options,
+      sections: {},
+      questions: {},
+    };
+
+    let new_sid = 0;
+    structure.forEach( (s) => {
+      new_sid += 1;
+      const old_sid      = s.section_id;
+      const question_ids = s.question_ids;
+      rval.sections[new_sid] = _content.sections[old_sid];
+
+      let seq = 0;
+      question_ids.forEach( (qid) => {
+        seq += 1;
+        const new_q = deepCopy( _content.questions[qid] );
+        new_q.section = new_sid;
+        new_q.sequence = seq;
+        rval.questions[qid] = new_q;
+      });
+    });
+
+    return rval;
+  }
 
   self.cur_section_data = function(section_id, key)
   {

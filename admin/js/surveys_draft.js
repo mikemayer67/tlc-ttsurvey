@@ -188,15 +188,18 @@ export default function draft_controller(ce)
 
   function handle_submit()
   {
-    var cur_values = current_values();
+    const cur_values = current_values();
     var survey_name = cur_values.survey_name.trim();
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
+
+    const content = ce.survey_editor.content();
 
     var formData = new FormData();
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/update_survey');
     formData.append('survey_id',ce.cur_survey.id);
     formData.append('name',survey_name);
+    formData.append('content',JSON.stringify(content));
 
     if(ce.cur_survey.has_pdf) {
       switch(_pdf_action.val()) {
@@ -230,11 +233,14 @@ export default function draft_controller(ce)
 
         ce.cur_survey.title = survey_name;
         ce.cur_survey.has_pdf = data.has_pdf;
+        ce.survey_data.content(ce.cur_survey.id,content);
 
         _survey_name.val('');
 
         $(document).trigger('SurveyDataChanged');
         show_status('info','Changes Saved');
+
+        select_survey();
       } 
       else {
         if( 'bad_nonce' in data ) {

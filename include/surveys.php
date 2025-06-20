@@ -66,115 +66,164 @@ function all_surveys()
 
 function survey_content($survey_id)
 {
-  todo('remove bogus survey content');
-  $sections = [
-    1 => [ 'name'=>'Welcome', 'labeled'=>0, 'feedback'=>'' ],
-    2 => [ 'name'=>'Section 1', 'description'=>"some words about section 1", 'labeled'=>1, 'feedback'=>'' ],
-    3 => [ 'name'=>'Section Deux', 'description'=>"But why is the name partially in Frenche?  That's a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?", 'labeled'=>1, 'feedback'=>'So, what iss up?' ],
-    4 => [ 'name'=>'Section 3', 'description'=>"some words about section 3", 'labeled'=>1, 'feedback'=>'' ],
-    5 => [ 'name'=>'Section 4', 'description'=>"some words about section 4", 'labeled'=>1, 'feedback'=>'' ],
-    7 => [ 'name'=>'Section 5', 'description'=>"some words about section 5", 'labeled'=>1, 'feedback'=>'' ],
-    9 => [ 'name'=>'Section 6', 'description'=>"some words about section 6", 'labeled'=>1, 'feedback'=>'' ],
-    8 => [ 'name'=>'Section 7', 'description'=>"some words about section 7", 'labeled'=>1, 'feedback'=>'' ],
-  ];
-  $options = [
-    1 => 'neative i^2',
-    2 => 'Two',
-    3 => 'Three',
-    4 => 'Whatever',
-  ];
+  $rval = array();
 
-  $id = 0;
-  $questions = array();
-  for($i=1; $i<=count($sections); ++$i)
-  {
-    $s = $i > 5 ? 1+$i : $i;
+  // current survey revision
 
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'INFO', 
-      'wording' => 'Info Text', 
-      'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'BOOL', 
-      'wording' => 'Yes/No Questions',
-      'qualifier' => 'Why or why not?',
-      'description' => 'Blah blah blah... This is important because',
-      'info'=>'This is popup info.  Just here to see if popups are working',
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'SELECT_ONE', 
-      'wording' => 'Select Question #1',
-      'other' => 'Other',
-      'qualifier' => 'Anything we should know?',
-      'description' => "Pick whichever answer best applies.  Or provide your own if you don't like the options provided",
-      'info'=>'This is popup info.  Just here to see if popups are working',
-      'options' => [ [3, false], [2, false], [1,false], ],
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'SELECT_ONE', 
-      'wording' => 'Select Question #2',
-      'qualifier' => 'Anything we should know?',
-      'description' => 'Pick whichever answer best applies.',
-      'info'=>'This is popup info.  Just here to see if popups are working',
-      'options' => [ [3, false], [2, false], [1,true], ],
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'SELECT_MULTI', 
-      'wording' => 'Multi Select #1',
-      'other' => 'Other',
-      'qualifier' => 'Anything we should know?',
-      'description' => 'Pick whichever answer or answers best apply.  Provide your own if you think we missed something.',
-      'info'=>'This is popup info.  Just here to see if popups are working',
-      'options' => [ [1, false], [2, false], [3,true], [4,true] ],
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'SELECT_MULTI', 
-      'wording' => 'Multi Select #2',
-      'qualifier' => 'Anything we should know?',
-      'description' => 'Pick whichever answer or answers best apply.',
-      'info'=>'This is popup info.  Just here to see if popups are working',
-      'options' => [ [1, false], [2, false], [3,true], [4,true] ],
-    ];
-    $questions[++$id] = [
-      'section' => $s,
-      'sequence' => 1 + ($id -1)%10,
-      'type' => 'FREETEXT', 
-      'wording' => 'Your thoughts?',
-      'description' => 'What else would you like us to know?',
-      'info'=>'This is popup info.  Just here to see if popups are working',
+  $survey_rev = MySQLSelectValue('select revision from tlc_tt_surveys where id=(?)', 'i', $survey_id);
+  if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
+
+  // current survey options
+
+  $options = array();
+
+  $query = <<<SQL
+    SELECT a.id, a.text
+      FROM tlc_tt_survey_options a
+      JOIN ( 
+        SELECT survey_id, id, max(survey_rev) as rev 
+          FROM tlc_tt_survey_options
+         WHERE survey_id=(?) AND survey_rev<=(?) 
+      GROUP BY survey_id,id
+    ) f
+    WHERE a.survey_id=f.survey_id AND a.id=f.id AND a.survey_rev=f.rev
+    ORDER BY a.id;
+  SQL;
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+  if($rows) { 
+    foreach($rows as $row) {
+      $options[$row['id']] = $row['text'];
+    }
+  }
+  $rval['options'] = $options;
+
+  // sections associated with the current revision of the survey
+
+  $query = <<<SQL
+    SELECT * 
+      FROM tlc_tt_survey_sections a
+      JOIN ( 
+        SELECT survey_id,sequence,max(survey_rev) as rev 
+          FROM tlc_tt_survey_sections
+         WHERE survey_id=(?) AND survey_rev<=(?) 
+      GROUP BY survey_id, sequence
+    ) f
+    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.rev
+    ORDER BY a.sequence;
+  SQL;
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+  if(!$rows) { return $rval; }
+
+  $sections = array();
+
+  foreach($rows as $row) {
+    $sequence = $row['sequence'];
+    $sections[$sequence] = [
+      'name'        => $row['name'],
+      'labeled'     => $row['show_name'],
+      'description' => $row['description'],
+      'feedback'    => $row['feedback'],
     ];
   }
-  $questions[++$id] = [
-    'type' => 'INFO', 
-    'wording' => 'Info Text (archived)', 
-    'info'=>'This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.',
+  $rval['sections'] = $sections;
+
+  // questions associated with the current revision of the survey
+
+  $questions = array();
+
+  $query = <<<SQL
+    SELECT * 
+      FROM tlc_tt_survey_questions a
+      JOIN (
+        SELECT survey_id, id, max(survey_rev) as rev
+          FROM tlc_tt_survey_questions
+         WHERE survey_id=(?) AND survey_rev<=(?)
+      GROUP BY survey_id, id
+    ) f
+    WHERE a.survey_id=f.survey_id AND a.id=f.id and a.survey_rev=rev
+    ORDER BY a.section, a.sequence;
+  SQL;
+
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+  if($rows) { 
+    foreach($rows as $row) {
+      $id = $row['id'];
+      $type = $row['question_type'];
+      $question = array();
+      if($row['sequence']) {
+        $question['section']  = $row['section'];
+        $question['sequence'] = $row['sequence'];
+      }
+      switch($type) {
+      case 'INFO':
+        $question['type']        = $type;
+        $question['info']        = $row['info'];
+        $question['infotag']     = $row['wording'];
+        break;
+      case 'BOOL':
+        $question['type']        = $type;
+        $question['wording']     = $row['wording'];
+        $question['description'] = $row['description'];
+        $question['qualifier']   = $row['qualifier'];
+        $question['popup']       = $row['info'];
+        break;
+      case 'OPTIONS':
+        $question['type']        = $row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE';
+        $question['wording']     = $row['wording'];
+        $question['description'] = $row['description'];
+        $question['qualifier']   = $row['qualifier'];
+        $question['other']       = $row['other'];
+        $question['options']     = array();
+        $question['popup']       = $row['info'];
+        break;
+      case 'FREETEXT':
+        $question['type']        = $type;
+        $question['wording']     = $row['wording'];
+        $question['description'] = $row['description'];
+        $question['popup']       = $row['info'];
+        break;
+      }
+
+      $questions[$id] = $question;
+    }
+  }
+
+  // add options to questions as appropriate
+  
+  $query = <<<SQL
+    SELECT a.question_id, a.sequence, a.option_id, a.secondary
+      FROM tlc_tt_question_options a
+      JOIN (
+        SELECT survey_id, question_id, sequence, max(survey_rev) as rev
+          FROM tlc_tt_question_options 
+         WHERE survey_id=(?) AND survey_rev<=(?)
+      GROUP BY survey_id, question_id, sequence
+    ) f
+    WHERE a.survey_id=f.survey_id AND a.question_id = f.question_id AND a.sequence = f.sequence AND a.survey_rev = rev
+    ORDER BY a.question_id, a.sequence;
+  SQL;
+
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+  if($rows) { 
+    foreach ($rows as $row) {
+      $qid = $row['question_id'];
+      if(!isset($questions[$qid]))            { internal_error("Options found for non-existent questions"); }
+      if(!isset($questions[$qid]['options'])) { internal_error("Options found on non-options type question"); }
+      $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
+    }
+  }
+
+  $rval['questions'] = $questions;
+
+  // add next IDs
+
+  $rval['next_ids'] = [
+    'survey'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_surveys'),
+    'question' => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_questions'),
+    'option'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_options where survey_id=(?)', 'i',$survey_id),
   ];
-  $questions[++$id] = [
-    'type' => 'BOOL', 
-    'wording' => 'Yes/No Question (archived)',
-    'qualifier' => 'Why or why not?',
-    'description' => 'Blah blah blah... This is important because',
-    'info'=>'This is popup info.  Just here to see if popups are working',
-  ];
-  return [
-    'sections'  => $sections,
-    'options'   => $options,
-    'questions' => $questions,
-    'next_ids'  => ['survey'=>100, 'question'=>200, 'option'=>50],
-  ];
+
+  return $rval;
 }
 
 function survey_pdf_file($survey_id)

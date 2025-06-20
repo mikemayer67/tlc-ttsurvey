@@ -42,6 +42,10 @@ $hints = [
        '<p><b>'.$type_labels['SELECT_ONE'].'</b> - Participant can select no more than one option</p>'.
        '<p><b>'.$type_labels['SELECT_MULTI'].'</b> - Participant can select as many options as apply</p>'.
        '<p><b>'.$type_labels['FREETEXT'].'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
+    'infotag' => (
+      '<b>This field is optional.</b> If provided, it will be shown in the structure layout tree (&larr;) '.
+      'rather than a truncated version of the information text.'.
+      '<p>This label will not appear anywhere in the survey itself. It is for use in the Admin Dashboard only</p>'),
     'wording' => (
       'The actual wording of the question on the survey'),
     'description' => (
@@ -81,13 +85,11 @@ $hints = [
       'the prompt that will appear in the survey to introduce the input field used to '.
       'qualify their response.'),
     'info' => (
-      "<div class='info-block'>The text of the information block. ".
-      "The text can be stylized using markdown. ".
-      "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p> ".
-      "</div> ".
-      "<div class='other-type'><b>This field is optional.</b>  If provided, it provides the text that ".
-      "will appear in the popup hint associated with the question input fields. ".
-      "</div> "),
+      'The text of the information block.  The text can be stylized using markdown.'.
+      "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
+    'popup' => (
+      '<b>This field is optional.</b>  If provided, it provides the text that '.
+      'will appear in the popup hint associated with the question input fields. '),
   ],
 ];
 
@@ -101,6 +103,7 @@ $labels = [
   'question' => [
     'archive'     => 'Archive',
     'type'        => 'Type',
+    'infotag'     => 'Info Tag',
     'wording'     => 'Wording',
     'description' => 'Description',
     'primary'     => 'Primary Options',
@@ -109,6 +112,7 @@ $labels = [
     'other'       => 'Other Option',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
+    'popup'       => 'Popup Hint',
   ],
 ];
 
@@ -163,20 +167,23 @@ function add_editor_textarea($scope, $key, $kwargs=[])
 
   $extra = $kwargs['extra_classes'] ?? '';
   $required = $kwargs['required'] ?? false;
-
   $maxlen = $kwargs['maxlen'] ?? 1024;
-  $maxlen_attr = "maxlength='$maxlen'";
-  foreach( $kwargs['altmax'] ?? [] as $s => $altmax) {
-    $maxlen_attr .= " data-maxlen-$s='$altmax'";
-  }
 
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
 
+  $class = "$scope $key";
+  $attr = "name='$name' data-key='$key' placeholder='$placeholder' maxlength='$maxlen'";
+
+  if($kwargs['autoresize'] ?? false) {
+    $attr  .= " rows='1'";
+    $class .= " auto-resize";
+  }
+
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <div class='textarea-wrapper'>";
-  echo "    <textarea class='$scope $key' name=$name data-key='$key' placeholder='$placeholder' $maxlen_attr></textarea>";
+  echo "    <textarea class='$class' $attr></textarea>";
   echo "    <div class='char-count'><span class='cur'>0</span>/<span class='max'>$maxlen</span></div>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
@@ -301,13 +308,15 @@ add_type_select();
 echo "<div class='archive or'><span>or</span></div>";
 echo "<div class='archive'><span></span></div>";
 add_archive_select();
-add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
+add_editor_input('question','infotag',['maxlen'=>128]);
+add_editor_textarea('question','wording',['required'=>true, 'maxlen'=>128, 'autoresize'=>true]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');
 add_option_entry('secondary');
 add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
-add_editor_textarea('question','info',['maxlen'=>1024, 'altmax'=>['info'=>1024,'other'=>128]]);
+add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);
+add_editor_textarea('question','info',['maxlen'=>1024]);
 echo "  </div>";
 
 
@@ -320,6 +329,7 @@ add_viewer_entry('question','primary','options');
 add_viewer_entry('question','secondary','options');
 add_viewer_entry('question','other','options');
 add_viewer_entry('question','qualifier');
+add_viewer_entry('question','popup');
 add_viewer_entry('question','info');
 echo "</div>";
 
