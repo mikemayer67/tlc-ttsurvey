@@ -149,25 +149,27 @@ function survey_content($survey_id)
     foreach($rows as $row) {
       $id = $row['id'];
       $type = $row['question_type'];
-      $question = [
-        'type'     => $type,
-        'wording'  => $row['wording'],
-      ];
+      $question = array();
       if($row['sequence']) {
-        $question['section'] = $row['section'];
+        $question['section']  = $row['section'];
         $question['sequence'] = $row['sequence'];
       }
       switch($type) {
       case 'INFO':
+        $question['type']        = $type;
         $question['info']        = $row['info'];
+        $question['infotag']     = $row['wording'];
         break;
       case 'BOOL':
+        $question['type']        = $type;
+        $question['wording']     = $row['wording'];
         $question['description'] = $row['description'];
         $question['qualifier']   = $row['qualifier'];
         $question['popup']       = $row['info'];
         break;
       case 'OPTIONS':
         $question['type']        = $row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE';
+        $question['wording']     = $row['wording'];
         $question['description'] = $row['description'];
         $question['qualifier']   = $row['qualifier'];
         $question['other']       = $row['other'];
@@ -175,6 +177,8 @@ function survey_content($survey_id)
         $question['popup']       = $row['info'];
         break;
       case 'FREETEXT':
+        $question['type']        = $type;
+        $question['wording']     = $row['wording'];
         $question['description'] = $row['description'];
         $question['popup']       = $row['info'];
         break;

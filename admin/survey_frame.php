@@ -42,6 +42,10 @@ $hints = [
        '<p><b>'.$type_labels['SELECT_ONE'].'</b> - Participant can select no more than one option</p>'.
        '<p><b>'.$type_labels['SELECT_MULTI'].'</b> - Participant can select as many options as apply</p>'.
        '<p><b>'.$type_labels['FREETEXT'].'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
+    'infotag' => (
+      '<b>This field is optional.</b> If provided, it will be shown in the structure layout tree (&larr;) '.
+      'rather than a truncated version of the information text.'.
+      '<p>This label will not appear anywhere in the survey itself. It is for use in the Admin Dashboard only</p>'),
     'wording' => (
       'The actual wording of the question on the survey'),
     'description' => (
@@ -99,6 +103,7 @@ $labels = [
   'question' => [
     'archive'     => 'Archive',
     'type'        => 'Type',
+    'infotag'     => 'Info Tag',
     'wording'     => 'Wording',
     'description' => 'Description',
     'primary'     => 'Primary Options',
@@ -303,6 +308,7 @@ add_type_select();
 echo "<div class='archive or'><span>or</span></div>";
 echo "<div class='archive'><span></span></div>";
 add_archive_select();
+add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_textarea('question','wording',['required'=>true, 'maxlen'=>128, 'autoresize'=>true]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');

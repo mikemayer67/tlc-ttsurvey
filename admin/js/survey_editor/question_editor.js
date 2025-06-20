@@ -37,6 +37,9 @@ export default function question_editor(ce,controller)
   const _type_value         = _type.filter('.value').find('div.text');
   const _type_select        = _type.filter('.value').find('select');
 
+  const _infotag             = _box.children('.infotag');
+  const _infotag_value       = _infotag.find('input');
+
   const _wording            = _box.children('.wording');
   const _wording_value      = _wording.find('textarea');
 
@@ -185,6 +188,9 @@ export default function question_editor(ce,controller)
 
     switch(data.type) {
       case 'INFO': {
+        _infotag.show();
+        _infotag_value.val(data.infotag || '').trigger('change');
+
         _info.show();
         _info_value.val(data.info || '').trigger('change');
         break;

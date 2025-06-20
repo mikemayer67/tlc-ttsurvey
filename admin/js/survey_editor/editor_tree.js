@@ -120,7 +120,20 @@ export default function editor_tree(ce,controller)
   {
     const leaf = $('<li>').addClass('question').attr('data-question',question_id);
 
-    _arborist.initialize(leaf,details.wording || '', details.type || '');
+    let wording = details.wording;
+    let type  = details.type || '';
+
+    if( type.toLowerCase() === 'info') {
+      if( details.infotag ) {
+        wording = details.infotag;
+        leaf.data('using-infotag',true);
+      } else {
+        wording = details.info;
+        leaf.data('using-infotag',false);
+      }
+    }
+
+    _arborist.initialize(leaf, wording, details.type || '');
     
     leaf.on('click',function(e) { 
       e.stopPropagation();
@@ -140,11 +153,39 @@ export default function editor_tree(ce,controller)
   self.update_question = function(question_id,key,value)
   {
     const leaf  = _tree.find(`.question[data-question=${question_id}]`);
+
     if(key === 'wording') {
       _arborist.update_label(leaf,value);
+      return;
     }
-    else if(leaf.hasClass('info') && key === 'info') {
-      _arborist.update_label(leaf,value);
+
+    // wording is always the question label except for info questions
+    //   so if this isn't an info question, return now
+    if(!leaf.hasClass('info')) { return; }
+
+    if(key === 'infotag') {
+      if(value) {
+        // infotag is being provided. use that to label the question
+        _arborist.update_label(leaf,value);
+        leaf.data('using-infotag',true);
+      } 
+      else {
+        // infotag was cleared, use info itself to label the question
+        // ... but we'll need to get that from the controller
+        const info = controller.cur_question_data(question_id,'info');
+        _arborist.update_label(leaf,info);
+        leaf.data('using-infotag',false);
+      }
+      return;
+    }
+
+    // something other than infotag changed.
+    //   if we're currently labeling the question with infotag, no need to continue.
+
+    if( leaf.data('using-infotag') ) { return; }
+
+    if(key === 'info') {
+      _arborist.update_label(leaf,value || '');
     }
   }
 
