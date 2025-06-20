@@ -1,10 +1,13 @@
 import Sortable from '../../../js/sortable.esm.js';
+import arborist from './arborist.js';
 
 export default function editor_tree(ce,controller)
 {
-  const _box  = $('#survey-tree');
-  const _info = $('#survey-tree .info');
-  const _tree = $('#survey-tree ul.sections');
+  const _box      = $('#survey-tree');
+  const _info     = $('#survey-tree .info');
+  const _tree     = $('#survey-tree ul.sections');
+
+  const _arborist = arborist(_box);
 
   // Start the returned editor_tree object.
   //    We'll add more properties/methods below
@@ -65,6 +68,8 @@ export default function editor_tree(ce,controller)
         create_question_li(eid,question).appendTo(ul);
       });
     });
+
+    _arborist.handle_resize();
   }
 
   function create_section_li(section_id,name)
@@ -73,10 +78,9 @@ export default function editor_tree(ce,controller)
     const span = $('<span>').addClass('name');
     const div  = $('<div>').append(btn,span);
 
-    if(name) { span.text(name)                   } 
-    else     { span.text('').addClass('needs-name') }
-
     const li = $('<li>').addClass('section closed').attr('data-section',section_id).html(div);
+
+    _arborist.initialize(li,name);
 
     btn.on('click', function(e) {
       e.stopPropagation();
@@ -107,50 +111,40 @@ export default function editor_tree(ce,controller)
   self.update_section = function(section_id,key,value)
   {
     if(key === 'name') {
-      const name_str = value.trim();
-      const name = _tree.find(`.section[data-section=${section_id}]`);
-      const span = name.find('span');
-      span.text(name_str);
-      span.toggleClass('needs-name',name_str.length === 0);
+      const leaf = _tree.find(`.section[data-section=${section_id}]`);
+      _arborist.update_label(leaf, value);
     }
   }
 
   function create_question_li(question_id,details)
   {
-    const li = $('<li>').addClass('question').attr('data-question',question_id);
-    li.on('click',function(e) { 
+    const leaf = $('<li>').addClass('question').attr('data-question',question_id);
+
+    _arborist.initialize(leaf,details.wording || '', details.type || '');
+    
+    leaf.on('click',function(e) { 
       e.stopPropagation();
       set_selection($(this)); 
       start_keyboard_navigation(e);
     } );
 
-    if(details.wording) { li.text(details.wording)              }
-    else                { li.text('').addClass('needs-wording') }
-
-    if(details.type) { li.addClass(details.type.toLowerCase()); } 
-    else             { li.addClass('needs-type');               }
-
-    return li;
+    return leaf;
   }
 
-  self.update_question_type = function(question_id,type,old_type)
+  self.update_question_type = function(question_id,new_type,old_type)
   {
-    const li = _tree.find(`.question[data-question=${question_id}]`);
-    if(old_type) { li.removeClass(old_type.toLowerCase()); }
-    if(type) { 
-      li.removeClass('needs-type').addClass(type.toLowerCase());
-    } else {
-      li.addClass('needs-type');
-    }
+    const leaf = _tree.find(`.question[data-question=${question_id}]`);
+    _arborist.update_type(leaf,new_type,old_type);
   }
 
   self.update_question = function(question_id,key,value)
   {
+    const leaf  = _tree.find(`.question[data-question=${question_id}]`);
     if(key === 'wording') {
-      const wording_str = value.trim();
-      const wording = _tree.find(`.question[data-question=${question_id}]`);
-      if(value) { wording.text(value).removeClass('needs-wording'); } 
-      else      { wording.text('').addClass('needs-wording');       }
+      _arborist.update_label(leaf,value);
+    }
+    else if(leaf.hasClass('info') && key === 'info') {
+      _arborist.update_label(leaf,value);
     }
   }
 
@@ -514,7 +508,7 @@ export default function editor_tree(ce,controller)
       const item_ok = (
         section_li
         .find('li.question')
-        .filter('.error,.needs-name,.needs-type,.needs-wording')
+        .filter('.error,.needs-value,.needs-type')
         .length === 0
       );
       const children_ok = section_li.find('li.question .error').length === 0;
@@ -545,7 +539,7 @@ export default function editor_tree(ce,controller)
   }
 
   self.can_submit = function() {
-    return _tree.find('li.error, li.needs-wording, li.needs-type').length === 0;
+    return _tree.find('li.error, li.needs-value, li.needs-type').length === 0;
   }
 
   // 
@@ -557,22 +551,17 @@ export default function editor_tree(ce,controller)
   }
 
   self.replace_question = function(old_id, new_id, old_data, new_data) {
-    const li = _tree.find(`li.question[data-question=${old_id}]`);
-    if(li.length !== 1) { return; }
+    const leaf = _tree.find(`li.question[data-question=${old_id}]`);
+    if(leaf.length !== 1) { return; }
 
-    li.data('question',new_id).attr('data-question',new_id);
+    leaf.data('question',new_id).attr('data-question',new_id);
 
-    const old_type = old_data.type ?? null;
-    if(old_type) { li.removeClass(old_type.toLowerCase()) }
+    _arborist.update_label(leaf,new_data.wording);
 
-    const new_type = new_data.type ?? null;
-    if(new_type) { li.removeClass('needs-type').addClass(new_type.toLowerCase()) }
-    else         { li.addClass('needs-type');          }
-
-    if(new_data.wording) { li.removeClass('needs-wording').text(new_data.wording) }
-    else                 { li.addClass('needs-wording').text('')                  }
+    const old_type = old_data.type || '';
+    const new_type = new_data.type || '';
+    _arborist.update_type(leaf, new_type, old_type);
   }
-  
 
   // 
   // Section/Question structure
@@ -592,6 +581,21 @@ export default function editor_tree(ce,controller)
 
     return rval;
   }
+
+  //
+  // Resize Handler
+  //
+
+  let roTimer = null;
+
+  const ro = new ResizeObserver( function(entries,observer) {
+    if(roTimer) { return; }
+    roTimer = setTimeout( function() {
+      roTimer = null;
+      _arborist.handle_resize();
+    }, 250 );
+  });
+  ro.observe(_tree[0]);
 
   //
   // Return

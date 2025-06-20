@@ -29,4 +29,3 @@ export function update_character_count(e)
     cc.removeClass('warning danger');
   }
 }
-

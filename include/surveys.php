@@ -152,7 +152,6 @@ function survey_content($survey_id)
       $question = [
         'type'     => $type,
         'wording'  => $row['wording'],
-        'info'     => $row['info'],
       ];
       if($row['sequence']) {
         $question['section'] = $row['section'];
@@ -160,10 +159,12 @@ function survey_content($survey_id)
       }
       switch($type) {
       case 'INFO':
+        $question['info']        = $row['info'];
         break;
       case 'BOOL':
         $question['description'] = $row['description'];
         $question['qualifier']   = $row['qualifier'];
+        $question['popup']       = $row['info'];
         break;
       case 'OPTIONS':
         $question['type']        = $row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE';
@@ -171,9 +172,11 @@ function survey_content($survey_id)
         $question['qualifier']   = $row['qualifier'];
         $question['other']       = $row['other'];
         $question['options']     = array();
+        $question['popup']       = $row['info'];
         break;
       case 'FREETEXT':
         $question['description'] = $row['description'];
+        $question['popup']       = $row['info'];
         break;
       }
 

@@ -64,12 +64,6 @@ export default function survey_editor(ce)
   let _next_section_id  = 1;  // assigned to next new section
   let _next_question_id = 1;  // assigned to next new question
   
-  // start the return survey_editor object with public accessors
-  //   will add more properties/methods as we continue through this "constructor"
-  // TODO:: REMOVE THESES
-  // self.tree = _tree;
-  // self.menubar = _menubar;
-
   setup_resizer(ce, _box.find('div.body'), $('#survey-tree'), $('#editor-frame'));
   setup_hint_handler();
 

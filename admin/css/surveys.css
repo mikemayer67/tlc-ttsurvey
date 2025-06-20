@@ -264,16 +264,16 @@
   background-repeat: no-repeat;
 }
 
-#ttt-body .menubar .up                .icon {background-image:url('../../img/icons8/up.png');}
-#ttt-body .menubar .down              .icon {background-image:url('../../img/icons8/down.png');}
-#ttt-body .menubar .add.section.below .icon {background-image:url('../../img/icons8/add_list.png');}
-#ttt-body .menubar .add.section.above .icon {background-image:url('../../img/icons8/add_list_above.png');}
+#ttt-body .menubar .up                 .icon {background-image:url('../../img/icons8/up.png');}
+#ttt-body .menubar .down               .icon {background-image:url('../../img/icons8/down.png');}
+#ttt-body .menubar .add.section.below  .icon {background-image:url('../../img/icons8/add_list.png');}
+#ttt-body .menubar .add.section.above  .icon {background-image:url('../../img/icons8/add_list_above.png');}
 #ttt-body .menubar .add.question.below .icon {background-image:url('../../img/icons8/add_row.png');}
 #ttt-body .menubar .add.question.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
 #ttt-body .menubar .add.question.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
-#ttt-body .menubar .delete            .icon {background-image:url('../../img/icons8/trash.png');}
-#ttt-body .menubar .undo              .icon {background-image:url('../../img/icons8/undo.png');}
-#ttt-body .menubar .redo              .icon {background-image:url('../../img/icons8/redo.png');}
+#ttt-body .menubar .delete             .icon {background-image:url('../../img/icons8/trash.png');}
+#ttt-body .menubar .undo               .icon {background-image:url('../../img/icons8/undo.png');}
+#ttt-body .menubar .redo               .icon {background-image:url('../../img/icons8/redo.png');}
 
 /***************************************
  * Content Editor
@@ -396,6 +396,8 @@
 #ttt-body #survey-tree li.section div span.name {
   font-weight:bolder;
   flex-grow: 1;
+  white-space:nowrap;
+  overflow:hidden;
 }
 
 #ttt-body #survey-tree li.section div span.name.header {
@@ -409,23 +411,24 @@
 #ttt-body #survey-tree li.question {
   list-style-type:none;
   cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
 }
 
 #ttt-body #survey-tree .incomplete {
 }
 
-#ttt-body #survey-tree .needs-name,
-#ttt-body #survey-tree .needs-wording,
+#ttt-body #survey-tree .needs-value,
 #ttt-body #survey-tree .needs-type
 {
   color:#b00;
   font-style:italic;
   font-weight:normal;
 }
-#ttt-body #survey-tree li.section .needs-name::before {
+#ttt-body #survey-tree li.section span.needs-value::before {
   content:"[needs name]";
 }
-#ttt-body #survey-tree li.question.needs-wording::after {
+#ttt-body #survey-tree li.question.needs-value::after {
   content:"[needs wording]";
 }
 #ttt-body #survey-tree li.question.needs-type::after {
@@ -629,6 +632,13 @@
 #editor-frame .grid.editor div.value textarea {
   background:white;
   width:100%;
+}
+
+#editor-frame .grid.editor div.value textarea.auto-resize {
+  resize: none;
+  overflow-y: hidden;
+  height: auto;
+  min-height: 1.5em;
 }
 
 #editor-frame .grid.editor div.value select {
