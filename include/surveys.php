@@ -64,14 +64,17 @@ function all_surveys()
   return $surveys;
 }
 
-function survey_content($survey_id)
+function survey_content($survey_id, $survey_rev=NULL)
 {
   $rval = array();
 
   // current survey revision
 
-  $survey_rev = MySQLSelectValue('select revision from tlc_tt_surveys where id=(?)', 'i', $survey_id);
-  if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
+  if(is_null($survey_rev)) {
+    $survey_rev = MySQLSelectValue('select revision from tlc_tt_surveys where id=(?)', 'i', $survey_id);
+    if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
+  }
+  $rval['rev'] = $survey_rev;
 
   // current survey options
 
@@ -108,7 +111,7 @@ function survey_content($survey_id)
          WHERE survey_id=(?) AND survey_rev<=(?) 
       GROUP BY survey_id, sequence
     ) f
-    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.rev
+    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.rev AND name is not NULL
     ORDER BY a.sequence;
   SQL;
   $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
@@ -217,13 +220,18 @@ function survey_content($survey_id)
 
   // add next IDs
 
-  $rval['next_ids'] = [
+  $rval['next_ids'] = next_ids();
+
+  return $rval;
+}
+
+function next_ids() 
+{
+  return [
     'survey'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_surveys'),
     'question' => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_questions'),
     'option'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_options where survey_id=(?)', 'i',$survey_id),
   ];
-
-  return $rval;
 }
 
 function survey_pdf_file($survey_id)
@@ -372,23 +380,36 @@ function clone_question_options($parent_id,$child_id)
   }
 }
 
-function update_survey($id,$name,$pdf_action,$new_pdf_file,&$error=null)
+function update_survey($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
 {
   class FailedToUpdate extends \Exception {}
 
   $error = '';
   $errid = bin2hex(random_bytes(3));
 
+  $has_change = false;
+  $cur_content = survey_content($id);
+
+  log_dev("old_rev: ".$cur_content['rev']."  new_rev: $rev");
+
+
+  MySQLBeginTransaction();
   try {
     if($name) 
     {
-      MySQLBeginTransaction();
-      $rc = MySQLExecute('update tlc_tt_surveys set title=? where id=?','si',$name,$id);
-      if($rc === false) {
-        log_error("[$errid] Failed to update entry ($id,$name)");
-        throw FailedToUpdate("updating name");
+      $cur_name = MySQLSelectValue("select title from tlc_tt_surveys where id='$id'");
+      if($name !== $cur_name) {
+        $has_change = true;
+        $rc = MySQLExecute('update tlc_tt_surveys set title=? where id=?','si',$name,$id);
+        if($rc === false) {
+          log_error("[$errid] Failed to update entry ($id,$name)");
+          throw FailedToUpdate("updating name");
+        }
       }
     }
+
+    // We want to update the PDF file last so we don't need to undo this if there was any 
+    //   sort of failure updating the other survey fields or content.
 
     $pdf_path = app_file("pdf/survey_$id.pdf");
 
@@ -407,15 +428,17 @@ function update_survey($id,$name,$pdf_action,$new_pdf_file,&$error=null)
         throw FailedToUpdate("updating PDF file");
       }
     }
-
-    if($name) { MySQLCommit(); }
   }
   catch(FailedToUpdate $e)
   {
-    if($name) { MySQLRollback(); }
+    MySQLRollback();
     $error = "Failed to update survey. Please report error $errid to a tech admin";
+    return false;
   }
 
-  return strlen($error) == 0;
+  if($has_change) { MySQLCommit(); }
+  else            { MySQLRollback(); }
+
+  return true;
 }
 

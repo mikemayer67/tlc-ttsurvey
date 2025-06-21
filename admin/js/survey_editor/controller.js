@@ -113,6 +113,7 @@ export default function survey_editor(ce)
       options: _content.options,
       sections: {},
       questions: {},
+      next_ids: _content.next_ids,
     };
 
     let new_sid = 0;

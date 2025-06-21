@@ -198,6 +198,7 @@ export default function draft_controller(ce)
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/update_survey');
     formData.append('survey_id',ce.cur_survey.id);
+    formData.append('revision',ce.cur_survey.revision);
     formData.append('name',survey_name);
     formData.append('content',JSON.stringify(content));
 
