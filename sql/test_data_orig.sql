@@ -1,100 +1,16 @@
-INSERT IGNORE INTO tlc_tt_strings values('Accompany');
-INSERT IGNORE INTO tlc_tt_strings values('Admin');
-INSERT IGNORE INTO tlc_tt_strings values('Admins have ability to log into our busieness account, Editors can post as Trinity. Subscribers recevie posts in their feed and can post as themselves on our page.');
-INSERT IGNORE INTO tlc_tt_strings values('Alto');
-INSERT IGNORE INTO tlc_tt_strings values('Anything we should know?');
-INSERT IGNORE INTO tlc_tt_strings values('Anything:');
-INSERT IGNORE INTO tlc_tt_strings values('Availability');
-INSERT IGNORE INTO tlc_tt_strings values('Backend');
-INSERT IGNORE INTO tlc_tt_strings values('Bass');
-INSERT IGNORE INTO tlc_tt_strings values('Bells');
-INSERT IGNORE INTO tlc_tt_strings values('Blah blah blah... This is important because');
-INSERT IGNORE INTO tlc_tt_strings values('But why is the name partiall y in Frenche?  That is a might fine question for which I do not have an answer.  Ok, reasonable,  .... but what are we even talking about at this point?');
-INSERT IGNORE INTO tlc_tt_strings values('Choir');
-INSERT IGNORE INTO tlc_tt_strings values('Communications');
-INSERT IGNORE INTO tlc_tt_strings values('Content');
-INSERT IGNORE INTO tlc_tt_strings values('Coordinate');
-INSERT IGNORE INTO tlc_tt_strings values('Direct');
-INSERT IGNORE INTO tlc_tt_strings values('Do you prefer piano or organ during worship?');
-INSERT IGNORE INTO tlc_tt_strings values('Drive');
-INSERT IGNORE INTO tlc_tt_strings values('Editor');
-INSERT IGNORE INTO tlc_tt_strings values('Experience');
-INSERT IGNORE INTO tlc_tt_strings values('Facebook');
-INSERT IGNORE INTO tlc_tt_strings values('Hello');
-INSERT IGNORE INTO tlc_tt_strings values('Help set up/tear down worship mics');
-INSERT IGNORE INTO tlc_tt_strings values('Help with Sound');
-INSERT IGNORE INTO tlc_tt_strings values('How would you like to help music');
-INSERT IGNORE INTO tlc_tt_strings values('Info Text');
-INSERT IGNORE INTO tlc_tt_strings values('Instagram');
-INSERT IGNORE INTO tlc_tt_strings values('Instrument (s)');
-INSERT IGNORE INTO tlc_tt_strings values('Instrumentalist');
-INSERT IGNORE INTO tlc_tt_strings values('It takes a number of folks to make Sunday Worship happen.  How do you want to help?');
-INSERT IGNORE INTO tlc_tt_strings values('Jira');
-INSERT IGNORE INTO tlc_tt_strings values('Mail Chimp');
-INSERT IGNORE INTO tlc_tt_strings values('Marcello will continue to use both, but do you have a personal preference?');
-INSERT IGNORE INTO tlc_tt_strings values('Multi Select #1');
-INSERT IGNORE INTO tlc_tt_strings values('Multi Select #2');
-INSERT IGNORE INTO tlc_tt_strings values('Other Ways you can help with communication');
-INSERT IGNORE INTO tlc_tt_strings values('Other');
-INSERT IGNORE INTO tlc_tt_strings values('Outreach');
-INSERT IGNORE INTO tlc_tt_strings values('Participate');
-INSERT IGNORE INTO tlc_tt_strings values('Pick whichever answer best applies.  Or provide your own if you don''t like the options provided');
-INSERT IGNORE INTO tlc_tt_strings values('Pick whichever answer best applies.');
-INSERT IGNORE INTO tlc_tt_strings values('Pick whichever answer or answers best apply.  Provide your own if you think we missed something.');
-INSERT IGNORE INTO tlc_tt_strings values('Pick whichever answer or answers best apply.');
-INSERT IGNORE INTO tlc_tt_strings values('Plan');
-INSERT IGNORE INTO tlc_tt_strings values('Review');
-INSERT IGNORE INTO tlc_tt_strings values('Ring bells');
-INSERT IGNORE INTO tlc_tt_strings values('Routinely look through the website looking for out of date or missing content');
-INSERT IGNORE INTO tlc_tt_strings values('SME');
-INSERT IGNORE INTO tlc_tt_strings values('Same roles as for Facebook');
-INSERT IGNORE INTO tlc_tt_strings values('Scrum Master');
-INSERT IGNORE INTO tlc_tt_strings values('Section 1');
-INSERT IGNORE INTO tlc_tt_strings values('Section 3');
-INSERT IGNORE INTO tlc_tt_strings values('Section 4');
-INSERT IGNORE INTO tlc_tt_strings values('Section 5');
-INSERT IGNORE INTO tlc_tt_strings values('Section 6');
-INSERT IGNORE INTO tlc_tt_strings values('Section 7');
-INSERT IGNORE INTO tlc_tt_strings values('Section Deux');
-INSERT IGNORE INTO tlc_tt_strings values('Select Question #1');
-INSERT IGNORE INTO tlc_tt_strings values('Select Question #2');
-INSERT IGNORE INTO tlc_tt_strings values('Service');
-INSERT IGNORE INTO tlc_tt_strings values('Sing');
-INSERT IGNORE INTO tlc_tt_strings values('So, what iss up?');
-INSERT IGNORE INTO tlc_tt_strings values('Soprano');
-INSERT IGNORE INTO tlc_tt_strings values('Subscribe');
-INSERT IGNORE INTO tlc_tt_strings values('Tech Advisor');
-INSERT IGNORE INTO tlc_tt_strings values('Tenor');
-INSERT IGNORE INTO tlc_tt_strings values('This is popup info.  Just here to see if popups are working');
-INSERT IGNORE INTO tlc_tt_strings values('This is where the text goes.  Skipping markdown/HTML for now (**mostly**).  But am adding a some italics and *bold*.');
-INSERT IGNORE INTO tlc_tt_strings values('To be a community is to work and play together.  What ideas do you have?');
-INSERT IGNORE INTO tlc_tt_strings values('Transportation');
-INSERT IGNORE INTO tlc_tt_strings values('Trinity also keeps a presence on Instagram.');
-INSERT IGNORE INTO tlc_tt_strings values('Trinity keeps a presence on Facebook');
-INSERT IGNORE INTO tlc_tt_strings values('Trinity keeps a presence on Facebook<br><ul><li>Admins have ability to log into our busieness account</li><li>Editors can post as Trinity.</li><li>Subscribers receive posts in their feed and can post as themselves on our page.</li></ul>');
-INSERT IGNORE INTO tlc_tt_strings values('We are God''s hands.  How can you help your neighbor?');
-INSERT IGNORE INTO tlc_tt_strings values('We need help with our social media presence...');
-INSERT IGNORE INTO tlc_tt_strings values('Welcome');
-INSERT IGNORE INTO tlc_tt_strings values('What do you play');
-INSERT IGNORE INTO tlc_tt_strings values('What else would you like us to know?');
-INSERT IGNORE INTO tlc_tt_strings values('What would you like us to know?');
-INSERT IGNORE INTO tlc_tt_strings values('Why or why not?');
-INSERT IGNORE INTO tlc_tt_strings values('Will attend rehearsals');
-INSERT IGNORE INTO tlc_tt_strings values('Will attend worship');
-INSERT IGNORE INTO tlc_tt_strings values('Worship');
-INSERT IGNORE INTO tlc_tt_strings values('Would you like to see more or less bells?');
-INSERT IGNORE INTO tlc_tt_strings values('Would you like to see more or less instrumental music?');
-INSERT IGNORE INTO tlc_tt_strings values('Yes/No Question');
-INSERT IGNORE INTO tlc_tt_strings values('Your thoughts?');
-INSERT IGNORE INTO tlc_tt_strings values('community');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 1');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 3');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 4');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 5');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 6');
-INSERT IGNORE INTO tlc_tt_strings values('some words about section 7');
-INSERT IGNORE INTO tlc_tt_strings values('Website');
-INSERT IGNORE INTO tlc_tt_strings values('A/V Team');
+DELETE from `tlc_tt_settings`;
+INSERT INTO `tlc_tt_settings` (`name`, `value`) 
+     VALUES ('admin-lock','YMO85U33OW|1750036631|Site Admin'),
+            ('app_logo','TrinityLutheran_Logo.png'),
+            ('is_dev','1'),
+            ('log_file','tlc-ttsurvey.log'),
+            ('log_level','3'),
+            ('primary_admin','mikemayer67'),
+            ('smtp_auth','1'),
+            ('smtp_debug','2'),
+            ('smtp_host','smtp.gmail.com'),
+            ('smtp_password','hbav deuj uogk njzh'),
+            ('smtp_username','trinityelcawebapps@gmail.com');
 
 DELETE FROM `tlc_tt_userids`;
 INSERT INTO `tlc_tt_userids` (`userid`, `fullname`, `email`, `token`, `password`, `anonid`, `admin`) VALUES ('ewemeeweme','mrs. mayer','valerie@vmwishes.com','QGOS7PI8VEB1V3P6389Q284Z2','$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK','$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK',0),('kitkat15','KitKat Lardo Mayer','NULL','1234567890','$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG','$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m',0),('memeeweewe','mr mayer','NULL','ZM65V4CIHKE24M2OVP11XNQGF','$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC','$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO',0),('mikemayer67','Mike Mayer','mikemayer67@vmwishes.com','1234567890','$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq','$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO',0),('newtest123','Justa Test Subject','mikemayer67@vmwishes.com','7T6KRG9XFDJ3AI6ZM4AHEHQT1','$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW','$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO',0),('newtest124','Justa Test Subject','NULL','7JSLV1DED57HGCC6QU78LQU74','$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S','$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.',0),('shadowcat','Ricky LeChat Mayer','mikemayer67@vmwishes.com','4SS2V72GT33X25P4U1W2E9Q7Q','$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa','$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu',0),('snickers','Iama Krazy Kat','NULL','1234567890','$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2','$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS',0);

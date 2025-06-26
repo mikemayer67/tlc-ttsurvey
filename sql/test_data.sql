@@ -98,6 +98,20 @@ INSERT IGNORE INTO tlc_tt_strings (str) values('A/V Team');
 INSERT IGNORE INTO tlc_tt_strings (str) values('Info Text (archived)');
 INSERT IGNORE INTO tlc_tt_strings (str) values('Yes/No Question (archived)');
 
+DELETE from `tlc_tt_settings`;
+INSERT INTO `tlc_tt_settings` (`name`, `value`) 
+     VALUES ('admin-lock','YMO85U33OW|1750036631|Site Admin'),
+            ('app_logo','TrinityLutheran_Logo.png'),
+            ('is_dev','1'),
+            ('log_file','tlc-ttsurvey.log'),
+            ('log_level','3'),
+            ('primary_admin','mikemayer67'),
+            ('smtp_auth','1'),
+            ('smtp_debug','2'),
+            ('smtp_host','smtp.gmail.com'),
+            ('smtp_password','hbav deuj uogk njzh'),
+            ('smtp_username','trinityelcawebapps@gmail.com');
+
 DELETE FROM `tlc_tt_userids`;
 INSERT INTO `tlc_tt_userids` (`userid`, `fullname`, `email`, `token`, `password`, `anonid`, `admin`) VALUES ('ewemeeweme','mrs. mayer','valerie@vmwishes.com','QGOS7PI8VEB1V3P6389Q284Z2','$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK','$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK',0),('kitkat15','KitKat Lardo Mayer','NULL','1234567890','$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG','$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m',0),('memeeweewe','mr mayer','NULL','ZM65V4CIHKE24M2OVP11XNQGF','$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC','$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO',0),('mikemayer67','Mike Mayer','mikemayer67@vmwishes.com','1234567890','$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq','$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO',0),('newtest123','Justa Test Subject','mikemayer67@vmwishes.com','7T6KRG9XFDJ3AI6ZM4AHEHQT1','$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW','$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO',0),('newtest124','Justa Test Subject','NULL','7JSLV1DED57HGCC6QU78LQU74','$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S','$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.',0),('shadowcat','Ricky LeChat Mayer','mikemayer67@vmwishes.com','4SS2V72GT33X25P4U1W2E9Q7Q','$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa','$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu',0),('snickers','Iama Krazy Kat','NULL','1234567890','$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2','$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS',0);
 
