@@ -15,5 +15,6 @@ drop table if exists tlc_tt_survey_sections;
 drop table if exists tlc_tt_survey_options;
 drop table if exists tlc_tt_surveys;
 drop table if exists tlc_tt_version_history;
+drop table if exists tlc_tt_strings;
 
 drop procedure if exists tlc_tt_upgrade_tables;
