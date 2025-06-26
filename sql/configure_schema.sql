@@ -88,6 +88,7 @@ IF version < 1 THEN
     id       int          NOT NULL AUTO_INCREMENT,
     title    varchar(100) NOT NULL,
     created  datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    modified datetime     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     active   datetime     DEFAULT NULL,
     closed   datetime     DEFAULT NULL,
     parent   int          DEFAULT NULL,

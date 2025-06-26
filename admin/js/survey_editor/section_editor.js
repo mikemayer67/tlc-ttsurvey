@@ -10,7 +10,7 @@ function validate_input(key,value)
     case 'name':
       if(len==0) { return 'missing';   } 
       if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s&-]");
+      invalid_char_regex = new RegExp("[^\\w\\s.,&-]");
       break;
     case 'feedback':
       if(len>0 && len<4) { return 'too short'; }

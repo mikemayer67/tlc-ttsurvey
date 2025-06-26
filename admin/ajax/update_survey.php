@@ -41,7 +41,7 @@ try {
   $rval = array(
     'success'=>true,
     'has_pdf'=>(null !== survey_pdf_file($id)),
-    'next_ids' => next_ids(),
+    'next_ids' => next_ids($id),
   );
 }
 catch(Exception $e)

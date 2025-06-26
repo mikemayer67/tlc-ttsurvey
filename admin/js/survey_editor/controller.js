@@ -374,8 +374,9 @@ export default function survey_editor(ce)
   }
 
   self.add_option = function(new_value) {
-    const new_id = ++_content.next_ids.option;
+    const new_id = _content.next_ids.option;
     _content.options[new_id] = new_value;
+    _content.next_ids.option += 1;
     return new_id;
   }
 

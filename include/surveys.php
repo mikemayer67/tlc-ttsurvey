@@ -6,7 +6,6 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 
-
 function active_survey_id()
 {
   $ids = MySQLSelectValues("select id from tlc_tt_active_surveys");
@@ -103,15 +102,15 @@ function survey_content($survey_id, $survey_rev=NULL)
   // sections associated with the current revision of the survey
 
   $query = <<<SQL
-    SELECT * 
+    SELECT a.* 
       FROM tlc_tt_survey_sections a
       JOIN ( 
-        SELECT survey_id,sequence,max(survey_rev) as rev 
+        SELECT survey_id,sequence,max(survey_rev) as max_rev 
           FROM tlc_tt_survey_sections
          WHERE survey_id=(?) AND survey_rev<=(?) 
       GROUP BY survey_id, sequence
     ) f
-    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.rev AND name is not NULL
+    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.max_rev AND name is not NULL
     ORDER BY a.sequence;
   SQL;
   $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
@@ -135,7 +134,7 @@ function survey_content($survey_id, $survey_rev=NULL)
   $questions = array();
 
   $query = <<<SQL
-    SELECT * 
+    SELECT a.* 
       FROM tlc_tt_survey_questions a
       JOIN (
         SELECT survey_id, id, max(survey_rev) as rev
@@ -220,12 +219,13 @@ function survey_content($survey_id, $survey_rev=NULL)
 
   // add next IDs
 
-  $rval['next_ids'] = next_ids();
+  $rval['next_ids'] = next_ids($survey_id);
+  log_dev("update_surveys:: next_ids = ".print_r($rval['next_ids'],true));
 
   return $rval;
 }
 
-function next_ids() 
+function next_ids($survey_id) 
 {
   return [
     'survey'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_surveys'),
@@ -380,6 +380,8 @@ function clone_question_options($parent_id,$child_id)
   }
 }
 
+function null_on_empty($x) { return $x==='' ? null : $x; }
+
 function update_survey($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
 {
   class FailedToUpdate extends \Exception {}
@@ -390,11 +392,20 @@ function update_survey($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$e
   $has_change = false;
   $cur_content = survey_content($id);
 
-  log_dev("old_rev: ".$cur_content['rev']."  new_rev: $rev");
-
+  // TODO: Revision tracking
+  //   new revision number is provided on input
+  //   current revision number is availabled from $cur_content['rev']
 
   MySQLBeginTransaction();
   try {
+    // modification timestamp
+    $rc = MySQLExecute('update tlc_tt_surveys set modified=now() where id=?','i',$id);
+    if(!$rc) {
+      log_error("[$errid] Failed to update modification timestamp for id=$id");
+      throw FailedToUpdate("update modification timestamp");
+    }
+
+    // survey name 
     if($name) 
     {
       $cur_name = MySQLSelectValue("select title from tlc_tt_surveys where id='$id'");
@@ -407,6 +418,97 @@ function update_survey($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$e
         }
       }
     }
+
+    // survey options
+    $cur_options = $cur_content['options'];
+    $new_options = $new_content['options'];
+    log_dev("update_survey:: cur_options: ".print_r($cur_options,true));
+    log_dev("update_survey:: new_options: ".print_r($new_options,true));
+
+    foreach($new_options as $option_id => $option_text) {
+      if(! array_key_exists($option_id,$cur_options)) {
+        $has_change = true;
+        $query = <<<SQL
+          INSERT into tlc_tt_survey_options 
+                 (survey_id, id, survey_rev, text) 
+          VALUES (?,?,?,?)
+        SQL;
+        log_dev("$query => ($id, $option_id, $rev, $option_text)");
+        MySQLExecute($query,'iiis', $id, $option_id, $rev, $option_text);
+      }
+      else if($option_text !== $cur_options[$option_id]) {
+        $has_change = true;
+        $query = <<<SQL
+          UPDATE tlc_tt_survey_options
+             SET text=?
+           WHERE survey_id=? AND id=? AND survey_rev=?
+        SQL;
+        log_dev("$query => ($option_text, $id, $option_id, $rev)");
+        MySQLExecute($query,'siii',$option_text,$id,$option_id,$rev);
+      }
+    }
+
+    // survey sections
+    // TODO: If revision tracking and new_rev != old_rev, 
+   
+    $cur_sections = $cur_content['sections'];
+    $new_sections = $new_content['sections'];
+
+    // sort the sections based on the provided seq value
+    ksort($new_sections);
+
+    // predefine the insertion query.  It will be used both for new/updated section sequences
+    //   and for NULLing out old sequences indices that are no longer in use.
+    $query = <<<SQL
+      INSERT into tlc_tt_survey_sections
+             (survey_id, survey_rev, sequence, name, show_name, description, feedback)
+      VALUES (?,?,?,?,?,?,?)
+      ON DUPLICATE KEY UPDATE
+             name = VALUES(name),
+             show_name = VALUES(show_name),
+             description = VALUES(description),
+             feedback = VALUES(feedback)
+    SQL;
+
+    // couple notes on the foreach loop
+    //  - we no longer care about the provided seq value, it served its purpose for sorting
+    //  - we will be creating new seq indices for insertion into the database
+    $seq = 0;
+    foreach($new_sections as $new_data) {
+      $seq += 1; // do it up front so we can do an early continue below
+
+      $name        = null_on_empty($new_data['name']        ?? '');
+      $show_me     = null_on_empty($new_data['labeled']     ?? '');  // i know... but 'show_me' caused DOM issues
+      $description = null_on_empty($new_data['description'] ?? '');
+      $feedback    = null_on_empty($new_data['feedback']    ?? '');
+
+      $cur_data = $cur_sections[$seq] ?? null;
+      $unchanged = (
+        $cur_data
+        && ( $name        === null_on_empty($cur_data['name']        ?? '' ))
+        && ( $show_me     === null_on_empty($cur_data['labeled']     ?? '' ))
+        && ( $description === null_on_empty($cur_data['description'] ?? '' ))
+        && ( $feedback    === null_on_empty($cur_data['feedback']    ?? '' ))
+      );
+      if($unchanged) { continue; } // no changes found, skip to next new_section
+
+      $has_change = true;
+
+      MySQLExecute($query,'iiisiss',$id,$rev,$seq, $name,$show_me,$description,$feedback);
+
+      log_dev("$query => ($id,$rev,$seq, $name,$show_me,$description,$feedback)");
+    }
+
+    // null out any section sequences that exceed our current max value
+    $max_seq = MySQLSelectValue('select max(sequence) from tlc_tt_survey_sections where survey_id=?', 'i', $id);
+    if($max_seq) {
+      while($seq < $max_seq) {
+        $seq += 1;
+        MySQLExecute($query,'iiisiss',$id,$rev,$seq,null,null,null,null);
+      }
+    }
+
+    todo('REMOVE ALL unused survey options');
 
     // We want to update the PDF file last so we don't need to undo this if there was any 
     //   sort of failure updating the other survey fields or content.
