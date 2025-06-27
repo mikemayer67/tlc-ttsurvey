@@ -98,8 +98,8 @@ INSERT IGNORE INTO tlc_tt_strings (str) values('A/V Team');
 INSERT IGNORE INTO tlc_tt_strings (str) values('Info Text (archived)');
 INSERT IGNORE INTO tlc_tt_strings (str) values('Yes/No Question (archived)');
 
-DELETE from `tlc_tt_settings`;
-INSERT INTO `tlc_tt_settings` (`name`, `value`) 
+DELETE from tlc_tt_settings;
+INSERT INTO tlc_tt_settings (name, value) 
      VALUES ('admin-lock','YMO85U33OW|1750036631|Site Admin'),
             ('app_logo','TrinityLutheran_Logo.png'),
             ('is_dev','1'),
@@ -112,57 +112,70 @@ INSERT INTO `tlc_tt_settings` (`name`, `value`)
             ('smtp_password','hbav deuj uogk njzh'),
             ('smtp_username','trinityelcawebapps@gmail.com');
 
-DELETE FROM `tlc_tt_userids`;
-INSERT INTO `tlc_tt_userids` (`userid`, `fullname`, `email`, `token`, `password`, `anonid`, `admin`) VALUES ('ewemeeweme','mrs. mayer','valerie@vmwishes.com','QGOS7PI8VEB1V3P6389Q284Z2','$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK','$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK',0),('kitkat15','KitKat Lardo Mayer','NULL','1234567890','$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG','$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m',0),('memeeweewe','mr mayer','NULL','ZM65V4CIHKE24M2OVP11XNQGF','$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC','$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO',0),('mikemayer67','Mike Mayer','mikemayer67@vmwishes.com','1234567890','$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq','$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO',0),('newtest123','Justa Test Subject','mikemayer67@vmwishes.com','7T6KRG9XFDJ3AI6ZM4AHEHQT1','$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW','$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO',0),('newtest124','Justa Test Subject','NULL','7JSLV1DED57HGCC6QU78LQU74','$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S','$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.',0),('shadowcat','Ricky LeChat Mayer','mikemayer67@vmwishes.com','4SS2V72GT33X25P4U1W2E9Q7Q','$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa','$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu',0),('snickers','Iama Krazy Kat','NULL','1234567890','$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2','$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS',0);
+DELETE FROM tlc_tt_userids;
+INSERT INTO tlc_tt_userids (userid, fullname, email, token, password, anonid, admin) VALUES ('ewemeeweme','mrs. mayer','valerie@vmwishes.com','QGOS7PI8VEB1V3P6389Q284Z2','$2y$10$nhSQN18GJVF4Fqwh7LCQ3ePpj3WAG2rUmsUQehjDGZzIdejGrLNeK','$2y$10$FrQAyh7ygCADJenOpxene./UXYwnTm8DA73RumWJKqXg.TP4VtePK',0),('kitkat15','KitKat Lardo Mayer','NULL','1234567890','$2y$12$lFbHBX49Tb9Tr8bPXdr3PO92EqgqKb3VN/AwaIlYS4oo6mP8JNUOG','$2y$12$dHeRZDElHi3KqxnMs8CYTeVZLqZDeYGVU0o2Qqr8DCHieFtewUb9m',0),('memeeweewe','mr mayer','NULL','ZM65V4CIHKE24M2OVP11XNQGF','$2y$10$BddgS0luGppaDgcG9NuVI.D4fcCR6P/P5FkTh0nbGnYXyg12g9hOC','$2y$10$QsHijnfECcE1/hT7fHVgwOCFSOI.9G5JuPRJ9ESVkmjBvk0boWFEO',0),('mikemayer67','Mike Mayer','mikemayer67@vmwishes.com','1234567890','$2y$10$07PK3o0J.AhcGNVNSNQRZeEFFeTFHt6IHAobjTVvhnHX9Pr3lJ3dq','$2y$12$CZO1nM3fj4bsRKDigJQzo.IPhCpUjqMpvJ0n5nKUKjPursF5j4EAO',0),('newtest123','Justa Test Subject','mikemayer67@vmwishes.com','7T6KRG9XFDJ3AI6ZM4AHEHQT1','$2y$10$ej6q..eR/BBS3ZYbo1KP0Ox8e4IkPQGchzc9RkNUO4eJIu.mZOQpW','$2y$10$0QAa.R9sXb88iSO2nYfPneENLzU6dbHtNejIGovktuhMaHXEunGDO',0),('newtest124','Justa Test Subject','NULL','7JSLV1DED57HGCC6QU78LQU74','$2y$10$QyMMKHp2nb5E7mGbz6APvuYBjLsrXCmviRQJzgd1Tzscluk9aU72S','$2y$10$OsN1VFyYZczmy8k7UjyeGOy1qt42VNWep67kK7/V5bOLYLqPasGT.',0),('shadowcat','Ricky LeChat Mayer','mikemayer67@vmwishes.com','4SS2V72GT33X25P4U1W2E9Q7Q','$2y$10$Iihq0p6R0jySdWqhhzBzoOFVvzCvyIpeNvu2VqpNoKaePxjp97NPa','$2y$10$LzppRQEltRDppcLBdl/H5.b85T5tnTK5faYVN6g7ZpjXcQkQ5fHTu',0),('snickers','Iama Krazy Kat','NULL','1234567890','$2y$12$0QvuwzOA0Djtv8JjVNrGEuyBjYqNcyCg.W3UyWedb/XBX4eNOeBL2','$2y$12$290O0qvJp9aBBnm17Xvi7up/.r4CgUAGIjFxsPCk8NICCWYhRHEBS',0);
 
-DELETE FROM `tlc_tt_roles`;
-INSERT INTO `tlc_tt_roles` (`userid`, `admin`, `content`, `tech`) VALUES ('ewemeeweme',0,0,1),('kitkat15',0,1,1),('memeeweewe',0,0,1),('mikemayer67',0,1,1),('newtest123',0,1,0),('newtest124',0,1,0),('shadowcat',1,0,0),('snickers',0,0,0);
+DELETE FROM tlc_tt_roles;
+INSERT INTO tlc_tt_roles (userid, admin, content, tech) VALUES ('ewemeeweme',0,0,1),('kitkat15',0,1,1),('memeeweewe',0,0,1),('mikemayer67',0,1,1),('newtest123',0,1,0),('newtest124',0,1,0),('shadowcat',1,0,0),('snickers',0,0,0);
 
-DELETE FROM `tlc_tt_surveys`;
-INSERT INTO `tlc_tt_surveys` 
-            (`id`, `title`, `created`, `active`, `closed`, `parent`, `revision`) 
+DELETE FROM tlc_tt_surveys;
+INSERT INTO tlc_tt_surveys 
+            (id, title, created, active, closed, parent, revision) 
      VALUES (1,'2024 Time and Talent Survey','2025-03-15 11:44:27','2024-04-01 00:00:00','2024-06-30 00:00:00',NULL,1),
             (2,'2025 Time and Talent Survey','2025-03-15 11:44:27', NULL,NULL,1,2),
             (3,'Website Folks','2025-04-10 19:12:20','2025-04-10 00:00:00','2024-10-01 00:00:00',NULL,2),
             (4,'Musicians','2025-04-10 19:12:20','2025-04-15 00:00:00','2024-11-01 00:00:00',NULL,1);
 
-DELETE FROM `tlc_tt_survey_options`;
-INSERT INTO `tlc_tt_survey_options` (`survey_id`, `id`, `survey_rev`, `text`) 
+DELETE FROM tlc_tt_survey_options;
+INSERT INTO tlc_tt_survey_options (survey_id, id, survey_rev, text_sid) 
       VALUES (1,1,1,40), (1,2,1,16), (1,3,1,45), (1,4,1,19),
              (2,1,1,40), (2,2,1,16), (2,3,1,45), (2,4,1,71),
              (3,1,1,40), (3,2,1,16), (3,2,2,51), (3,3,1,32), (3,4,1,66), (3,4,2,49), (3,5,1,2), (3,6,1,20), (3,7,1,65),
              (4,1,1,40), (4,2,1,16), (4,3,1,45), (4,4,1,19), (4,8,1,9), (4,9,1,67), (4,10,1,4), (4,11,1,64);
 
-DELETE FROM `tlc_tt_survey_sections`;
-INSERT INTO `tlc_tt_survey_sections` 
-            (`survey_id`, `survey_rev`, `sequence`, `name`, `show_name`, `description`, `feedback`)
+DELETE FROM tlc_tt_survey_sections;
+INSERT INTO tlc_tt_survey_sections 
+            (survey_id, survey_rev, sequence, name_sid, show_name, description_sid, feedback_sid)
      VALUES (1, 1, 1, 84, 1, 31,NULL),
             (1, 1, 2, 39, 1, 75,NULL),
             (1, 1, 3, 89, 1, 70,NULL),
-            (1, 2, 2, 39, 1, 75,80),
-            (1, 3, 2, 61, 1, 75,NULL),
             (2, 1, 1, 77, 1, NULL,NULL),
-            (2, 2, 1, 23, 1, NULL,6),
-            (2, 3, 1, 23, 1, NULL,NULL),
             (2, 1, 2, 52, 1, 90, NULL),
             (2, 1, 3, 58, 1, 12, 63 ),
             (2, 1, 4, 53, 1, 91, NULL),
             (2, 1, 5, 54, 1, 92, NULL),
             (2, 1, 7, 55, 1, 93, NULL),
             (2, 1, 9, 56, 1, 94, NULL),
-            (2, 3, 9, NULL, NULL, NULL, NULL),
             (2, 1, 8, 57, 1, 95, NULL),
             (3, 1, 1, 96, 1, NULL,NULL),
             (3, 1, 2, 14, 1, NULL,NULL),
             (3, 1, 3, 97, 1, NULL,NULL),
-            (3, 2, 2, 14, 1, 76,NULL),
             (4, 1, 1, 13, 1, NULL,NULL),
             (4, 1, 2, 10, 1, NULL,NULL),
             (4, 1, 3, 30,1, NULL,NULL);
 
-DELETE FROM `tlc_tt_survey_questions`;
-INSERT INTO `tlc_tt_survey_questions` 
-            (`id`, `survey_id`, `survey_rev`, `section`, `sequence`, `wording`, `question_type`, `multiple`, `other`, `qualifier`, `description`, `info`) 
+INSERT INTO tlc_tt_survey_sections 
+SELECT survey_id,1+survey_rev,sequence,name_sid,show_name,description_sid,feedback_sid
+FROM tlc_tt_survey_sections where survey_id in (1,2,3) and survey_rev=1;
+
+update tlc_tt_survey_sections set feedback_sid=80    where survey_id=1 and survey_rev=2 and sequence=2;
+update tlc_tt_survey_sections set name_sid=23        where survey_id=2 and survey_rev=2 and sequence=1;
+update tlc_tt_survey_sections set feedback_sid=6     where survey_id=2 and survey_rev=2 and sequence=1;
+update tlc_tt_survey_sections set description_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
+
+INSERT INTO tlc_tt_survey_sections 
+SELECT survey_id,1+survey_rev,sequence,name_sid,show_name,description_sid,feedback_sid
+FROM tlc_tt_survey_sections where survey_id in (1,2) and survey_rev=2;
+
+update tlc_tt_survey_sections set feedback_sid=NULL where survey_id=1 and survey_rev=3 and sequence=2;
+update tlc_tt_survey_sections set name_sid=61       where survey_id=1 and survey_rev=3 and sequence=2;
+update tlc_tt_survey_sections set feedback_sid=NULL where survey_id=2 and survey_rev=3 and sequence=1;
+delete from tlc_tt_survey_sections                  where survey_id=2 and survey_rev=3 and sequence=9;
+
+
+DELETE FROM tlc_tt_survey_questions;
+INSERT INTO tlc_tt_survey_questions 
+            (id, survey_id, survey_rev, section, sequence, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid) 
      VALUES ( 1,1,1,1,1,27,'INFO',NULL,NULL,NULL,NULL,69),
             ( 2,1,1,1,2,87,'BOOL',NULL,NULL,81,11,68),
             ( 3,1,1,1,3,59,'OPTIONS',0,38,5, 41, 68),
@@ -196,48 +209,48 @@ INSERT INTO `tlc_tt_survey_questions`
             (132,4,1,3,4,85,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
             (133,4,1,3,5,18,'FREETEXT',NULL,NULL,NULL,34,NULL);
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid
        from tlc_tt_survey_questions where survey_id=1 and section=1 and id < 8;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=2;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=3;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=4;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 2+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 2+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=5;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=7;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT 7+id, survey_id, survey_rev, 1+section, 1+(7+sequence)%10, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1 and section=8;
 
-INSERT INTO `tlc_tt_survey_questions`
-     SELECT id, 1+survey_id, survey_rev, section, sequence, wording, question_type, multiple, other, qualifier, description, info 
+INSERT INTO tlc_tt_survey_questions
+     SELECT id, 1+survey_id, survey_rev, section, sequence,            wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT id, survey_id, 2, section, NULL, 98, question_type, multiple, other, qualifier, description, info 
+     SELECT id, survey_id, 2, section, NULL, 98, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and id=68;
 INSERT INTO tlc_tt_survey_questions
-     SELECT id, survey_id, 2, section, NULL, 99, question_type, multiple, other, qualifier, description, info 
+     SELECT id, survey_id, 2, section, NULL, 99, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and id=69;
     
 
-DELETE FROM `tlc_tt_question_options`;
-INSERT INTO `tlc_tt_question_options` (`survey_id`, `survey_rev`, `question_id`, `sequence`, `option_id`, `secondary`) 
+DELETE FROM tlc_tt_question_options;
+INSERT INTO tlc_tt_question_options (survey_id, survey_rev, question_id, sequence, option_id, secondary) 
      VALUES (1,1,3,1,3,0), (1,1,3,2,2,0), (1,1,3,3,1,0),
             (1,1,4,1,3,0), (1,1,4,2,2,0), (1,1,4,3,1,1),
             (1,1,5,1,1,0), (1,1,5,2,2,0), (1,1,5,3,3,1), (1,1,5,4,4,1),

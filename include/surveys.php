@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); 
 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/strings.php'));
 
 function active_survey_id()
 {
@@ -65,164 +66,174 @@ function all_surveys()
 
 function survey_content($survey_id, $survey_rev=NULL)
 {
-  $rval = array();
-
   // current survey revision
 
   if(is_null($survey_rev)) {
     $survey_rev = MySQLSelectValue('select revision from tlc_tt_surveys where id=(?)', 'i', $survey_id);
     if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
   }
-  $rval['rev'] = $survey_rev;
 
-  // current survey options
-
-  $options = array();
-
-  $query = <<<SQL
-    SELECT a.id, a.text
-      FROM tlc_tt_survey_options a
-      JOIN ( 
-        SELECT survey_id, id, max(survey_rev) as rev 
-          FROM tlc_tt_survey_options
-         WHERE survey_id=(?) AND survey_rev<=(?) 
-      GROUP BY survey_id,id
-    ) f
-    WHERE a.survey_id=f.survey_id AND a.id=f.id AND a.survey_rev=f.rev
-    ORDER BY a.id;
-  SQL;
-  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
-  if($rows) { 
-    foreach($rows as $row) {
-      $options[$row['id']] = $row['text'];
-    }
-  }
-  $rval['options'] = $options;
-
-  // sections associated with the current revision of the survey
-
-  $query = <<<SQL
-    SELECT a.* 
-      FROM tlc_tt_survey_sections a
-      JOIN ( 
-        SELECT survey_id,sequence,max(survey_rev) as max_rev 
-          FROM tlc_tt_survey_sections
-         WHERE survey_id=(?) AND survey_rev<=(?) 
-      GROUP BY survey_id, sequence
-    ) f
-    WHERE a.survey_id = f.survey_id AND a.sequence=f.sequence AND a.survey_rev=f.max_rev AND name is not NULL
-    ORDER BY a.sequence;
-  SQL;
-  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
-  if(!$rows) { return $rval; }
-
-  $sections = array();
-
-  foreach($rows as $row) {
-    $sequence = $row['sequence'];
-    $sections[$sequence] = [
-      'name'        => $row['name'],
-      'labeled'     => $row['show_name'],
-      'description' => $row['description'],
-      'feedback'    => $row['feedback'],
-    ];
-  }
-  $rval['sections'] = $sections;
-
-  // questions associated with the current revision of the survey
-
-  $questions = array();
-
-  $query = <<<SQL
-    SELECT a.* 
-      FROM tlc_tt_survey_questions a
-      JOIN (
-        SELECT survey_id, id, max(survey_rev) as rev
-          FROM tlc_tt_survey_questions
-         WHERE survey_id=(?) AND survey_rev<=(?)
-      GROUP BY survey_id, id
-    ) f
-    WHERE a.survey_id=f.survey_id AND a.id=f.id and a.survey_rev=rev
-    ORDER BY a.section, a.sequence;
-  SQL;
-
-  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
-  if($rows) { 
-    foreach($rows as $row) {
-      $id = $row['id'];
-      $type = $row['question_type'];
-      $question = array();
-      if($row['sequence']) {
-        $question['section']  = $row['section'];
-        $question['sequence'] = $row['sequence'];
-      }
-      switch($type) {
-      case 'INFO':
-        $question['type']        = $type;
-        $question['info']        = $row['info'];
-        $question['infotag']     = $row['wording'];
-        break;
-      case 'BOOL':
-        $question['type']        = $type;
-        $question['wording']     = $row['wording'];
-        $question['description'] = $row['description'];
-        $question['qualifier']   = $row['qualifier'];
-        $question['popup']       = $row['info'];
-        break;
-      case 'OPTIONS':
-        $question['type']        = $row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE';
-        $question['wording']     = $row['wording'];
-        $question['description'] = $row['description'];
-        $question['qualifier']   = $row['qualifier'];
-        $question['other']       = $row['other'];
-        $question['options']     = array();
-        $question['popup']       = $row['info'];
-        break;
-      case 'FREETEXT':
-        $question['type']        = $type;
-        $question['wording']     = $row['wording'];
-        $question['description'] = $row['description'];
-        $question['popup']       = $row['info'];
-        break;
-      }
-
-      $questions[$id] = $question;
-    }
-  }
-
-  // add options to questions as appropriate
-  
-  $query = <<<SQL
-    SELECT a.question_id, a.sequence, a.option_id, a.secondary
-      FROM tlc_tt_question_options a
-      JOIN (
-        SELECT survey_id, question_id, sequence, max(survey_rev) as rev
-          FROM tlc_tt_question_options 
-         WHERE survey_id=(?) AND survey_rev<=(?)
-      GROUP BY survey_id, question_id, sequence
-    ) f
-    WHERE a.survey_id=f.survey_id AND a.question_id = f.question_id AND a.sequence = f.sequence AND a.survey_rev = rev
-    ORDER BY a.question_id, a.sequence;
-  SQL;
-
-  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
-  if($rows) { 
-    foreach ($rows as $row) {
-      $qid = $row['question_id'];
-      if(!isset($questions[$qid]))            { internal_error("Options found for non-existent questions"); }
-      if(!isset($questions[$qid]['options'])) { internal_error("Options found on non-options type question"); }
-      $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
-    }
-  }
-
-  $rval['questions'] = $questions;
-
-  // add next IDs
-
-  $rval['next_ids'] = next_ids($survey_id);
-  log_dev("update_surveys:: next_ids = ".print_r($rval['next_ids'],true));
+  $rval = [
+    'rev' => $survey_rev,
+    'options' => survey_options($survey_id,$survey_rev),
+    'sections' => survey_sections($survey_id,$survey_rev),
+    'questions' => survey_questions($survey_id,$survey_rev),
+    'next_ids'  => next_ids($survey_id),
+  ];
 
   return $rval;
+}
+
+function survey_options($survey_id,$survey_rev)
+{
+  // survey_rev is per (survey id, option id)
+
+  $query = <<<SQL
+    SELECT so.id    as option_id,
+           text.str as text
+    FROM   tlc_tt_survey_options so
+    JOIN 
+    ( 
+      SELECT survey_id, id, max(survey_rev) as rev 
+        FROM tlc_tt_survey_options
+       WHERE survey_id=(?) AND survey_rev<=(?) 
+       GROUP BY survey_id, id
+    ) f on so.survey_id = f.survey_id AND so.id = f.id AND so.survey_rev = f.rev
+    LEFT JOIN tlc_tt_strings text ON text.id = so.text_sid
+    ORDER BY so.id;
+  SQL;
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+
+  return $rows ? array_column($rows,'text','option_id') : [];
+}
+
+function survey_sections($survey_id,$survey_rev)
+{
+  //   survey_rev is per survey_id
+
+  $query = <<<SQL
+    SELECT s.sequence      as sequence,
+           name.str        as name,
+           s.show_name     as labeled,
+           description.str as description,
+           feedback.str    as feedback
+    FROM   tlc_tt_survey_sections s
+    JOIN 
+    ( 
+      SELECT survey_id, max(survey_rev) as rev 
+        FROM tlc_tt_survey_sections
+       WHERE survey_id=(?) AND survey_rev<=(?) 
+       GROUP BY survey_id
+    ) f on s.survey_id = f.survey_id AND s.survey_rev = f.rev
+    LEFT JOIN tlc_tt_strings name        ON name.id        = s.name_sid
+    LEFT JOIN tlc_tt_strings description ON description.id = s.description_sid
+    LEFT JOIN tlc_tt_strings feedback    ON feedback.id    = s.feedback_sid
+    ORDER BY s.sequence;
+  SQL;
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+
+  return $rows ? array_column($rows,null,'sequence') : [];
+}
+
+function survey_questions($survey_id,$survey_rev)
+{
+  //  survey_rev is per (survey id, question id)
+
+  $query = <<<SQL
+    SELECT q.id            as question_id,
+           q.section       as section,
+           q.sequence      as sequence,
+           wording.str     as wording,
+           q.question_type as question_type,
+           q.multiple      as multiple,
+           other.str       as other,
+           qualifier.str   as qualifier,
+           description.str as description,
+           info.str        as info
+    FROM   tlc_tt_survey_questions q
+    JOIN 
+    (
+      SELECT survey_id, id, max(survey_rev) as rev
+        FROM tlc_tt_survey_questions
+       WHERE survey_id=(?) AND survey_rev<=(?)
+       GROUP BY survey_id, id
+    ) f ON q.survey_id = f.survey_id AND q.id = f.id AND q.survey_rev = f.rev
+    LEFT JOIN tlc_tt_strings wording     ON wording.id     = q.wording_sid
+    LEFT JOIN tlc_tt_strings other       ON other.id       = q.other_sid
+    LEFT JOIN tlc_tt_strings qualifier   ON qualifier.id   = q.qualifier_sid
+    LEFT JOIN tlc_tt_strings description ON description.id = q.description_sid
+    LEFT JOIN tlc_tt_strings info        ON info.id        = q.info_sid
+    ORDER BY q.section, q.sequence;
+  SQL;
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+
+  if(!$rows) { return array(); }
+
+  $q_fields = [
+    'INFO'     => ['wording'=>'infotag', 'info'],
+    'BOOL'     => ['wording', 'description', 'qualifier', 'info'=>'popup'],
+    'OPTIONS'  => ['wording', 'description', 'qualifier', 'other', 'info'=>'popup', 'options'],
+    'FREETEXT' => ['wording', 'description', 'info'=>'popup']
+  ];
+
+  $questions = array();
+  foreach($rows as $row) {
+    $id = $row['question_id'];
+    $type = $row['question_type'];
+    $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
+
+    $q = [ 'id' => $id, 'type' => $actual_type ];
+
+    if($row['sequence']) {
+      $q['section']  = $row['section'];
+      $q['sequence'] = $row['sequence'];
+    }
+
+    foreach ($q_fields[$type] ?? [] as $from => $to)
+    {
+      if(is_int($from)) { $from = $to; } // straight copy from row to question
+      $q[$to] = ($to !== 'options' ? $row[$from] : array());
+    }
+
+    $questions[$id] = $q;
+  }
+
+  add_question_options($questions, $survey_id,$survey_rev);
+
+  return $questions;
+}
+  
+function add_question_options(&$questions,$survey_id,$survey_rev)
+{
+  $query = <<<SQL
+    SELECT qo.question_id as question_id, 
+           qo.sequence    as sequence, 
+           qo.option_id   as option_id,
+           qo.secondary   as secondary
+    FROM   tlc_tt_question_options qo 
+    JOIN 
+    (
+      SELECT survey_id, question_id, sequence, max(survey_rev) as rev
+        FROM tlc_tt_question_options 
+       WHERE survey_id=(?) AND survey_rev<=(?)
+       GROUP BY survey_id, question_id, sequence
+    ) f
+    ON  qo.survey_id   = f.survey_id 
+    AND qo.question_id = f.question_id 
+    AND qo.sequence    = f.sequence 
+    AND qo.survey_rev  = f.rev
+    ORDER BY qo.question_id, qo.sequence;
+  SQL;
+
+  $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+  if(!$rows) { return; }
+
+  foreach ($rows as $row) {
+    $qid = $row['question_id'];
+    if(!isset($questions[$qid]))            { internal_error("Options found for non-existent questions"); }
+    if(!isset($questions[$qid]['options'])) { internal_error("Options found on non-options type question"); }
+    $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
+  }
 }
 
 function next_ids($survey_id) 
@@ -230,7 +241,7 @@ function next_ids($survey_id)
   return [
     'survey'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_surveys'),
     'question' => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_questions'),
-    'option'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_options where survey_id=(?)', 'i',$survey_id),
+    'option'   => 1 + MySQLSelectValue('select max(id) from tlc_tt_survey_options where survey_id=(?)','i',$survey_id),
   ];
 }
 
