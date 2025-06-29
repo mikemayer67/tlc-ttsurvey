@@ -281,13 +281,15 @@ export default function question_editor(ce,controller)
 
   function update_options(options)
   {
+    console.log("update_options");
     controller.update_question_data(_cur_id,'options',options); 
     populate_options(options);
     update_option_pools();
+    $(document).trigger('SurveyWasModified');
   }
 
   function create_chip(id,label) {
-    const chip = $("<div>").addClass('chip').data('id',id);
+    const chip = $("<div>").addClass('chip').data('id',id).attr('id',id);
     const span = $("<span>").text(label);
     const close = $("<button class='option' type='button'>x</button>");
     return chip.append(span).append(close);
@@ -360,31 +362,51 @@ export default function question_editor(ce,controller)
   }
 
   function handle_option_change() {
+    console.log("handle_option_change");
     const old_options = controller.cur_question_data(_cur_id,'options');
     const new_options = selected_options();
     ce.undo_manager.add({
+      action:'option-change',
       undo() { update_options(old_options); },
       redo() { update_options(new_options); },
     });
     
     controller.update_question_data(_cur_id,'options',new_options); 
     update_option_pools();
+    $(document).trigger('SurveyWasModified');
   }
 
   function handle_edit_chip(e) {
     const chip = $(this).closest('.chip');
     const span = chip.children('span');
     const old_value = span.text();
-    const new_value = prompt('Edit option',old_value).trim();
+    const raw_value = prompt('Edit option',old_value);
+    if( raw_value === null ) { return; }
+
+    const chip_id = chip.data('id');
+
+    const new_value = raw_value.trim();
     if(new_value && (old_value !== new_value)) {
-      span.text(new_value);
-      const id = chip.data('id');
-      controller.update_option(id,new_value);
-      update_option_pools();
+      function apply_edit_chip(value) {
+        console.log('apply_edit_chip id '+chip_id+': '+value);
+        const all_chips = _options.find('div.chip');
+        const chips = all_chips.filter('[id='+chip_id+']');
+        const spans = chips.children('span');
+        spans.text(value);
+        controller.update_option(chip_id,value);
+        update_option_pools();
+        $(document).trigger('SurveyWasModified');
+      }
+      ce.undo_manager.add_and_exec( {
+        action:'chip_edit',
+        redo() { console.log('redo chip edit'); apply_edit_chip(new_value); },
+        undo() { console.log('undo chip edit'); apply_edit_chip(old_value); },
+      });
     }
   }
 
   function handle_option_drag(e) {
+    console.log("handle_option_drag");
     handle_option_change();
   }
 
@@ -406,6 +428,7 @@ export default function question_editor(ce,controller)
     const new_id = item.val();
     const old_id = e.data;
     ce.undo_manager.add_and_exec({
+      action:'unarchive-question',
       redo() {
         const data = controller.replace_question(old_id,new_id);
         show(new_id,data);
@@ -423,6 +446,7 @@ export default function question_editor(ce,controller)
     const type = item.val();
     const [id,data] = e.data;
     ce.undo_manager.add_and_exec({
+      action:'set-question-type',
       redo() {
         controller.update_question_type(id,type);
         show(id,data);
@@ -472,6 +496,7 @@ export default function question_editor(ce,controller)
     }
 
     _cur_undo = {
+      action:'question-input-change',
       question_id: id,
       key: null,
 

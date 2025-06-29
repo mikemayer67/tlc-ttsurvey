@@ -96,6 +96,7 @@ export default function editor_menubar(ce,controller)
     //   selecting a new section, the new_section_selected function captures all
     //   the necessary DOM element state updates associated with a move.
     ce.undo_manager.add_and_exec( {
+      action:'mb-move-section',
       redo() { controller.move_section(sectionId,newIndex) },
       undo() { controller.move_section(sectionId,curIndex) },
     } );
@@ -136,6 +137,7 @@ export default function editor_menubar(ce,controller)
     }
 
     ce.undo_manager.add_and_exec( {
+      action:'mb-move-question',
       redo() { controller.move_question(questionId,newSectionId,newIndex) },
       undo() { controller.move_question(questionId,curSectionId,curIndex) },
     } );

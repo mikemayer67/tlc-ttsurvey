@@ -135,7 +135,7 @@ INSERT INTO tlc_tt_survey_options (survey_id, id, survey_rev, text_sid)
 
 DELETE FROM tlc_tt_survey_sections;
 INSERT INTO tlc_tt_survey_sections 
-            (survey_id, survey_rev, sequence, name_sid, show_name, description_sid, feedback_sid)
+            (survey_id, survey_rev, sequence, name_sid, labeled, description_sid, feedback_sid)
      VALUES (1, 1, 1, 84, 1, 31,NULL),
             (1, 1, 2, 39, 1, 75,NULL),
             (1, 1, 3, 89, 1, 70,NULL),
@@ -155,7 +155,7 @@ INSERT INTO tlc_tt_survey_sections
             (4, 1, 3, 30,1, NULL,NULL);
 
 INSERT INTO tlc_tt_survey_sections 
-SELECT survey_id,1+survey_rev,sequence,name_sid,show_name,description_sid,feedback_sid
+SELECT survey_id,1+survey_rev,sequence,name_sid,labeled,description_sid,feedback_sid
 FROM tlc_tt_survey_sections where survey_id in (1,2,3) and survey_rev=1;
 
 update tlc_tt_survey_sections set feedback_sid=80    where survey_id=1 and survey_rev=2 and sequence=2;
@@ -164,7 +164,7 @@ update tlc_tt_survey_sections set feedback_sid=6     where survey_id=2 and surve
 update tlc_tt_survey_sections set description_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
 
 INSERT INTO tlc_tt_survey_sections 
-SELECT survey_id,1+survey_rev,sequence,name_sid,show_name,description_sid,feedback_sid
+SELECT survey_id,1+survey_rev,sequence,name_sid,labeled,description_sid,feedback_sid
 FROM tlc_tt_survey_sections where survey_id in (1,2) and survey_rev=2;
 
 update tlc_tt_survey_sections set feedback_sid=NULL where survey_id=1 and survey_rev=3 and sequence=2;

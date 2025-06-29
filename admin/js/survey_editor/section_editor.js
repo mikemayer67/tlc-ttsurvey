@@ -142,8 +142,10 @@ export default function section_editor(ce,controller)
     
   function create_undo(id,data,controller)
   {
+    console.log("create_undo - section-input-change");
     function apply_action(section_id, values)
     {
+      console.log("apply_action - section-input-change");
       controller.select_section(section_id);
 
       Object.entries(values).forEach(([key,value]) => {
@@ -157,6 +159,7 @@ export default function section_editor(ce,controller)
     }
 
     _cur_undo = {
+      action:'section-input-change',
       section_id:id,
       orig_values: {
         name:data.name || '',
@@ -165,18 +168,24 @@ export default function section_editor(ce,controller)
         feedback:data.feedback || '',
       },
       can_continue(id) {
-        return ce.undo_manager.isHead(this) && (id === this.section_id);
+        const rval = ce.undo_manager.isHead(this) && (id === this.section_id);
+        console.log("section-input-change::can_continue("+id+") -> "+rval);
+        return rval;
       },
       undo() {
+        console.log("section-input-change::undo("+this.section_id+", "+this.orig_values+")");
         apply_action(this.section_id, this.orig_values);
         create_undo(id,data,controller);
       },
       redo() { 
+        console.log("section-input-change::redo("+this.section_id+", "+this.new_values+")");
         apply_action(this.section_id, this.new_values);
         _cur_undo = this;
       },
       update(key,value) {
+        console.log("section-input-change::update("+key+", "+value+")");
         if(!('new_values' in this)) {
+          console.log("section-input-change::has new_value... clone/add");
           this.new_values = deepCopy(this.orig_values);
           ce.undo_manager.add(this);
         }

@@ -314,6 +314,7 @@ export default function editor_tree(ce,controller)
 
     const sectionId = $(e.item).data('section');
     ce.undo_manager.add( {
+      action:'drop-section',
       undo() { self.move_section(sectionId,e.oldIndex); },
       redo() { self.move_section(sectionId,e.newIndex); },
     });
@@ -335,6 +336,7 @@ export default function editor_tree(ce,controller)
     const from_section = $(e.from).parent().data('section');
     const to_section   = $(e.to).parent().data('section');
     ce.undo_manager.add( {
+      action:'drop-question',
       undo() { self.move_question(questionId,from_section,e.oldIndex); },
       redo() { self.move_question(questionId,to_section,e.newIndex); },
     });

@@ -119,7 +119,7 @@ IF version < 1 THEN
     survey_rev      smallint UNSIGNED NOT NULL,
     sequence        smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
     name_sid        smallint UNSIGNED              COMMENT '(StringID) Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
-    show_name       tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
+    labeled         tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
     description_sid smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Section description that will appear in the survey form',
     feedback_sid    smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Text used to prompt for feedback. No feedback allowed if NULL',
     PRIMARY KEY (survey_id,survey_rev,sequence),
@@ -249,7 +249,7 @@ IF version < 1 THEN
   CREATE OR REPLACE VIEW tlc_tt_view_survey_sections AS
   SELECT s.survey_id, s.survey_rev, s.sequence,
     s.name_sid,        name.str         AS name_str,
-    s.show_name,
+    s.labeled,
     s.description_sid, description.str  AS description_str,
     s.feedback_sid,    feedback.str     AS feedback_str
   FROM tlc_tt_survey_sections s

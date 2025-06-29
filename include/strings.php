@@ -52,7 +52,7 @@ class Strings {
     return $rval;
   }
 
-  static public function get_id(string $s, bool $create=true)
+  static public function get_id(string|null $s, bool $create=true)
   {
     // we don't store falsy values in the database string dictionary
     if(!$s) { return null; }

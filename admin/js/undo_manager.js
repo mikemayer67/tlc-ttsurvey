@@ -8,7 +8,12 @@ export default function undo_manager(ce)
 
   let _overflow = false;
 
+  let next_uid=1;
+
   function add(a,exec) {
+    a.uid = next_uid++;
+    console.log("Adding Undo action: " + a.uid);
+
     // - the action a must support both the undo() and redo() methods
     //
     // - if the exact same action is pushed onto the stack multiple times
@@ -25,6 +30,8 @@ export default function undo_manager(ce)
       _overflow = true;
       _undo_stack.shift(); 
     }
+
+    console.log(JSON.stringify({undo:_undo_stack,redo:_redo_stack}));
 
     if(exec) { a.redo(); }
     notify();
@@ -44,8 +51,10 @@ export default function undo_manager(ce)
   function redo() {
     const a = _redo_stack.pop();
     if(!a) { return false; }
+    console.log("Redoing action: " + a.uid);
     // don't need to worry about undo depth as redo must have once fit on the undo stack
     _undo_stack.push(a);
+    console.log(JSON.stringify({undo:_undo_stack,redo:_redo_stack}));
     a.redo();
     notify();
     return true;
@@ -54,8 +63,10 @@ export default function undo_manager(ce)
   function undo() {
     const a = _undo_stack.pop();
     if(!a) { return false; }
+    console.log("Undoing action: " + a.uid);
 
     _redo_stack.push(a);
+    console.log(JSON.stringify({undo:_undo_stack,redo:_redo_stack}));
     a.undo();
     notify();
     return true;

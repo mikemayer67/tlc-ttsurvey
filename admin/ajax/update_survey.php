@@ -19,29 +19,25 @@ $cur_pdf = $_POST['existing_pdf'] ?? 'keep';
 $new_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
 $content = json_decode($_POST['content'],true);
 
-log_dev("update_survey: id = $id");
-log_dev("update_survey: rev = $rev");
-log_dev("update_survey: name = $name");
-log_dev("update_survey: cur_pdf = $cur_pdf");
-log_dev("update_survey: new_pdf = $new_pdf");
-//log_dev("update_survey: content = " . print_r($content,true));
-
-
 try {
   $error = null;
   if(!$id) {
     throw new Exception('Missing id in request');
   }
 
-  if(!update_survey($id,$rev,$name,$cur_pdf,$new_pdf,$content,$error)) {
+  $result = update_survey($id,$rev,$name,$cur_pdf,$new_pdf,$content,$error);
+  if(!$result) {
     log_dev("oops... error = $error");
     throw new Exception($error);
   }
 
+  $pdf_file = survey_pdf_file($id);
+  $next_ids = next_survey_ids($id);
+
   $rval = array(
     'success'=>true,
-    'has_pdf'=>(null !== survey_pdf_file($id)),
-    'next_ids' => next_ids($id),
+    'has_pdf'=>($pdf_file !== null),
+    'next_ids' => $next_ids,
   );
 }
 catch(Exception $e)
