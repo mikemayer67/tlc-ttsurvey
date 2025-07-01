@@ -20,9 +20,12 @@ export default function editor_tree(ce,controller)
   // sorter for ul.sections
   const _section_sorter = new Sortable( _tree[0],
     {
-      group: 'sections',
+      group: {
+        name:'sections',
+        pull: false,
+        put: false,
+      },
       animation: 150,
-      filter: '.question',
       disabled: true,
       onEnd: handle_drop_section,
     }
@@ -98,7 +101,11 @@ export default function editor_tree(ce,controller)
     const ul = $('<ul>').addClass('questions').appendTo(li);
     _question_sorters[section_id] = new Sortable( ul[0],
       {
-        group: { name:'questions', pull:true, put:true },
+        group: { 
+          name:'questions', 
+          pull:true, 
+          put: (to, from, dragged) => $(dragged).hasClass('question'),
+        },
         animation: 150,
         disabled: true,
         onEnd: handle_drop_question,
