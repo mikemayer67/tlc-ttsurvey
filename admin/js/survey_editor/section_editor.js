@@ -16,7 +16,7 @@ function validate_input(key,value)
       if(len>0 && len<4) { return 'too short'; }
       invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
       break;
-  }
+  }  // This is the current question ID in the editor
 
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
@@ -48,7 +48,7 @@ export default function section_editor(ce,controller)
   let _cur_id = null;  // This is the current section ID displayed in the editor
 
   _description_value.on('input change', update_character_count);
-  _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_blur);
+  _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 
   function handle_input(e) 
@@ -62,9 +62,9 @@ export default function section_editor(ce,controller)
     }, 250 ));
   }
 
-  function handle_input_blur(e)
+  function handle_input_change(e)
   {
-    // this is for changes to <input> field 
+    // this is for changes to <input> fields 
     const input = $(this);
     const timer_id = input.data('timer') ?? undefined;
     if(timer_id) {
