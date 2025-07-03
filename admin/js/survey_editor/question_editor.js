@@ -340,11 +340,11 @@ export default function question_editor(ce,controller)
     const rval = [];
     _primary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
-      rval.push([ id, false]);
+      rval.push([ id, 0]);
     });
     _secondary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
-      rval.push([ id, true]);
+      rval.push([ id, 1]);
     });
     return rval;
   }

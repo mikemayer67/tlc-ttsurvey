@@ -422,6 +422,7 @@ class Surveys
       log_dev("has_change: $has_change");
       if( self::_update_sections($id,$rev, $new_content['sections']) ) { log_dev("sections change"); $has_change = true; }
       log_dev("has_change: $has_change");
+      if( self::_update_questions($id,$rev, $new_content['questions']) ) { log_dev("quesitons change"); $has_change = true; }
       self::_update_pdf($id,$rev,$pdf_action,$new_pdf_file);
       log_dev("has_change: $has_change");
   
@@ -469,34 +470,27 @@ class Surveys
 
   static function _update_pdf($id,$rev,$action,$new_pdf) 
   {
-    log_dev(" _update_pdf($id,$rev,$action,$new_pdf) ");
     $pdf_path = self::pdf_path($id);
 
     if($action === 'drop' || $action === 'replace') {
-      log_dev("drop old pdf: $pdf_path");
       if(file_exists($pdf_path)) {
-        log_dev("...exists");
         if(!unlink($pdf_path)) {
           log_error("[$errid] Failed to unlink $pdf_path");
           throw FailedToUpdate("drop existing PDF file");
         }
-        log_dev("...unlinked");
       }
     }
 
     if($action === 'add' || $action === 'replace') {
-      log_dev("move new pdf: $pdf_path <-- $new_pdf");
       if(!move_uploaded_file($new_pdf,$pdf_path)) {
         log_error("[$errid] Failed to save updloded PDF to $pdf_path");
         throw FailedToUpdate("updating PDF file");
       }
-      log_dev("...moved");
     }
   }
 
   static function _update_options($id,$rev, $new_options)
   {
-    log_dev(" _update_options($id,$rev, ...");
     $cur_options = self::_options($id,$rev);
 
     // no need to redefine the insert statement in the for loop
@@ -524,32 +518,22 @@ class Surveys
 
   static function _sections_changed($cur,$new) 
   {
-    log_dev(" _sections_changed($cur,$new) ");
     $n = count($cur);
-
-    log_dev("Cur section count = $n");
-
     if($n !== count($new)) { return true; }
 
-    log_dev("New section count also = $n");
-
     for($i = 0; $i < $n; ++$i) {
-      log_dev("Looking for differences in section $i");
       foreach(['name','labeled','description','feedback'] as $key)
       {
         $cur_val = $cur[$i][$key] ?? '';
         $new_val = $new[$i][$key] ?? '';
-        log_dev("comparing $key: cur=$cur_val new=$new_val");
         if( $cur_val !== $new_val ) { return true; }
       }
     }
-    log_dev("everything matched");
     return false;
   }
 
   static function _update_sections($id,$rev, $new_sections)
   {
-    log_dev(" _update_sections($id,$rev, $new_sections)");
     // There is no bleed-through or section data.  If there are
     //   ANY differences from the current max rev in the database,
     //   then we need to insert/upddate all section data for the
@@ -558,16 +542,12 @@ class Surveys
     // sort the new sections and extract the section data from the
     //   associative array mapping sequence to section data
     ksort($new_sections);
-    log_dev("ksort complete: ".print_r($new_sections,true));
     $new_sections = array_values($new_sections);
-    log_dev("sections extrqcted: ".print_r($new_sections,true));
 
     // do the same for the current section data, but sorting is not
     //   necessary as the _sections method does this for us
     $cur_sections = self::_sections($id,$rev);
-    log_dev("cur sections retrieved: ".print_r($cur_sections,true));
     $cur_sections = array_values( $cur_sections );
-    log_dev("sections extrqcted: ".print_r($cur_sections,true));
 
     // see if there are any difference in the section data
     if(!self::_sections_changed($cur_sections, $new_sections)) { return false; }
@@ -592,11 +572,8 @@ class Surveys
              feedback_sid = VALUES(feedback_sid)
     SQL;
 
-    log_dev("query defined");
-
     $seq = 0;
     foreach($new_sections as $new_data) {
-      log_dev("inserting updated section ".(1+$seq));
       MySQLExecute($query, 
         'iiiiiii', 
         $id, $rev, ++$seq, 
@@ -607,8 +584,93 @@ class Surveys
       );
     }
 
-    log_dev("section update complete");
     return true;
+  }
+
+  private static function map_options($options) {
+    $rval = [];
+    foreach($options as $kv) { $rval[$kv[0]] = $kv[1]; }
+    return $rval;
+  }
+
+  static function _question_changed($cur_question, $new_question)
+  {
+    $cur_question_id = $cur_question['id'] ?? null;
+    $new_question_id = $new_question['id'] ?? null;
+    if($cur_question_id !== $new_question_id) { 
+      internal_error("Question IDs don't match ($cur_question_id vs $new_question_id)");
+    }
+
+    $cur_type = $cur_question['type'] ?? null;
+    $new_type = $new_question['type'] ?? null;
+    if($cur_type !== $new_type) {
+      internal_error("Something is off in the javascript... type for question $cur_question_id changed from $cur_type to $new_type");
+    }
+
+    $type_keys = [
+      'INFO'         => ['section','sequence','infotag','info'],
+      'FREETEXT'     => ['section','sequence','wording','description','popup'],
+      'BOOL'         => ['section','sequence','wording','description','qualifier','popup'],
+      'SELECT_ONE'   => ['section','sequence','wording','description','qualifier','other','popup'],
+      'SELECT_MULTI' => ['section','sequence','wording','description','qualifier','other','popup'],
+    ];
+
+    foreach($type_keys[$cur_type] as $key) {
+      $cur_value = $cur_question[$key] ?? null;
+      $new_value = $new_question[$key] ?? null;
+      if($cur_value !== $new_value) { 
+        log_dev("Question $cur_question_id has new $key value ($cur_value --> $new_value)");
+        return true; 
+      }
+    }
+
+    if($cur_type === 'SELECT_ONE' || $cur_type === 'SELECT_MULTI') {
+      $cur_options = self::map_options($cur_question['options'] ?? []);
+      $new_options = self::map_options($new_question['options'] ?? []);
+      $n_cur = count($cur_options);
+      $n_new = count($new_options);
+      if($n_new !== $n_cur) {
+        log_dev("Question $cur_question_id has different number of options ($n_cur --> $n_new)");
+        return true;
+      }
+      foreach($cur_options as $option_id=>$cur_secondary) {
+        $new_secondary = $new_options[$option_id] ?? null;
+        if($new_secondary === null) {
+          log_dev("Question $cur_question_id has dropped option $option_id");
+          return true;
+        }
+        if($new_secondary !== $cur_secondary) {
+          log_dev("Question $cur_question_id moved option $option_id ($cur_secondary --> $new_secondary)");
+          return true;
+        }
+      }
+
+    }
+
+    return false;
+  }
+
+  static function _update_questions($id,$rev, $new_questions)
+  {
+    $cur_questions = self::_questions($id,$rev);
+
+    foreach($new_questions as $question_id=>$new_data) {
+      $cur_data = $cur_questions[$question_id] ?? null;
+      if($cur_data) {
+        if(self::_question_changed($cur_data,$new_data)) {
+          log_dev("updated question: $question_id");
+        }
+      } else {
+        log_dev("new question: $question_id: ".print_r($new_data, true));
+      }
+    }
+    foreach($cur_questions as $question_id=>$cur_data) {
+      if(!array_key_exists($question_id,$new_questions)) {
+        if(($cur_data['section']??0) > 0) {
+          log_dev("removed question $question_id: ".print_r($cur_data,true));
+        }
+      }
+    }
   }
 
 };
