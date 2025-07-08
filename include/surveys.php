@@ -146,6 +146,7 @@ class Surveys
   
     $query = <<<SQL
       SELECT q.id            as question_id,
+             q.survey_rev    as rev,
              q.section       as section,
              q.sequence      as sequence,
              wording.str     as wording,
@@ -184,10 +185,11 @@ class Surveys
     $questions = array();
     foreach($rows as $row) {
       $id = $row['question_id'];
+      $rev = $row['rev'];
       $type = $row['question_type'];
       $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
   
-      $q = [ 'id' => $id, 'type' => $actual_type ];
+      $q = [ 'id' => $id, 'rev' => $rev, 'type' => $actual_type ];
   
       if($row['sequence']) {
         $q['section']  = $row['section'];
@@ -204,7 +206,7 @@ class Surveys
     }
   
     self::_add_question_options($questions, $survey_id,$survey_rev);
-  
+
     return $questions;
   }
   
@@ -212,20 +214,18 @@ class Surveys
   {
     $query = <<<SQL
       SELECT qo.question_id as question_id, 
-             qo.sequence    as sequence, 
              qo.option_id   as option_id,
              qo.secondary   as secondary
       FROM   tlc_tt_question_options qo 
       JOIN 
       (
-        SELECT survey_id, question_id, sequence, max(survey_rev) as rev
+        SELECT survey_id, question_id, max(survey_rev) as rev
           FROM tlc_tt_question_options 
          WHERE survey_id=(?) AND survey_rev<=(?)
-         GROUP BY survey_id, question_id, sequence
+         GROUP BY survey_id, question_id
       ) f
       ON  qo.survey_id   = f.survey_id 
       AND qo.question_id = f.question_id 
-      AND qo.sequence    = f.sequence 
       AND qo.survey_rev  = f.rev
       ORDER BY qo.question_id, qo.sequence;
     SQL;
@@ -414,17 +414,12 @@ class Surveys
     $has_change = false;
     try {
       self::_update_timestamp($id);
-      log_dev("has_change: $has_change");
 
-      if( self::_update_name($id,$name) )                              { log_dev("name change"); $has_change = true; }
-      log_dev("has_change: $has_change");
-      if( self::_update_options($id,$rev, $new_content['options']) )   { log_dev("options change"); $has_change = true; }
-      log_dev("has_change: $has_change");
-      if( self::_update_sections($id,$rev, $new_content['sections']) ) { log_dev("sections change"); $has_change = true; }
-      log_dev("has_change: $has_change");
-      if( self::_update_questions($id,$rev, $new_content['questions']) ) { log_dev("quesitons change"); $has_change = true; }
+      if( self::_update_name($id,$name) )                                { $has_change = true; }
+      if( self::_update_options($id,$rev, $new_content['options']) )     { $has_change = true; }
+      if( self::_update_sections($id,$rev, $new_content['sections']) )   { $has_change = true; }
+      if( self::_update_questions($id,$rev, $new_content['questions']) ) { $has_change = true; }
       self::_update_pdf($id,$rev,$pdf_action,$new_pdf_file);
-      log_dev("has_change: $has_change");
   
     }
     catch(FailedToUpdate $e)
@@ -434,9 +429,17 @@ class Surveys
       return false;
     }
   
-    log_dev("has_change: $has_change");
-    if($has_change) { log_dev("Commit"); MySQLCommit(); }
-    else            { log_dev("Rollback"); MySQLRollback(); }
+    if($has_change) { 
+      // Strip all future survey revision data as this may now be compromised
+      MySQLExecute("delete from tlc_tt_question_options where survey_id=$id and survey_rev>$rev");
+      MySQLExecute("delete from tlc_tt_survey_questions where survey_id=$id and survey_rev>$rev");
+      MySQLExecute("delete from tlc_tt_survey_sections  where survey_id=$id and survey_rev>$rev");
+      MySQLExecute("delete from tlc_tt_survey_options   where survey_id=$id and survey_rev>$rev");
+      log_dev("Commit"); MySQLCommit(); 
+    }
+    else { 
+      log_dev("Rollback"); MySQLRollback(); 
+    }
   
     return true;
   }
@@ -489,7 +492,7 @@ class Surveys
     }
   }
 
-  static function _update_options($id,$rev, $new_options)
+  static function _update_options($id,$rev,$new_options)
   {
     $cur_options = self::_options($id,$rev);
 
@@ -520,6 +523,10 @@ class Surveys
   {
     $n = count($cur);
     if($n !== count($new)) { return true; }
+
+    for($i = 0; $i < $n; ++$i) {
+      if($new[$i]['sequence'] != (1+$i)) { return true; }
+    }
 
     for($i = 0; $i < $n; ++$i) {
       foreach(['name','labeled','description','feedback'] as $key)
@@ -624,27 +631,44 @@ class Surveys
       }
     }
 
-    if($cur_type === 'SELECT_ONE' || $cur_type === 'SELECT_MULTI') {
-      $cur_options = self::map_options($cur_question['options'] ?? []);
-      $new_options = self::map_options($new_question['options'] ?? []);
-      $n_cur = count($cur_options);
-      $n_new = count($new_options);
-      if($n_new !== $n_cur) {
-        log_dev("Question $cur_question_id has different number of options ($n_cur --> $n_new)");
+    return false;
+  }
+
+  static function _question_options_changed($question_id,$cur_options,$new_options)
+  {
+    $cur_primary = [];
+    $cur_secondary = [];
+    foreach( $cur_options as [$qid,$secondary] ) {
+      if($secondary) { $cur_secondary[] = $qid; }
+      else           { $cur_primary[]   = $qid; }
+    }
+    $new_primary = [];
+    $new_secondary = [];
+    foreach( $new_options as [$qid,$secondary] ) {
+      if($secondary) { $new_secondary[] = $qid; }
+      else           { $new_primary[]   = $qid; }
+    }
+    $n_primary = count($cur_primary);
+    if(count($new_primary) !== $n_primary) {
+      log_dev("Question $question_id has different number of primary options");
+      return true;
+    }
+    $n_secondary = count($cur_secondary);
+    if(count($new_secondary) !== $n_secondary) {
+      log_dev("Question $question_id has different number of secondary options");
+      return true;
+    }
+    for($i=0; $i<$n_primary; ++$i) {
+      if($new_primary[$i] !== $cur_primary[$i]) {
+        log_dev("Primary option $i has changed for question $question_id");
         return true;
       }
-      foreach($cur_options as $option_id=>$cur_secondary) {
-        $new_secondary = $new_options[$option_id] ?? null;
-        if($new_secondary === null) {
-          log_dev("Question $cur_question_id has dropped option $option_id");
-          return true;
-        }
-        if($new_secondary !== $cur_secondary) {
-          log_dev("Question $cur_question_id moved option $option_id ($cur_secondary --> $new_secondary)");
-          return true;
-        }
+    }
+    for($i=0; $i<$n_secondary; ++$i) {
+      if($new_secondary[$i] !== $cur_secondary[$i]) {
+        log_dev("secondary option $i has changed for question $question_id");
+        return true;
       }
-
     }
 
     return false;
@@ -652,7 +676,18 @@ class Surveys
 
   static function _update_questions($id,$rev, $new_questions)
   {
+    $rval = false;
+
     $cur_questions = self::_questions($id,$rev);
+
+    $insert_new_query = <<<SQL
+      INSERT INTO tlc_tt_survey_questions
+             ( id, survey_id, survey_rev, section, sequence, 
+               wording_sid, question_type, multiple, 
+               other_sid, qualifier_sid, description_sid, info_sid )
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
+    SQL;
+    $insert_new_types = 'iiiiiisiiiii';
 
     foreach($new_questions as $question_id=>$new_data) {
       $cur_data = $cur_questions[$question_id] ?? null;
@@ -660,17 +695,73 @@ class Surveys
         if(self::_question_changed($cur_data,$new_data)) {
           log_dev("updated question: $question_id");
         }
-      } else {
-        log_dev("new question: $question_id: ".print_r($new_data, true));
+        $type = $cur_data['type'];
+        if($type === 'SELECT_ONE' || $type === 'SELECT_MULTI') {
+          $cur_options = $cur_data['options'] ?? [];
+          $new_options = $new_data['options'] ?? [];
+          if( self::_question_options_changed($question_id,$cur_options,$new_options) ) {
+            log_dev("updated options for question $question_id");
+          }
+        }
+      } 
+      else {
+        $type = $new_data['type'];
+        $wording_key = $type === 'INFO' ? 'infotag' : 'wording';
+        $info_key = $type === 'INFO' ? 'info' : 'popup';
+
+        MySQLExecute(
+          $insert_new_query, $insert_new_types,
+          $question_id,
+          $id, $rev,
+          $new_data['section'], $new_data['sequence'],
+          strings_find_or_create( $new_data[$wording_key] ?? null ),
+          str_starts_with($type,'SELECT') ? 'OPTIONS' : $type,
+          $type === 'SELECT_MULTI' ? 1 : 0,
+          strings_find_or_create( $new_data['other'] ?? null ),
+          strings_find_or_create( $new_data['qualifier'] ?? null ),
+          strings_find_or_create( $new_data['description'] ?? null ),
+          strings_find_or_create( $new_data[$info_key] ?? null )
+        );
       }
     }
     foreach($cur_questions as $question_id=>$cur_data) {
       if(!array_key_exists($question_id,$new_questions)) {
         if(($cur_data['section']??0) > 0) {
-          log_dev("removed question $question_id: ".print_r($cur_data,true));
+          log_dev("cur_data: ".print_r($cur_data,true));
+          self::_remove_question($id,$rev,$question_id,$cur_data['rev']);
+          $rval = true;
         }
       }
     }
+  }
+
+  static function _remove_question($survey_id,$survey_rev,$question_id,$current_rev) 
+  {
+    if($current_rev === $survey_rev) {
+      $query = <<<SQL
+       UPDATE tlc_tt_survey_questions
+          SET section = NULL, sequence = NULL
+        WHERE survey_id=$survey_id
+          AND survey_rev=$survey_rev
+          AND id=$question_id
+      SQL;
+    } else {
+      $query = <<<SQL
+       INSERT INTO tlc_tt_survey_questions
+              ( id, survey_id, survey_rev, section, sequence, 
+                wording_sid, question_type, multiple, 
+                other_sid, qualifier_sid, description_sid, info_sid )
+       SELECT id, survey_id, $survey_rev, NULL, NULL, 
+              wording_sid, question_type, multiple, 
+              other_sid, qualifier_sid, description_sid, info_sid
+       FROM   tlc_tt_survey_questions
+       WHERE  id=$question_id
+         AND  survey_id=$survey_id
+         AND  survey_rev=$current_rev
+       SQL;
+    }
+    log_dev("Removing question with:\n$query");
+    MySQLExecute($query);
   }
 
 };
