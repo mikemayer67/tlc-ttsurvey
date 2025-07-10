@@ -169,7 +169,14 @@ export default function survey_editor(ce)
   }
 
   self.update_question_type = function(question_id,type,old_type) {
-    _content.questions[question_id]['type'] = type;
+    const question = _content.questions[question_id];
+    question['type'] = type;
+    if(type === 'SELECT_MULTI' || type == 'SELECT_ONE') {
+      question.options = [];
+    }
+    else {
+      delete question.options
+    }
     _tree.update_question_type(question_id,type,old_type);
   }
 
@@ -198,7 +205,7 @@ export default function survey_editor(ce)
   self.add_new_question = function(where)
   {
     const new_question_id = _next_question_id++;
-    const new_question = { type:null };
+    const new_question = { id:new_question_id, type:null };
     const cur_highlight = _tree.cache_selection();
 
     _content.questions[ new_question_id ] = new_question;
