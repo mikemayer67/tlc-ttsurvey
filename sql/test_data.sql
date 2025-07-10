@@ -273,5 +273,6 @@ INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,42+question_id,s
 INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,49+question_id,sequence,option_id,secondary FROM tlc_tt_question_options where survey_id=1 and question_id < 7;
 
 INSERT INTO tlc_tt_question_options SELECT 2,1,question_id,sequence,option_id,secondary FROM tlc_tt_question_options where survey_id=1;
-INSERT INTO tlc_tt_question_options SELECT 2,2,question_id,sequence,option_id,0 FROM tlc_tt_question_options where survey_id=2;
+INSERT INTO tlc_tt_question_options SELECT 2,2,question_id,sequence,option_id,0 FROM tlc_tt_question_options where survey_id=2 and question_id in 
+       ( SELECT distinct question_id from tlc_tt_question_options where survey_id=2 and survey_rev=1 and secondary=1 );
 

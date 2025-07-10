@@ -402,6 +402,7 @@ class Surveys
 
   static function update($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
   {
+    log_dev("update... new_content.questions.1: ".print_r($new_content['questions'][1],true));
     // TODO: Revision tracking
   
     $error = '';
@@ -677,89 +678,184 @@ class Surveys
   static function _update_questions($id,$rev, $new_questions)
   {
     $rval = false;
-
     $cur_questions = self::_questions($id,$rev);
 
-    $insert_new_query = <<<SQL
-      INSERT INTO tlc_tt_survey_questions
-             ( id, survey_id, survey_rev, section, sequence, 
-               wording_sid, question_type, multiple, 
-               other_sid, qualifier_sid, description_sid, info_sid )
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?);
-    SQL;
-    $insert_new_types = 'iiiiiisiiiii';
-
     foreach($new_questions as $question_id=>$new_data) {
+      $type = $new_data['type'];
+      $has_options = str_starts_with($type,'SELECT');
+
       $cur_data = $cur_questions[$question_id] ?? null;
       if($cur_data) {
         if(self::_question_changed($cur_data,$new_data)) {
-          log_dev("updated question: $question_id");
+          self::_update_question($id,$rev,$question_id,$new_data);
         }
-        $type = $cur_data['type'];
-        if($type === 'SELECT_ONE' || $type === 'SELECT_MULTI') {
+        if($has_options) {
           $cur_options = $cur_data['options'] ?? [];
           $new_options = $new_data['options'] ?? [];
           if( self::_question_options_changed($question_id,$cur_options,$new_options) ) {
-            log_dev("updated options for question $question_id");
+            self::_update_question_options($id,$rev,$question_id,$new_options);
           }
         }
       } 
       else {
-        $type = $new_data['type'];
-        $wording_key = $type === 'INFO' ? 'infotag' : 'wording';
-        $info_key = $type === 'INFO' ? 'info' : 'popup';
-
-        MySQLExecute(
-          $insert_new_query, $insert_new_types,
-          $question_id,
-          $id, $rev,
-          $new_data['section'], $new_data['sequence'],
-          strings_find_or_create( $new_data[$wording_key] ?? null ),
-          str_starts_with($type,'SELECT') ? 'OPTIONS' : $type,
-          $type === 'SELECT_MULTI' ? 1 : 0,
-          strings_find_or_create( $new_data['other'] ?? null ),
-          strings_find_or_create( $new_data['qualifier'] ?? null ),
-          strings_find_or_create( $new_data['description'] ?? null ),
-          strings_find_or_create( $new_data[$info_key] ?? null )
-        );
+        self::_insert_new_question($id,$rev,$question_id,$new_data);
+        if($has_options) {
+          $options = $new_data['options'] ?? [];
+          self::_update_question_options($id,$rev,$question_id,$options);
+        }
       }
     }
     foreach($cur_questions as $question_id=>$cur_data) {
       if(!array_key_exists($question_id,$new_questions)) {
         if(($cur_data['section']??0) > 0) {
-          log_dev("cur_data: ".print_r($cur_data,true));
-          self::_remove_question($id,$rev,$question_id,$cur_data['rev']);
+          self::_disable_question($id,$rev,$question_id,$cur_data['rev']);
           $rval = true;
         }
       }
     }
   }
 
-  static function _remove_question($survey_id,$survey_rev,$question_id,$current_rev) 
+  static function _update_question($id,$rev,$question_id,$data)
   {
-    if($current_rev === $survey_rev) {
+    log_dev("_update_question($id,$rev,$question_id,...) data=".print_r($data,true));
+
+    $type = $data['type'];
+    $wording_key = $type === 'INFO' ? 'infotag' : 'wording';
+    $info_key = $type === 'INFO' ? 'info' : 'popup';
+
+    if($data['rev'] == $rev) {
+      log_dev("update");
+      // update existing quesiton data for current rev
       $query = <<<SQL
-       UPDATE tlc_tt_survey_questions
-          SET section = NULL, sequence = NULL
-        WHERE survey_id=$survey_id
-          AND survey_rev=$survey_rev
-          AND id=$question_id
+      UPDATE tlc_tt_survey_questions
+         SET section=?, sequence=?, wording_sid=?, 
+             other_sid=?, qualifier_sid=?, description_sid=?, info_sid=?
+       WHERE id=$question_id
+         AND survey_id=$id
+         AND survey_rev=$rev
+      SQL; 
+      $value_types = 'iiiiiii';
+
+      MySQLExecute( 
+        $query, $value_types,
+        $data['section'], $data['sequence'],
+        strings_find_or_create( $data[$wording_key] ?? null ),
+        strings_find_or_create( $data['other'] ?? null ),
+        strings_find_or_create( $data['qualifier'] ?? null ),
+        strings_find_or_create( $data['description'] ?? null ),
+        strings_find_or_create( $data[$info_key] ?? null )
+      );
+    } 
+    else {
+      log_dev("insert");
+      // insert new rev for current question
+      $query = <<<SQL
+        INSERT into tlc_tt_survey_questions
+               ( id,survey_id,survey_rev,section,sequence,
+                 wording_sid,question_type,multiple,
+                 other_sid,qualifier_sid,description_sid,info_sid )
+        VALUES ($question_id, $id, $rev, ?, ?, ?, ?, ?, ?, ?, ?, ? )
       SQL;
-    } else {
-      $query = <<<SQL
-       INSERT INTO tlc_tt_survey_questions
-              ( id, survey_id, survey_rev, section, sequence, 
-                wording_sid, question_type, multiple, 
-                other_sid, qualifier_sid, description_sid, info_sid )
-       SELECT id, survey_id, $survey_rev, NULL, NULL, 
-              wording_sid, question_type, multiple, 
-              other_sid, qualifier_sid, description_sid, info_sid
-       FROM   tlc_tt_survey_questions
-       WHERE  id=$question_id
-         AND  survey_id=$survey_id
-         AND  survey_rev=$current_rev
-       SQL;
+      $value_types = 'iiisiiiii';
+
+      MySQLExecute( 
+        $query, $value_types,
+        $data['section'], $data['sequence'],
+        strings_find_or_create( $data[$wording_key] ?? null ),
+        str_starts_with($type,'SELECT') ? 'OPTIONS' : $type,
+        $type === 'SELECT_MULTI' ? 1 : 0,
+        strings_find_or_create( $data['other'] ?? null ),
+        strings_find_or_create( $data['qualifier'] ?? null ),
+        strings_find_or_create( $data['description'] ?? null ),
+        strings_find_or_create( $data[$info_key] ?? null )
+      );
     }
+  }
+
+  static function _update_question_options($id,$rev,$question_id,$options)
+  {
+    log_dev("_update_question_options($id,$rev,$question_id,...) => ".print_r($options,true));
+    // clear out any existing options
+    $query = <<<SQL
+      DELETE from tlc_tt_question_options
+       WHERE survey_id=$id AND survey_rev=$rev AND question_id=$question_id
+    SQL;
+    MySQLExecute($query);
+
+    // insert the new/updated options
+    $query = <<<SQL
+      INSERT into tlc_tt_question_options
+             (survey_id,survey_rev,question_id,sequence,option_id,secondary)
+      VALUES ($id,$rev,$question_id,?,?,?)
+    SQL;
+    $value_types = 'iii';
+    $seq = 1;
+    foreach($options as $option) {
+      log_dev("$query\n$value_types\n$seq\n$option[0] $option[1]");
+      MySQLExecute($query,$value_types,$seq++,$option[0],$option[1]?1:0);
+    }
+  }
+
+  static function _insert_new_question($id,$rev,$question_id,$data)
+  {
+    log_dev("_insert_new_question($id,$rev,$question_id,...) => ".print_r($data,true));
+
+    $query = <<<SQL
+      INSERT INTO tlc_tt_survey_questions
+             ( id, survey_id, survey_rev, section, sequence, 
+               wording_sid, question_type, multiple, 
+               other_sid, qualifier_sid, description_sid, info_sid )
+      VALUES ($question_id,$id,$rev,?,?,?,?,?,?,?,?,?);
+    SQL;
+    $value_types = 'iiisiiiii';
+
+    $type = $data['type'];
+    $wording_key = $type === 'INFO' ? 'infotag' : 'wording';
+    $info_key = $type === 'INFO' ? 'info' : 'popup';
+
+    MySQLExecute( 
+      $query, $value_types,
+      $data['section'], $data['sequence'],
+      strings_find_or_create( $data[$wording_key] ?? null ),
+      str_starts_with($type,'SELECT') ? 'OPTIONS' : $type,
+      $type === 'SELECT_MULTI' ? 1 : 0,
+      strings_find_or_create( $data['other'] ?? null ),
+      strings_find_or_create( $data['qualifier'] ?? null ),
+      strings_find_or_create( $data['description'] ?? null ),
+      strings_find_or_create( $data[$info_key] ?? null )
+    );
+  }
+
+  static function _disable_question($survey_id,$survey_rev,$question_id,$current_rev) 
+  {
+    $update_query = <<<SQL
+      UPDATE tlc_tt_survey_questions
+         SET section = NULL, sequence = NULL
+       WHERE survey_id=$survey_id
+         AND survey_rev=$survey_rev
+         AND id=$question_id
+      SQL;
+
+    static $insert_query = <<<SQL
+      INSERT INTO tlc_tt_survey_questions
+             ( id, survey_id, survey_rev, section, sequence, 
+               wording_sid, question_type, multiple, 
+               other_sid, qualifier_sid, description_sid, info_sid )
+      SELECT id, survey_id, $survey_rev, NULL, NULL, 
+             wording_sid, question_type, multiple, 
+             other_sid, qualifier_sid, description_sid, info_sid
+      FROM   tlc_tt_survey_questions
+      WHERE  id=$question_id
+        AND  survey_id=$survey_id
+        AND  survey_rev=$current_rev
+      SQL;
+
+    if($current_rev === $survey_rev) {
+      $query = $update_query;
+    } else {
+      $query = $insert_query;
+    }
+
     log_dev("Removing question with:\n$query");
     MySQLExecute($query);
   }
