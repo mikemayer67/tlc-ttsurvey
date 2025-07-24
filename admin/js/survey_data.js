@@ -12,6 +12,11 @@ export default function survey_data(ce)
   //   ... provided by PHP via a <script> element.
 
   for( var survey of ttt_all_surveys ) {
+    // Note that while PHP/MySQL use the key 'survey_id' to identify the survey index,
+    //   within the javascript survey objects, the property is named simply 'id'
+    survey.id = survey.survey_id;
+    delete survey.survey_id;
+
     _surveys[survey.id] = survey;
     switch( survey.status ) {
       case "active":
@@ -41,7 +46,7 @@ export default function survey_data(ce)
     // If the data does not need to be retrieved from the server, it returns
     //   it immediately.
     
-    if( ! id in _surveys ) { 
+    if( ! (id in _surveys) ) { 
       alert("Somthing got out of sync.  Reloading page.");
       location.reload();
     }

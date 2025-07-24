@@ -205,17 +205,17 @@ export default function draft_controller(ce)
     if(ce.cur_survey.has_pdf) {
       switch(_pdf_action.val()) {
         case 'drop':
-          formData.append('existing_pdf','drop');
+          formData.append('pdf_action','drop');
           break;
         case 'replace':
-          formData.append('existing_pdf','replace');
-          formData.append('survey_pdf',_survey_pdf[0].files[0]);
+          formData.append('pdf_action','replace');
+          formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
           break;
       }
     } else {
       if(_survey_pdf.val()) {
-        formData.append('existing_pdf','add');
-        formData.append('survey_pdf',_survey_pdf[0].files[0]);
+        formData.append('pdf_action','add');
+        formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
       }
     }
 

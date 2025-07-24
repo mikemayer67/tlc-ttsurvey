@@ -15,7 +15,7 @@ class Strings {
     $rval = self::$cache[$id] ?? null;
     if(isset($rval)) { return $rval; }
 
-    $rval = MySQLSelectValue('select str from tlc_tt_strings where id=?','i',$id);
+    $rval = MySQLSelectValue('select str from tlc_tt_strings where string_id=?','i',$id);
 
     // we don't store falsy values in the database string dictionary
     if(!$rval) { return null; }
@@ -40,7 +40,7 @@ class Strings {
     }
     if($missing) {
       $missing = implode(',',array_map('intval',$missing));
-      $rows = MySQLSelectRows("select id,str from tlc_tt_strings where id in ($missing)");
+      $rows = MySQLSelectRows("select string_id,str from tlc_tt_strings where id in ($missing)");
       foreach($rows as $row) {
         $id = $row['id'];
         $s = $row['str'];
@@ -66,7 +66,7 @@ class Strings {
       internal_error("Invalid hash for string: '$s'");
     }
 
-    $rval = MySQLSelectValue('select id from tlc_tt_strings where str_hash=?','s',$h);
+    $rval = MySQLSelectValue('select string_id from tlc_tt_strings where str_hash=?','s',$h);
 
     if($rval) { 
       // 0 isn't a valid string dictionary index, so we don't need to worry about that

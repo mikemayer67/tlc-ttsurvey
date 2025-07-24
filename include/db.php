@@ -67,17 +67,23 @@ function MySQLExecute($query,$types=null,...$params)
 
   $conn = MySQLConnection();
 
-  if($types) {
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param($types, ...$params);
-    if( $stmt->execute() ) {
-      return $stmt->affected_rows;
-    }
-  } else {
-    if($conn->query($query)) {
-      return $conn->affected_rows;
+  try {
+    if($types) {
+      $stmt = $conn->prepare($query);
+      $stmt->bind_param($types, ...$params);
+      if( $stmt->execute() ) {
+        return $stmt->affected_rows;
+      }
+    } else {
+      if($conn->query($query)) {
+        return $conn->affected_rows;
+      }
     }
   }
+  catch(\mysqli_sql_exception $e) {
+    log_error($e->getMessage());
+  }
+
   log_dev("MySQLExecute($query,$types,".log_array($params).")");
   log_dev("MySQLExecute: failed");
   return false;
