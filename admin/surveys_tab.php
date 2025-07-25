@@ -9,7 +9,6 @@ $nonce = gen_nonce('admin-surveys');
 
 // survey data
 $all_surveys = all_surveys();
-log_dev("all_surveys: ".print_r($all_surveys,true));
 
 // add content data to the first survey that will be shown
 if($all_surveys) {

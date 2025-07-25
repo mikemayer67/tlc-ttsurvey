@@ -81,10 +81,8 @@ class Surveys
       'options' => self::_options($survey_id,$survey_rev),
       'sections' => self::_sections($survey_id,$survey_rev),
       'questions' => self::_questions($survey_id,$survey_rev),
-      'archive' => self::_archive($survey_id,$survey_rev),
       'next_ids'  => self::next_ids($survey_id),
     ];
-    log_dev("content for survey $survey_id rev $survey_rev:\n".print_r($rval,true));
   
     return $rval;
   }
@@ -169,8 +167,8 @@ class Surveys
       $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
   
       $q = [ 
-        'id'       => $id, 
-        'type'     => $actual_type,
+        'id'   => $id, 
+        'type' => $actual_type,
       ];
   
       foreach ($q_fields[$type] ?? [] as $from => $to)
@@ -183,53 +181,47 @@ class Surveys
     }
   
     self::_add_question_options($questions,$survey_id,$survey_rev);
+    self::_add_archived_questions($survey_id,$survey_rev,$questions);
 
     return $questions;
   }
   
-  static function _add_question_options(&$questions,$survey_id,$survey_rev)
-  {
-    $query = <<<SQL
-      SELECT question_id, secondary, option_id
-      FROM   tlc_tt_question_options qo 
-      WHERE survey_id=? and survey_rev=?
-      ORDER BY question_id, secondary, sequence
-    SQL;
-  
-    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
-    if(!$rows) { return; }
-
-    foreach ($rows as $row) {
-      $qid = $row['question_id'];
-
-      if(isset($questions[$qid])) {
-        $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
-      }
-    }
-  }
-
   static function _ancestors($survey_id,$survey_rev)
   {
-    yield [$survey_id,$survey_rev];
+    log_dev("_ancestors($survey_id,$survey_rev)");
+    while($survey_rev > 1) {
+      $survey_rev -= 1;
+      yield[$survey_id,$survey_rev];
+    }
     $survey_id = MySQLSelectValue("SELECT parent_id from tlc_tt_survey_status where survey_id=$survey_id");
     while($survey_id) {
       [$parent_id,$survey_rev] = 
         MySQLSelectArray("SELECT parent_id,survey_rev from tlc_tt_surveys where survey_id=$survey_id");
-      yield [$survey_id,$survey_rev];
+      while($survey_rev) {
+        yield [$survey_id,$survey_rev];
+        $survey_rev -= 1;
+      }
       $survey_id = $parent_id;
     }
   }
 
-  static function _archive($survey_id, $survey_rev)
+  static function _add_archived_questions($survey_id, $survey_rev, &$questions)
   {
-    $query = 'SELECT question_id FROM tlc_tt_question_map WHERE survey_id=? AND survey_rev=?';
-    $exclude = MySQLSelectValues($query,'ii',$survey_id,$survey_rev);
+    log_dev("_add_archived_questions($survey_id,$survey_rev,questions)");
+    $exclude = array_keys($questions);
 
-    $rval = [];
+    $q_fields = [
+      'INFO'     => ['wording'=>'infotag', 'info'],
+      'BOOL'     => ['wording', 'description', 'qualifier', 'info'=>'popup'],
+      'OPTIONS'  => ['wording', 'description', 'qualifier', 'other', 'info'=>'popup'],
+      'FREETEXT' => ['wording', 'description', 'info'=>'popup']
+    ];
+  
 
     # loop over current survey + up the parent tree
     foreach(self::_ancestors($survey_id,$survey_rev) as [$sid,$rev])
     {
+      log_dev("ancestors => $sid, $rev");
       $exclude_clause = $exclude ? ' and question_id not in ('.implode(',',$exclude).')' : "";
 
       $query = <<<SQL
@@ -264,19 +256,54 @@ class Surveys
            WHERE q.survey_id=(?) and $in_clause
         SQL;
 
-        $questions = MySQLSelectRows($query,'i',$sid);
-        foreach($questions as $q) {
-          $qid = $q['question_id'];
-          $rval[$qid] = $q;
+        $new_questions = [];
+        foreach(MySQLSelectRows($query,'i',$sid) as $row) {
+          $qid  = $row['question_id'];
+          $type = $row['question_type'];
+          $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
+          $q = [
+            'id'   => $qid,
+            'type' => $actual_type,
+          ];
+          foreach ($q_fields[$type] ?? [] as $from => $to)
+          {
+            if(is_int($from)) { $from = $to; } // straight copy from row to question
+            $q[$to] = $row[$from];
+          }
+
+          $new_questions[$qid] = $q;
           $exclude[] = $qid;
         }
 
-        self::_add_question_options($rval,$sid,$rev);
+        self::_add_question_options($new_questions,$sid,$rev);
+
+        $questions += $new_questions;
       }
     }
-
-    return $rval;
   }
+
+  static function _add_question_options(&$questions,$survey_id,$survey_rev)
+  {
+    log_dev("_add_question_options(questions,$survey_id,$survey_rev)");
+    $query = <<<SQL
+      SELECT question_id, secondary, option_id
+      FROM   tlc_tt_question_options qo 
+      WHERE survey_id=? and survey_rev=?
+      ORDER BY question_id, secondary, sequence
+    SQL;
+  
+    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+    if(!$rows) { return; }
+
+    foreach ($rows as $row) {
+      $qid = $row['question_id'];
+
+      if(isset($questions[$qid])) {
+        $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
+      }
+    }
+  }
+
 
   static function next_ids($survey_id) 
   {

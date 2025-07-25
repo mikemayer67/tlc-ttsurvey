@@ -85,7 +85,8 @@ export default function arborist(tree)
 
   self.update_label = function(leaf,text)
   {
-    leaf.data('full-text',text);
+    if(text) { leaf.data('full-text',text); } 
+    else     { leaf.data('full-text',''); }
     tend(leaf);
   }
 

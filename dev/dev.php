@@ -15,10 +15,8 @@ function dump($k,$v) {
   echo "<pre>$k: ".print_r($v,true)."</pre>";
 }
 
-$error = '';
-
-$all_surveys = all_surveys();
-
-dump('surveys',$all_surveys);
+foreach(Surveys::_ancestors(2,2) as [$id,$rev]) {
+  dump($id,$rev);
+}
 
 echo "ok";
