@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/surveys.php'));
+require_once(app_file('admin/surveys/update.php'));
 
 validate_ajax_nonce('admin-surveys');
 
@@ -12,7 +12,8 @@ handle_warnings();
 
 use Exception;
 
-$survey_id  = $_POST['survey_id'] ?? null;
+// using javascript keys id and revision rather than PHP keys survey_id and survey_rev
+$survey_id  = $_POST['id'] ?? null;
 $survey_rev = $_POST['revision'] ?? null;
 $title      = $_POST['name'] ?? null;
 $pdf_action = $_POST['pdf_action'] ?? null;
@@ -32,8 +33,8 @@ try {
 
   update_survey($survey_id,$survey_rev,$content,$details);
 
-  $pdf_file = survey_pdf_file($id);
-  $next_ids = next_survey_ids($id);
+  $pdf_file = survey_pdf_file($survey_id);
+  $next_ids = next_survey_ids($survey_id);
   $revised_content = survey_content($survey_id);
 
   $rval = array(
@@ -45,9 +46,10 @@ try {
 }
 catch(Exception $e)
 {
+  log_dev("Soemthing went wrong: ".str($e),0);
   $errid = bin2hex(random_bytes(3));
   $error = $e->getMessage();
-  log_error("[$errid]: $error");
+  log_error("[$errid]: $error",0);
   http_response_code(400);
   $rval = array(
     'success'=>false, 

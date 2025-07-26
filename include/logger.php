@@ -90,8 +90,8 @@ function write_to_logger($prefix,$msg,$trace_level=1)
 
     if($trace_level>0 && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
       $trace = debug_backtrace();
-      $file = $trace[$trace_level]["file"];
-      $line = $trace[$trace_level]["line"];
+      $file = $trace[$trace_level]["file"] || "???";
+      $line = $trace[$trace_level]["line"] || "???";
       if(str_starts_with($file,APP_DIR)) {
         $file = substr($file,1+strlen(APP_DIR));
       }

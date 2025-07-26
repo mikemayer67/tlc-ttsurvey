@@ -193,14 +193,15 @@ export default function draft_controller(ce)
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
     const content = ce.survey_editor.content();
+    const json_content = JSON.stringify(content);
 
     var formData = new FormData();
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/update_survey');
-    formData.append('survey_id',ce.cur_survey.id);
-    formData.append('revision',ce.cur_survey.revision);
+    formData.append('id',ce.cur_survey.id);
+    formData.append('revision',ce.cur_survey.survey_rev);
     formData.append('name',survey_name);
-    formData.append('content',JSON.stringify(content));
+    formData.append('content',json_content);
 
     if(ce.cur_survey.has_pdf) {
       switch(_pdf_action.val()) {
@@ -221,7 +222,7 @@ export default function draft_controller(ce)
 
     $.ajax( {
       type: 'POST',
-      ulr: ce.ajaxuri,
+      url: ce.ajaxuri,
       contentType: false,
       processData: false,
       dataType: 'json',

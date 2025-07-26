@@ -11,6 +11,10 @@ class FailedToUpdate extends \Exception {}
 
 function update_survey($survey_id, $survey_rev, $content, $details)
 {
+  log_dev("update_survey($survey_id,$survey_rev, content, details)");
+  log_dev("details: ".print_r($details,true));
+  log_dev("content: ".print_r($content,true));
+
   // We want the update to be all or nothing, so wrap it in a MySQL transaction
   //   so that we can do a rollback if something goes wrong
   MySQLBeginTransaction();
@@ -24,24 +28,33 @@ function update_survey($survey_id, $survey_rev, $content, $details)
     $details['title_sid'] = MySQLSelectValue(
       "select title_sid from tlc_tt_survey_revisions where survey_id=$survey_id and survey_rev=$survey_rev"
     );
+    log_dev("Retrieved title SID: ".$details['title_sid']);
+
     MySQLExecute("delete from tlc_tt_survey_revisions where survey_id=$survey_id and survey_rev>=$survey_rev");
+    log_dev("deleted all surveys with id=$survey_id and revision >= $survey_rev");
 
     // now we can start repopulating the current revision
 
     update_survey_revision  ($survey_id,$survey_rev,$details);
+    log_dev("updated survey revision");
     update_survey_options   ($survey_id,$survey_rev,$content);
+    log_dev("updated survey options");
     update_survey_content   ($survey_id,$survey_rev,$content);
+    log_dev("updated survey content");
 
     // save updating the pdf until last as this cannot be rolled back as easily as a MySQL transaction
     update_survey_pdf       ($survey_id,$survey_rev,$details);
+    log_dev("updated survey pdf (if needed)");
 
     // final step is to commit the transaction
     //   if there was an exception the transaction will be rolled back in the catch block
     MySQLCommit(); 
+    log_dev("changes committed");
   }
   catch(Exception $e)
   {
     MySQLRollback();
+    log_dev("changes rolled back, throwing exception: ".str($e));
     throw $e;
   }
 }
@@ -116,6 +129,7 @@ function update_survey_options($survey_id,$survey_rev,$content)
 
 function update_survey_content($survey_id,$survey_rev,$content)
 {
+  log_dev("update_survey_content($survey_id,$survey_rev,content)");
   // conolidate questions into the correponding sections
   $sections = consolidate_survey_content($content);
 
@@ -150,6 +164,7 @@ function update_survey_content($survey_id,$survey_rev,$content)
 
 function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
 {
+  log_dev("update_survey_questions($survey_id,$survey_rev,$section_seq,questions)");
   usort($questions, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
   $insert = <<<SQL
@@ -178,6 +193,9 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
       $multiple = null;
     }
 
+    log_dev("$insert: \n",print_r([
+      $question_id, $wording, $type, $multiple, $other, $qualifier, $description, $info
+    ],true));
     $rc = MySQLExecute(
       $insert, 'iisiiiii',
       $question_id,
