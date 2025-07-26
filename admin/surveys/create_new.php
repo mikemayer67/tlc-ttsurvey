@@ -65,11 +65,8 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
   {
     MySQLRollback();
     $error = "Failed to create new survey (" . $e->getMessage() . ")";
-    log_dev("ERROR => $error");
     $survey_id = null;
   }
-
-  log_dev("create_new_survey: $survey_id");
 
   return $survey_id;
 }

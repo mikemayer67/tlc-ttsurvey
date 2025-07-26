@@ -84,8 +84,8 @@ function MySQLExecute($query,$types=null,...$params)
     log_error($e->getMessage());
   }
 
-  log_dev("MySQLExecute($query,$types,".log_array($params).")");
-  log_dev("MySQLExecute: failed");
+  log_warn("MySQLExecute($query,$types,".log_array($params).")");
+  log_warn("MySQLExecute: failed");
   return false;
 }
 

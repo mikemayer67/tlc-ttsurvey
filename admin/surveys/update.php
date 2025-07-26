@@ -75,7 +75,6 @@ function update_survey_pdf($survey_id,$survey_rev,$details)
 
   if($action === 'drop' || $action === 'replace') {
     if(file_exists($pdf_path)) {
-      log_dev("unlink $pdf_path");
       if(!unlink($pdf_path)) {
         throw new FailedToUpdate("Failed to drop existing PDF file: $pdf_path");
       }
@@ -88,7 +87,6 @@ function update_survey_pdf($survey_id,$survey_rev,$details)
     if(!$new_pdf) {
       throw new FailedToUpdate("Failed to update new PDF file, no file specified");
     }
-    log_dev("move $new_pdf to $pdf_path");
     if(!move_uploaded_file($new_pdf,$pdf_path)) {
       throw new FailedToUpdate("Failed to upload new PDF file: $new_pedf to: $pdf_path");
     }

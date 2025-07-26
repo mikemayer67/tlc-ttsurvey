@@ -21,7 +21,6 @@ $tmp_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
 
 $error = null;
 $new_id = create_new_survey($name,$clone,$tmp_pdf,$error);
-log_dev("create_new_survey: new_id=$new_id");
 
 if($new_id) {
   $info = survey_info($new_id);
@@ -30,6 +29,5 @@ if($new_id) {
   $rval = array('success'=>false, 'error'=>$error);
 }
 
-log_dev("rval: ".print_r($rval,true));
 echo json_encode($rval);
 die();

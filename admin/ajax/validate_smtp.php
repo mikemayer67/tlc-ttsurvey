@@ -112,7 +112,7 @@ catch(SMTPError $e) {
   $response = array('success'=>false, 'reason'=>$e->getMessage());
 }
 catch(Exception $e) {
-  log_dev("Failed Exception: ". $e->getMessage());
+  log_warn("Failed Exception: ". $e->getMessage());
   $response = array('success'=>false, 'reason'=>$e->getMessage());
 }
 finally {

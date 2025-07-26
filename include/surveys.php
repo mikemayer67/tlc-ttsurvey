@@ -79,7 +79,6 @@ class Surveys
   
     if(is_null($survey_rev)) {
       $survey_rev = MySQLSelectValue('select survey_rev from tlc_tt_surveys where survey_id=(?)', 'i', $survey_id);
-      log_dev("content => $survey_id / $survey_rev");
       if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
     }
   
@@ -195,7 +194,6 @@ class Surveys
   
   static function _ancestors($survey_id,$survey_rev)
   {
-    log_dev("_ancestors($survey_id,$survey_rev)");
     while($survey_rev > 1) {
       $survey_rev -= 1;
       yield[$survey_id,$survey_rev];
@@ -214,7 +212,6 @@ class Surveys
 
   static function _add_archived_questions($survey_id, $survey_rev, &$questions)
   {
-    log_dev("_add_archived_questions($survey_id,$survey_rev,questions)");
     $exclude = array_keys($questions);
 
     $q_fields = [
@@ -228,7 +225,6 @@ class Surveys
     # loop over current survey + up the parent tree
     foreach(self::_ancestors($survey_id,$survey_rev) as [$sid,$rev])
     {
-      log_dev("ancestors => $sid, $rev");
       $exclude_clause = $exclude ? ' and question_id not in ('.implode(',',$exclude).')' : "";
 
       $query = <<<SQL
@@ -291,7 +287,6 @@ class Surveys
 
   static function _add_question_options(&$questions,$survey_id,$survey_rev)
   {
-    log_dev("_add_question_options(questions,$survey_id,$survey_rev)");
     $query = <<<SQL
       SELECT question_id, secondary, option_id
       FROM   tlc_tt_question_options qo 
@@ -378,10 +373,9 @@ class Surveys
       MySQLExecute("delete from tlc_tt_survey_questions where survey_id=$id and survey_rev>$rev");
       MySQLExecute("delete from tlc_tt_survey_sections  where survey_id=$id and survey_rev>$rev");
       MySQLExecute("delete from tlc_tt_survey_options   where survey_id=$id and survey_rev>$rev");
-      log_dev("Commit"); MySQLCommit(); 
     }
     else { 
-      log_dev("Rollback"); MySQLRollback(); 
+      MySQLRollback(); 
     }
   
     return true;
