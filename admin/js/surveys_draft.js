@@ -235,7 +235,7 @@ export default function draft_controller(ce)
 
         ce.cur_survey.title = survey_name;
         ce.cur_survey.has_pdf = data.has_pdf;
-        ce.survey_data.content(ce.cur_survey.id,content);
+        ce.survey_data.content(ce.cur_survey.id,data.content);
 
         _survey_name.val('');
 
@@ -250,11 +250,6 @@ export default function draft_controller(ce)
           location.reload();
         } else {
           alert("handle bad input notices");
-//          --- copied from settings.js ---
-//          for( const [key,error] of Object.entries(data) ) {
-//            if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
-//            if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
-//          }
         }
       }
       validate_all();

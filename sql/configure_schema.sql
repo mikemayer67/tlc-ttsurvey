@@ -144,7 +144,7 @@ IF version < 1 THEN
     question_id       smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
     survey_id         smallint UNSIGNED NOT NULL,
     survey_rev        smallint UNSIGNED NOT NULL,
-    wording_sid       smallint UNSIGNED NOT NULL           COMMENT '(StringID) The wording of this question shown in the survey',
+    wording_sid       smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
     question_type     ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
     multiple          tinyint     DEFAULT NULL             COMMENT 'For OPTIONS type, multiple options can be selected',
     other_sid         smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS type, provide an "other" option with the specified label',
