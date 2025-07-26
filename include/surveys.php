@@ -30,9 +30,15 @@ class Surveys
   static function info($id)
   {
     $info = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=?",'i',$id);
+
     if(self::pdf_file($id)) {
       $info['has_pdf'] = true;
     }
+
+    // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
+    // PHP is not using the survey_id key, but retaining it just in case this ever changes
+    $info['id'] = $info['survey_id'];
+
     return $info;
   }
 
@@ -73,6 +79,7 @@ class Surveys
   
     if(is_null($survey_rev)) {
       $survey_rev = MySQLSelectValue('select survey_rev from tlc_tt_surveys where survey_id=(?)', 'i', $survey_id);
+      log_dev("content => $survey_id / $survey_rev");
       if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
     }
   
