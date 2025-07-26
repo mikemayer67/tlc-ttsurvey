@@ -239,11 +239,16 @@ export default function question_editor(ce,controller)
     if(Object.keys(bullpen).length) {
       _archive_select.find('option:not(:first)').remove();
       Object.entries(bullpen).forEach( ([id,data]) => {
-        let wording = data.wording ?? '';
-        if(wording.length > 125) {
-          wording = wording.slice(0,125) + '...';
+        if(data.type) {
+          let wording = data.type === "INFO"
+          ? data.infotag || data.info || ''
+          : data.wording || '';
+
+          if(wording.length > 64) {
+            wording = wording.slice(0,64) + '...';
+          }
+          _archive_select.append(new Option( wording, id ));
         }
-        _archive_select.append(new Option( wording, id ));
       });
       _archive_select.val('').on('change',id,handle_archive);
       _archive.show();

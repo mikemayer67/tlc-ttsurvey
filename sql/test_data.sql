@@ -402,3 +402,6 @@ INSERT INTO tlc_tt_question_options
 -- easier to delete here with cascade than to modify the insert logic
 DELETE FROM tlc_tt_question_map 
       WHERE survey_id=2 AND survey_rev=2 and question_id in (52,53);
+
+DELETE FROM tlc_tt_survey_questions
+      WHERE survey_id=2 AND question_id=5;

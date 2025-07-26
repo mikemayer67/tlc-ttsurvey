@@ -361,14 +361,9 @@ export default function survey_editor(ce)
 
   self.unused_questions = function() 
   {
-    const cur_questions = _tree.all_questions();
     const rval = {};
-    for( const [id,data] of Object.entries(_content.questions) ) {
-      if(!cur_questions.has(Number(id))) {
-        if(data.type && data.wording) {
-          rval[id] = data;
-        }
-      }
+    for( const qid of _tree.bullpen() ) {
+      rval[qid] = _content.questions[qid];
     }
     return rval;
   }

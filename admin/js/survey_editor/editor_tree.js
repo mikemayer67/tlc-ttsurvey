@@ -7,6 +7,8 @@ export default function editor_tree(ce,controller)
   const _info     = $('#survey-tree .info');
   const _tree     = $('#survey-tree ul.sections');
 
+  const _bullpen  = new Set();  // to hold archived questions
+
   const _arborist = arborist(_box);
 
   // Start the returned editor_tree object.
@@ -45,6 +47,7 @@ export default function editor_tree(ce,controller)
     _question_sorters = {};
     _tree.empty();
     _info.hide();
+    _bullpen.clear();
   }
 
   // update repopulates the tree based on new survey content
@@ -54,7 +57,9 @@ export default function editor_tree(ce,controller)
   {
     self.reset();
 
-    if(!content) { return; }
+    if(!content)           { return; }
+    if(!content.sections)  { return; }
+    if(!content.questions) { return; }
 
     Object.keys(content.sections)
     .map(Number)
@@ -71,6 +76,10 @@ export default function editor_tree(ce,controller)
         create_question_li(eid,question).appendTo(ul);
       });
     });
+
+    Object.entries(content.questions)
+    .filter( ([qid,question]) => (question.section == null || question.sequence == null) )
+    .forEach( ([qid,question] ) => { _bullpen.add(Number(qid)) } );
 
     _arborist.handle_resize();
   }
@@ -460,6 +469,7 @@ export default function editor_tree(ce,controller)
   {
     _tree.find(`li.question[data-question=${question_id}]`).remove();
     clear_selection();
+    _bullpen.add(Number(question_id));
     $(document).trigger('SurveyWasModified');
   }
 
@@ -600,17 +610,28 @@ export default function editor_tree(ce,controller)
     return new Set( _tree.find('li.question').map((_,el) => Number($(el).data('question'))));
   }
 
+  self.bullpen = function() { 
+    return _bullpen; 
+  }
+
   self.replace_question = function(old_id, new_id, old_data, new_data) {
     const leaf = _tree.find(`li.question[data-question=${old_id}]`);
     if(leaf.length !== 1) { return; }
 
     leaf.data('question',new_id).attr('data-question',new_id);
 
-    _arborist.update_label(leaf,new_data.wording);
+    if(new_data.type === 'INFO') {
+      _arborist.update_label(leaf,new_data.infotag || new_data.info);
+    } else {
+      _arborist.update_label(leaf,new_data.wording);
+    }
 
     const old_type = old_data.type || '';
     const new_type = new_data.type || '';
     _arborist.update_type(leaf, new_type, old_type);
+
+    _bullpen.delete(Number(new_id));
+    if(old_type) { _bullpen.add(Number(old_id)); }
   }
 
   // 
