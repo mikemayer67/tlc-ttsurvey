@@ -66,8 +66,7 @@ export default function question_editor(ce,controller)
 
   const _hints              = _box.find('div.hint');
 
-  let _cur_id   = null;
-  let _cur_undo = null;
+  let _cur_id = null;  // This is the current question ID in the editor
 
   const _primary_selected_sorter = new Sortable( _primary_selected[0], 
     {
@@ -124,11 +123,12 @@ export default function question_editor(ce,controller)
     input.data('timer', setTimeout( function() {
       input.removeData('timer');
       validate_and_handle_update(input);
-    }, 500 ));
+    }, 250 ));
   }
 
   function handle_input_change(e)
   {
+    // this is for changes to <input> fields
     const input = $(this);
     const timer_id = input.data('timer') ?? undefined;
     if(timer_id) {
@@ -149,6 +149,7 @@ export default function question_editor(ce,controller)
 
   function handle_change(e)
   {
+    // this is for changes to non-<input> fields
     const key      = $(this).data('key');
     const value    = $(this).val();
     handle_update(key,value);
@@ -156,7 +157,7 @@ export default function question_editor(ce,controller)
 
   function handle_update(key,value)
   {
-    _cur_undo.update(key,value);
+    create_or_update_undo(key,value);
     controller.update_question_data(_cur_id,key,value);
     $(document).trigger('SurveyWasModified');
   }
@@ -230,12 +231,6 @@ export default function question_editor(ce,controller)
         break;
       }
     }
-
-    // Determine if we can continue with the current undo action.
-    //   Can do so only if it is the newest action on the undo stack.
-    //   Otherwise, create a new undo action.  Need to do this after
-    //   populating the option selection fields.
-    if( ! _cur_undo?.can_continue(id) ) { create_undo(id,data,controller); }
   }
 
   function show_new(id,data)
@@ -244,11 +239,16 @@ export default function question_editor(ce,controller)
     if(Object.keys(bullpen).length) {
       _archive_select.find('option:not(:first)').remove();
       Object.entries(bullpen).forEach( ([id,data]) => {
-        let wording = data.wording ?? '';
-        if(wording.length > 125) {
-          wording = wording.slice(0,125) + '...';
+        if(data.type) {
+          let wording = data.type === "INFO"
+          ? data.infotag || data.info || ''
+          : data.wording || '';
+
+          if(wording.length > 64) {
+            wording = wording.slice(0,64) + '...';
+          }
+          _archive_select.append(new Option( wording, id ));
         }
-        _archive_select.append(new Option( wording, id ));
       });
       _archive_select.val('').on('change',id,handle_archive);
       _archive.show();
@@ -284,10 +284,11 @@ export default function question_editor(ce,controller)
     controller.update_question_data(_cur_id,'options',options); 
     populate_options(options);
     update_option_pools();
+    $(document).trigger('SurveyWasModified');
   }
 
   function create_chip(id,label) {
-    const chip = $("<div>").addClass('chip').data('id',id);
+    const chip = $("<div>").addClass('chip').data('id',id).attr('id',id);
     const span = $("<span>").text(label);
     const close = $("<button class='option' type='button'>x</button>");
     return chip.append(span).append(close);
@@ -344,11 +345,11 @@ export default function question_editor(ce,controller)
     const rval = [];
     _primary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
-      rval.push([ id, false]);
+      rval.push([ id, 0]);
     });
     _secondary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
-      rval.push([ id, true]);
+      rval.push([ id, 1]);
     });
     return rval;
   }
@@ -363,24 +364,55 @@ export default function question_editor(ce,controller)
     const old_options = controller.cur_question_data(_cur_id,'options');
     const new_options = selected_options();
     ce.undo_manager.add({
-      undo() { update_options(old_options); },
-      redo() { update_options(new_options); },
+      action:'option-change',
+      question_id:_cur_id,
+      undo() { 
+        controller.select_question(this.question_id);
+        setTimeout( function() { update_options(old_options) }, 100);
+      },
+      redo() { 
+        controller.select_question(this.question_id);
+        setTimeout( function() { update_options(new_options) }, 100);
+      },
     });
     
     controller.update_question_data(_cur_id,'options',new_options); 
     update_option_pools();
+    $(document).trigger('SurveyWasModified');
   }
 
   function handle_edit_chip(e) {
     const chip = $(this).closest('.chip');
     const span = chip.children('span');
     const old_value = span.text();
-    const new_value = prompt('Edit option',old_value).trim();
+    const raw_value = prompt('Edit option',old_value);
+    if( raw_value === null ) { return; }
+
+    const chip_id = chip.data('id');
+
+    const new_value = raw_value.trim();
     if(new_value && (old_value !== new_value)) {
-      span.text(new_value);
-      const id = chip.data('id');
-      controller.update_option(id,new_value);
-      update_option_pools();
+      function apply_edit_chip(value) {
+        const all_chips = _options.find('div.chip');
+        const chips = all_chips.filter('[id='+chip_id+']');
+        const spans = chips.children('span');
+        spans.text(value);
+        controller.update_option(chip_id,value);
+        update_option_pools();
+        $(document).trigger('SurveyWasModified');
+      }
+      ce.undo_manager.add_and_exec( {
+        action:'chip_edit',
+        question_id:_cur_id,
+        redo() { 
+          controller.select_question(this.question_id); 
+          setTimeout( function() {apply_edit_chip(new_value)}, 100)
+        },
+        undo() { 
+          controller.select_question(this.question_id);
+          setTimeout( function() {apply_edit_chip(old_value)}, 100);
+        },
+      });
     }
   }
 
@@ -406,6 +438,7 @@ export default function question_editor(ce,controller)
     const new_id = item.val();
     const old_id = e.data;
     ce.undo_manager.add_and_exec({
+      action:'unarchive-question',
       redo() {
         const data = controller.replace_question(old_id,new_id);
         show(new_id,data);
@@ -423,6 +456,7 @@ export default function question_editor(ce,controller)
     const type = item.val();
     const [id,data] = e.data;
     ce.undo_manager.add_and_exec({
+      action:'set-question-type',
       redo() {
         controller.update_question_type(id,type);
         show(id,data);
@@ -433,109 +467,83 @@ export default function question_editor(ce,controller)
       },
     });
   }
+ 
+  //---------------------------------------------------------------------------------------
+  // The following function handles the creation or updating of undo/redo actions
+  //   associated with changes to section data.  As we don't want to create an action
+  //   for every keystroke in an <input> fieled, these changes are accumulated in a
+  //   single undo action.
+  //
+  // The following conditions must apply in order to update the action rather than
+  //   creating a new action:
+  //   - The redo stack must be empty
+  //   - The undo action in question must be on the top of the undo stack
+  //   - The undo action must be for the same input field (*)
+  //   - The undo action must never have been on the redo stack
+  //   These rules ensure that only changes that happen without any intevening 
+  //   undoable actions are accumulated.
+  //
+  // The first two of these rules are handled automatically by using the undo manager's
+  //    head() method.  This will return null if there is anything on the redo stack.
+  //
+  // * In an earlier implementation of the undo actions for section input changes, an
+  //   attempt was made to accumulate all changes for a given section into a single
+  //   action regardless of the particular input field.   This became problematic
+  //   over time and was abandoned.
+  //---------------------------------------------------------------------------------------
 
-  //---------------------------------------------------------------------------------------
-  // Undo events
-  //---------------------------------------------------------------------------------------
-  // The section editor accumulats all input field changes into a a single undo/redo
-  //   event.  The question editor, accumulates changes to each input field independently.
-  //   All changes to a given input field form the atomic actions.  
-  //
-  // In addition, there are different create_undo methods for input/textarea fields and
-  //   for option selection fields.
-  //
-  // This means we need to track which input the undo action is tracking.
-  //
-  // Other than that, see the section editor undo events for more info on how these
-  //   events work with the undo/redo manager.
-  //---------------------------------------------------------------------------------------
-  
-  function create_undo(id,data,controller,key,new_value)
+  function create_or_update_undo(key,value)
   {
-    // The key and new_value fields are optional. If not specified, we are simply queueing
-    //   up an undo action that will be ready to handle any change to an input or 
-    //   textarea field.  If they are specified, then we need to cache both the current
-    //   and new values associated with the key
+    const cur_undo = ce.undo_manager.head();
 
-    function apply_action(question_id, key, value)
-    {
-      // no matter if we are doing an undo or a redo, we need to make sure we're 
-      //   on the editor for the correct question
-      controller.select_question(question_id);
+    const can_accumulate = (
+      ( cur_undo?.action === 'question-input-change' ) &&
+      ( cur_undo?.question_id === _cur_id ) &&
+      ( cur_undo?.key === key ) &&
+      ( cur_undo?.redone !== true )
+    );
 
-      const input = _box.find('.question.'+key).val(value).trigger('change');
-      const error = validate_input(key,value)
-      _box.children('.value.'+key).find('span.error').text(error??'');
-      controller.update_question_error(question_id,key,value,error);
-      controller.update_question_data(question_id,key,value);
-      $(document).trigger('SurveyWasModified');
+    if( can_accumulate ) {
+      // Modify the current undo action rather than creating a new one.
+      cur_undo.new_value = value
+
+      // But, if the new value is the same as the original value, the user has manually
+      //   performed the undo. Pop the action off the undo stack.
+      if(cur_undo.new_value === cur_undo.old_value) {
+        ce.undo_manager.pop(cur_undo);
+      }
     }
+    else {
+      // Accumulation not allowed, create a new undo action
 
-    _cur_undo = {
-      question_id: id,
-      key: null,
+      function apply_action(question_id, value)
+      {
+        const error = validate_input(key,value);
+        _box.find('.question.'+key).val(value);
+        _box.children('.value.'+key).find('span.error').text(error?? '');
+        controller.update_question_error(question_id,key,value,error);
+        controller.update_question_data(question_id,key,value);
+        $(document).trigger('SurveyWasModified');
+      }
 
-      can_continue(id) {
-        return ce.undo_manager.isHead(this) && (id === this.question_id);
-      },
-
-      undo() {
-        // the undo manager will be moving this action to the redo stack.
-        //   We will need to create a new undo action to handle the next
-        //   input/textarea change (after applying the undo)
-        apply_action(this.question_id, this.key, this.old_value);
-        create_undo(id,data,controller);
-      },
-
-      redo() {
-        // the undo manager will be moving this action back ot the undo stack.
-        //   We will need to point to that as the current action (after applying the redo)
-        apply_action(this.question_id, this.key, this.new_value);
-        _cur_undo = this;
-      },
-
-      update(key,value) {
-        const isCurrent = ce.undo_manager.isHead(this);
-        if(isCurrent && key === this.key) {
-          // we can continue to accumulate the changes on this action
-          if(value === this.old_value ) {
-            // but if user manually undid the action, pop it off the undo stack
-            ce.undo_manager.pop(this);
-            this.key = null;
-            this.old_value = '';
-            this.new_vlaue = '';
-          } else {
-            this.new_value = value;
-          }
-        } 
-        else if(this.key) {
-          // the current undo action is already on the undo or redo stack, 
-          //   but it is not on top of the undo stack
-          // we need to start a new undo action and seed it with the latest update
-          //   seeding it,
-          // create_undo will put it on the undo stack as a key/value is provided
-          create_undo(id,data,controller,key,value);
-        } 
-        else {
-          // the current undo action is not on the undo stack, i.e. it does
-          //   not yet represent a field change
-          // add the update key/value and put the action on the undo stack
-          this.key = key;
-          this.old_value = data[key];
-          this.new_value = value;
-          ce.undo_manager.add(this);
+      ce.undo_manager.add({
+        action: 'question-input-change',
+        question_id: _cur_id,
+        key: key,
+        old_value: controller.cur_question_data(_cur_id,key),
+        new_value: value,
+        redone: false,
+        undo() {
+          controller.select_question(this.question_id);
+          setTimeout(() => { apply_action(this.question_id, this.old_value); }, 100);
+        },
+        redo() {
+          this.redone = true;
+          controller.select_question(this.question_id);
+          setTimeout(() => { apply_action(this.question_id, this.new_value); }, 100);
         }
-      },
-    };
-
-    if(key) {
-      // seed the undo action with an input/textarea field update
-      _cur_undo.key = key;
-      _cur_undo.old_value = data[key] || '';
-      _cur_undo.new_value  = new_value || '';
-      // and add it to the undo manager
-      ce.undo_manager.add(_cur_undo);
-    } 
+      });
+    }
   }
 
   return {

@@ -10,13 +10,13 @@ function validate_input(key,value)
     case 'name':
       if(len==0) { return 'missing';   } 
       if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s&-]");
+      invalid_char_regex = new RegExp("[^\\w\\s.,&-]");
       break;
     case 'feedback':
       if(len>0 && len<4) { return 'too short'; }
       invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
       break;
-  }
+  }  // This is the current question ID in the editor
 
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
@@ -45,11 +45,10 @@ export default function section_editor(ce,controller)
   const _hints             = _box.find('div.hint');
   const _fields            = _box.find('input,textarea,select');
 
-  let _cur_id    = null;
-  let _cur_undo  = null;
+  let _cur_id = null;  // This is the current section ID displayed in the editor
 
   _description_value.on('input change', update_character_count);
-  _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_blur);
+  _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 
   function handle_input(e) 
@@ -60,11 +59,12 @@ export default function section_editor(ce,controller)
     input.data('timer', setTimeout( function() {
       input.removeData('timer');
       validate_and_handle_update(input);
-    }, 500 ));
+    }, 250 ));
   }
 
-  function handle_input_blur(e)
+  function handle_input_change(e)
   {
+    // this is for changes to <input> fields 
     const input = $(this);
     const timer_id = input.data('timer') ?? undefined;
     if(timer_id) {
@@ -85,6 +85,7 @@ export default function section_editor(ce,controller)
 
   function handle_change(e)
   {
+    // this is for changes to non-<input> fields
     const key      = $(this).data('key');
     const value    = $(this).val();
     handle_update(key,value);
@@ -92,18 +93,13 @@ export default function section_editor(ce,controller)
 
   function handle_update(key,value)
   {
-    _cur_undo.update(key,value);
+    create_or_update_undo(key,value);
     controller.update_section_data(_cur_id,key,value);
     $(document).trigger('SurveyWasModified');
   }
 
   function show(id,data,options)
   {
-    // Determine if we can continue with the current undo action.
-    //   Can do so only if it is the newest action on the undo stack.
-    //   Otherwise, create a new undo action
-    if( ! _cur_undo?.can_continue(id) ) { create_undo(id,data,controller); }
-
     _cur_id = id;
 
     _name_value.val(data.name || '');
@@ -115,74 +111,81 @@ export default function section_editor(ce,controller)
   }
 
   //---------------------------------------------------------------------------------------
-  // This undo action accumulates changes to the section editor so that triggering
-  //   undo or redo will treat the entire sequence of edits as a single atomic action.
-  //  - When the undo manager triggers an undo, it moves the action to the redo stack.
-  //      If additional edits occur after an undo, we want to start a new undo action
-  //      rather than accumulating them on the current action (which has been undone)
-  //      We do not want to modify the current action as this would break its future
-  //      redo capability.
-  //  - When the redo manager triggers a redo, it moves the action back to the undo stack.
-  //      If additional edits occur after a redo, we want to continue the accumulation
-  //      of edits. Simply reconnect our current undo action pointer to the action
-  //      that was just moved back to the undo stack.  The following scenario illustrates
-  //      a series of edits and undo/redo actions that comes back to the original state:
-  //        [orig] > (edits) > undo > redo > (edits) > undo > [orig]
-  //      An alternative design which was rejected was to start a new undo action
-  //        after a redo to capture the next set of edits.  This would require multiple
-  //        undos simply because the user did an undo/redo sequence in the middle of
-  //        their edits:
-  //          [orig] > (edits) > undo > redo > (edits) > undo > undo > [orig].
-  //        While this is a plausible implementation, I opted for the first approach.
-  //  - Finally, this undo action will not be added to the undo manager until the
-  //      first edit actually occurs. There is no need to require that the user
-  //      hit the undo button multiple times if there is nothing to undo. The
-  //      first edit is identified by the lack of a new_values property.
+  // The following function handles the creation or updating of undo/redo actions
+  //   associated with changes to section data.  As we don't want to create an action
+  //   for every keystroke in an <input> fieled, these changes are accumulated in a
+  //   single undo action.
+  //
+  // The following conditions must apply in order to update the action rather than
+  //   creating a new action:
+  //   - The redo stack must be empty
+  //   - The undo action in question must be on the top of the undo stack
+  //   - The undo action must be for the same input field (*)
+  //   - The undo action must never have been on the redo stack
+  //   These rules ensure that only changes that happen without any intevening 
+  //   undoable actions are accumulated.
+  //
+  // The first two of these rules are handled automatically by using the undo manager's
+  //    head() method.  This will return null if there is anything on the redo stack.
+  //
+  // * In an earlier implementation of the undo actions for section input changes, an
+  //   attempt was made to accumulate all changes for a given section into a single
+  //   action regardless of the particular input field.   This became problematic
+  //   over time and was abandoned.
   //---------------------------------------------------------------------------------------
-    
-  function create_undo(id,data,controller)
-  {
-    function apply_action(section_id, values)
-    {
-      controller.select_section(section_id);
 
-      Object.entries(values).forEach(([key,value]) => {
-        const input = _box.find('.section.'+key).val(value).trigger('change');
+  function create_or_update_undo(key,value)
+  {
+    const cur_undo = ce.undo_manager.head();
+
+    const can_accumulate = (
+      ( cur_undo?.action === 'section-input-change' ) &&
+      ( cur_undo?.section_id === _cur_id ) &&
+      ( cur_undo?.key === key ) &&
+      ( cur_undo?.redone !== true )
+    );
+
+    if( can_accumulate ) {
+      // Modify the current undo action rather than creating a new one.
+      cur_undo.new_value = value
+
+      // But, if the new value is the same as the original value, the user has manually
+      //   performed the undo. Pop the action off the undo stack.
+      if(cur_undo.new_value === cur_undo.old_value) {
+        ce.undo_manager.pop(cur_undo);
+      }
+    }
+    else {
+      // Accumulation not allowed, create a new undo action
+
+      function apply_action(section_id, value)
+      {
+        controller.select_section(section_id);
+
         const error = validate_input(key,value);
+        _box.find('.section.'+key).val(value);
         _box.children('.value.'+key).find('span.error').text(error?? '');
-        controller.update_section_error(_cur_id,key,value,error);
-        controller.update_section_data(_cur_id,key,value);
+        controller.update_section_error(section_id,key,value,error);
+        controller.update_section_data(section_id,key,value);
         $(document).trigger('SurveyWasModified');
+      }
+
+      ce.undo_manager.add({
+        action: 'section-input-change',
+        section_id: _cur_id,
+        key: key,
+        old_value: controller.cur_section_data(_cur_id,key),
+        new_value: value,
+        redone: false,
+        undo() {
+          apply_action(this.section_id, this.old_value);
+        },
+        redo() {
+          this.redone = true;
+          apply_action(this.section_id, this.new_value);
+        }
       });
     }
-
-    _cur_undo = {
-      section_id:id,
-      orig_values: {
-        name:data.name || '',
-        labeled:data.labeled ?? 0,
-        description:data.description || '',
-        feedback:data.feedback || '',
-      },
-      can_continue(id) {
-        return ce.undo_manager.isHead(this) && (id === this.section_id);
-      },
-      undo() {
-        apply_action(this.section_id, this.orig_values);
-        create_undo(id,data,controller);
-      },
-      redo() { 
-        apply_action(this.section_id, this.new_values);
-        _cur_undo = this;
-      },
-      update(key,value) {
-        if(!('new_values' in this)) {
-          this.new_values = deepCopy(this.orig_values);
-          ce.undo_manager.add(this);
-        }
-        this.new_values[key] = value;
-      }
-    };
   }
 
   return {

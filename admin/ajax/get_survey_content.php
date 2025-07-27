@@ -9,8 +9,6 @@ validate_ajax_nonce('admin-surveys');
 
 handle_warnings();
 
-log_dev('get_survey_content: '.print_r($_POST,true));
-
 $id = $_POST['survey_id'];
 
 $content = survey_content($id);

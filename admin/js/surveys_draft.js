@@ -193,34 +193,36 @@ export default function draft_controller(ce)
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
     const content = ce.survey_editor.content();
+    const json_content = JSON.stringify(content);
 
     var formData = new FormData();
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/update_survey');
-    formData.append('survey_id',ce.cur_survey.id);
+    formData.append('id',ce.cur_survey.id);
+    formData.append('revision',ce.cur_survey.survey_rev);
     formData.append('name',survey_name);
-    formData.append('content',JSON.stringify(content));
+    formData.append('content',json_content);
 
     if(ce.cur_survey.has_pdf) {
       switch(_pdf_action.val()) {
         case 'drop':
-          formData.append('existing_pdf','drop');
+          formData.append('pdf_action','drop');
           break;
         case 'replace':
-          formData.append('existing_pdf','replace');
-          formData.append('survey_pdf',_survey_pdf[0].files[0]);
+          formData.append('pdf_action','replace');
+          formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
           break;
       }
     } else {
       if(_survey_pdf.val()) {
-        formData.append('existing_pdf','add');
-        formData.append('survey_pdf',_survey_pdf[0].files[0]);
+        formData.append('pdf_action','add');
+        formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
       }
     }
 
     $.ajax( {
       type: 'POST',
-      ulr: ce.ajaxuri,
+      url: ce.ajaxuri,
       contentType: false,
       processData: false,
       dataType: 'json',
@@ -233,7 +235,7 @@ export default function draft_controller(ce)
 
         ce.cur_survey.title = survey_name;
         ce.cur_survey.has_pdf = data.has_pdf;
-        ce.survey_data.content(ce.cur_survey.id,content);
+        ce.survey_data.content(ce.cur_survey.id,data.content);
 
         _survey_name.val('');
 
@@ -248,11 +250,6 @@ export default function draft_controller(ce)
           location.reload();
         } else {
           alert("handle bad input notices");
-//          --- copied from settings.js ---
-//          for( const [key,error] of Object.entries(data) ) {
-//            if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
-//            if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
-//          }
         }
       }
       validate_all();

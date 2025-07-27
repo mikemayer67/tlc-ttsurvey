@@ -113,6 +113,7 @@ export default function survey_editor(ce)
       options: _content.options,
       sections: {},
       questions: {},
+      next_ids: _content.next_ids,
     };
 
     let new_sid = 0;
@@ -168,7 +169,14 @@ export default function survey_editor(ce)
   }
 
   self.update_question_type = function(question_id,type,old_type) {
-    _content.questions[question_id]['type'] = type;
+    const question = _content.questions[question_id];
+    question['type'] = type;
+    if(type === 'SELECT_MULTI' || type == 'SELECT_ONE') {
+      question.options = [];
+    }
+    else {
+      delete question.options
+    }
     _tree.update_question_type(question_id,type,old_type);
   }
 
@@ -177,12 +185,13 @@ export default function survey_editor(ce)
   self.add_new_section = function(where)
   {
     const new_section_id = _next_section_id++;
-    const new_section = { name:"", description:"", show:false, feedback:false };
+    const new_section = { name:"", description:"", labeled:true, feedback:false };
     const cur_highlight = _tree.cache_selection();
 
     _content.sections[ new_section_id ] = new_section;
 
     ce.undo_manager.add_and_exec( {
+      action:'add-new-section',
       redo() {
         _tree.add_section( new_section_id, new_section, where );
       },
@@ -196,12 +205,13 @@ export default function survey_editor(ce)
   self.add_new_question = function(where)
   {
     const new_question_id = _next_question_id++;
-    const new_question = { type:null };
+    const new_question = { id:new_question_id, type:null };
     const cur_highlight = _tree.cache_selection();
 
     _content.questions[ new_question_id ] = new_question;
 
     ce.undo_manager.add_and_exec( {
+      action:'add-new-question',
       redo() { 
         _tree.add_question(new_question_id, new_question, where);
       },
@@ -225,6 +235,7 @@ export default function survey_editor(ce)
       const where = { offset:1, question_id:data.parent_id };
 
       ce.undo_manager.add_and_exec( {
+        action:'clone-question',
         redo() {
           _tree.add_question(new_question_id, new_question, where);
         },
@@ -262,6 +273,7 @@ export default function survey_editor(ce)
     }
 
     ce.undo_manager.add_and_exec({
+      action:'delete-section',
       redo() {
         _tree.remove_section(section_id);
       },
@@ -300,6 +312,7 @@ export default function survey_editor(ce)
     }
 
     ce.undo_manager.add_and_exec({
+      action: 'delete-question',
       redo() { 
         _tree.remove_question(question_id);
       },
@@ -348,14 +361,9 @@ export default function survey_editor(ce)
 
   self.unused_questions = function() 
   {
-    const cur_questions = _tree.all_questions();
     const rval = {};
-    for( const [id,data] of Object.entries(_content.questions) ) {
-      if(!cur_questions.has(Number(id))) {
-        if(data.type && data.wording) {
-          rval[id] = data;
-        }
-      }
+    for( const qid of _tree.bullpen() ) {
+      rval[qid] = _content.questions[qid];
     }
     return rval;
   }
@@ -373,8 +381,9 @@ export default function survey_editor(ce)
   }
 
   self.add_option = function(new_value) {
-    const new_id = ++_content.next_ids.option;
+    const new_id = _content.next_ids.option;
     _content.options[new_id] = new_value;
+    _content.next_ids.option += 1;
     return new_id;
   }
 

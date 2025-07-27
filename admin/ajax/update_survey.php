@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/surveys.php'));
+require_once(app_file('admin/surveys/update.php'));
 
 validate_ajax_nonce('admin-surveys');
 
@@ -12,44 +12,48 @@ handle_warnings();
 
 use Exception;
 
-$id      = $_POST['survey_id'] ?? null;
-$name    = $_POST['name'] ?? null;
-$cur_pdf = $_POST['existing_pdf'] ?? 'keep';
-$new_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
-$content = json_decode($_POST['content'],true);
-
-log_dev("update_survey: id = $id");
-log_dev("update_survey: name = $name");
-log_dev("update_survey: cur_pdf = $cur_pdf");
-log_dev("update_survey: new_pdf = $new_pdf");
-log_dev("update_survey: content = " . print_r($content,true));
-
+// using javascript keys id and revision rather than PHP keys survey_id and survey_rev
+$survey_id  = $_POST['id'] ?? null;
+$survey_rev = $_POST['revision'] ?? null;
+$title      = $_POST['name'] ?? null;
+$pdf_action = $_POST['pdf_action'] ?? null;
+$new_pdf    = $_FILES['new_survey_pdf']['tmp_name'] ?? null;
+$content    = json_decode($_POST['content'],true);
 
 try {
   $error = null;
-  if(!$id) {
-    throw new Exception('Missing id in request');
-  }
 
-  if(!update_survey($id,$name,$cur_pdf,$new_pdf,$error)) {
-    throw new Exception($error);
-  }
+  if(!$survey_id)  { throw new Exception('Missing survey_id in request'); }
+  if(!$survey_rev) { throw new Exception('Missing revision in request');  }
+
+  $details = [];
+  if($title)      { $details['title']      = $title;      }
+  if($pdf_action) { $details['pdf_action'] = $pdf_action; }
+  if($new_pdf)    { $details['new_pdf']    = $new_pdf;    }
+
+  update_survey($survey_id,$survey_rev,$content,$details);
+
+  $pdf_file = survey_pdf_file($survey_id);
+  $next_ids = next_survey_ids($survey_id);
+  $revised_content = survey_content($survey_id);
 
   $rval = array(
     'success'=>true,
-    'has_pdf'=>(null !== survey_pdf_file($id)),
-    'next_ids' => ['usrvey'=>101, 'queestion'=>200, 'option'=>50],
+    'has_pdf'=>($pdf_file !== null),
+    'content'=>$revised_content,
+    'next_ids' => $next_ids,
   );
 }
 catch(Exception $e)
 {
+  log_dev("Soemthing went wrong: ".str($e),0);
   $errid = bin2hex(random_bytes(3));
   $error = $e->getMessage();
-  log_error("[$errid]: $error");
+  log_error("[$errid]: $error",0);
   http_response_code(400);
   $rval = array(
     'success'=>false, 
-    'error'=>"Internal error #$errid: Please let a tech admin know.",
+    'error'=>"Failed to update survey.  Please report error $errid to a tech admin",
   );
 }
 

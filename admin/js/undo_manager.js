@@ -8,7 +8,11 @@ export default function undo_manager(ce)
 
   let _overflow = false;
 
+  let next_uid=1;
+
   function add(a,exec) {
+    a.uid = next_uid++;
+
     // - the action a must support both the undo() and redo() methods
     //
     // - if the exact same action is pushed onto the stack multiple times
@@ -31,10 +35,9 @@ export default function undo_manager(ce)
   }
 
   function pop(a) {
-    // if the provided action is the last on the undo stack, it is removed from the stack.
-    //   The redo stack is left unmodified as any actions on there would be older than the
-    //   one being popped off the undo stack
-    if( _undo_stack.at(-1) !== a ) { return false; }
+    // if the provided action is the last on the undo stack, and the redo stack is
+    //   empty, remove the provided action from the undo stack.
+    if( _undo_stack.at(-1) !== a  && _redo_stack.length == 0) { return false; }
 
     _undo_stack.pop(); 
     notify();
@@ -61,7 +64,15 @@ export default function undo_manager(ce)
     return true;
   }
 
+  function head() {
+    // Returns the top of the undo stack, but only if the redo stack is empty
+    if(_redo_stack.length  >  0 ) { return null; }
+    if(_undo_stack.length === 0 ) { return null; }
+    return _undo_stack.at(-1);
+  }
+
   function isHead(a) {
+    // TODO... replace all use of this method with the head method
     return (
       (_undo_stack.length>0) 
       && (_redo_stack.length==0) 
@@ -98,7 +109,6 @@ export default function undo_manager(ce)
   $(document).on('keydown', function(e) {
     const ctrlOrCmd = ce.isMac ? e.metaKey : e.ctrlKey;
     if (ctrlOrCmd && e.key.toLowerCase() === 'z' && !e.shiftKey) {
-      console.log('undo keypress');
       e.preventDefault();
       undo();
     }
@@ -106,7 +116,6 @@ export default function undo_manager(ce)
       (ctrlOrCmd && e.key.toLowerCase() === 'z' && e.shiftKey) ||
       (!ce.isMac && e.ctrlKey && e.key.toLowerCase() === 'y')
     ) {
-      console.log('redo keypress');
       e.preventDefault();
       redo();
     }
@@ -123,5 +132,6 @@ export default function undo_manager(ce)
     hasUndo() { return _undo_stack.length > 0; },
     hasRedo() { return _redo_stack.length > 0; },
     isHead: isHead,
+    head: head,
   };
 }
