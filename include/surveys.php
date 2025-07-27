@@ -147,7 +147,7 @@ class Surveys
         FROM tlc_tt_survey_questions q
        INNER JOIN tlc_tt_question_map m      
           ON m.survey_id=q.survey_id AND m.survey_rev=q.survey_rev AND m.question_id=q.question_id
-       INNER JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
+        LEFT JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
         LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
         LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
         LEFT JOIN tlc_tt_strings description ON description.string_id = q.description_sid
