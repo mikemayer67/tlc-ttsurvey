@@ -19,21 +19,6 @@
       return;
     }
 
-    // handle an "add role" button
-    if(sender.hasClass('add')) {
-      var role   = sender.attr('to');
-      var select = ce.add_selects[role];
-      var button = ce.add_buttons[role];
-      var userid = select.val();
-
-      add_role(role,userid);
-
-      select.val('');
-      button.prop('disabled',true).css('visibility','hidden');
-      update_submit();
-      return;
-    }
-
     // handle revert button
     if(ce.revert.is(sender)) {
       revert_values();
@@ -89,11 +74,10 @@
   function add_role(role,userid)
   {
       var select = ce.add_selects[role];
-      var button = ce.add_buttons[role];
       var option = select.find('option[value="'+userid+'"]');
       var name   = option.html();
 
-      button.parent().before(
+      select.parent().before(
         '<li class="user" userid="' + userid + '" role="' + role + '">' +
         '<button class="remove" userid="' + userid + '" from="' + role + '">-</button>' +
         '<span class="name">' + name + '</span></li>'
@@ -106,15 +90,11 @@
   {
     hide_status();
 
-    var selected = $(this).val();
     var role = $(this).attr('name');
-    var add_button = ce.add_buttons[role];
-    if(selected == "") {
-      add_button.prop('disabled',true);
-      add_button.css('visibility','hidden');
-    } else {
-      add_button.prop('disabled',false);
-      add_button.css('visibility','visible');
+    var userid = $(this).val();
+
+    if(userid) {
+      add_role(role,userid);
     }
   }
 
