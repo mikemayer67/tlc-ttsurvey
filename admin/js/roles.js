@@ -95,6 +95,7 @@
 
     if(userid) {
       add_role(role,userid);
+      update_submit();
     }
   }
 
