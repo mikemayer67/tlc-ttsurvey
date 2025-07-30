@@ -7,6 +7,8 @@ require_once(app_file('include/surveys.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
+$is_admin = in_array('admin',$active_roles);
+
 // survey data
 $all_surveys = all_surveys();
 
@@ -16,8 +18,14 @@ if($all_surveys) {
   $all_surveys[0]['content'] = survey_content($id);
 }
 
+if(! ($all_surveys || $is_admin) ) {
+  echo "<div class='notice'><p>There are currently no surveys in the database.</p><p>New surveys must be added by one of the admins.</p></div>";
+  exit(0);
+}
+
 echo "<script>";
 echo "const ttt_all_surveys = " . json_encode($all_surveys) . ";";
+echo "const ttt_is_admin = " . ($is_admin ? "true" : "false") . ";";
 echo "</script>";
 
 $form_uri = app_uri('admin');
@@ -37,7 +45,7 @@ echo <<<HTMLCTRLS
   <div class='survey-actions'>
 HTMLCTRLS;
 
-if(in_array('admin',$active_roles)) {
+if($is_admin) {
   echo "<a class='action draft' target='active'>Go Live</a>";
   echo "<a class='action active' target='draft'>Edit</a>";
   echo "<a class='action active add-sep' target='closed'>Close</a>";
@@ -131,5 +139,4 @@ echo <<<HTML
 HTML;
 
 echo "<script type='module' src='", js_uri('surveys','admin'), "'></script>";
-//echo "<script src='", js_uri('survey_editor','admin'), "'></script>";
 echo "<script src='", js_uri('dayjs.min'), "'></script>";
