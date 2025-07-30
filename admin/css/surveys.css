@@ -2,6 +2,17 @@
   padding-top:3px;
 }
 
+#ttt-body div.body div.notice {
+  padding-top:10px;
+  padding-bottom:10px;
+  font-size:110%;
+}
+
+#ttt-body div.body div.notice p {
+  margin:0;
+  padding:0;
+}
+
 #ttt-body form .survey-controls {
   margin-top:0;
   margin-bottom:0.5em;
@@ -20,7 +31,7 @@
 }
 
 #ttt-body form .survey-controls #survey-select {
-  font-size:130%;
+  font-size:110%;
 }
 
 #ttt-body form .survey-controls div { 
@@ -157,6 +168,10 @@
 
 #ttt-body div.body form table#info-edit td select {
   margin-right:0.5em;
+}
+
+#ttt-body div.body form table#info-edit tr.disabled td.label {
+  opacity:0.25;
 }
 
 #ttt-body div.body form table input[type=file] {

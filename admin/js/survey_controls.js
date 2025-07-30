@@ -1,8 +1,8 @@
 export default function survey_controls(ce)
 {
-  const _survey_select = $('#survey-select');
-  const _survey_status = ce.form.find('span.survey-status');
-  const _pdf_actions   = ce.form.find('a.action');
+  const _survey_select  = $('#survey-select');
+  const _survey_status  = ce.form.find('span.survey-status');
+  const _survey_actions = ce.form.find('a.action');
 
   // initialize survey select list
 
@@ -17,7 +17,7 @@ export default function survey_controls(ce)
     }));
   }
 
-  if( ce.has_admin_lock ) {
+  if( ce.has_admin_lock && ttt_is_admin ) {
     _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
     _survey_select.append($('<option>',{ 
       'value':  'new', 
@@ -71,8 +71,8 @@ export default function survey_controls(ce)
 
     _survey_status.html(status.charAt(0).toUpperCase() + status.slice(1));
 
-    _pdf_actions.hide();
-    _pdf_actions.filter(`.${status}`).show();
+    _survey_actions.hide();
+    _survey_actions.filter(`.${status}`).show();
 
     // update the info bar and editor to reflect the selected survey
     ce.survey_info.update_for_survey(ce.cur_survey);
@@ -86,8 +86,9 @@ export default function survey_controls(ce)
     ce.dispatch('select_survey',prior_survey);
   }
 
-  var options = _survey_select.find('option[value]').filter(':not(.new)');
-  select_survey(options.length ? options.first().val() : 'new');
+  var options = _survey_select.find('option[value]').not('.new');
+  if(options.length)    { select_survey(options.first().val()); }
+  else                  { select_survey('new');                 }
 
   function cloneable_surveys()
   {
@@ -129,7 +130,7 @@ export default function survey_controls(ce)
   }
 
   _survey_select.on('change',handle_survey_select);
-  _pdf_actions.on('click',handle_action_link);
+  _survey_actions.on('click',handle_action_link);
 
   $(document).on('SurveyDataChanged',handle_data_changed);
 

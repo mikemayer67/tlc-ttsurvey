@@ -31,8 +31,8 @@ export default function new_controller(ce)
 
   function select_new(prior)
   {
-    if(prior.id !== 'new') {
-      _prior_id = prior.id;
+    if(prior?.id !== 'new') {
+      _prior_id = prior?.id;
     }
 
     _info_edit.show();
@@ -44,7 +44,7 @@ export default function new_controller(ce)
 
     _survey_clone.find('option:not(:first)').remove();
     var cur_status = '';
-    const cloneable = ce.survey_controls.cloneable_surveys();
+    const cloneable = ce.survey_controls?.cloneable_surveys() ?? [];
     for(const opt of cloneable) {
       var status = $(opt).attr('status');
       if(status !== cur_status) {
@@ -54,8 +54,8 @@ export default function new_controller(ce)
       }
       _survey_clone.append(opt);
     }
-    //_survey_clone.append(cloneable);
-    _survey_clone.val('none');
+    _survey_clone.prop('disabled',cloneable.length===0);
+    _survey_clone.closest('tr').toggleClass('disabled',cloneable.length===0);
 
     _info_edit.find('.pdf-file td.label').html('Downloadable PDF');
     _survey_pdf.val('').show();
@@ -68,7 +68,7 @@ export default function new_controller(ce)
 
     ce.submit_bar.show();
     ce.submit.val('Create Survey');
-    ce.revert.val('Cancel').prop('disabled',false).css('opacity',1);
+    ce.revert.val('Cancel').prop('disabled',!_prior_id).css('opacity',_prior_id?1:0.25);
     update_submit();
   }
 
