@@ -31,7 +31,12 @@ export default function arborist(tree)
     const is_section = leaf.hasClass('section');
     const leaf_text = is_section ? leaf.find('span') : leaf;
 
+    if(is_section) {
+      console.log('tend ' + (is_section?'section':'question') + ' ' + full_text);
+    }
+
     if(full_text.length === 0) {
+      console.log('add needs-avlue');
       leaf_text.text('').addClass('needs-value');
       return;
     }
@@ -53,6 +58,7 @@ export default function arborist(tree)
     m.textContent      = full_text;
 
     if(m.offsetWidth <= maxWidth) {
+      console.log('remove needs-value');
       leaf_text.text(full_text).removeClass('needs-value');
       return;
     }
@@ -71,13 +77,18 @@ export default function arborist(tree)
       }
     }
 
+    console.log('remove_value (end)');
     leaf_text.text(full_text.slice(0,low-1) + suffix).removeClass('needs-value');
   }
 
   self.initialize = function(leaf,text,type)
   {
     leaf.data('full-text',text);
-    if( type !== undefined ) {
+    if(leaf.hasClass('section')) {
+      if(text) { leaf.find('span.name').removeClass('needs-value'); }
+      else     { leaf.find('span.name').addClass('needs-value'); }
+    }
+    else {
       if(type) { leaf.removeClass('needs-type').addClass(type.toLowerCase()); }
       else     { leaf.addClass('needs-type'); }
     }

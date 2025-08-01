@@ -39,7 +39,6 @@ export default function editor_menubar(ce,controller)
 
   _buttons.forEach( (b) => { b.attr('disabled',true); } );
 
-
   // Undo/Redo Buttons
 
   $(document).on('UndoStackChanged', function() {
@@ -157,6 +156,11 @@ export default function editor_menubar(ce,controller)
         offset:delta,
         section_id:curSelection.data('section'),
       });
+    } else {
+      controller.add_new_section({
+        offset:0,
+        section_id:null,
+      });
     }
   }
 
@@ -191,8 +195,11 @@ export default function editor_menubar(ce,controller)
   {
     const selected_item = _tree.find('li.selected');
 
-    if(selected_item.length !== 1) {
+    if(selected_item.length === 0) {
       _selection_buttons.forEach( (b) => b.attr('disabled',true) );
+      if(_tree.children('li').length === 0) {
+        _add_section_below.attr('disabled',false);
+      }
     }
     else if(selected_item.hasClass('section')) {
       _add_section_below.attr('disabled',false);
@@ -213,6 +220,7 @@ export default function editor_menubar(ce,controller)
 
     update_up_down_buttons();
   }
+
   function update_up_down_buttons()
   {
     const selected_item = _tree.find('li.selected');

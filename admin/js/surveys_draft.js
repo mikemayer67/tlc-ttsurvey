@@ -112,6 +112,10 @@ export default function draft_controller(ce)
       ( ce.survey_editor.can_submit() )
     );
 
+    console.log(`update_submit_revert(${dirty},${can_submit})`);
+
+    ce.preview.prop('disabled',!has_content());
+
     if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
     else      { ce.revert.prop('disabled',true).css('opacity',0); }
 
@@ -169,6 +173,14 @@ export default function draft_controller(ce)
     if( ce.undo_manager?.hasUndo() ) { return true; }
 
     return false;
+  }
+
+  function has_content()
+  {
+    const content = ce.survey_editor.content();
+    if(!content)          { return false; }
+    if(!content.sections) { return false; }
+    return Object.keys(content.sections).length > 0;
   }
 
   function handle_revert()

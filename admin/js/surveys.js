@@ -56,6 +56,12 @@ function handle_revert(e)
   ce.dispatch('handle_revert');
 }
 
+function handle_preview(e)
+{
+  e.preventDefault();
+  ce.dispatch('handle_preview');
+}
+
 
 // Survey status dependencies
 
@@ -106,6 +112,7 @@ $(document).ready(
   ce.submit_bar = ce.form.find('div.submit-bar');
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
+  ce.preview    = $('#survey-preview');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -119,6 +126,7 @@ $(document).ready(
   ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
   ce.form.on('submit', handle_submit);
   ce.revert.on('click',handle_revert);
+  ce.preview.on('click',handle_preview);
 
   // Load additional modules
 

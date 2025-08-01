@@ -87,7 +87,7 @@ export default function survey_editor(ce)
         const sections = $('#survey-tree li.section').map(function() { 
           return Number($(this).data('section')); 
         }).get();
-        _next_section_id = 1 + Math.max(...sections)
+        _next_section_id = 1 + (sections.length ? Math.max(...sections) : 0);
         _next_question_id = _content.next_ids.question;
         _tree.enable(); 
       }
@@ -97,6 +97,7 @@ export default function survey_editor(ce)
       _content = null;
     }
 
+    _menubar.update_selection();
     _menubar.show(self.editable);
 
     ce.undo_manager?.empty();
@@ -110,10 +111,10 @@ export default function survey_editor(ce)
   {
     const structure = _tree.survey_structure();
     const rval = {
-      options: _content.options,
+      options: _content?.options ?? {},
       sections: {},
       questions: {},
-      next_ids: _content.next_ids,
+      next_ids: _content?.next_ids ?? {},
     };
 
     let new_sid = 0;
@@ -193,9 +194,11 @@ export default function survey_editor(ce)
     ce.undo_manager.add_and_exec( {
       action:'add-new-section',
       redo() {
+        console.log('redo add new section');
         _tree.add_section( new_section_id, new_section, where );
       },
       undo() {
+        console.log('undo add new section');
         _tree.remove_section(new_section_id);
         _tree.restore_selection(cur_highlight);
       },

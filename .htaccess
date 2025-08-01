@@ -30,6 +30,7 @@ RewriteCond %{REQUEST_FILENAME} (405|500).php$
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule (.*) - [L]
 RewriteRule admin/$ tt.php?admin [L]
+RewriteRule preview/$ tt.php?preview [L]
 RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule (.*) - [L]

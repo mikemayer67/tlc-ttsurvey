@@ -74,7 +74,7 @@ function validate_entry_uri()
   $pos = strpos($request_uri,"?");
   if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
   // All we should be left with is tt.php, 405.php, 500.php, tt or nothing
-  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php"]) ) { api_die(); }
+  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php","preview/"]) ) { api_die(); }
   // We're good!
 }
 validate_entry_uri();
