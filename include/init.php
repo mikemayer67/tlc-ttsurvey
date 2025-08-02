@@ -37,8 +37,10 @@ function internal_error($msg)
 // string to the URL for the css file... but this should only be needed
 // in a development environment.
 
+function base_uri() { return str_ends_with(APP_URI,"/") ? APP_URI : APP_URI.'/'; }
+
 function app_file($path)   { return APP_DIR . "/$path"; }
-function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
+function app_uri($q=null)  { return ($q ? "tt.php?$q" : "tt.php"); }
 
 function full_app_uri($q=null) {
   $scheme = 'https';
@@ -51,7 +53,11 @@ function full_app_uri($q=null) {
 }
 
 function rsrc_uri($rsrc,$type,$no_cache,$context='') {
-  $uri = str_replace('//','/',implode('/',[APP_URI,$context,$type,$rsrc]));
+  $rsrc = trim($rsrc," /");
+  $type = trim($type," /");
+  $context = trim($context," /");
+  $uri = $context ? "$context/" : "";
+  $uri .= "$type/$rsrc";
   if($no_cache && is_dev()) { $uri .= '?v=' . rand(); }
   return $uri;
 }

@@ -1,7 +1,5 @@
-export default function setup_resizer(ce, container, left_frame, right_frame)
+export default function init(container, left_frame, right_frame)
 {
-  const _resizer      = $('#content-editor .resizer');
-
   let _tracking = null;
 
   function start_resize(e) {
@@ -50,5 +48,6 @@ export default function setup_resizer(ce, container, left_frame, right_frame)
     $(document).off('mouseup',stop_tracking_mouse);
   }
 
+  const _resizer = container.children('.resizer');
   _resizer.on('mousedown',start_resize);
 }

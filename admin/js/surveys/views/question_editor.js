@@ -1,5 +1,5 @@
-import Sortable from '../../../js/sortable.esm.js';
-import { deepCopy, update_character_count } from '../utils.js';
+import Sortable from '../../../../js/sortable.esm.js';
+import { deepCopy, update_character_count } from '../../utils.js';
 
 
 function validate_input(key,value) 
@@ -23,7 +23,7 @@ function validate_input(key,value)
   return '';
 }
 
-export default function question_editor(ce,controller)
+export default function init(ce,controller)
 {
   const _box = $('#editor-frame div.grid.question.editor');
 

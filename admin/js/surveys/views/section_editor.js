@@ -1,4 +1,4 @@
-import { deepCopy, update_character_count } from '../utils.js';
+import { deepCopy, update_character_count } from '../../utils.js';
 
 
 function validate_input(key,value) 
@@ -26,7 +26,7 @@ function validate_input(key,value)
   return '';
 }
 
-export default function section_editor(ce,controller)
+export default function init(ce,controller)
 {
   const _box = $('#editor-frame div.grid.section.editor');
 

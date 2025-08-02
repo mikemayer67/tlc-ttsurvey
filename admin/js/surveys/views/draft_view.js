@@ -1,4 +1,4 @@
-export default function draft_controller(ce)
+export default function init(ce)
 {
   const _info_edit    = $('#info-edit');
   const _survey_name  = $('#survey-name');
@@ -29,7 +29,7 @@ export default function draft_controller(ce)
 
   function select_survey()
   {
-    ce.survey_info.update_for_survey();
+    ce.metadata.update_for_survey();
 
     _survey_name.attr({ required:false, placeholder:ce.cur_survey.title}).val('');
 
@@ -44,7 +44,7 @@ export default function draft_controller(ce)
     $(document)
     .off('ContentDataLoaded')
     .on('ContentDataLoaded', function(e,id,data) { 
-      ce.survey_editor.update(data);
+      ce.controller.update_content(data);
       validate_all();
     } );
 
@@ -54,8 +54,8 @@ export default function draft_controller(ce)
     //   the data, a ContentDataLoaded event will be triggered.
     const content = ce.survey_data.content( ce.cur_survey.id );
 
-    ce.survey_editor.enable();
-    ce.survey_editor.update(content);
+    ce.controller.enable_edits();
+    ce.controller.update_content(content);
     _last_saved = current_values();
     validate_all();
   }
@@ -96,7 +96,7 @@ export default function draft_controller(ce)
 
   function validate_all()
   {
-    ce.survey_info.validate_survey_name();
+    ce.metadata.validate_survey_name();
     validate_pdf_action();
     update_submit_revert();
   }
@@ -109,7 +109,7 @@ export default function draft_controller(ce)
       dirty &&
       ( ce.form.find('.invalid-value').length === 0) &&
       ( ce.form.find('.incomplete').length    === 0) &&
-      ( ce.survey_editor.can_submit() )
+      ( ce.controller.can_submit() )
     );
 
     console.log(`update_submit_revert(${dirty},${can_submit})`);
@@ -177,7 +177,7 @@ export default function draft_controller(ce)
 
   function has_content()
   {
-    const content = ce.survey_editor.content();
+    const content = ce.controller.content();
     if(!content)          { return false; }
     if(!content.sections) { return false; }
     return Object.keys(content.sections).length > 0;
@@ -192,7 +192,7 @@ export default function draft_controller(ce)
     else                                     { _survey_pdf.hide(); }
 
     const content = ce.survey_data.content( ce.cur_survey.id );
-    ce.survey_editor.update(content);
+    ce.controller.update_content(content);
 
     $(document).trigger('SurveyDataChanged');
     validate_all();
@@ -204,7 +204,7 @@ export default function draft_controller(ce)
     var survey_name = cur_values.survey_name.trim();
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
-    const content = ce.survey_editor.content();
+    const content = ce.controller.content();
     const json_content = JSON.stringify(content);
 
     var formData = new FormData();

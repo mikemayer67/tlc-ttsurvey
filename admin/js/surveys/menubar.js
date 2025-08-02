@@ -1,4 +1,4 @@
-export default function editor_menubar(ce,controller)
+export default function init(ce,controller)
 {
   const _mbar = $('#content-editor div.menubar');
   const _tree = $('#survey-tree ul.sections');

@@ -5,7 +5,7 @@ function format_date(date)
   return date;
 }
 
-export default function survey_info(ce)
+export default function init(ce)
 {
   const _info_bar     = ce.form.find('.content-box .info-bar');
   const _info_edit    = $('#info-edit');

@@ -1,7 +1,7 @@
 import Sortable from '../../../js/sortable.esm.js';
 import arborist from './arborist.js';
 
-export default function editor_tree(ce,controller)
+export default function init(ce,controller)
 {
   const _box      = $('#survey-tree');
   const _info     = $('#survey-tree .info');

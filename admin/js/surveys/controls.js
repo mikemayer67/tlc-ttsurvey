@@ -1,4 +1,4 @@
-export default function survey_controls(ce)
+export default function init(ce)
 {
   const _survey_select  = $('#survey-select');
   const _survey_status  = ce.form.find('span.survey-status');
@@ -75,10 +75,10 @@ export default function survey_controls(ce)
     _survey_actions.filter(`.${status}`).show();
 
     // update the info bar and editor to reflect the selected survey
-    ce.survey_info.update_for_survey(ce.cur_survey);
+    ce.metadata.update_for_survey(ce.cur_survey);
 
-    // perform common config... status controllers can override these later
-    ce.survey_editor.show();
+    // perform common config... status views can override these later
+    ce.controller.show_content();
     ce.submit_bar.hide();
     ce.form.find('input.watch').off('input').off('change');
     ce.form.find('select.watch').off('change');

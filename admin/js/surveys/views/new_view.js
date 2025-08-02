@@ -1,4 +1,4 @@
-export default function new_controller(ce)
+export default function init(ce)
 {
   const _info_edit    = $('#info-edit');
   const _survey_name  = $('#survey-name');
@@ -21,7 +21,7 @@ export default function new_controller(ce)
     // other status handlers will have more complicated logic, but for new surveys
     //   the only check is on survey name
 
-    ce.survey_info.validate_survey_name();
+    ce.metadata.validate_survey_name();
 
     const survey_name = _survey_name.val().trim();
 
@@ -36,7 +36,7 @@ export default function new_controller(ce)
     }
 
     _info_edit.show();
-    ce.survey_editor.hide();
+    ce.controller.hide_content();
 
     _survey_name.attr({ required:true, placeholder:'required', }).val('');
 

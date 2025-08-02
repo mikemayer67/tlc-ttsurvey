@@ -61,6 +61,7 @@ function start_page($context,$kwargs=[])
   $context = strtolower($context);
   $title = active_survey_title() ?? app_name();
   $title_len = strlen($title);
+  $base = base_uri();
 
   log_dev("start_page($context)");
   $trace = debug_backtrace();
@@ -69,6 +70,7 @@ function start_page($context,$kwargs=[])
   <!DOCTYPE html><html><head>
   <meta charset='UTF-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <base href='$base'>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

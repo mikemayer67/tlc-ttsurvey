@@ -14,7 +14,7 @@
 //   - It manages the needs-value and needs-type classes when these are not yet
 //       set in the corresponding section or question data
 
-export default function arborist(tree)
+export default function init(tree)
 {
   const _measurer = $('<span>').addClass('text-measurer').css({
     'position':'absolute', 'visibility':'hidden', 'white-space':'nowrap', 'pointer-events':'none',

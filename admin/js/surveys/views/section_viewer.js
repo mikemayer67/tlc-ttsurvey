@@ -1,4 +1,4 @@
-export default function section_viewer(ce)
+export default function init(ce)
 {
   const _box         = $('#editor-frame div.grid.section.viewer');
   const _name        = _box.children('.name').find('div.text');
