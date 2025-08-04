@@ -27,23 +27,19 @@ export default function init(tree)
     // leaf is expected to be part of the tree, but there isn't any 
     // real reason is must be as long as it "looks like" a leaf (duck typing)
 
-    const full_text = (leaf.data('full-text') || '').trim();
+    const full_text  = (leaf.data('full-text') || '');
     const is_section = leaf.hasClass('section');
-    const leaf_text = is_section ? leaf.find('span') : leaf;
+    const leaf_text  = is_section ? leaf.find('span') : leaf;
 
-    if(is_section) {
-      console.log('tend ' + (is_section?'section':'question') + ' ' + full_text);
-    }
-
-    if(full_text.length === 0) {
-      console.log('add needs-avlue');
-      leaf_text.text('').addClass('needs-value');
-      return;
+    if(full_text.length === 0) { 
+      leaf_text.text('');
+      return; 
     }
 
     const maxWidth = leaf[0].clientWidth - 32; // to account for right-margin and type icon in ::before
     if(maxWidth <= 0) {
-      leaf_text.text(full_text);
+      // tree is too narrow to show leaf labels
+      leaf_text.text();
       return;
     }
 
@@ -58,8 +54,7 @@ export default function init(tree)
     m.textContent      = full_text;
 
     if(m.offsetWidth <= maxWidth) {
-      console.log('remove needs-value');
-      leaf_text.text(full_text).removeClass('needs-value');
+      leaf_text.text(full_text);
       return;
     }
 
@@ -77,36 +72,34 @@ export default function init(tree)
       }
     }
 
-    console.log('remove_value (end)');
-    leaf_text.text(full_text.slice(0,low-1) + suffix).removeClass('needs-value');
+    leaf_text.text(full_text.slice(0,low-1) + suffix);
   }
 
   self.initialize = function(leaf,text,type)
   {
-    leaf.data('full-text',text);
-    if(leaf.hasClass('section')) {
-      if(text) { leaf.find('span.name').removeClass('needs-value'); }
-      else     { leaf.find('span.name').addClass('needs-value'); }
-    }
-    else {
-      if(type) { leaf.removeClass('needs-type').addClass(type.toLowerCase()); }
-      else     { leaf.addClass('needs-type'); }
-    }
+    self.update_label(leaf,text);
+    self.update_type(leaf,type);
   }
 
   self.update_label = function(leaf,text)
   {
-    if(text) { leaf.data('full-text',text); } 
-    else     { leaf.data('full-text',''); }
+    const fulltext   = text?.trim() ?? '';
+    const is_section = leaf.hasClass('section');
+    const leaf_text  = is_section ? leaf.find('span') : leaf;
+
+    leaf.data('full-text',fulltext);
+    leaf.toggleClass('needs-value',!fulltext);
+
     tend(leaf);
   }
 
   self.update_type = function(leaf,new_type,old_type=null)
   {
-    if(old_type) { leaf.removeClass(old_type.toLowerCase()); }
-
-    if(new_type) { leaf.removeClass('needs-type').addClass(new_type.toLowerCase()); }
-    else         { leaf.addClass('needs-type');                                     }
+    if(leaf.hasClass('question')) {
+      if(old_type) { leaf.removeClass(old_type.toLowerCase()); }
+      if(new_type) { leaf.removeClass('needs-type').addClass(new_type.toLowerCase()); }
+      else         { leaf.addClass('needs-type');                                     }
+    }
   }
 
   self.handle_resize = function()

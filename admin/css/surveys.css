@@ -440,7 +440,7 @@
   font-style:italic;
   font-weight:normal;
 }
-#ttt-body #survey-tree li.section span.needs-value::before {
+#ttt-body #survey-tree li.section.needs-value span::before {
   content:"[needs name]";
 }
 #ttt-body #survey-tree li.question.needs-value::after {
