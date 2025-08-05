@@ -2,7 +2,7 @@ import Sortable from '../../../../js/sortable.esm.js';
 import { deepCopy, update_character_count } from '../../utils.js';
 
 
-function validate_input(key,value) 
+function input_error(key,value) 
 {
   const len = String(value).trim().length;
   var invalid_char_regex = null;
@@ -13,6 +13,14 @@ function validate_input(key,value)
       if(len<4)  { return 'too short'; }
 //      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?#]");
       break;
+
+    case 'infotag':
+      if(len==0) { return ''; }
+      if(len<4)  { return 'too short'; }
+//      invalid_char_regex = new RegExp("[^\\w\\s.,;:-#]");
+
+    default:
+      return '';
   }
 
   if(invalid_char_regex) {
@@ -67,6 +75,15 @@ export default function init(ce,controller)
   const _hints              = _box.find('div.hint');
 
   let _cur_id = null;  // This is the current question ID in the editor
+  let _errors = {};
+ 
+  const _show_handlers = {
+    INFO: show_info,
+    BOOL: show_bool,
+    FREETEXT: show_freetext,
+    SELECT_ONE: show_select_one,
+    SELECT_MULTI: show_select_multi,
+  };
 
   const _primary_selected_sorter = new Sortable( _primary_selected[0], 
     {
@@ -137,16 +154,6 @@ export default function init(ce,controller)
     }
   }
 
-  function validate_and_handle_update(input)
-  {
-    const key   = input.data('key');
-    const value = input.val();
-    const error = validate_input(key,value);
-    _box.children('.value.'+key).find('span.error').text(error?? '');
-    controller.update_question_error(_cur_id,key,value,error);
-    handle_update(key,value);
-  }
-
   function handle_change(e)
   {
     // this is for changes to non-<input> fields
@@ -160,6 +167,32 @@ export default function init(ce,controller)
     create_or_update_undo(key,value);
     controller.update_question_data(_cur_id,key,value);
     $(document).trigger('SurveyWasModified');
+  }
+
+  function validate_and_handle_update(input)
+  {
+    const key   = input.data('key');
+    const value = input.val();
+
+    validate_input(key,value);
+    handle_update(key,value);
+  }
+
+  function validate_input(key,value)
+  {
+    const error = input_error(key,value);
+
+    const span = _box.children('.value.'+key).find('span.error');
+    if(error) {
+      span.text(error);
+      _errors[key] = error;
+    } else {
+      span.text('');
+      delete _errors[key];
+    }
+
+    const has_error = Object.keys(_errors).length > 0;
+    controller.toggle_question_error(_cur_id,has_error);
   }
 
   function show(id,data)
@@ -179,58 +212,109 @@ export default function init(ce,controller)
     //   We'll handle the case where the type is not specified first
     //   We'll then handle all the other case where the type is specified
 
-    if(!data.type) {
+    if(data.type) {
+      _type_value.text( typeLabels[data.type] ).show();
+      _type_select.hide();
+      _show_handlers[data.type]?.(data);
+    } else {
       show_new(id,data);
-      return;
     }
+  }
 
-    _type_value.text( typeLabels[data.type] ).show();
-    _type_select.hide();
+  function show_info(data)
+  {
+    _infotag.show();
+    _info.show();
 
-    switch(data.type) {
-      case 'INFO': {
-        _infotag.show();
-        _infotag_value.val(data.infotag || '').trigger('change');
+    const infotag = data.infotag || '';
+    const info    = data.info    || '';
 
-        _info.show();
-        _info_value.val(data.info || '').trigger('change');
-        break;
-      }
-      case 'BOOL': {
-        _wording.show();
-        _wording_value.val(data.wording || '').trigger('change');
-        _qualifier.show();
-        _qualifier_value.val(data.qualifier || '');
-        _description.show();
-        _description_value.val(data.description || '').trigger('change');
-        _popup.show();
-        _popup_value.val(data.popup || '').trigger('change');
-        break;
-      }
-      case 'FREETEXT': {
-        _wording.show();
-        _wording_value.val(data.wording || '').trigger('change');
-        _description.show();
-        _description_value.val(data.description || '').trigger('change');
-        _popup.show();
-        _popup_value.val(data.popup || '').trigger('change');
-        break;
-      }
-      case 'SELECT_ONE':
-      case 'SELECT_MULTI': {
-        _wording.show();
-        _wording_value.val(data.wording || '').trigger('change');
-        _description.show();
-        _description_value.val(data.description || '').trigger('change');
-        _qualifier.show();
-        _qualifier_value.val(data.qualifier || '');
-        _other_value.val(data.other||'');
-        _popup.show();
-        _popup_value.val(data.popup || '').trigger('change');
-        show_options(data.options);
-        break;
-      }
+    _infotag_value.val(infotag).trigger('change');
+    _info_value.val(data.info).trigger('change');
+
+    validate_input('infotag', infotag);
+    validate_input('info', info);
+
+    if(infotag.length + info.length == 0) {
+      alert("Add code to handle missing infotag + info");
     }
+  }
+
+  function show_bool(data)
+  {
+    _wording.show();
+    _qualifier.show();
+    _description.show();
+    _popup.show();
+
+    const wording     = data.wording || '';
+    const qualifier   = data.qualifier || '';
+    const description = data.description || '';
+    const popup       = data.popup || '';
+    
+    _wording_value.val(wording);
+    _qualifier_value.val(qualifier);
+    _description_value.val(description);
+    _popup_value.val(popup);
+
+    validate_input('wording'    , wording);
+    validate_input('qualifier'  , qualifier);
+    validate_input('description', description);
+    validate_input('popup'      , popup);
+  }
+
+  function show_freetext(data)
+  {
+    _wording.show();
+    _description.show();
+    _popup.show();
+
+    const wording     = data.wording || '';
+    const description = data.description || '';
+    const popup       = data.popup || '';
+
+    _wording_value.val(wording);
+    _description_value.val(description);
+    _popup_value.val(popup);
+
+    validate_input('wording'    , wording);
+    validate_input('description', description);
+    validate_input('popup'      , popup);
+  }
+
+  function show_select_one(data)
+  {
+    _wording.show();
+    _qualifier.show();
+    _description.show();
+    _other.show();
+    _popup.show();
+
+    const wording     = data.wording || '';
+    const qualifier   = data.qualifier || '';
+    const description = data.description || '';
+    const other       = data.other || '';
+    const popup       = data.popup || '';
+
+    _wording_value.val(wording);
+    _qualifier_value.val(qualifier);
+    _description_value.val(description);
+    _other_value.val(other);
+    _popup_value.val(popup);
+
+    validate_input('wording'    , wording);
+    validate_input('qualifier'  , qualifier);
+    validate_input('description', description);
+    validate_input('other'      , other);
+    validate_input('popup'      , popup);
+
+    show_options(data.options);
+  }
+
+  function show_select_multi(data)
+  {
+    // currently no difference between select_one and select_multi
+    show_select_one(data);
   }
 
   function show_new(id,data)
