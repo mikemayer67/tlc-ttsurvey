@@ -587,15 +587,13 @@ export default function init(ce,controller)
     attributeFilter: ['class'],
   });
   
-  self.set_error = function(scope,id,key,error) {
+  self.toggle_error = function(scope,id,has_error) {
     const item = 
       scope === 'section'
       ? _tree.find(`li.section[data-section=${id}]`)
       : _tree.find(`li.question[data-question=${id}]`) ;
 
-    if(item.length === 0) { return; }
-
-    item.toggleClass('error',Boolean(error));
+    item.toggleClass('error',has_error)
   }
 
   self.can_submit = function() {

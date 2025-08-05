@@ -159,15 +159,8 @@ export default function init(ce)
     _tree.update_question(question_id,key,value);
   }
 
-  self.update_section_error = function(section_id, key, value, error)
-  {
-    _tree.set_error('section',section_id,key,error);
-  }
-
-  self.update_question_error = function(question_id, key, value, error)
-  {
-    _tree.set_error('question',question_id,key,error);
-  }
+  self.toggle_section_error  = function(section_id, error) { _tree.toggle_error('section', section_id, error); }
+  self.toggle_question_error = function(question_id,error) { _tree.toggle_error('question',question_id,error); }
 
   self.update_question_type = function(question_id,type,old_type) {
     const question = _content.questions[question_id];
