@@ -19,6 +19,11 @@ function input_error(key,value)
       if(len<4)  { return 'too short'; }
 //      invalid_char_regex = new RegExp("[^\\w\\s.,;:-#]");
 
+    case 'info':
+      if(len==0) { return 'missing'; }
+      if(len<4)  { return 'too short'; }
+//      invalid_char_regex = new RegExp("[^\\w\\s.,;:-#]");
+
     default:
       return '';
   }
@@ -235,10 +240,6 @@ export default function init(ce,controller)
 
     validate_input('infotag', infotag);
     validate_input('info', info);
-
-    if(infotag.length + info.length == 0) {
-      alert("Add code to handle missing infotag + info");
-    }
   }
 
   function show_bool(data)

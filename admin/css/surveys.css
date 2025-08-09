@@ -640,6 +640,9 @@
   font-style:italic;
   color:darkred;
 }
+#editor-frame .grid.editor .value .textarea-wrapper .error {
+  margin:1px 1px 0 0;
+}
 
 #editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {

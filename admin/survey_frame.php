@@ -185,6 +185,7 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   echo "  <div class='textarea-wrapper'>";
   echo "    <textarea class='$class' $attr></textarea>";
   echo "    <div class='char-count'><span class='cur'>0</span>/<span class='max'>$maxlen</span></div>";
+  echo "    <span class='error'></span>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
@@ -316,7 +317,7 @@ add_option_entry('secondary');
 add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);
-add_editor_textarea('question','info',['maxlen'=>1024]);
+add_editor_textarea('question','info',['required'=>true,'maxlen'=>1024]);
 echo "  </div>";
 
 
