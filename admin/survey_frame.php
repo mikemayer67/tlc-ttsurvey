@@ -309,7 +309,7 @@ echo "<div class='archive or'><span>or</span></div>";
 echo "<div class='archive'><span></span></div>";
 add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
-add_editor_textarea('question','wording',['required'=>true, 'maxlen'=>128, 'autoresize'=>true]);
+add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');
 add_option_entry('secondary');

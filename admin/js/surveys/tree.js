@@ -137,7 +137,7 @@ export default function init(ce,controller)
     const leaf = $('<li>').addClass('question').attr('data-question',question_id);
 
     let wording = details.wording;
-    let type  = details.type || '';
+    let type    = details.type || '';
 
     if( type.toLowerCase() === 'info') {
       if( details.infotag ) {

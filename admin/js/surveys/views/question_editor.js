@@ -49,7 +49,7 @@ export default function init(ce,controller)
   const _infotag_value       = _infotag.find('input');
 
   const _wording            = _box.children('.wording');
-  const _wording_value      = _wording.find('textarea');
+  const _wording_value      = _wording.find('input');
 
   const _qualifier          = _box.children('.qualifier');
   const _qualifier_value    = _qualifier.find('input');
@@ -198,6 +198,7 @@ export default function init(ce,controller)
   function show(id,data)
   {
     _cur_id = id;
+    _errors = {};
 
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
