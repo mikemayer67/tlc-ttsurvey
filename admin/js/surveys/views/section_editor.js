@@ -193,6 +193,7 @@ export default function init(ce,controller)
       {
         controller.select_section(section_id);
         validate_input(key,value);
+        _box.find('.section.'+key).val(value);
         controller.update_section_data(section_id,key,value);
         $(document).trigger('SurveyWasModified');
       }
