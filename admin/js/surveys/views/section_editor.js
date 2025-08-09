@@ -193,7 +193,8 @@ export default function init(ce,controller)
       {
         controller.select_section(section_id);
         validate_input(key,value);
-        handle_update(key,value);
+        controller.update_section_data(section_id,key,value);
+        $(document).trigger('SurveyWasModified');
       }
 
       ce.undo_manager.add({
@@ -218,5 +219,4 @@ export default function init(ce,controller)
     show:show,
   };
 }
-
 
