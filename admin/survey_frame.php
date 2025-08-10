@@ -68,12 +68,6 @@ $hints = [
       '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
       '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
     ),
-    'available' => (
-      'This is the list of available options.  Drag/Drop these to either the primary or secondary option list '.
-      'to add these as possible responses to the current question.'.
-      '<p><b>Click</b> on the <b>+</b> button to add new options.</p>'.
-      '<p><b>Double Click</b> an option to edit its text.</p>'
-    ),
     'other' => (
       '<b>This field is optional.</b>  This used for multiple choice questions where the participant '.
       'should be allowed to fill in their own option.  If specified, this field provides the '.
@@ -108,7 +102,6 @@ $labels = [
     'description' => 'Description',
     'primary'     => 'Primary Options',
     'secondary'   => 'Seconday Options',
-    'available'   => 'Available Options',
     'other'       => 'Other Option',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
@@ -255,7 +248,7 @@ function add_type_select()
   echo "</div>";
 }
 
-function add_option_entry($key)
+function add_option_entry($key,$kwargs=[])
 {
   global $hints;
   global $labels;
@@ -263,14 +256,25 @@ function add_option_entry($key)
   $label = $labels['question'][$key];
   $hint  = $hints['question'][$key];
 
-  echo "<div class='$key options label'><span>$label:</span></div>";
-  echo "<div class='$key options value'>";
+  $tight = ($kwargs['tight'] ?? false) ? 'tight' : '';
+
+  echo "<div class='$key options label $tight'><span>$label:</span></div>";
+  echo "<div class='$key options value $tight'>";
   echo "  <div class='$key option selected'></div>";
-  echo "  <span class='error'></span>";
-  echo "  <div class='$key option pool'>";
-  echo "    <button class='add option' type='button'>+</button>";
-  echo "  </div>";
+  echo "  <span class='$key error'></span>";
   echo "  <div class='hint'>$hint</div>";
+  echo "</div>";
+}
+
+function add_option_pool($kwargs=[])
+{
+  global $labels;
+
+  $tight = ($kwargs['tight'] ?? false) ? 'tight' : '';
+
+  echo "<div class='option pool label $tight'></div>"; // needed for flex alignment
+  echo "<div class='option pool $tight'>";
+  echo "  <button class='add option' type='button'>+</button>";
   echo "</div>";
 }
 
@@ -312,7 +316,8 @@ add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');
-add_option_entry('secondary');
+add_option_entry('secondary',['tight'=>true]);
+add_option_pool(['tight'=>true]);
 add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);

@@ -646,6 +646,11 @@
   margin:1px 1px 0 0;
 }
 
+#editor-frame .grid.editor .options.tight,
+#editor-frame .grid.editor .option.pool.tight {
+  margin-top:-10px;
+}
+
 #editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {
   margin:0;

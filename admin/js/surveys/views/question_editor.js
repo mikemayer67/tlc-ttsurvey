@@ -68,12 +68,9 @@ export default function init(ce,controller)
   const _popup_value        = _popup.find('textarea');
 
   const _options            = _box.children('.options');
-  const _primary            = _options.filter('.primary');
-  const _primary_selected   = _primary.find('.selected');
-  const _primary_pool       = _primary.find('.pool');
-  const _secondary          = _options.filter('.secondary');
-  const _secondary_selected = _secondary.find('.selected');
-  const _secondary_pool     = _secondary.find('.pool');
+  const _primary_selected   = _options.find('.primary.selected');
+  const _secondary_selected = _options.find('.secondary.selected');
+  const _option_pool        = _box.find('.option.pool');
   const _other              = _options.filter('.other');
   const _other_value        = _other.find('input');
 
@@ -92,15 +89,21 @@ export default function init(ce,controller)
 
   const _primary_selected_sorter = new Sortable( _primary_selected[0], 
     {
-      group: {name:'primary_selected', put:['primary_pool','secondary_selected']},
+      group: {
+        name:'primary_selected', 
+        put:['option_pool','primary_selected','secondary_selected'],
+      },
       animation: 150,
       draggable: '.chip',
       onEnd: handle_option_drag,
     },
   );
-  const _primary_pool_sorter = new Sortable( _primary_pool[0], 
+  const _option_pool_sorter = new Sortable( _option_pool[1], 
     {
-      group: {name:'primary_pool', put:false},
+      group: {
+        name:'option_pool', 
+        put:false,
+      },
       animation: 150,
       draggable: '.chip',
       sort: false,
@@ -109,22 +112,15 @@ export default function init(ce,controller)
   );
   const _secondary_selected_sorter = new Sortable( _secondary_selected[0], 
     {
-      group: {name:'secondary_selected', put:['secondary_pool','primary_selected']},
+      group: {
+        name:'secondary_selected', 
+        put:['option_pool','primary_selected'],
+      },
       animation: 150,
       draggable: '.chip',
       onEnd: handle_option_drag,
     },
   );
-  const _secondary_pool_sorter = new Sortable( _secondary_pool[0], 
-    {
-      group: {name:'secondary_pool', put:false},
-      animation: 150,
-      draggable: '.chip',
-      sort: false,
-      onEnd: handle_option_drag,
-    },
-  );
-
   _textareas.on('input change', update_character_count)
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
@@ -348,8 +344,7 @@ export default function init(ce,controller)
   {
     populate_options(data);
     _options.show();
-    _primary_pool.hide();
-    _secondary_pool.hide();
+    _option_pool.hide();
   }
 
   function populate_options(data)
@@ -380,7 +375,7 @@ export default function init(ce,controller)
   {
     const num_primary = _primary_selected.children().length;
 
-    const span = _primary.find('span.error');
+    const span = _options.find('.primary.error');
     if(num_primary>0) {
       delete _errors.primary;
       span.text('');
@@ -415,16 +410,11 @@ export default function init(ce,controller)
     if( $(e.target).closest('.chip').length > 0) { return; }
     if( $(e.target).closest('.add.option').length > 0) { return; }
 
-    const is_primary = $(this).hasClass('primary');
-    
-    if(is_primary) { _secondary_pool.hide(); } else { _primary_pool.hide(); }
-
-    const pool = is_primary ? _primary_pool : _secondary_pool;
-    if(pool.is(':visible')) {
-      pool.hide();
+    if(_option_pool.is(':visible')) {
+      _option_pool.hide();
     } else {
-      populate_option_pool(pool);
-      pool.show();
+      populate_option_pool(_option_pool);
+      _option_pool.show();
     }
   }
 
@@ -445,8 +435,7 @@ export default function init(ce,controller)
   }
 
   function update_option_pools() {
-    if(_primary_pool.is(':visible'))   { populate_option_pool(_primary_pool);   }
-    if(_secondary_pool.is(':visible')) { populate_option_pool(_secondary_pool); }
+    if(_option_pool.is(':visible'))   { populate_option_pool(_option_pool);   }
   }
 
   function selected_options() {
