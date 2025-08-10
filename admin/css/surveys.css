@@ -475,7 +475,7 @@
 }
 
 #ttt-body #survey-tree li.section.selected.error div,
-#ttt-body #survey-tree li.section.selectedild-error div,
+#ttt-body #survey-tree li.section.selected.child-error div,
 #ttt-body #survey-tree li.question.selected.error div {
   background-color:#ffc0c0;  /* dark pink */
 }

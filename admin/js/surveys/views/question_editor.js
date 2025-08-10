@@ -604,10 +604,9 @@ export default function init(ce,controller)
 
       function apply_action(question_id, value)
       {
-        const error = validate_input(key,value);
+        validate_input(key,value);
         _box.find('.question.'+key).val(value);
-        _box.children('.value.'+key).find('span.error').text(error?? '');
-        controller.update_question_error(question_id,key,value,error);
+//        controller.update_question_error(question_id,key,value,error);
         controller.update_question_data(question_id,key,value);
         $(document).trigger('SurveyWasModified');
       }
