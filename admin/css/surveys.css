@@ -640,7 +640,9 @@
   font-style:italic;
   color:darkred;
 }
-#editor-frame .grid.editor .value .textarea-wrapper .error {
+#editor-frame .grid.editor .value .textarea-wrapper .error,
+#editor-frame .grid.editor .options.value .error
+{
   margin:1px 1px 0 0;
 }
 
@@ -711,8 +713,8 @@
   color:red;
 }
 
-#editor-frame .grid.editor div.options .option.wrapper {
-  width:100%;
+#editor-frame .grid.editor div.options.value {
+  position:relative;
 }
 
 #editor-frame .grid.editor div.option.selected {

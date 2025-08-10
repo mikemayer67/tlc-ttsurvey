@@ -187,11 +187,9 @@ export default function init(ce)
     ce.undo_manager.add_and_exec( {
       action:'add-new-section',
       redo() {
-        console.log('redo add new section');
         _tree.add_section( new_section_id, new_section, where );
       },
       undo() {
-        console.log('undo add new section');
         _tree.remove_section(new_section_id);
         _tree.restore_selection(cur_highlight);
       },

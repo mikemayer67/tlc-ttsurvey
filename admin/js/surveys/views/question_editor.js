@@ -354,6 +354,7 @@ export default function init(ce,controller)
 
   function populate_options(data)
   {
+    console.log("populate_options");
     _primary_selected.empty();
     _secondary_selected.empty();
     const all_options = controller.all_options();
@@ -363,14 +364,35 @@ export default function init(ce,controller)
       if(secondary) { _secondary_selected.append(chip); } 
       else          { _primary_selected.append(chip); }
     });
+    validate_options();
   }
 
   function update_options(options)
   {
+    console.log("update_options");
     controller.update_question_data(_cur_id,'options',options); 
     populate_options(options);
     update_option_pools();
     $(document).trigger('SurveyWasModified');
+  }
+
+  function validate_options()
+  {
+    const num_primary = _primary_selected.children().length;
+
+    const span = _primary.find('span.error');
+    if(num_primary>0) {
+      delete _errors.primary;
+      span.text('');
+    } else {
+      _errors.primary = 'needs-primary-option';
+      span.text('missing');
+    }
+    
+    const has_error = Object.keys(_errors).length > 0;
+    controller.toggle_question_error(_cur_id,has_error);
+
+    console.log(`validate_options ${num_primary}`);
   }
 
   function create_chip(id,label) {
@@ -447,16 +469,19 @@ export default function init(ce,controller)
   }
 
   function handle_option_change() {
+    console.log('handle option change');
     const old_options = controller.cur_question_data(_cur_id,'options');
     const new_options = selected_options();
     ce.undo_manager.add({
       action:'option-change',
       question_id:_cur_id,
       undo() { 
+        console.log('undo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(old_options) }, 100);
       },
       redo() { 
+        console.log('redo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(new_options) }, 100);
       },
@@ -464,6 +489,7 @@ export default function init(ce,controller)
     
     controller.update_question_data(_cur_id,'options',new_options); 
     update_option_pools();
+    validate_options();
     $(document).trigger('SurveyWasModified');
   }
 
@@ -503,6 +529,7 @@ export default function init(ce,controller)
   }
 
   function handle_option_drag(e) {
+    console.log('handle option drag');
     handle_option_change();
   }
 

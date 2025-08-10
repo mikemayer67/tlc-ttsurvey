@@ -112,8 +112,6 @@ export default function init(ce)
       ( ce.controller.can_submit() )
     );
 
-    console.log(`update_submit_revert(${dirty},${can_submit})`);
-
     ce.preview.prop('disabled',!has_content());
 
     if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
