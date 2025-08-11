@@ -107,7 +107,7 @@ export default function init(ce)
     err.hide();
     _survey_name.removeClass('invalid-value');
     if(name.length > 0) {
-      if(name.length < 10) {
+      if(name.length < 8) {
         _survey_name.addClass('invalid-value');
         err.html("too short").show();
       }

@@ -5,32 +5,26 @@ import { deepCopy, update_character_count } from '../../utils.js';
 function input_error(key,value) 
 {
   const len = String(value).trim().length;
-  var invalid_char_regex = null;
+  let invalid_char_regex = null;
+
 
   switch(key) {
     case 'wording':
-      if(len==0) { return 'missing';   } 
-      if(len<4)  { return 'too short'; }
-//      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?#]");
-      break;
-
     case 'infotag':
-      if(len==0) { return ''; }
-      if(len<4)  { return 'too short'; }
-//      invalid_char_regex = new RegExp("[^\\w\\s.,;:-#]");
-
     case 'info':
       if(len==0) { return 'missing'; }
-      if(len<4)  { return 'too short'; }
-//      invalid_char_regex = new RegExp("[^\\w\\s.,;:-#]");
+//      if(len<4)  { return 'too short'; }
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+      break;
 
     default:
       return '';
+      break;
   }
 
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
-    if(invalid_char) { return `invalid char (${invalid_char})`; }
+    if(invalid_char) { return `invalid char (${invalid_char[0]})`; }
   }
 
   return '';

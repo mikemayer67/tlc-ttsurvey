@@ -8,14 +8,13 @@ function input_error(key,value)
 
   switch(key) {
     case 'name':
-      if(len==0) { return 'missing';   } 
-      if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s.,&-]");
+      if(len==0) { return 'missing'; } 
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
     case 'feedback':
-      if(len>0 && len<4) { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
+      if(len==0) { return ''; }
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
     default:
