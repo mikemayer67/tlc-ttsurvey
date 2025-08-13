@@ -4,7 +4,7 @@ export default function init(ce)
   const _surveys = {};
 
   // survey cross reference by status (id's only)
-  const _active_survey = null;  // survey ids
+  let _active_survey = null;  // survey ids
   const _draft_surveys = [];
   const _closed_surveys = [];
 
