@@ -516,7 +516,7 @@ export default function init(ce,controller)
     handle_option_change();
   }
 
-  _options.find('button.add.option').on('click', function(e) {
+  _option_pool.find('button.add.option').on('click', function(e) {
     const new_option = prompt('New option').trim();
     if(new_option) {
       const new_id = controller.add_option(new_option);

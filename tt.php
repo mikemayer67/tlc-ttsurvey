@@ -37,17 +37,17 @@ try
     die();
   }
 
+  // If a survey preview was requested, jump to the preview page
+  if(key_exists('preview',$_REQUEST)) {
+    require(app_file('survey/preview.php'));
+    die();
+  }
+
   // If access to the admin tools have been requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
     die();
   } 
-
-  // If a survey preview was requested, jump to the preview page
-  if(key_exists('preview',$_REQUEST)) {
-    require(app_file('admin/preview.php'));
-    die();
-  }
 
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));

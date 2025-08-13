@@ -246,7 +246,6 @@ export default function init(ce)
         ce.cur_survey.title = survey_name;
         ce.cur_survey.has_pdf = data.has_pdf;
         ce.survey_data.content(ce.cur_survey.id,data.content);
-
         _survey_name.val('');
 
         $(document).trigger('SurveyDataChanged');
@@ -270,6 +269,57 @@ export default function init(ce)
     ;
   }
 
+  let _previewWindow = null;
+  const _previewTabName = 'tt-survey-preview-tab';
+
+  function handle_preview()
+  {
+    // create or reuse the preview tab
+    var can_reuse = !!_previewWindow && !_previewWindow.closed;
+    if( can_reuse ) {
+      try       { _previewWindow.location.replace('about:blank'); } 
+      catch (e) { can_reuse = false;                              }
+    }
+
+    if( !can_reuse ) {
+      if(!(_previewWindow = window.open('',_previewTabName))) {
+        alert("Failed to open a new tab to display the preview.  Do you have popup blockers installed?");
+        return;
+      }
+    }
+
+    // bring it to front if browser allows that, otherwise raise an alert to user
+    _previewWindow.focus();
+    setTimeout(() => {
+      if(document.hasFocus()) { alert("Preview opened in another tab."); }
+    }, 800);
+
+    // create temporary form to request preview
+    const nonce = ce.form.find('[name=preview-nonce]').val();
+
+    const content = ce.controller.content();
+    const json_content = JSON.stringify(content);
+    const title = _survey_name.val() || ce.cur_survey.title;
+
+    const form = $('<form>', {
+      method:'POST',
+      action:ce.ajaxuri,
+      target:_previewTabName,
+    })
+    .append( 
+      $('<input>',{ type:'hidden', name:'preview' }),
+      $('<input>',{ type:'hidden', name:'nonce', value:nonce }),
+      $('<input>',{ type:'hidden', name:'title', value:title}),
+      $('<input>',{ type:'hidden', name:'content', value: json_content })
+    )
+    .appendTo('body');
+
+    form.submit();
+
+    setTimeout(() => form.remove(), 0);
+  }
+
+
   var _last_saved = current_values();
 
   return {
@@ -282,5 +332,6 @@ export default function init(ce)
     validate_input:validate_input,
     handle_revert:handle_revert,
     handle_submit:handle_submit,
+    handle_preview:handle_preview,
   };
 };
