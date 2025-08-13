@@ -303,11 +303,10 @@ export default function init(ce)
 
     const form = $('<form>', {
       method:'POST',
-      action:ce.ajaxuri,
+      action:(ce.ajaxuri + '?preview'),
       target:_previewTabName,
     })
     .append( 
-      $('<input>',{ type:'hidden', name:'preview' }),
       $('<input>',{ type:'hidden', name:'nonce', value:nonce }),
       $('<input>',{ type:'hidden', name:'title', value:title}),
       $('<input>',{ type:'hidden', name:'content', value: json_content })

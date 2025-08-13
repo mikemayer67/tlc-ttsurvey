@@ -82,40 +82,34 @@ function start_page($context,$kwargs=[])
 
   // don't include css or javascript on print pages
   if($context !== 'print') {
-    $ttt_uri = css_uri('ttt');
-    $context_css_uri = css_uri($context);
-    $context_css_file = app_file("css/$context.css");
-    $context_js_uri = js_uri($context,$context);
-    $context_js_file = app_file("$context/js/$context.js");
+    // Add css and js resources to HTML header
+    echo "<!-- Javascript -->";
+
     $jq_uri = js_uri('jquery-3.7.1.min');
+    echo "<script src='$jq_uri'></script>";
 
-    if(file_exists($context_css_file)) {
-      $context_css = "<link rel='stylesheet' type='text/css' href='$context_css_uri'>";
-    } else {
-      $context_css = "";
+    $js_file  = app_file("$context/js/$context.js");
+    if(file_exists($js_file)) {
+      $js_uri = js_uri($context,$context);
+      echo "<script src='$js_uri'></script>";
     }
 
-    if(file_exists($context_js_file)) {
-      $context_js = "<script src='$context_js_uri'></script>";
-    } else {
-      $context_js = "";
+    echo "<!-- Style -->";
+
+    $css_uri = css_uri('ttt');
+    echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
+
+    $css_file = app_file("css/$context.css");
+    if(file_exists($css_file)) {
+      $css_uri  = css_uri($context);
+      echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
     }
-
-    echo <<<HTMLHEAD
-    <!-- Javascript -->
-    <script src='$jq_uri'></script>
-    $context_js
-
-    <!-- Style -->
-    <link rel='stylesheet' type='text/css' href='$ttt_uri'>
-    $context_css
-    HTMLHEAD;
 
     $css = $kwargs['css'] ?? null;
     if($css) {
       if(!is_array($css)) { $css = [$css]; }
-      foreach ($css as $uri) {
-        echo "<link rel='stylesheet' type='text/css' href='$uri'>";
+      foreach ($css as $css_uri) {
+        echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
       }
     }
   }
