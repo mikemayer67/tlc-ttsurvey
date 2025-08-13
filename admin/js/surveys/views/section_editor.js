@@ -1,32 +1,33 @@
-import { deepCopy, update_character_count } from '../utils.js';
+import { deepCopy, update_character_count } from '../../utils.js';
 
 
-function validate_input(key,value) 
+function input_error(key,value) 
 {
   const len = String(value).trim().length;
   var invalid_char_regex = null;
 
   switch(key) {
     case 'name':
-      if(len==0) { return 'missing';   } 
-      if(len<4)  { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s.,&-]");
+      if(len==0) { return 'missing'; } 
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
-    case 'feedback':
-      if(len>0 && len<4) { return 'too short'; }
-      invalid_char_regex = new RegExp("[^\\w\\s.,;:&-?]");
-      break;
-  }  // This is the current question ID in the editor
 
-  if(invalid_char_regex) {
-    const invalid_char = value.match(invalid_char_regex);
-    if(invalid_char) { return `invalid char (${invalid_char})`; }
+    case 'feedback':
+      if(len==0) { return ''; }
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+      break;
+
+    default:
+      return '';
   }
+
+  const invalid_char = value.match(invalid_char_regex);
+  if(invalid_char) { return `invalid char (${invalid_char})`; }
 
   return '';
 }
 
-export default function section_editor(ce,controller)
+export default function init(ce,controller)
 {
   const _box = $('#editor-frame div.grid.section.editor');
 
@@ -46,6 +47,7 @@ export default function section_editor(ce,controller)
   const _fields            = _box.find('input,textarea,select');
 
   let _cur_id = null;  // This is the current section ID displayed in the editor
+  let _errors = {};
 
   _description_value.on('input change', update_character_count);
   _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
@@ -73,16 +75,6 @@ export default function section_editor(ce,controller)
     }
   }
 
-  function validate_and_handle_update(input)
-  {
-    const key   = input.data('key');
-    const value = input.val();
-    const error = validate_input(key,value);
-    _box.children('.value.'+key).find('span.error').text(error?? '');
-    controller.update_section_error(_cur_id,key,value,error);
-    handle_update(key,value);
-  }
-
   function handle_change(e)
   {
     // this is for changes to non-<input> fields
@@ -98,14 +90,52 @@ export default function section_editor(ce,controller)
     $(document).trigger('SurveyWasModified');
   }
 
+  function validate_and_handle_update(input)
+  {
+    const key   = input.data('key');
+    const value = input.val();
+
+    validate_input(key,value);
+
+    handle_update(key,value);
+  }
+
+  function validate_input(key,value)
+  {
+    const error = input_error(key,value);
+
+    const span = _box.children('.value.'+key).find('span.error');
+    if(error) { 
+      span.text(error);
+      _errors[key] = error;
+    } else {
+      span.text('');
+      delete _errors[key];
+    }
+
+    const has_error = Object.keys(_errors).length > 0;
+    controller.toggle_section_error(_cur_id,has_error);
+  }
+
+
   function show(id,data,options)
   {
     _cur_id = id;
+    _errors = {};
 
-    _name_value.val(data.name || '');
-    _labeled_value.val(data.labeled ? 1 : 0);
-    _description_value.val(data.description || '').trigger('change');
-    _feedback_value.val(data.feedback || '')
+    const name        = data.name || '';
+    const labeled     = data.labeled ? 1 : 0;
+    const description = data.description || '';
+    const feedback    = data.feedback || '';
+
+    _name_value.val(name);
+    _labeled_value.val(labeled);
+    _description_value.val(description).trigger('change');
+    _feedback_value.val(feedback);
+
+    validate_input('name',       name);
+    validate_input('description',description);
+    validate_input('feedback',   feedback);
 
     _hints.removeClass('locked');
   }
@@ -161,11 +191,8 @@ export default function section_editor(ce,controller)
       function apply_action(section_id, value)
       {
         controller.select_section(section_id);
-
-        const error = validate_input(key,value);
+        validate_input(key,value);
         _box.find('.section.'+key).val(value);
-        _box.children('.value.'+key).find('span.error').text(error?? '');
-        controller.update_section_error(section_id,key,value,error);
         controller.update_section_data(section_id,key,value);
         $(document).trigger('SurveyWasModified');
       }
@@ -192,5 +219,4 @@ export default function section_editor(ce,controller)
     show:show,
   };
 }
-
 

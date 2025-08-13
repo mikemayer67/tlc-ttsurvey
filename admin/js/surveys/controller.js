@@ -1,12 +1,12 @@
-import editor_tree     from './editor_tree.js';
-import editor_menubar  from './editor_menubar.js';
-import setup_resizer   from './resizer.js';
-import section_viewer  from './section_viewer.js';
-import section_editor  from './section_editor.js';
-import question_viewer from './question_viewer.js';
-import question_editor from './question_editor.js';
+import tree            from './tree.js';
+import menubar         from './menubar.js';
+import section_viewer  from './views/section_viewer.js';
+import section_editor  from './views/section_editor.js';
+import question_viewer from './views/question_viewer.js';
+import question_editor from './views/question_editor.js';
 
-import { deepCopy } from '../utils.js';
+import { deepCopy }    from '../utils.js';
+import setup_resizer   from '../resizer.js';
 
 function setup_hint_handler() 
 {
@@ -38,7 +38,7 @@ function setup_hint_handler()
 }
 
 
-export default function survey_editor(ce)
+export default function init(ce)
 {
   const _box   = $('#content-editor');
   const _frame = $('#editor-frame');
@@ -47,14 +47,14 @@ export default function survey_editor(ce)
   //    We'll add more properties/methods below
   const self = {
     editable:false,
-    enable()  { this.editable = true; },
-    disable() { this.editable = false; },
-    show()    { _box.show(); },
-    hide()    { _box.hide(); },
+    enable_edits()  { this.editable = true; },
+    disable_edits() { this.editable = false; },
+    show_content()  { _box.show(); },
+    hide_content()  { _box.hide(); },
   };
   
-  const _tree     = editor_tree(ce,self);
-  const _menubar  = editor_menubar(ce,self);
+  const _tree     = tree(ce,self);
+  const _menubar  = menubar(ce,self);
   const _sv       = section_viewer(ce,self);
   const _qv       = question_viewer(ce,self);
   const _se       = section_editor(ce,self);
@@ -64,12 +64,12 @@ export default function survey_editor(ce)
   let _next_section_id  = 1;  // assigned to next new section
   let _next_question_id = 1;  // assigned to next new question
   
-  setup_resizer(ce, _box.find('div.body'), $('#survey-tree'), $('#editor-frame'));
+  setup_resizer(_box.find('div.body'), $('#survey-tree'), $('#editor-frame'));
   setup_hint_handler();
 
   // editor content
 
-  self.update = function(content) 
+  self.update_content = function(content) 
   {
     _tree.reset();
     _frame.removeClass('section question');
@@ -87,7 +87,7 @@ export default function survey_editor(ce)
         const sections = $('#survey-tree li.section').map(function() { 
           return Number($(this).data('section')); 
         }).get();
-        _next_section_id = 1 + Math.max(...sections)
+        _next_section_id = 1 + (sections.length ? Math.max(...sections) : 0);
         _next_question_id = _content.next_ids.question;
         _tree.enable(); 
       }
@@ -97,6 +97,7 @@ export default function survey_editor(ce)
       _content = null;
     }
 
+    _menubar.update_selection();
     _menubar.show(self.editable);
 
     ce.undo_manager?.empty();
@@ -110,10 +111,10 @@ export default function survey_editor(ce)
   {
     const structure = _tree.survey_structure();
     const rval = {
-      options: _content.options,
+      options: _content?.options ?? {},
       sections: {},
       questions: {},
-      next_ids: _content.next_ids,
+      next_ids: _content?.next_ids ?? {},
     };
 
     let new_sid = 0;
@@ -158,15 +159,8 @@ export default function survey_editor(ce)
     _tree.update_question(question_id,key,value);
   }
 
-  self.update_section_error = function(section_id, key, value, error)
-  {
-    _tree.set_error('section',section_id,key,error);
-  }
-
-  self.update_question_error = function(question_id, key, value, error)
-  {
-    _tree.set_error('question',question_id,key,error);
-  }
+  self.toggle_section_error  = function(section_id, error) { _tree.toggle_error('section', section_id, error); }
+  self.toggle_question_error = function(question_id,error) { _tree.toggle_error('question',question_id,error); }
 
   self.update_question_type = function(question_id,type,old_type) {
     const question = _content.questions[question_id];

@@ -31,6 +31,7 @@ echo "</script>";
 $form_uri = app_uri('admin');
 echo "<form id='admin-surveys' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
+add_hidden_input('preview-nonce',gen_nonce('preview'));
 add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('pdfuri',full_app_uri("admin&ttt=$nonce&pdf="));
 add_hidden_submit('action','surveys');
@@ -131,8 +132,9 @@ echo <<<HTML
 <!--Button Bar-->
 </div>
 <div class='submit-bar'>
-  <input id='changes-submit' class='submit' type='submit' value='Save Changes'>
-  <input id='changes-revert' class='revert' type='submit' value='Revert' formnovalidate>
+  <input id='changes-submit' class='submit'  type='submit' value='Save Changes'>
+  <input id='changes-revert' class='revert'  type='submit' value='Revert' formnovalidate>
+  <input id='survey-preview' class='preview' type='submit' value='Preview Survey'>
 </div>
 
 </form>

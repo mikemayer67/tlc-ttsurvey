@@ -1,4 +1,4 @@
-export default function locked_controller(ce)
+export default function init(ce)
 {
   function select_survey()
   { 
@@ -8,11 +8,11 @@ export default function locked_controller(ce)
     $(document)
     .off('ContentDataLoaded')
     .on('ContentDataLoaded', function(e,id,data) { 
-      ce.survey_editor.update(data); 
+      ce.controller.update_content(data); 
     });
 
-    ce.survey_editor.disable();
-    ce.survey_editor.update(content);
+    ce.controller.disable_edits();
+    ce.controller.update_content(content);
   }
 
   return {

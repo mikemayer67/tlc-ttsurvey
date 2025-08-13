@@ -1,4 +1,4 @@
-export default function draft_controller(ce)
+export default function init(ce)
 {
   const _info_edit    = $('#info-edit');
   const _survey_name  = $('#survey-name');
@@ -29,7 +29,7 @@ export default function draft_controller(ce)
 
   function select_survey()
   {
-    ce.survey_info.update_for_survey();
+    ce.metadata.update_for_survey();
 
     _survey_name.attr({ required:false, placeholder:ce.cur_survey.title}).val('');
 
@@ -44,7 +44,7 @@ export default function draft_controller(ce)
     $(document)
     .off('ContentDataLoaded')
     .on('ContentDataLoaded', function(e,id,data) { 
-      ce.survey_editor.update(data);
+      ce.controller.update_content(data);
       validate_all();
     } );
 
@@ -54,8 +54,8 @@ export default function draft_controller(ce)
     //   the data, a ContentDataLoaded event will be triggered.
     const content = ce.survey_data.content( ce.cur_survey.id );
 
-    ce.survey_editor.enable();
-    ce.survey_editor.update(content);
+    ce.controller.enable_edits();
+    ce.controller.update_content(content);
     _last_saved = current_values();
     validate_all();
   }
@@ -96,7 +96,7 @@ export default function draft_controller(ce)
 
   function validate_all()
   {
-    ce.survey_info.validate_survey_name();
+    ce.metadata.validate_survey_name();
     validate_pdf_action();
     update_submit_revert();
   }
@@ -109,8 +109,10 @@ export default function draft_controller(ce)
       dirty &&
       ( ce.form.find('.invalid-value').length === 0) &&
       ( ce.form.find('.incomplete').length    === 0) &&
-      ( ce.survey_editor.can_submit() )
+      ( ce.controller.can_submit() )
     );
+
+    ce.preview.prop('disabled',!has_content());
 
     if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
     else      { ce.revert.prop('disabled',true).css('opacity',0); }
@@ -171,6 +173,14 @@ export default function draft_controller(ce)
     return false;
   }
 
+  function has_content()
+  {
+    const content = ce.controller.content();
+    if(!content)          { return false; }
+    if(!content.sections) { return false; }
+    return Object.keys(content.sections).length > 0;
+  }
+
   function handle_revert()
   {
     for( let key in _last_saved ) {
@@ -180,7 +190,7 @@ export default function draft_controller(ce)
     else                                     { _survey_pdf.hide(); }
 
     const content = ce.survey_data.content( ce.cur_survey.id );
-    ce.survey_editor.update(content);
+    ce.controller.update_content(content);
 
     $(document).trigger('SurveyDataChanged');
     validate_all();
@@ -192,7 +202,7 @@ export default function draft_controller(ce)
     var survey_name = cur_values.survey_name.trim();
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
-    const content = ce.survey_editor.content();
+    const content = ce.controller.content();
     const json_content = JSON.stringify(content);
 
     var formData = new FormData();
@@ -236,7 +246,6 @@ export default function draft_controller(ce)
         ce.cur_survey.title = survey_name;
         ce.cur_survey.has_pdf = data.has_pdf;
         ce.survey_data.content(ce.cur_survey.id,data.content);
-
         _survey_name.val('');
 
         $(document).trigger('SurveyDataChanged');
@@ -260,6 +269,57 @@ export default function draft_controller(ce)
     ;
   }
 
+  let _previewWindow = null;
+  const _previewTabName = 'tt-survey-preview-tab';
+
+  function handle_preview()
+  {
+    // create or reuse the preview tab
+    var can_reuse = !!_previewWindow && !_previewWindow.closed;
+    if( can_reuse ) {
+      try       { _previewWindow.location.replace('about:blank'); } 
+      catch (e) { can_reuse = false;                              }
+    }
+
+    if( !can_reuse ) {
+      if(!(_previewWindow = window.open('',_previewTabName))) {
+        alert("Failed to open a new tab to display the preview.  Do you have popup blockers installed?");
+        return;
+      }
+    }
+
+    // bring it to front if browser allows that, otherwise raise an alert to user
+    _previewWindow.focus();
+    setTimeout(() => {
+      if(document.hasFocus()) { alert("Preview opened in another tab."); }
+    }, 800);
+
+    // create temporary form to request preview
+    const nonce = ce.form.find('[name=preview-nonce]').val();
+
+    const content = ce.controller.content();
+    const json_content = JSON.stringify(content);
+    const title = _survey_name.val() || ce.cur_survey.title;
+
+    const form = $('<form>', {
+      method:'POST',
+      action:ce.ajaxuri,
+      target:_previewTabName,
+    })
+    .append( 
+      $('<input>',{ type:'hidden', name:'preview' }),
+      $('<input>',{ type:'hidden', name:'nonce', value:nonce }),
+      $('<input>',{ type:'hidden', name:'title', value:title}),
+      $('<input>',{ type:'hidden', name:'content', value: json_content })
+    )
+    .appendTo('body');
+
+    form.submit();
+
+    setTimeout(() => form.remove(), 0);
+  }
+
+
   var _last_saved = current_values();
 
   return {
@@ -272,5 +332,6 @@ export default function draft_controller(ce)
     validate_input:validate_input,
     handle_revert:handle_revert,
     handle_submit:handle_submit,
+    handle_preview:handle_preview,
   };
 };

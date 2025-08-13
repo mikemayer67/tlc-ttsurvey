@@ -37,8 +37,10 @@ function internal_error($msg)
 // string to the URL for the css file... but this should only be needed
 // in a development environment.
 
+function base_uri() { return str_ends_with(APP_URI,"/") ? APP_URI : APP_URI.'/'; }
+
 function app_file($path)   { return APP_DIR . "/$path"; }
-function app_uri($q=null)  { return APP_URI . "/tt.php" . ($q ? "?$q" : '');  }
+function app_uri($q=null)  { return ($q ? "tt.php?$q" : "tt.php"); }
 
 function full_app_uri($q=null) {
   $scheme = 'https';
@@ -51,7 +53,11 @@ function full_app_uri($q=null) {
 }
 
 function rsrc_uri($rsrc,$type,$no_cache,$context='') {
-  $uri = str_replace('//','/',implode('/',[APP_URI,$context,$type,$rsrc]));
+  $rsrc = trim($rsrc," /");
+  $type = trim($type," /");
+  $context = trim($context," /");
+  $uri = $context ? "$context/" : "";
+  $uri .= "$type/$rsrc";
   if($no_cache && is_dev()) { $uri .= '?v=' . rand(); }
   return $uri;
 }
@@ -74,7 +80,7 @@ function validate_entry_uri()
   $pos = strpos($request_uri,"?");
   if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
   // All we should be left with is tt.php, 405.php, 500.php, tt or nothing
-  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php"]) ) { api_die(); }
+  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php","preview/"]) ) { api_die(); }
   // We're good!
 }
 validate_entry_uri();

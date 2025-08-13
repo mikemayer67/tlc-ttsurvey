@@ -5,7 +5,7 @@ function format_date(date)
   return date;
 }
 
-export default function survey_info(ce)
+export default function init(ce)
 {
   const _info_bar     = ce.form.find('.content-box .info-bar');
   const _info_edit    = $('#info-edit');
@@ -107,7 +107,7 @@ export default function survey_info(ce)
     err.hide();
     _survey_name.removeClass('invalid-value');
     if(name.length > 0) {
-      if(name.length < 10) {
+      if(name.length < 8) {
         _survey_name.addClass('invalid-value');
         err.html("too short").show();
       }

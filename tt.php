@@ -37,6 +37,12 @@ try
     die();
   }
 
+  // If a survey preview was requested, jump to the preview page
+  if(key_exists('preview',$_REQUEST)) {
+    require(app_file('survey/preview.php'));
+    die();
+  }
+
   // If access to the admin tools have been requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
@@ -73,12 +79,6 @@ try
     forget_user_token($_REQUEST['forget'] ?? '');
     // .. no reason to abort at this point... 
   }
-
-  // If access to the admin tools have been requested, jump to the dashboard
-  if(key_exists('admin',$_REQUEST)) {
-    require(app_file('admin/admin.php'));
-    die();
-  } 
 
   // Otherwise, jump to the survey
   require(app_file('survey/survey.php'));

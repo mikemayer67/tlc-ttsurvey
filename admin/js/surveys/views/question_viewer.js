@@ -1,4 +1,4 @@
-export default function question_viewer(ce)
+export default function init(ce)
 {
   const _box = $('#editor-frame div.grid.question.viewer');
 

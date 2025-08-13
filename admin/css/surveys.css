@@ -433,37 +433,67 @@
 #ttt-body #survey-tree .incomplete {
 }
 
-#ttt-body #survey-tree .needs-value,
-#ttt-body #survey-tree .needs-type
+#ttt-body #survey-tree li.section.needs-value div span,
+#ttt-body #survey-tree li.question.needs-value,
+#ttt-body #survey-tree li.question.needs-type
 {
   color:#b00;
   font-style:italic;
-  font-weight:normal;
 }
-#ttt-body #survey-tree li.section span.needs-value::before {
+#ttt-body #survey-tree li.section.needs-value span::before {
   content:"[needs name]";
 }
 #ttt-body #survey-tree li.question.needs-value::after {
   content:"[needs wording]";
 }
+#ttt-body #survey-tree li.question.info.needs-value::after {
+  content:"[needs info/tag]";
+}
 #ttt-body #survey-tree li.question.needs-type::after {
   content:"[needs type]";
+}
+
+/*
+ * Section backgrounds
+ *
+ * section selected,       no error no child errors => dark yellow  ffe41f
+ * section selected,          error or child errors => dark pink    ffc0c0
+ * section child selected, no error no child errors => light yellow fff5b0
+ * section child selected,    error or child errors => light pink   ffe0e0
+ * section no selection,            no child errors => none
+ * section no selection,               child errors => light pink
+ *   
+ * Question backgrounds
+ * question selected,      no errors => dark yellow
+ * question selected,         errors => dark pink
+ * question not selected,            => none
+ */
+
+#ttt-body #survey-tree li.section.selected div,
+#ttt-body #survey-tree li.question.selected div {
+  background-color:#ffe41f;  /* dark yellow */
+}
+
+#ttt-body #survey-tree li.section.selected.error div,
+#ttt-body #survey-tree li.section.selected.child-error div,
+#ttt-body #survey-tree li.question.selected.error div {
+  background-color:#ffc0c0;  /* dark pink */
+}
+
+#ttt-body #survey-tree li.section.child-selected div {
+  background-color:#fff5b0;  /* light yellow */
+}
+
+#ttt-body #survey-tree li.section.child-error div,
+#ttt-body #survey-tree li.section.child-selected.error div,
+#ttt-body #survey-tree li.section.child-selectedild-error div {
+  background-color:#ffe0e0;  /* light pink */
 }
 
 #ttt-body #survey-tree li.section.error div,
 #ttt-body #survey-tree li.question.error
 {
-  font-weight:bold;
   color:#b00; 
-  background-color:pink;
-}
-#ttt-body #survey-tree li.section.child-error div {
-  background-color:#ffe8e8;
-}
-#ttt-body #survey-tree li.section.selected.child-error div,
-#ttt-body #survey-tree li.section.selected.error div
-{
-  background-color:#ffc000;
 }
 
 #ttt-body #survey-tree li.question::before {
@@ -610,6 +640,16 @@
   font-style:italic;
   color:darkred;
 }
+#editor-frame .grid.editor .value .textarea-wrapper .error,
+#editor-frame .grid.editor .options.value .error
+{
+  margin:1px 1px 0 0;
+}
+
+#editor-frame .grid.editor .options.tight,
+#editor-frame .grid.editor .option.pool.tight {
+  margin-top:-10px;
+}
 
 #editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {
@@ -678,8 +718,8 @@
   color:red;
 }
 
-#editor-frame .grid.editor div.options .option.wrapper {
-  width:100%;
+#editor-frame .grid.editor div.options.value {
+  position:relative;
 }
 
 #editor-frame .grid.editor div.option.selected {

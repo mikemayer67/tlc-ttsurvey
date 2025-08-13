@@ -1,4 +1,4 @@
-export default function survey_data(ce)
+export default function init(ce)
 {
   // full survey data (indexed by id)
   const _surveys = {};

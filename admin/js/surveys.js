@@ -1,11 +1,11 @@
-import survey_data from './survey_data.js';
-import survey_controls from './survey_controls.js';
-import survey_info from './survey_info.js';
-import locked_controller from './surveys_locked.js';
-import new_controller from './surveys_new.js';
-import draft_controller from './surveys_draft.js';
-import survey_editor from './survey_editor/controller.js';
-import undo_manager from './undo_manager.js';
+import survey_data  from './surveys/survey_data.js';
+import controls     from './surveys/controls.js';
+import metadata     from './surveys/metadata.js';
+import locked_view  from './surveys/views/locked_view.js';
+import new_view     from './surveys/views/new_view.js';
+import draft_view   from './surveys/views/draft_view.js';
+import controller   from './surveys/controller.js';
+import undo_manager from './undo.js';
 
 const ce = (window._survey_ce = window._survey_ce || {});
 
@@ -56,6 +56,12 @@ function handle_revert(e)
   ce.dispatch('handle_revert');
 }
 
+function handle_preview(e)
+{
+  e.preventDefault();
+  ce.dispatch('handle_preview');
+}
+
 
 // Survey status dependencies
 
@@ -70,8 +76,8 @@ function dispatch_status()
 function dispatch(f,...args)
 {
   const status = dispatch_status();
-  if( status in ce.surveyControllers && f in ce.surveyControllers[status] ) {
-    return ce.surveyControllers[status][f](...args);
+  if( status in ce.surveyViews && f in ce.surveyViews[status] ) {
+    return ce.surveyViews[status][f](...args);
   }
   return null;
 }
@@ -79,8 +85,8 @@ function dispatch(f,...args)
 async function dispatch_async(f,...args)
 {
   const status = dispatch_status();
-  if( status in ce.surveyControllers && f in ce.surveyControllers[status] ) {
-    return ce.surveyControllers[status][f](...args);
+  if( status in ce.surveyViews && f in ce.surveyViews[status] ) {
+    return ce.surveyViews[status][f](...args);
   }
   return null;
 }
@@ -106,6 +112,7 @@ $(document).ready(
   ce.submit_bar = ce.form.find('div.submit-bar');
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
+  ce.preview    = $('#survey-preview');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -119,22 +126,23 @@ $(document).ready(
   ce.form.find('input.alphanum-only').on('input',enforce_alphanum_only);
   ce.form.on('submit', handle_submit);
   ce.revert.on('click',handle_revert);
+  ce.preview.on('click',handle_preview);
 
   // Load additional modules
 
   ce.dispatch       = dispatch;
   ce.dispatch_async = dispatch_async;
   
-  ce.surveyControllers = {};
-  ce.surveyControllers['draft']  = draft_controller(ce);
-  ce.surveyControllers['locked'] = locked_controller(ce);
-  ce.surveyControllers['new']    = new_controller(ce);
+  ce.surveyViews = {};
+  ce.surveyViews['draft']  = draft_view(ce);
+  ce.surveyViews['locked'] = locked_view(ce);
+  ce.surveyViews['new']    = new_view(ce);
 
-  ce.survey_data     = survey_data(ce);
-  ce.survey_info     = survey_info(ce);
-  ce.survey_editor   = survey_editor(ce);
-  ce.survey_controls = survey_controls(ce);
-  ce.undo_manager    = undo_manager(ce);
+  ce.survey_data  = survey_data(ce);
+  ce.metadata     = metadata(ce);
+  ce.controller   = controller(ce);
+  ce.controls     = controls(ce);
+  ce.undo_manager = undo_manager(ce);
 
   // Support global form
 
