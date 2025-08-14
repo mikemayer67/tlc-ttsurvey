@@ -46,7 +46,7 @@ try {
 }
 catch(Exception $e)
 {
-  log_dev("Soemthing went wrong: ".str($e),0);
+  log_dev("Something went wrong: ".str($e),0);
   $errid = bin2hex(random_bytes(3));
   $error = $e->getMessage();
   log_error("[$errid]: $error",0);

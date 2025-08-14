@@ -70,7 +70,7 @@ try
 
   // Handle logout and forget token requests
   //   Allow from get or post queries
-  if(key_exists('logoout',$_REQUEST)) {
+  if(key_exists('logout',$_REQUEST)) {
     @todo('implement logout');
     handle_logout();
     die();

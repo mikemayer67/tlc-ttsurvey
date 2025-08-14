@@ -6,27 +6,6 @@ export default function init(ce)
 
   // initialize survey select list
 
-  var survey = ce.survey_data.active();
-  if(!(survey===null || Array.isArray(survey))) {
-    _survey_select.append($('<option>',{ 'text':'---Active---', 'disabled':true }));
-    _survey_select.append($('<option>',{
-      'value':  survey.id,
-      'text':   survey.title,
-      'class':  'active',
-      'status': 'active',
-    }));
-  }
-
-  if( ce.has_admin_lock && ttt_is_admin ) {
-    _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
-    _survey_select.append($('<option>',{ 
-      'value':  'new', 
-      'text':   'Open New Survey...', 
-      'class':  'new', 
-      'status': 'new'
-    }));
-  }
-
   const draft_surveys = ce.survey_data.drafts();
   if( draft_surveys.length > 0 ) {
     _survey_select.append($('<option>',{ 'text':'---Draft---', 'disabled':true }));
@@ -40,6 +19,17 @@ export default function init(ce)
     }
   }
 
+  const active_survey = ce.survey_data.active();
+  if(!(active_survey===null || Array.isArray(active_survey))) {
+    _survey_select.append($('<option>',{ 'text':'---Active---', 'disabled':true }));
+    _survey_select.append($('<option>',{
+      'value':  active_survey.id,
+      'text':   active_survey.title,
+      'class':  'active',
+      'status': 'active',
+    }));
+  }
+
   const closed_surveys = ce.survey_data.closed();
   if( closed_surveys.length > 0 ) {
     _survey_select.append($('<option>',{ 'text':'---Closed---', 'disabled':true }));
@@ -51,6 +41,16 @@ export default function init(ce)
         'status': 'closed',
       }));
     }
+  }
+
+  if( ce.has_admin_lock && ttt_is_admin ) {
+    _survey_select.append($('<option>',{ 'text':'---New---', 'class':'new', 'disabled':true }));
+    _survey_select.append($('<option>',{ 
+      'value':  'new', 
+      'text':   'Open New Survey...', 
+      'class':  'new', 
+      'status': 'new'
+    }));
   }
 
   //

@@ -85,11 +85,21 @@ function handle_admin_logout() {
     data:{ 'ajax':'admin/logout_admin','nonce':ace.nonce},
   })
   .done( function(data,status,jqXHR) {
-    if(data.success) {
-      show_status('info','Admin logged out');
-    } else {
-      show_status('error','Failed to log Admin out');
-    }
+    window.location = ace.ajaxuri + '?admin';
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    internal_error(jqXHR);
+  });
+}
+
+function handle_user_logout() {
+  $.ajax( {
+    type:'POST',
+    url: ace.ajaxuri,
+    dataType:'json',
+    data:{ 'ajax':'admin/logout_user','nonce':ace.nonce},
+  })
+  .done( function(data,status,jqXHR) {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
@@ -205,6 +215,7 @@ $(document).ready(
   $('span.ttt-title-box *').on('click', handle_exit_admin);
   $('#admin-tabs a.admin.login').on('click',handle_admin_login);
   $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
+  $('#admin-tabs a.user.logout').on('click',handle_user_logout);
 
   ace.form.on('submit',handle_tab_change);
 

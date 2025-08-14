@@ -63,15 +63,7 @@ div.noscript div {
   color:black;
 }
 
-#ttt-body #admin-tabs div.tabs span.userid {
-  background:inherit;
-  margin-left:auto;
-  color:#008;
-  font-size:90%;
-  font-style:italic;
-}
-
-#ttt-body #admin-tabs div.tabs a.admin {
+#ttt-body #admin-tabs div.tabs a {
   background:inherit;
   margin-left:auto;
   color:#008;
@@ -79,11 +71,15 @@ div.noscript div {
   font-weight:700;
 }
 
-#ttt-body #admin-tabs div.tabs span.userid + a.admin {
-  margin-left:1em;
+#ttt-body #admin-tabs div.tabs a.logout + a.admin {
+  margin-left:0.5em;
 }
 
-#ttt-body #admin-tabs div.tabs a.admin:hover {
+#ttt-body #admin-tabs div.tabs a.logout + a.admin::before {
+  content: ' | '
+}
+
+#ttt-body #admin-tabs div.tabs a:hover {
   color:#00c;
   text-shadow:1px 1px 5px #888;
 }

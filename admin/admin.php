@@ -9,7 +9,6 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
 log_dev("-------------- Start of Admin Dashboard --------------");
-log_dev("REQUEST: ".print_r($_REQUEST,true));
 
 // If an explicit request was made to login as site admin,
 //   handle that now.  No need to verify existing admin/user roles.
@@ -45,8 +44,10 @@ if($admin_id) {
 //   that active user does not have any defined admin roles 
 //   (if applicable) and jump to the admin login page.
 if(!$active_roles) {
-  if(isset($userid)) {
+  if($userid) {
     set_warning_status("$userid does not have access to Admin Dashboard");
+  } else {
+    set_info_status("Please log in as a site admin");
   }
   require(app_file('admin/login.php'));
   die();
@@ -135,7 +136,7 @@ foreach($active_tabs as $tab)
 if($admin_id) {
   echo "<a class='admin logout'>Logout Admin</a>";
 } else {
-  echo "<span class='userid'>($userid)</span>";
+  echo "<a class='user logout'>Logout $userid</a>";
   echo "<a class='admin login'>Login as Admin</a>";
 }
 echo "</div>";

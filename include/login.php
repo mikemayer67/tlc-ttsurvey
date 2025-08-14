@@ -64,8 +64,9 @@ class LoginCookies
 
   private function _set_cookie($key,$value,$expires)
   {  
-    if($this->_ajax) { return array($key,$value,$expires);  } 
-    else             { setcookie($key,$value,$expires,'/'); }
+    if($this->_ajax)       { return array($key,$value,$expires);  } 
+    else if(isset($value)) { setcookie($key,$value,$expires,'/'); }
+    else                   { setcookie($key,'',time()-3600,'/'); }
     return true;
   }
 
