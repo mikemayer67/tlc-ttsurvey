@@ -113,6 +113,7 @@ export default function init(ce)
     );
 
     ce.preview.prop('disabled',!has_content());
+    ce.preview_js.parent().toggleClass('hidden',!has_content());
 
     if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
     else      { ce.revert.prop('disabled',true).css('opacity',0); }
@@ -309,7 +310,8 @@ export default function init(ce)
     .append( 
       $('<input>',{ type:'hidden', name:'nonce', value:nonce }),
       $('<input>',{ type:'hidden', name:'title', value:title}),
-      $('<input>',{ type:'hidden', name:'content', value: json_content })
+      $('<input>',{ type:'hidden', name:'content', value: json_content }),
+      $('<input>',{ type:'hidden', name:'preview_js', value:ce.preview_js.prop('checked') })
     )
     .appendTo('body');
 

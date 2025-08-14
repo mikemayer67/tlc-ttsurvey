@@ -193,6 +193,7 @@ div.noscript div {
 #ttt-body div.body form div.submit-bar {
   display:flex;
   flex-direction:row-reverse;
+  align-items:center;
   margin: 0.5em;
 }
 
@@ -219,10 +220,21 @@ div.noscript div {
   color:#444;
 }
 
+#ttt-body div.body form div.submit-bar label.preview-js {
+  margin-right:auto;
+  margin-left:3px;
+  font-style:italic;
+  font-size:90%;
+}
+
+#ttt-body div.body form div.submit-bar label.preview-js.hidden {
+  visibility:hidden;
+}
+
 #ttt-body div.body form div.submit-bar input.preview {
   background:#048;
   color:white;
-  margin-right:auto;
+  margin-right:0.5em;
   transition: all .25s;
 }
 

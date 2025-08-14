@@ -263,7 +263,7 @@ IF version < 1 THEN
   CREATE OR REPLACE VIEW tlc_tt_active_roles
     AS SELECT userid, admin, content, tech
          FROM tlc_tt_roles
-        WHERE userid=1 OR admin=1 OR tech=1;
+        WHERE content=1 OR admin=1 OR tech=1;
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_sections AS
   SELECT s.survey_id, s.survey_rev, s.sequence,

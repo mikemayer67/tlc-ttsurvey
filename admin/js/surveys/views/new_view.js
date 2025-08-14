@@ -44,7 +44,7 @@ export default function init(ce)
 
     _survey_clone.find('option:not(:first)').remove();
     var cur_status = '';
-    const cloneable = ce.survey_controls?.cloneable_surveys() ?? [];
+    const cloneable = ce.controls?.cloneable_surveys() ?? [];
     for(const opt of cloneable) {
       var status = $(opt).attr('status');
       if(status !== cur_status) {
@@ -93,7 +93,7 @@ export default function init(ce)
 
     })
     .done( function(data,start,jqHXR) {
-      if(data.success) { ce.survey_controls.add_new_survey(data.survey); }
+      if(data.success) { ce.controls.add_new_survey(data.survey); }
       else             { alert('Failed to create new survey: '+error);   }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
@@ -103,7 +103,7 @@ export default function init(ce)
 
   function cancel_new()
   {
-    ce.survey_controls.select_survey(_prior_id);
+    ce.controls.select_survey(_prior_id);
   }
 
   return {

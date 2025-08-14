@@ -59,7 +59,7 @@ todo("Update the following commentary on start_page function");
 function start_page($context,$kwargs=[])
 {
   $context = strtolower($context);
-  $title = active_survey_title() ?? app_name();
+  $title = $kwargs['survey_title'] ?? active_survey_title() ?? app_name();
   $title_len = strlen($title);
   $base = base_uri();
 

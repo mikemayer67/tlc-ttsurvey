@@ -132,9 +132,13 @@ echo <<<HTML
 <!--Button Bar-->
 </div>
 <div class='submit-bar'>
-  <input id='changes-submit' class='submit'  type='submit' value='Save Changes'>
-  <input id='changes-revert' class='revert'  type='submit' value='Revert' formnovalidate>
-  <input id='survey-preview' class='preview' type='submit' value='Preview Survey'>
+  <input id='changes-submit' class='submit'     type='submit' value='Save Changes'>
+  <input id='changes-revert' class='revert'     type='submit' value='Revert' formnovalidate>
+  <label class='preview-js'>
+    <input id='preview-js' class='preview-js' type='checkbox' checked>
+    Javascript enabled
+  </label>
+  <input id='survey-preview' class='preview'    type='submit' value='Preview Survey'>
 </div>
 
 </form>
