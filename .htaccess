@@ -26,12 +26,39 @@ Options All -Indexes
 # The goal of all of these rewrites is to funnel all URIs consistent
 #   with the app's API through the tt.php script
 RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} (405|500).php$
+
+# my attempt: (was working pretty well)
+
+#RewriteCond %{REQUEST_FILENAME} (405|500).php$
+#RewriteCond %{REQUEST_FILENAME} -f
+#RewriteRule (.*) - [L]
+#RewriteRule admin/$ tt.php?admin [L]
+#RewriteRule preview/$ tt.php?preview [L]
+#RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$
+#RewriteCond %{REQUEST_FILENAME} -f
+#RewriteRule (.*) - [L]
+#RewriteRule (.*) tt.php [L]
+
+# ChatGPT rewrite:
+
+# ---------------------------------------------------------
+# 1. Allow existing error pages (405.php, 500.php) to be served
+RewriteCond %{REQUEST_FILENAME} (405|500)\.php$
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule (.*) - [L]
-RewriteRule admin/$ tt.php?admin [L]
-RewriteRule preview/$ tt.php?preview [L]
-RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$
+RewriteRule ^ - [L]
+
+# ---------------------------------------------------------
+# 2. Serve static assets directly (images, CSS, JS)
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule (.*) - [L]
-RewriteRule (.*) tt.php [L]
+RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$ [NC]
+RewriteRule ^ - [L]
+
+# ---------------------------------------------------------
+# 3. Special endpoints: admin and preview
+RewriteRule ^admin/?$ tt.php?admin [L]
+RewriteRule ^preview/?$ tt.php?preview [L]
+
+# ---------------------------------------------------------
+# 4. Catch-all: all other requests go to tt.php
+RewriteRule ^ tt.php [L]
+

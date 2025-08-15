@@ -19,7 +19,10 @@ $preview_js = $_POST['preview_js'] ?? false;
 $active_user = active_userid();
 log_dev("Active User: $active_user");
 
-start_page('survey',['survey_title'=>$survey_title]);
+start_page('survey',[
+  'survey_title'=>$survey_title,
+  'js_enabled'=>$preview_js,
+]);
 
 echo "<h2>Active Userid: $active_user</h2>";
 

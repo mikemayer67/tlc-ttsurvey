@@ -7,6 +7,13 @@ require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
 
+function safe_html(string $string): string {
+  return htmlspecialchars(
+    $string, 
+    ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 
+    'UTF-8'
+  );
+}
 
 function img_tag($img,$class='',$alt='')
 {
@@ -59,8 +66,10 @@ todo("Update the following commentary on start_page function");
 function start_page($context,$kwargs=[])
 {
   $context = strtolower($context);
+
   $title = $kwargs['survey_title'] ?? active_survey_title() ?? app_name();
   $title_len = strlen($title);
+
   $base = base_uri();
 
   log_dev("start_page($context)");
@@ -76,77 +85,85 @@ function start_page($context,$kwargs=[])
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <!-- Title -->
-  <title class=tlc-title>$title</title>
+  <title>$title</title>
   HTMLHEAD;
 
+  // Add javascript resources
+  //  - exclude if context is print
+  //  - require if context is admin
+  //  - all other contexts
+  //     - exclude if explicitly excluded by kwargs
+  //     - include otherwise
+  $include_js =
+      $context === 'print' ? false
+    : $context === 'admin' ? true
+    : ($kwargs['js_enabled'] ?? true) ;
 
-  // don't include css or javascript on print pages
-  if($context !== 'print') {
-    // Add css and js resources to HTML header
+  if($include_js) {
+    $js_uris = [ js_uri('jquery-3.7.1.min') ];
+
+    if(file_exists( app_file("$context/js/$context.js")) ) { 
+      $js_uris[] = js_uri($context,$context);
+    }
+
     echo "<!-- Javascript -->";
-
-    $jq_uri = js_uri('jquery-3.7.1.min');
-    echo "<script src='$jq_uri'></script>";
-
-    $js_file  = app_file("$context/js/$context.js");
-    if(file_exists($js_file)) {
-      $js_uri = js_uri($context,$context);
+    foreach($js_uris as $js_uri) {
       echo "<script src='$js_uri'></script>";
+    }
+  }
+
+  // Add style resources (except for print context)
+  //  - always include base CSS
+  //  - add context specific URI if css file exists
+  //  - add kwargs provided URIs
+  if($context !== 'print') 
+  {
+    $css_uris = [ css_uri('ttt') ];
+
+    if( file_exists(app_file("css/$context.css"))) { 
+      $css_uris[] = css_uri($context); 
+    }
+
+    foreach( (array)($kwargs['css'] ?? []) as $css_uri ) { 
+      $css_uris[] = $css_uri; 
     }
 
     echo "<!-- Style -->";
-
-    $css_uri = css_uri('ttt');
-    echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
-
-    $css_file = app_file("css/$context.css");
-    if(file_exists($css_file)) {
-      $css_uri  = css_uri($context);
-      echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
-    }
-
-    $css = $kwargs['css'] ?? null;
-    if($css) {
-      if(!is_array($css)) { $css = [$css]; }
-      foreach ($css as $css_uri) {
-        echo "<link rel='stylesheet' type='text/css' href='$css_uri'>";
-      }
+    foreach ($css_uris as $uri) {
+       echo "<link rel='stylesheet' type='text/css' href='$uri'>";
     }
   }
 
   // close the head element and open the body element
   echo "</head><body>";
 
-  // Add the navigation bar
-  //   include unless navbar=false is explicitly set in the kwargs
+  // Add the navigation bar (unless explicitly excluded via the kwargs)
   if( $kwargs['navbar'] ?? true ) {
+    echo "<!-- Navbar -->";
+    echo "<div id='ttt-navbar'>";
+    echo "<span class='ttt-title-box'>";
+
     $logo = app_logo() ?? '';
-    logger("logo = $logo");
-    if($logo) { 
-      $logo = "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
+    if($logo) {
+      echo "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
     }
-    logger("logo = $logo");
+    echo "<span class='ttt-title'>$title</span>";
+    echo "</span>";
 
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
-    $menu = $menu_cb ? $menu_cb() : '';
+    if($menu_cb) { echo $menu_cb(); }
 
-    echo <<<HTMLNAVBAR
-    <!-- Navbar -->
-    <div id='ttt-navbar'>
-      <span class='ttt-title-box'>
-        $logo
-        <span class='ttt-title'>$title</span>
-      </span>
-      $menu
-    </div>
-    HTMLNAVBAR;
+    echo "</div>";
   }
 
-
-  if($context === 'admin') {
-    require_once(app_file('admin/admin_lock.php'));
-    $lock = json_encode(obtain_admin_lock());
-    echo <<<HTMLADMIN
+  // Add noscript content
+  //   - javascript is required for admin context
+  //   - javascript is excluded for print context
+  //   - javascript is recommended for all other contexts
+  switch($context) 
+  {
+  case 'admin':
+    echo <<<HTMLNOSCRIPT
     <!-- Javascript required -->
     <noscript>
     <div class='noscript'>
@@ -155,13 +172,13 @@ function start_page($context,$kwargs=[])
       </div>
     </div>
     </noscript>
-    <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
-    <script>
-      var admin_lock = $lock;
-    </script>
-    HTMLADMIN;
-  }
-  elseif($context !== 'print') {
+    HTMLNOSCRIPT;
+    break;
+
+  case 'print':
+    break;
+
+  default:
     echo <<<HTMLNOSCRIPT
     <!-- Javascript suggestion -->
     <noscript>
@@ -170,23 +187,33 @@ function start_page($context,$kwargs=[])
     </div>
     </noscript>
     HTMLNOSCRIPT;
+    break;
+  }
+  
+  // Add admin lock (only in admin context)
+  if($context === 'admin') 
+  {
+    require_once(app_file('admin/admin_lock.php'));
+    $lock = json_encode(obtain_admin_lock());
+    echo <<<ADMINLOCK
+    <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
+    <script>
+      var admin_lock = $lock;
+    </script>
+    ADMINLOCK;
   }
 
-  // Add the status bar
-  //   include unless status=false is explicitly set in the kwargs
+  // Add the status bar (unless explicitly excluded via the kwargs)
   if( $kwargs['status'] ?? true ) {
+    echo "<!-- Status Bar -->";
     $status = get_status_message();
     if($status) {
       $level = $status[0];
       $msg   = $status[1];
+      echo "<div id='ttt-status' class='$level'>$msg</div>";
     } else {
-      $level = 'none';
-      $msg = '';
+      echo "<div id='ttt-status' class='none'></div>";
     }
-    echo <<<HTMLSTATUS
-    <!-- Status Bar -->
-    <div id='ttt-status' class='$level'>$msg</div>
-    HTMLSTATUS;
   }
 
   // Start the container for survey body
