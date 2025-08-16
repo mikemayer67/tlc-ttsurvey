@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/strings.php'));
@@ -72,7 +72,7 @@ function update_survey_pdf($survey_id,$survey_rev,$details)
   $action = $details['pdf_action'] ?? null;
   if(!$action) { return; }
 
-  $pdf_path = Surveys::pdf_path($survey_id);
+  $pdf_path = Surveys::expected_pdf_path($survey_id);
 
   if($action === 'drop' || $action === 'replace') {
     if(file_exists($pdf_path)) {

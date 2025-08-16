@@ -16,7 +16,7 @@ namespace tlc\tts;
 //   is somehow invoked directly (i.e. the .htaccess has failed to properly redirect), then 
 //   api_die() will be called to immediately terminate the invocation of this app.
 
-define('APP_DIR',dirname(__FILE__));
+define('APP_DIR',realpath(dirname(__FILE__)));
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/status.php'));
@@ -33,7 +33,10 @@ try
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
-    require(app_file('ajax.php'));
+    list($scope,$action) = explode('/',$_POST['ajax']);
+    log_dev("AJAX scope='$scope' action='$action'");
+    if(!isset($action)) { http_response_code(405); die(); }
+    require safe_app_file("$scope/ajax/$action.php");
     die();
   }
 

@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 define('REDIRECT_PAGE',    'redirect-page');
 define('REDIRECT_DATA',    'redirect-data');

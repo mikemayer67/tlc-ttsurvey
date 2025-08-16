@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
@@ -94,10 +94,11 @@ function start_page($context,$kwargs=[])
   //  - all other contexts
   //     - exclude if explicitly excluded by kwargs
   //     - include otherwise
-  $include_js =
-      $context === 'print' ? false
-    : $context === 'admin' ? true
-    : ($kwargs['js_enabled'] ?? true) ;
+  switch($context) {
+  case 'print':  $include_js = false; break;
+  case 'admin':  $include_js = true;  break;
+  default:       $include_js = ($kwargs['js_enabled'] ?? true); break;
+  }
 
   if($include_js) {
     $js_uris = [ js_uri('jquery-3.7.1.min') ];

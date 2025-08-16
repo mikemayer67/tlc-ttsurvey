@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
@@ -31,7 +31,7 @@ class Surveys
   {
     $info = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=?",'i',$id);
 
-    if(self::pdf_file($id)) {
+    if(self::existing_pdf_file($id)) {
       $info['has_pdf'] = true;
     }
 
@@ -67,7 +67,7 @@ class Surveys
     }
 
     foreach( $surveys as &$survey ) {
-      $survey['has_pdf'] = (null !== self::pdf_file($survey['survey_id']));
+      $survey['has_pdf'] = (null !== self::existing_pdf_file($survey['survey_id']));
     }
 
     return $surveys;
@@ -320,23 +320,25 @@ class Surveys
     ];
   }
 
-  static function pdf_path($survey_id)
+  static function expected_pdf_path($survey_id)
   {
+    // as $survey_id is tainted, we want to make sure that it is actually 
+    //   an integar so as to be sure the pdf_path is valid for our app
+    if( ! ctype_digit((string) $survey_id) ) {
+      http_response_code(405);
+      error_log("Non integer survey_id ($survey_id)");
+      die();
+    }
+      
     return app_file("pdf/survey_$survey_id.pdf");
   }
 
-  static function pdf_file($survey_id)
+  static function existing_pdf_file($survey_id)
   {
-    $pdf_file = self::pdf_path($survey_id);
-
-    if(file_exists($pdf_file)) {
-      return $pdf_file;
-    } else {
-      return null;
-    }
+    $pdf_path = self::expected_pdf_path($survey_id);
+    return realpath($pdf_path) ?: null;
   }
 
-  // @@@ WORK HERE
 
   static function update($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
   {
@@ -399,5 +401,5 @@ function survey_content($survey_id, $survey_rev=NULL)
 
 function survey_pdf_file($survey_id) 
 { 
-  return Surveys::pdf_file($survey_id);
+  return Surveys::existing_pdf_file($survey_id);
 }

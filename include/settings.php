@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/db.php'));
 
@@ -196,8 +196,8 @@ function validate_app_logo($logo,&$error=null) {
   $error = '';
   _fix_validate_value($logo);
   if($logo==='') { return true; }
-  $imgfile = app_file("img/$logo");
-  if( !(file_exists($imgfile) && getimagesize($imgfile)) ) {
+  $imgfile = safe_app_file("img/$logo");
+  if( !getimagesize($imgfile) ) {
     $error = "not found on server";
   }
   return strlen($error) == 0;

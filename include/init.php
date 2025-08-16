@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 define('APP_URI', preg_replace("/\/[^\/]+$/","",$_SERVER['SCRIPT_NAME']));
 define('PKG_NAME', 'tlc-ttsurvey');
@@ -41,6 +41,18 @@ function base_uri() { return str_ends_with(APP_URI,"/") ? APP_URI : APP_URI.'/';
 
 function app_file($path)   { return APP_DIR . "/$path"; }
 function app_uri($q=null)  { return ($q ? "tt.php?$q" : "tt.php"); }
+
+function safe_app_file($path) { 
+  // should be used instead of app_file whenever $path is tainted
+  $file = realpath(app_file($path));
+  if($file && str_starts_with($file,APP_DIR)) {
+    return $file;
+  } else {
+    http_response_code(405);
+    error_log("Unsafe app file requested: $path");
+    die();
+  }
+}
 
 function full_app_uri($q=null) {
   $scheme = 'https';

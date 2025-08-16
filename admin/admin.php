@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/login.php'));
 require_once(app_file('include/roles.php'));
@@ -163,7 +163,7 @@ HTMLMODAL;
 
 echo "<div class='body'>";
 
-require(app_file("admin/{$cur_tab}_tab.php"));
+require(safe_app_file("admin/{$cur_tab}_tab.php"));
 
 echo "</div>";
 end_page();

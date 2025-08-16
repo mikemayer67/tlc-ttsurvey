@@ -1,7 +1,7 @@
 <?php
 namespace tlc\tts;
 
-if(!defined('APP_DIR')) { error_log("Invalid entry attempt: ".__FILE__); die(); }
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/redirect.php'));
 
@@ -32,7 +32,7 @@ $page = $page ? $page : $_GET['p'] ?? null;
 
 if($page)
 {
-  $page = app_file("login/{$page}_page.php");
+  $page = safe_app_file("login/{$page}_page.php");
   if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
   require($page);
   die();
@@ -41,10 +41,11 @@ if($page)
 // Handle POST requests
 
 if( $form=$_POST['form']??null ) {
-  $handler = app_file("login/{$form}_handler.php");
-  if(!file_exists($handler)) {
+  $handler_path = "login/{$form}_handler.php";
+  if(!file_exists(app_file($handler_path))) {
     internal_error("Unimplemented form handler ($form / $handler)");
   }
+  $handler = safe_app_file($handler_path);
   require($handler);
 }
 
