@@ -14,7 +14,7 @@ $page_title = 'Survey Preview';
 
 $survey_title = $_POST['title'] ?? '[No Name]';
 $content = json_decode($_POST['content'] ?? '',true);
-$preview_js = $_POST['preview_js'] ?? false;
+$preview_js = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
 $active_user = active_userid();
 log_dev("Active User: $active_user");

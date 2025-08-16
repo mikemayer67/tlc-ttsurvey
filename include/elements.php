@@ -108,7 +108,7 @@ function start_page($context,$kwargs=[])
   $base = base_uri();
 
   log_dev("start_page($context)");
-  $trace = debug_backtrace();
+#  $trace = debug_backtrace();
 
   echo <<<HTMLHEAD
   <!DOCTYPE html><html><head>
