@@ -49,20 +49,55 @@ function add_hidden_submit($name,$value)
 }
 
 
-todo("Update the following commentary on start_page function");
 // The start_page function adds all theh motherhood and apple pie that belongs
 //   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
 //
-// The tile will be set to the value APP_TITLE regardless of the content of the page.
+// The page title is set to one of the following:  (in order)
+//   - value specified in kwargs (survey_title)
+//   - active survey title
+//   - the name of the survey application as set in Admin/settings
 //
-// Unless noted to the contrary below, it will also add some resources common
-//   to most of the pages served by the ttsuvey app (jQuery, the app's primary css, etc.)
+// Conditionally adds loading of javascript resource 
+//   - never loads js resources if context is 'print'
+//   - always loads js resources if context is 'admin'
+//   - otherwise, load js resources unless overridden in kwargs (js_enabled)
+//   Loads:
+//   - jquery
+//   - $context/js/$context.js  (if it exists)
 //
-// In addition, it will include resources based on the specified "flavor" of the page
-//   Will determine which css file to load.
+// Conditionally adds loading of css resources
+//   - never loads css resources if context is 'print'
+//   Loads:
+//   - css/ttt.php
+//   - css/$context.css (if it exists)
+//   - any css URI listed in the kwargs (css)
 //
-// To support printable pages, the css flavor of "print" will suppress the
-//   loading of any css (or javascript) ressources.
+// Closes the header and opens the body
+//
+// Conditioinally adds a navigation bar
+//   - loads unless overridden by kwargs (navbar=false)
+//   - includes the survey app logo if specified in Admin/Settings
+//   - includes the survey title (see above)
+//   - adds navbar items (most likely menus) specified in kwargs (navbar-menu-cb)
+//     - is included in kwargs, the specified callback is invoked
+//     - that callback is pretty much free to do whatever it can with the DOM
+//
+// Conditionally adds noscript content
+//   - if context is 'admin', displays a message that the Admin Dashboard requires javascript
+//   - If context is 'print', no noscript is added
+//   - Otherwise, a suggestion is displayed suggeting use of javascript for a richer experience
+//
+// Conditinally initializes the admin lock mechanism if context is 'admin'
+//
+// Adds a status bar (at the top of the page) unless overridden by kwargs (status=false)
+//   - initially hidden if there is no current status message to be shown
+//   - initially visible/stylized if there is a current status message to be shown
+//   - subsequently, The appearance and visisbility of this status bar is handled via js logic
+//
+// Opens a div element with id of ttt-body.
+//   - This will be THE container for the survey content.
+//   - It will be closed/finalized by the end_page function
+//
 function start_page($context,$kwargs=[])
 {
   $context = strtolower($context);
@@ -221,6 +256,8 @@ function start_page($context,$kwargs=[])
   echo "<div id='ttt-body'>";
 }
 
+// The end_page function simply closes the ttt-boday <div>, <body>, and <html>
+//   - oh yeah... and it adds a footer that acknowleges the use of icons from icons8.com.
 function end_page()
 {
   // close the body and html elements
