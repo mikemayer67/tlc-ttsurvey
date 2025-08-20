@@ -37,7 +37,7 @@ export default function init(ce,controller)
   const _inputs             = _box.find('input');
   const _textareas          = _box.find('textarea');
 
-  const _archive            = _box.children('.archive');
+const _archive            = _box.children('.archive');
   const _archive_select     = _archive.filter('.value').find('select');
 
   const _type               = _box.children('.type');
@@ -81,6 +81,7 @@ export default function init(ce,controller)
     SELECT_MULTI: show_select_multi,
   };
 
+  // setup option sorters
   const _primary_selected_sorter = new Sortable( _primary_selected[0], 
     {
       group: {
@@ -115,7 +116,8 @@ export default function init(ce,controller)
       onEnd: handle_option_drag,
     },
   );
-  _textareas.on('input change', update_character_count)
+
+  _textareas.on('input change', update_character_count);
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
     this.style.height = 'auto';
@@ -135,6 +137,9 @@ export default function init(ce,controller)
     input.data('timer', setTimeout( function() {
       input.removeData('timer');
       validate_and_handle_update(input);
+      if(input.hasClass('markdown')) {
+        controller.queue_markdown_validation('question',_cur_id,input.data('key'),input.val());
+      }
     }, 250 ));
   }
 
@@ -145,7 +150,10 @@ export default function init(ce,controller)
     const timer_id = input.data('timer') ?? undefined;
     if(timer_id) {
       input.removeData('timer');
-      validate_and_handle_update(input);
+      validate_and_handle_update(input); // no timer_id -> no changes
+    }
+    if(input.hasClass('markdown')) {
+      controller.flush_markdown_queue();
     }
   }
 
@@ -188,6 +196,30 @@ export default function init(ce,controller)
 
     const has_error = Object.keys(_errors).length > 0;
     controller.toggle_question_error(_cur_id,has_error);
+  }
+
+  function queue_markdown_validation(e)
+  {
+    console.log('queue markdown validation');
+    const input = $(this);
+    const key   = input.data('key');
+    const delay = e.data ?? 0;
+
+    _markdown_status[key] = 1;
+    input.parent().children('.markdown-status').show();
+
+    const timer_id = input.data('md_timer') ?? undefined;
+    clearTimeout(timer_id);
+    input.data('md_timer', setTimeout( function() {
+      input.removeData('md_timer');
+      validate_markdown(input);
+    }, delay ));
+  }
+
+  function validate_markdown(input)
+  {
+    console.log('validate_markdown');
+    input.parent().children('.markdown-status').hide();
   }
 
   function show(id,data)
@@ -343,7 +375,6 @@ export default function init(ce,controller)
 
   function populate_options(data)
   {
-    console.log("populate_options");
     _primary_selected.empty();
     _secondary_selected.empty();
     const all_options = controller.all_options();
@@ -358,7 +389,6 @@ export default function init(ce,controller)
 
   function update_options(options)
   {
-    console.log("update_options");
     controller.update_question_data(_cur_id,'options',options); 
     populate_options(options);
     update_option_pools();
@@ -380,8 +410,6 @@ export default function init(ce,controller)
     
     const has_error = Object.keys(_errors).length > 0;
     controller.toggle_question_error(_cur_id,has_error);
-
-    console.log(`validate_options ${num_primary}`);
   }
 
   function create_chip(id,label) {
@@ -452,19 +480,16 @@ export default function init(ce,controller)
   }
 
   function handle_option_change() {
-    console.log('handle option change');
     const old_options = controller.cur_question_data(_cur_id,'options');
     const new_options = selected_options();
     ce.undo_manager.add({
       action:'option-change',
       question_id:_cur_id,
       undo() { 
-        console.log('undo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(old_options) }, 100);
       },
       redo() { 
-        console.log('redo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(new_options) }, 100);
       },
@@ -512,7 +537,6 @@ export default function init(ce,controller)
   }
 
   function handle_option_drag(e) {
-    console.log('handle option drag');
     handle_option_change();
   }
 

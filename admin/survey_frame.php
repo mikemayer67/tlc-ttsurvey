@@ -158,15 +158,18 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   $label = $labels[$scope][$key];
   $hint = $hints[$scope][$key];
 
-  $extra = $kwargs['extra_classes'] ?? '';
+  $extra    = $kwargs['extra_classes'] ?? '';
   $required = $kwargs['required'] ?? false;
-  $maxlen = $kwargs['maxlen'] ?? 1024;
+  $maxlen   = $kwargs['maxlen'] ?? 1024;
+  $markdown = $kwargs['markdown'] ?? false;
 
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
 
   $class = "$scope $key";
   $attr = "name='$name' data-key='$key' placeholder='$placeholder' maxlength='$maxlen'";
+
+  if($markdown) { $class .= " markdown"; }
 
   if($kwargs['autoresize'] ?? false) {
     $attr  .= " rows='1'";
@@ -177,9 +180,15 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   echo "<div class='$key $extra value'>";
   echo "  <div class='textarea-wrapper'>";
   echo "    <textarea class='$class' $attr></textarea>";
+  if($markdown) {
+    echo "  <div class='markdown-status'>validating</div>";
+  }
   echo "    <div class='char-count'><span class='cur'>0</span>/<span class='max'>$maxlen</span></div>";
   echo "    <span class='error'></span>";
   echo "  </div>";
+  if($markdown) {
+    echo "  <div class='markdown-findings'></div>";
+  }
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
 }
@@ -314,14 +323,14 @@ echo "<div class='archive'><span></span></div>";
 add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
-add_editor_textarea('question','description',['maxlen'=>'512']);
+add_editor_textarea('question','description',['maxlen'=>'512','markdown'=>true]);
 add_option_entry('primary');
 add_option_entry('secondary',['tight'=>true]);
 add_option_pool(['tight'=>true]);
 add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);
-add_editor_textarea('question','info',['required'=>true,'maxlen'=>1024]);
+add_editor_textarea('question','info',['required'=>true,'maxlen'=>1024,'markdown'=>true]);
 echo "  </div>";
 
 

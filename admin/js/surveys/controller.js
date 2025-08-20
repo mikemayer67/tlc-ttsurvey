@@ -1,5 +1,6 @@
 import tree            from './tree.js';
 import menubar         from './menubar.js';
+import markdown        from './markdown.js';
 import section_viewer  from './views/section_viewer.js';
 import section_editor  from './views/section_editor.js';
 import question_viewer from './views/question_viewer.js';
@@ -55,6 +56,7 @@ export default function init(ce)
   
   const _tree     = tree(ce,self);
   const _menubar  = menubar(ce,self);
+  const _markdown = markdown(ce,self);
   const _sv       = section_viewer(ce,self);
   const _qv       = question_viewer(ce,self);
   const _se       = section_editor(ce,self);
@@ -385,12 +387,24 @@ export default function init(ce)
     _content.options[id] = value;
   }
 
+  // markdown validation
+
+  self.queue_markdown_validation = function(context,id,key,text) 
+  {
+    _markdown.queue_validation(context,id,key,text);
+  }
+
+  self.flush_markdown_queue = function()
+  {
+    _markdown.flush_queue();
+  }
+
   // pass-trhough handlers
 
   self.move_section  = _tree.move_section;
   self.move_question = _tree.move_question;
 
-  // return editor object
+  // return controller object
 
   return self;
 };

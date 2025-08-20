@@ -640,6 +640,21 @@
   font-style:italic;
   color:darkred;
 }
+
+#editor-frame .grid.editor .value .markdown-findings
+{
+  display:none;
+  margin:0 1em;
+  padding:3px 1em;
+  border: solid 0.5px;
+  border-radius: 5px;
+  border-color:darkred;
+  width:95%;
+  background:#fdd;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  color:darkred;
+}
+
 #editor-frame .grid.editor .value .textarea-wrapper .error,
 #editor-frame .grid.editor .options.value .error
 {
@@ -685,6 +700,7 @@
 }
 
 #editor-frame .grid.editor div.value textarea {
+  resize: vertical;
   background:white;
   width:100%;
 }
@@ -709,6 +725,18 @@
   color:green;
   font-size:85%;
   font-style:italic;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .markdown-status {
+  display:none;
+  position:absolute;
+  right:0.75em;
+  top:2px;
+  background:white;
+  color:orange;
+  font-size:0.85em;
+  font-style:italic;
+  font-weight:700;
 }
 
 #editor-frame .grid.editor div.value .textarea-wrapper .char-count.warning {
