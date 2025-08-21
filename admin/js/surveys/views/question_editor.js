@@ -198,30 +198,6 @@ const _archive            = _box.children('.archive');
     controller.toggle_question_error(_cur_id,has_error);
   }
 
-  function queue_markdown_validation(e)
-  {
-    console.log('queue markdown validation');
-    const input = $(this);
-    const key   = input.data('key');
-    const delay = e.data ?? 0;
-
-    _markdown_status[key] = 1;
-    input.parent().children('.markdown-status').show();
-
-    const timer_id = input.data('md_timer') ?? undefined;
-    clearTimeout(timer_id);
-    input.data('md_timer', setTimeout( function() {
-      input.removeData('md_timer');
-      validate_markdown(input);
-    }, delay ));
-  }
-
-  function validate_markdown(input)
-  {
-    console.log('validate_markdown');
-    input.parent().children('.markdown-status').hide();
-  }
-
   function show(id,data)
   {
     _cur_id = id;

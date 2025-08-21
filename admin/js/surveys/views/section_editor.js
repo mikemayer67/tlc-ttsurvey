@@ -61,6 +61,9 @@ export default function init(ce,controller)
     input.data('timer', setTimeout( function() {
       input.removeData('timer');
       validate_and_handle_update(input);
+      if(input.hasClass('markdown')) {
+        controller.queue_markdown_validation('section',_cur_id,input.data('key'),input.val());
+      }
     }, 250 ));
   }
 
@@ -72,6 +75,9 @@ export default function init(ce,controller)
     if(timer_id) {
       input.removeData('timer');
       validate_and_handle_update(input);
+    }
+    if(input.hasClass('markdown')) {
+      controller.flush_markdown_queue();
     }
   }
 

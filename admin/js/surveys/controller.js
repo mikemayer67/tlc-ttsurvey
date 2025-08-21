@@ -76,6 +76,7 @@ export default function init(ce)
     _tree.reset();
     _frame.removeClass('section question');
     _frame.toggleClass('editable',self.editable).toggleClass('locked',!self.editable);
+    _markdown.reset()
 
     if(content) {
       // if editing is enabled, we want to work on a copy of the content.
