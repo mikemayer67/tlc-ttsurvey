@@ -36,8 +36,9 @@ export default function init(ce,controller)
 
   const _inputs             = _box.find('input');
   const _textareas          = _box.find('textarea');
+  const _markdown           = _box.find('.value:has(textarea.markdown)');
 
-const _archive            = _box.children('.archive');
+  const _archive            = _box.children('.archive');
   const _archive_select     = _archive.filter('.value').find('select');
 
   const _type               = _box.children('.type');
@@ -197,6 +198,20 @@ const _archive            = _box.children('.archive');
     const has_error = Object.keys(_errors).length > 0;
     controller.toggle_question_error(_cur_id,has_error);
   }
+
+  $(document).on('MarkdownValidationUpdated', function(e) {
+    _markdown.each( function(i) {
+      const textarea     = $(this).find('textarea.markdown');
+      const findings_div = $(this).find('.markdown-findings');
+
+      const findings = controller.markdown_findings('question',_cur_id,textarea.data('key'));
+      if(findings) {
+        findings_div.show().text(findings.join("\n"));
+      } else {
+        findings_div.hide();
+      }
+    });
+  });
 
   function show(id,data)
   {

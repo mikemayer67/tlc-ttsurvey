@@ -86,6 +86,8 @@ export default function markdown(ce,controller)
       markdown: markdown_text,
       timer: setTimeout( () => { send_validation_request(key) }, 5000 ),
     };
+
+    $(document).trigger('MarkdownValidationUpdated');
   }
 
   self.flush_queue = function()
@@ -94,6 +96,20 @@ export default function markdown(ce,controller)
     Object.entries(_queued).forEach( ([key,entry]) => { 
       send_validation_request(key) 
     });
+  }
+
+  self.findings = function(context, item_id, input_key) 
+  {
+    const key = gen_key(context, item_id, input_key);
+    return _findings[key];
+  }
+
+  self.can_submit = function()
+  {
+    if( Object.keys(_queued).length ) { return false; }
+    if( Object.keys(_pending).length ) { return false; }
+    if( Object.keys(_findings).length ) { return false; }
+    return true;
   }
 
   function send_validation_request(key) 
@@ -126,12 +142,15 @@ export default function markdown(ce,controller)
       // before processing this response, check that this is for the current
       //   request for the associated key
       if(entry.request_index === _pending[key].request_index) {
+        delete _pending[key];
         if( data.success ) {
-          console.log(`markdown for ${key} validated`);
-          delete _findings[key];
+          if( key in _findings ) {
+            delete _findings[key];
+            $(document).trigger('MarkdownValidationUpdated');
+          }
         } else if( 'findings' in data ) {
-          console.log(`markdown for ${key} had issues: ${data.findings}`);
           _findings[key] = data.findings;
+          $(document).trigger('MarkdownValidationUpdated');
         } else {
           internal_error( {status:-1, statusMessage:"Missing markdown findings"} );
         }

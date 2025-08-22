@@ -101,6 +101,11 @@ export default function init(ce)
     update_submit_revert();
   }
 
+  $(document).on('MarkdownValidationUpdated', function(e) {
+    console.log("DV: MarkdownValidationUpdated event");
+    update_submit_revert();
+  });
+
   function update_submit_revert()
   {
     const dirty = has_changes();

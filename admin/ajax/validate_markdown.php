@@ -20,7 +20,7 @@ todo("flesh out markdown validation");
 
 // pick one of the following for testing
 $response = ['success'=>false, 'findings'=>['Bad stuff happened']];
-//$response = ['success'=>true];
+$response = ['success'=>true];
 
 echo json_encode($response);
 die();

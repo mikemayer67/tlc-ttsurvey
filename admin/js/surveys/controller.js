@@ -107,7 +107,7 @@ export default function init(ce)
   };
 
   self.can_submit = function() {
-    return _tree.can_submit();
+    return _tree.can_submit() && _markdown.can_submit();
   };
 
   self.content = function()
@@ -398,6 +398,10 @@ export default function init(ce)
   self.flush_markdown_queue = function()
   {
     _markdown.flush_queue();
+  }
+
+  self.markdown_findings = function(context,id,key) {
+    return _markdown.findings(context,id,key);
   }
 
   // pass-trhough handlers

@@ -123,6 +123,15 @@ export default function init(ce,controller)
     controller.toggle_section_error(_cur_id,has_error);
   }
 
+  $(document).on('MarkdownValidationUpdated', function(e) {
+    const findings = controller.markdown_findings('section',_cur_id,'description');
+    const findings_div = _description.find('.markdown-findings');
+    if(findings) {
+      findings_div.show().text(findings.join("\n"));
+    } else {
+      findings_div.hide();
+    }
+  });
 
   function show(id,data,options)
   {
