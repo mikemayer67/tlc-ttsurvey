@@ -123,7 +123,7 @@ function update_survey_content($survey_id,$survey_rev,$content)
 
   $insert = <<<SQL
     INSERT into tlc_tt_survey_sections
-           (survey_id, survey_rev, sequence, name_sid, labeled, description_sid, feedback_sid)
+           (survey_id, survey_rev, sequence, name_sid, collapsible, description_sid, feedback_sid)
     VALUES ($survey_id, $survey_rev,?,?,?,?,?)
   SQL;
 
@@ -133,7 +133,7 @@ function update_survey_content($survey_id,$survey_rev,$content)
       $insert, 'iiiii',
       $sequence,
       strings_find_or_create($section['name']),
-      ($section['labeled'] ?? null) ? 1 : 0,
+      ($section['collapsible'] ?? null) ? 1 : 0,
       strings_find_or_create($section['description']),
       strings_find_or_create($section['feedback'])
     );

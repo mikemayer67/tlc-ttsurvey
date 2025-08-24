@@ -116,7 +116,7 @@ class Surveys
     $query = <<<SQL
       SELECT s.sequence      as sequence,
              name.str        as name,
-             s.labeled       as labeled,
+             s.collapsible   as collapsible,
              description.str as description,
              feedback.str    as feedback
       FROM   tlc_tt_survey_sections s

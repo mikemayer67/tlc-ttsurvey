@@ -18,7 +18,7 @@ $hints = [
     'name' => ( 
       'Name used to identify this section.  If Collapsible is YES, the section name will be included in the '.
       'survey. Otherwise, it will only be used in the Admin Dashboard'),
-    'labeled' => ( 
+    'collapsible' => ( 
       'Whether or not this section will be able to be collapsed (temporarily hidden) in the survey. '.
       ' Note that if the section is not collapsible, the section name will not be displayed.'),
     'description' => ( 
@@ -91,7 +91,7 @@ $hints = [
 $labels = [
   'section' => [
     'name'        => 'Name',
-    'labeled'     => 'Collapsible',
+    'collapsible' => 'Collapsible',
     'description' => 'Description',
     'feedback'    => 'Feedback',
   ],
@@ -292,7 +292,7 @@ echo "  <div class='hint-hint'>Click or hover on any of the entry labels for mor
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
-add_editor_select('section','labeled',[[1,"YES"],[0,"NO"]]);
+add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]]);
 add_editor_textarea('section','description',['maxlen'=>512]);
 add_editor_input('section','feedback',['maxlen'=>128]);
 echo "</div>";
@@ -301,7 +301,7 @@ echo "</div>";
 echo "<!--Section Viewer-->";
 echo "<div class='grid section viewer'>";
 add_viewer_entry('section','name');
-add_viewer_entry('section','labeled');
+add_viewer_entry('section','collapsible');
 add_viewer_entry('section','description');
 add_viewer_entry('section','feedback');
 echo "  </div>";

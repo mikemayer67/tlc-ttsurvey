@@ -51,8 +51,8 @@ export default function init(ce,controller)
   const _name              = _box.children('.name');
   const _name_value        = _name.find('input');
 
-  const _labeled           = _box.children('.labeled');
-  const _labeled_value     = _labeled.find('select');
+  const _collapsible       = _box.children('.collapsible');
+  const _collapsible_value = _collapsible.find('select');
 
   const _description       = _box.children('.description');
   const _description_value = _description.find('textarea');
@@ -144,12 +144,12 @@ export default function init(ce,controller)
     _errors = {};
 
     const name        = data.name || '';
-    const labeled     = data.labeled ? 1 : 0;
+    const collapsible = data.collapsible ? 1 : 0;
     const description = data.description || '';
     const feedback    = data.feedback || '';
 
     _name_value.val(name);
-    _labeled_value.val(labeled);
+    _collapsible_value.val(collapsible);
     _description_value.val(description).trigger('change');
     _feedback_value.val(feedback);
 

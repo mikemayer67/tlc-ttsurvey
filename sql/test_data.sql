@@ -161,7 +161,7 @@ UPDATE tlc_tt_survey_options set text_sid=51 where survey_id=3 and survey_rev=2 
 UPDATE tlc_tt_survey_options set text_sid=49 where survey_id=3 and survey_rev=2 and option_id=4;
 
 INSERT INTO tlc_tt_survey_sections 
-            (survey_id, survey_rev, sequence, name_sid, labeled, description_sid, feedback_sid)
+            (survey_id, survey_rev, sequence, name_sid, collapsible, description_sid, feedback_sid)
      VALUES (1, 1, 1, 84, 1, 31,NULL),
             (1, 1, 2, 39, 1, 75,NULL),
             (1, 1, 3, 89, 1, 70,NULL),
