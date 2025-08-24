@@ -1,30 +1,47 @@
 import Sortable from '../../../../js/sortable.esm.js';
-import { deepCopy, update_character_count } from '../../utils.js';
+import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
 
 
 function input_error(key,value) 
 {
   const len = String(value).trim().length;
   let invalid_char_regex = null;
-
+  let required = false;
+  let markdown = false;
 
   switch(key) {
     case 'wording':
     case 'infotag':
+      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+      required = true;
+      break;
+
     case 'info':
-      if(len==0) { return 'missing'; }
-//      if(len<4)  { return 'too short'; }
+      required = true;
+      markdown = true;
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
-    default:
-      return '';
+    case 'description':
+      markdown = true;
       break;
+
+    default:
+      break;
+  }
+
+  if(required) {
+    if(len==0) { return 'missing'; }
   }
 
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
     if(invalid_char) { return `invalid char (${invalid_char[0]})`; }
+  }
+
+  if(markdown) {
+    const error = validate_markdown(value);
+    if(error) { return error; }
   }
 
   return '';
@@ -115,6 +132,7 @@ export default function init(ce,controller)
       onEnd: handle_option_drag,
     },
   );
+
   _textareas.on('input change', update_character_count)
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
@@ -143,7 +161,7 @@ export default function init(ce,controller)
     // this is for changes to <input> fields
     const input = $(this);
     const timer_id = input.data('timer') ?? undefined;
-    if(timer_id) {
+    if(timer_id) { // no timer => no changes
       input.removeData('timer');
       validate_and_handle_update(input);
     }
@@ -178,12 +196,15 @@ export default function init(ce,controller)
     const error = input_error(key,value);
 
     const span = _box.children('.value.'+key).find('span.error');
+    const input = _box.find('.question.'+key);
     if(error) {
       span.text(error);
       _errors[key] = error;
+      input.addClass('error');
     } else {
       span.text('');
       delete _errors[key];
+      input.removeClass('error');
     }
 
     const has_error = Object.keys(_errors).length > 0;
@@ -343,7 +364,6 @@ export default function init(ce,controller)
 
   function populate_options(data)
   {
-    console.log("populate_options");
     _primary_selected.empty();
     _secondary_selected.empty();
     const all_options = controller.all_options();
@@ -358,7 +378,6 @@ export default function init(ce,controller)
 
   function update_options(options)
   {
-    console.log("update_options");
     controller.update_question_data(_cur_id,'options',options); 
     populate_options(options);
     update_option_pools();
@@ -380,8 +399,6 @@ export default function init(ce,controller)
     
     const has_error = Object.keys(_errors).length > 0;
     controller.toggle_question_error(_cur_id,has_error);
-
-    console.log(`validate_options ${num_primary}`);
   }
 
   function create_chip(id,label) {
@@ -452,19 +469,16 @@ export default function init(ce,controller)
   }
 
   function handle_option_change() {
-    console.log('handle option change');
     const old_options = controller.cur_question_data(_cur_id,'options');
     const new_options = selected_options();
     ce.undo_manager.add({
       action:'option-change',
       question_id:_cur_id,
       undo() { 
-        console.log('undo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(old_options) }, 100);
       },
       redo() { 
-        console.log('redo option change');
         controller.select_question(this.question_id);
         setTimeout( function() { update_options(new_options) }, 100);
       },

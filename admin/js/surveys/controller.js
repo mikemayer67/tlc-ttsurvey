@@ -390,7 +390,7 @@ export default function init(ce)
   self.move_section  = _tree.move_section;
   self.move_question = _tree.move_question;
 
-  // return editor object
+  // return controller object
 
   return self;
 };

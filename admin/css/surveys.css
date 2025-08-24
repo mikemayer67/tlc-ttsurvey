@@ -631,7 +631,7 @@
   min-width:300px;
 }
 
-#editor-frame .grid.editor .value .error {
+#editor-frame .grid.editor .value span.error {
   position:absolute;
   top:0;
   right:2px;
@@ -639,6 +639,7 @@
   font-size:80%;
   font-style:italic;
   color:darkred;
+  background:none;
 }
 #editor-frame .grid.editor .value .textarea-wrapper .error,
 #editor-frame .grid.editor .options.value .error
@@ -678,6 +679,13 @@
   width:100%;
 }
 
+#editor-frame .grid.editor div.value input.section.error,
+#editor-frame .grid.editor div.value input.question.error,
+#editor-frame .grid.editor div.value textarea.question.error {
+  background:#ffe8e8;
+}
+
+
 #editor-frame .grid.editor .textarea-wrapper {
   position:relative;
   width:100%;
@@ -685,6 +693,7 @@
 }
 
 #editor-frame .grid.editor div.value textarea {
+  resize: vertical;
   background:white;
   width:100%;
 }

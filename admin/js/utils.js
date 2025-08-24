@@ -29,3 +29,19 @@ export function update_character_count(e)
     cc.removeClass('warning danger');
   }
 }
+
+export function validate_markdown(s)
+{
+  const regex = /<\s*([a-z][a-z0-9-]*)\b[^>]*>/gi;
+  const allowed_tags = ["b","strong","em","i","code","br","pre"];
+
+  let match;
+  while ((match = regex.exec(s)) !== null) {
+    const tag = match[1].toLowerCase();
+    if (!allowed_tags.includes(tag)) {
+      return `<${tag}> not allowed`;
+    }
+  }
+
+  return undefined;
+}

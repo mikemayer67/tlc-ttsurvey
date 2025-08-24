@@ -1,14 +1,16 @@
-import { deepCopy, update_character_count } from '../../utils.js';
+import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
 
 
 function input_error(key,value) 
 {
   const len = String(value).trim().length;
   var invalid_char_regex = null;
+  let required = false;
+  let markdown = false;
 
   switch(key) {
     case 'name':
-      if(len==0) { return 'missing'; } 
+      required = true;
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
@@ -17,12 +19,27 @@ function input_error(key,value)
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
+     case 'description':
+       markdown = true;
+       break;
+
     default:
-      return '';
+      break;
   }
 
-  const invalid_char = value.match(invalid_char_regex);
-  if(invalid_char) { return `invalid char (${invalid_char})`; }
+  if(required) {
+    if(len==0) { return 'missing'; } 
+  }
+  
+  if(invalid_char_regex) {
+    const invalid_char = value.match(invalid_char_regex);
+    if(invalid_char) { return `invalid char (${invalid_char})`; }
+  }
+
+  if(markdown) {
+    const error = validate_markdown(value);
+    if(error) { return error; }
+  }
 
   return '';
 }
@@ -105,12 +122,15 @@ export default function init(ce,controller)
     const error = input_error(key,value);
 
     const span = _box.children('.value.'+key).find('span.error');
+    const input = _box.find('.section.'+key);
     if(error) { 
       span.text(error);
       _errors[key] = error;
+      input.addClass('error');
     } else {
       span.text('');
       delete _errors[key];
+      input.removeClass('error');
     }
 
     const has_error = Object.keys(_errors).length > 0;

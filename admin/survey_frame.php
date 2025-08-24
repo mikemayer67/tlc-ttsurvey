@@ -158,9 +158,9 @@ function add_editor_textarea($scope, $key, $kwargs=[])
   $label = $labels[$scope][$key];
   $hint = $hints[$scope][$key];
 
-  $extra = $kwargs['extra_classes'] ?? '';
+  $extra    = $kwargs['extra_classes'] ?? '';
   $required = $kwargs['required'] ?? false;
-  $maxlen = $kwargs['maxlen'] ?? 1024;
+  $maxlen   = $kwargs['maxlen'] ?? 1024;
 
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
