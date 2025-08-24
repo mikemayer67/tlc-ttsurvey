@@ -16,10 +16,11 @@ echo "<script>\n const typeLabels = " . json_encode($type_labels) . ";\n</script
 $hints = [
   'section' => [
     'name' => ( 
-      'Name used to identify this section.  If Show Name is YES, the section name will be included in the '.
+      'Name used to identify this section.  If Collapsible is YES, the section name will be included in the '.
       'survey. Otherwise, it will only be used in the Admin Dashboard'),
     'labeled' => ( 
-      'Whether or not to show the section name in the survey'),
+      'Whether or not this section will be able to be collapsed (temporarily hidden) in the survey. '.
+      ' Note that if the section is not collapsible, the section name will not be displayed.'),
     'description' => ( 
       '<b>This field is optional.</b>  If provided, it will be displayed in the survey before '.
       'any of the questions or info text within this section.  The text can be stylized using markdown. '.
@@ -90,7 +91,7 @@ $hints = [
 $labels = [
   'section' => [
     'name'        => 'Name',
-    'labeled'     => 'Show Name',
+    'labeled'     => 'Collapsible',
     'description' => 'Description',
     'feedback'    => 'Feedback',
   ],

@@ -9,6 +9,8 @@ validate_and_retain_nonce('preview');
 
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/login.php'));
+require_once(app_file('survey/render.php'));
+
 
 $page_title = 'Survey Preview';
 
@@ -24,11 +26,10 @@ start_page('survey',[
   'js_enabled'=>$preview_js,
 ]);
 
-echo "<h2>Active Userid: $active_user</h2>";
+render_survey($active_user,$content,['preview'=>true,'preview_js'=>$preview_js]);
 
-echo "<h2>Preview Javascript: $preview_js</h2>";
-
-echo "<h1>Content</h1><pre>".print_r($content,true)."</pre>";
+echo "<h1>Content</h1>";
+echo "<pre>".print_r($content,true)."</pre>";
 
 end_page();
 
