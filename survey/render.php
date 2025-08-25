@@ -15,6 +15,7 @@ use HTMLPurifier_Context;
 use HTMLPurifier_ErrorCollector;
 
 require_once(app_file('include/logger.php'));
+require_once(app_file('survey/markdown.php'));
 
 function render_survey($userid,$content,$kwargs=[])
 {
@@ -43,13 +44,12 @@ function add_section($section,$content)
   else
   {
     echo "<div class='section $name'>";
-    echo $name;
     $closing_tag = "</div>";
   }
 
   if($description) {
     echo "<div class='description $name'>";
-    add_markdown($description);
+    echo MarkdownParser::parse($description);
     echo "</div>";
   }
 
@@ -76,37 +76,4 @@ function add_section($section,$content)
   echo $closing_tag;
 }
 
-
-function add_markdown($markdown)
-{
-  ob_start();
-
-  $converter = new CommonMarkConverter([ 'html_input' => 'allow' ]);
-  $raw_html = $converter->convertToHtml($markdown);
-  log_dev("raw_html: ".$raw_html);
-
-  $config = HTMLPurifier_Config::createDefault();
-  log_dev('check');
-  $config->set('Cache.DefinitionImpl',null);
-  log_dev('check');
-  $config->set('HTML.Allowed','b,strong,em,i,p,ul,ol,li'); # consider adding a[href]
-
-  log_dev('check');
-  $context = new HTMLPurifier_Context();
-  log_dev('check');
-  $errors = new HTMLPurifier_ErrorCollector($config);
-  log_dev('check');
-
-  $purifier = new HTMLPurifier($config);
-  log_dev('check');
-  $clean_html = $purifier->purify($raw_html);
-  log_dev("clean_html: ".$clean_html);
-
-  $ob_string = ob_get_clean();
-  if($ob_string) {
-    log_dev("OB Warning: $ob_string");
-  }
-
-  echo $clean_html;
-}
 
