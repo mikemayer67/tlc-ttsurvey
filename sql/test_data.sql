@@ -181,7 +181,7 @@ INSERT INTO tlc_tt_survey_sections
             (4, 1, 3, 30,1, NULL,NULL);
 
 INSERT INTO tlc_tt_survey_sections 
-SELECT survey_id,2,sequence,name_sid,labeled,description_sid,feedback_sid
+SELECT survey_id,2,sequence,name_sid,collapsible,description_sid,feedback_sid
 FROM tlc_tt_survey_sections where survey_id in (2,3) and survey_rev=1;
 
 update tlc_tt_survey_sections set feedback_sid=80    where survey_id=1 and survey_rev=2 and sequence=2;
