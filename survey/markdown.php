@@ -76,18 +76,30 @@ class MarkdownParser {
     ob_start();
 
     log_dev("Convert Markdown: $markdown");
-    // Convert Markdown to HTML
+
+    // --- Convert Markdown to HTML ---
     $raw_html = $this->converter->convertToHtml($markdown);
     log_dev("Raw HTML: $raw_html");
-    // Purify the HTML
-    $clean_html = $this->purifier->purify($raw_html);
-    log_dev("Clean HTML: $clean_html");
-    // Return the converted/sanitized markdown -> HTML
 
+    // --- Set target to _blank for all <a> tags ---
+    $doc = new \DOMDocument();
+    @$doc->loadHTML($raw_html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    foreach ($doc->getElementsByTagName('a') as $a) {
+      $a->setAttribute('target', '_blank');
+    }
+    $new_tgt_html = $doc->saveHTML();
+    log_dev("new_tgt HTML: $new_tgt_html");
+
+    // --- Purify the HTML ---
+    $clean_html = $this->purifier->purify($new_tgt_html);
+    log_dev("Clean HTML: $clean_html");
+
+    todo("Remove the ob_string logging");
     $ob_string = ob_get_clean();
     if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
 
     return $clean_html;
+    // --- Return the converted/sanitized markdown -> HTML ---
   }
 
   public static function parse(string $markdown): string

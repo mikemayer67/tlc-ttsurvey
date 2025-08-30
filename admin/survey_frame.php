@@ -72,7 +72,7 @@ $hints = [
     'other' => (
       '<b>This field is optional.</b>  This used for multiple choice questions where the participant '.
       'should be allowed to fill in their own option.  If specified, this field provides the '.
-      'prompty that will appear in the survey to introduce the other option.  If not specified, '.
+      'prompt that will appear in the survey to introduce the other option.  If not specified, '.
       'the question will not include an input field for a participant provided option.'),
     'qualifier' => (
       '<b>This field is optional.</b>  This is used when it would be useful to allow the participant '.
