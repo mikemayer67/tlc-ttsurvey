@@ -223,27 +223,17 @@ function update_question_options($survey_id,$survey_rev,$question_id,$options)
 {
   $insert = <<<SQL
     INSERT into tlc_tt_question_options
-           (survey_id,survey_rev,question_id,secondary,sequence,option_id)
-    VALUES ($survey_id,$survey_rev,$question_id,?,?,?)
+           (survey_id,survey_rev,question_id,sequence,option_id)
+    VALUES ($survey_id,$survey_rev,$question_id,?,?)
   SQL;
 
-  $primary = [];
-  $secondary = [];
-
-  foreach($options as $option) {
-    if($option[1]) { $secondary[] = $option[0]; }
-    else           { $primary[]   = $option[0]; }
-  }
-
-  foreach([$primary,$secondary] as $key=>$group) {
-    $sequence = 1;
-    foreach($group as $option_id) {
-      $rc = MySQLExecute($insert,'iii', $key, $sequence, $option_id);
-      if($rc === false) {
-        throw new FailedToUpdate("Failed to update question options $question_id/$option_id");
-      }
-      $sequence += 1;
+  $sequence = 1;
+  foreach($options as $option_id) {
+    $rc = MySQLExecute($insert,'iii', $sequence, $option_id);
+    if($rc === false) {
+      throw new FailedToUpdate("Failed to update question options $question_id/$option_id");
     }
+    $sequence += 1;
   }
 }
 

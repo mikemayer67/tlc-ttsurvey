@@ -185,10 +185,9 @@ IF version < 1 THEN
     survey_id   smallint UNSIGNED NOT NULL,
     survey_rev  smallint UNSIGNED NOT NULL,
     question_id smallint UNSIGNED NOT NULL,
-    secondary   tinyint  UNSIGNED NOT NULL DEFAULT 0,
     sequence    smallint UNSIGNED NOT NULL,
     option_id   smallint UNSIGNED NOT NULL,
-    PRIMARY KEY (survey_id,survey_rev,question_id,secondary,sequence),
+    PRIMARY KEY (survey_id,survey_rev,question_id,sequence),
     UNIQUE  KEY (survey_id,survey_rev,question_id,option_id), 
     FOREIGN KEY (survey_id,survey_rev,question_id)
                 REFERENCES tlc_tt_question_map(survey_id,survey_rev,question_id)
@@ -299,7 +298,7 @@ IF version < 1 THEN
 
   CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
   SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, 
-    qo.secondary, qo.sequence, qo.option_id, os.str AS option_str, q.multiple
+    qo.sequence, qo.option_id, os.str AS option_str, q.multiple
   FROM tlc_tt_survey_questions q
   LEFT JOIN tlc_tt_question_options qo on qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
   LEFT JOIN tlc_tt_survey_options so on so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id

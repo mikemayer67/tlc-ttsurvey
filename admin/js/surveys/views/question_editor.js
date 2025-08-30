@@ -80,7 +80,6 @@ export default function init(ce,controller)
 
   const _options            = _box.children('.options');
   const _primary_selected   = _options.find('.primary.selected');
-  const _secondary_selected = _options.find('.secondary.selected');
   const _option_pool        = _box.find('.option.pool');
   const _other              = _options.filter('.other');
   const _other_value        = _other.find('input');
@@ -102,7 +101,7 @@ export default function init(ce,controller)
     {
       group: {
         name:'primary_selected', 
-        put:['option_pool','primary_selected','secondary_selected'],
+        put:['option_pool','primary_selected'],
       },
       animation: 150,
       draggable: '.chip',
@@ -118,17 +117,6 @@ export default function init(ce,controller)
       animation: 150,
       draggable: '.chip',
       sort: false,
-      onEnd: handle_option_drag,
-    },
-  );
-  const _secondary_selected_sorter = new Sortable( _secondary_selected[0], 
-    {
-      group: {
-        name:'secondary_selected', 
-        put:['option_pool','primary_selected'],
-      },
-      animation: 150,
-      draggable: '.chip',
       onEnd: handle_option_drag,
     },
   );
@@ -365,13 +353,11 @@ export default function init(ce,controller)
   function populate_options(data)
   {
     _primary_selected.empty();
-    _secondary_selected.empty();
     const all_options = controller.all_options();
-    data.forEach( ([id,secondary]) => {
+    data.forEach( ($id) => {
       const label = all_options[id];
       const chip = create_chip(id,label);
-      if(secondary) { _secondary_selected.append(chip); } 
-      else          { _primary_selected.append(chip); }
+      _primary_selected.append(chip);
     });
     validate_options();
   }
@@ -454,10 +440,6 @@ export default function init(ce,controller)
     _primary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
       rval.push([ id, 0]);
-    });
-    _secondary_selected.children('.chip').each( function(i) { 
-      const id = $(this).data('id');
-      rval.push([ id, 1]);
     });
     return rval;
   }

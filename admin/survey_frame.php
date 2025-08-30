@@ -62,13 +62,6 @@ $hints = [
       '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
       '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
     ),
-    'secondary' => (
-      '<b>This field is optional.</b>  Secondary options are only shown to the participant if they have  '.
-      'selected at least one of the primary options (assuming Javascript is enabled).'.
-      '<p class="editor-only"><b>Click</b> in the box above to get a list of available options</p>'.
-      '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
-      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
-    ),
     'other' => (
       '<b>This field is optional.</b>  This used for multiple choice questions where the participant '.
       'should be allowed to fill in their own option.  If specified, this field provides the '.
@@ -102,7 +95,6 @@ $labels = [
     'wording'     => 'Wording',
     'description' => 'Description',
     'primary'     => 'Primary Options',
-    'secondary'   => 'Seconday Options',
     'other'       => 'Other Option',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
@@ -317,7 +309,6 @@ add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_option_entry('primary');
-add_option_entry('secondary',['tight'=>true]);
 add_option_pool(['tight'=>true]);
 add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
@@ -332,7 +323,6 @@ add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
 add_viewer_entry('question','description');
 add_viewer_entry('question','primary','options');
-add_viewer_entry('question','secondary','options');
 add_viewer_entry('question','other','options');
 add_viewer_entry('question','qualifier');
 add_viewer_entry('question','popup');
