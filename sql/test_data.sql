@@ -334,68 +334,53 @@ INSERT INTO tlc_tt_question_map
      SELECT 2,2,section_seq, question_seq, question_id
        from tlc_tt_question_map where survey_id=2 and survey_rev=1;
 
-INSERT INTO tlc_tt_question_options VALUES (1,1,  3,0,1,3);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  3,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  3,0,3,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  4,0,1,3);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  4,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  4,1,1,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  5,0,1,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  5,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  5,1,1,3);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  5,1,2,4);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  6,0,1,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  6,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  6,1,1,3);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  6,1,2,4);
-INSERT INTO tlc_tt_question_options VALUES (3,1,114,0,1,1);
-INSERT INTO tlc_tt_question_options VALUES (3,1,114,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (3,1,114,1,1,3);
-INSERT INTO tlc_tt_question_options VALUES (3,1,114,1,2,4);
-INSERT INTO tlc_tt_question_options VALUES (3,1,115,0,1,1);
-INSERT INTO tlc_tt_question_options VALUES (3,1,115,0,2,2);
-INSERT INTO tlc_tt_question_options VALUES (3,1,115,1,1,3);
-INSERT INTO tlc_tt_question_options VALUES (3,1,117,0,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,1,117,0,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,1,117,1,1,7);
-INSERT INTO tlc_tt_question_options VALUES (3,2,117,0,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,2,117,0,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,2,117,1,1,7);
-INSERT INTO tlc_tt_question_options VALUES (3,2,118,0,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,2,118,0,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,2,118,1,1,7);
-INSERT INTO tlc_tt_question_options VALUES (3,1,119,0,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,1,119,0,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,2,119,0,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,2,119,0,2,6);
-INSERT INTO tlc_tt_question_options VALUES (4,1,125,0,1,8);
-INSERT INTO tlc_tt_question_options VALUES (4,1,125,0,2,9);
-INSERT INTO tlc_tt_question_options VALUES (4,1,125,0,3,10);
-INSERT INTO tlc_tt_question_options VALUES (4,1,125,0,4,11);
-INSERT INTO tlc_tt_question_options VALUES (4,1,128,0,1,8);
-INSERT INTO tlc_tt_question_options VALUES (4,1,128,0,2,9);
-INSERT INTO tlc_tt_question_options VALUES (4,1,128,0,3,10);
-INSERT INTO tlc_tt_question_options VALUES (4,1,128,0,4,11);
-INSERT INTO tlc_tt_question_options VALUES (4,1,130,0,1,2);
-INSERT INTO tlc_tt_question_options VALUES (4,1,130,0,2,3);
-INSERT INTO tlc_tt_question_options VALUES (4,1,130,0,3, 4);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  3,1,3);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  3,2,2);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  3,3,1);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  4,1,1);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  4,2,2);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  5,1,1);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  5,2,4);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  6,1,1);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  6,2,2);
+INSERT INTO tlc_tt_question_options VALUES (3,1,114,1,1);
+INSERT INTO tlc_tt_question_options VALUES (3,1,114,2,2);
+INSERT INTO tlc_tt_question_options VALUES (3,1,115,1,1);
+INSERT INTO tlc_tt_question_options VALUES (3,1,115,2,2);
+INSERT INTO tlc_tt_question_options VALUES (3,1,117,1,5);
+INSERT INTO tlc_tt_question_options VALUES (3,1,117,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,1,119,1,5);
+INSERT INTO tlc_tt_question_options VALUES (3,1,119,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,2,117,1,7);
+INSERT INTO tlc_tt_question_options VALUES (3,2,117,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,2,118,1,7);
+INSERT INTO tlc_tt_question_options VALUES (3,2,118,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,2,119,1,5);
+INSERT INTO tlc_tt_question_options VALUES (3,2,119,2,6);
+INSERT INTO tlc_tt_question_options VALUES (4,1,125,1,8);
+INSERT INTO tlc_tt_question_options VALUES (4,1,125,2,9);
+INSERT INTO tlc_tt_question_options VALUES (4,1,125,3,10);
+INSERT INTO tlc_tt_question_options VALUES (4,1,125,4,11);
+INSERT INTO tlc_tt_question_options VALUES (4,1,128,1,8);
+INSERT INTO tlc_tt_question_options VALUES (4,1,128,2,9);
+INSERT INTO tlc_tt_question_options VALUES (4,1,128,3,10);
+INSERT INTO tlc_tt_question_options VALUES (4,1,128,4,11);
+INSERT INTO tlc_tt_question_options VALUES (4,1,130,1,2);
+INSERT INTO tlc_tt_question_options VALUES (4,1,130,2,3);
+INSERT INTO tlc_tt_question_options VALUES (4,1,130,3, 4);
 
-INSERT INTO tlc_tt_question_options SELECT 2,1,question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=1;
+INSERT INTO tlc_tt_question_options SELECT 2,1,question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=1;
 
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev, 7+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id in (1,2) and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,14+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id in (1,2) and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,21+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,28+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,35+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,42+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
-INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,49+question_id,secondary,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev, 7+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id in (1,2) and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,14+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id in (1,2) and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,21+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,28+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,35+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,42+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
+INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,49+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
 
 INSERT INTO tlc_tt_question_options 
-       SELECT 2,2,question_id,0,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and secondary=0 and question_id in 
-       ( SELECT distinct question_id from tlc_tt_question_options where survey_id=2 and survey_rev=1);
-
-INSERT INTO tlc_tt_question_options 
-       SELECT 2,2,question_id,0,10+sequence,option_id FROM tlc_tt_question_options where survey_id=2 and secondary=1 and question_id in 
+       SELECT 2,2,question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id in 
        ( SELECT distinct question_id from tlc_tt_question_options where survey_id=2 and survey_rev=1);
 
 -- cannot do this sooner or question options insertion will trip FK constraint

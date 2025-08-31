@@ -128,7 +128,7 @@ function clone_survey_questions($child_id,$parent_id,$parent_rev)
 
   $query = <<<SQL
     INSERT into tlc_tt_question_options
-    SELECT $child_id, 1, question_id, secondary, sequence, option_id
+    SELECT $child_id, 1, question_id, sequence, option_id
       FROM tlc_tt_question_options
      WHERE survey_id=$parent_id and survey_rev=$parent_rev
   SQL;

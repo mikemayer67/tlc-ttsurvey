@@ -20,11 +20,8 @@ export default function init(ce)
   const _popup_value       = _popup.find('div.text');
 
   const _options           = _box.children('.options');
-  const _primary           = _options.filter('.primary');
-  const _secondary         = _options.filter('.secondary');
-  const _other             = _options.filter('.other');
-  const _primary_value     = _primary.find('div.text');
-  const _secondary_value   = _secondary.find('div.text');
+  const _options_value     = _options.find('div.text');
+  const _other             = _box.children('.other');
   const _other_value       = _other.find('div.text');
 
   const _hints             = _box.find('div.hint');
@@ -78,22 +75,14 @@ export default function init(ce)
         _popup.show();
         _popup_value.text(data.popup || '');
         _options.show();
+        _other.show();
 
-        _primary_value.find('ul').remove();
-        _secondary_value.find('ul').remove();
 
-        const primary   = data.options.filter(([id,secondary]) => !secondary);
-        const secondary = data.options.filter(([id,secondary]) =>  secondary);
+        _options_value.find('ul').remove();
 
-        if(primary.length) {
-          const ul = $('<ul>').addClass('options').prependTo(_primary_value);
-          primary.map(([id,]) => options[id])
-          .forEach((opt) => $('<li>').text(opt).appendTo(ul));
-        }
-
-        if(secondary.length) {
-          const ul = $('<ul>').addClass('options').prependTo(_secondary_value);
-          secondary.map(([id,]) => options[id])
+        if(data.options.length) {
+          const ul = $('<ul>').addClass('options').prependTo(_options_value);
+          data.options.map((id) => options[id])
           .forEach((opt) => $('<li>').text(opt).appendTo(ul));
         }
 

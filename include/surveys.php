@@ -288,20 +288,19 @@ class Surveys
   static function _add_question_options(&$questions,$survey_id,$survey_rev)
   {
     $query = <<<SQL
-      SELECT question_id, secondary, option_id
+      SELECT question_id, option_id
       FROM   tlc_tt_question_options qo 
       WHERE survey_id=? and survey_rev=?
-      ORDER BY question_id, secondary, sequence
+      ORDER BY question_id, sequence
     SQL;
-  
+
     $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
     if(!$rows) { return; }
 
     foreach ($rows as $row) {
       $qid = $row['question_id'];
-
       if(isset($questions[$qid])) {
-        $questions[$qid]['options'][] = [ $row['option_id'], $row['secondary'] ];
+        $questions[$qid]['options'][] = $row['option_id'];
       }
     }
   }

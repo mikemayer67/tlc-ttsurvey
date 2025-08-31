@@ -204,8 +204,6 @@ class RenderEngine
     $popup       = $question['popup'] ?? '';
     $options     = $question['options'] ?? [];
 
-    $options = array_map(fn($opt) => $opt[0], $options);
-
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
       return;

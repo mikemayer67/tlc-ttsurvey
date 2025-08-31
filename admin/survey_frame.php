@@ -54,19 +54,12 @@ $hints = [
       'information (background, context, whatever...) about the question.  The text can be '.
       'stylized using markdown. '.
       "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>" ),
-    'primary' => (
-      'For multiple choice questions, this is the primary list of options available to choose from. '.
+    'options' => (
+      'For multiple choice questions, this is the list of options available to choose from. '.
       'There must be at least one option provided for the question to be valid.  Ideally, there '.
       'will be more than one option.  Otherwise, consider using a Simple Checkbox question.'.
-      '<p class="editor-only"><b>Click</b> in the box above to get a list of available options</p>'.
-      '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
-      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
-    ),
-    'secondary' => (
-      '<b>This field is optional.</b>  Secondary options are only shown to the participant if they have  '.
-      'selected at least one of the primary options (assuming Javascript is enabled).'.
-      '<p class="editor-only"><b>Click</b> in the box above to get a list of available options</p>'.
-      '<p class="editor-only"><b>Drag/Drop</b> options to reorder or to move between primary/seconday option lists</p>'.
+      '<p class="editor-only"><b>Click</b> in the option entry a list of available options</p>'.
+      '<p class="editor-only"><b>Drag/Drop</b> options to reorder how they will be displayed in the survey.</p>'.
       '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
     ),
     'other' => (
@@ -101,8 +94,7 @@ $labels = [
     'infotag'     => 'Info Tag',
     'wording'     => 'Wording',
     'description' => 'Description',
-    'primary'     => 'Primary Options',
-    'secondary'   => 'Seconday Options',
+    'options'     => 'Options',
     'other'       => 'Other Option',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
@@ -110,15 +102,15 @@ $labels = [
   ],
 ];
 
-function add_viewer_entry($scope, $key, $extra_classes='') 
+function add_viewer_entry($scope, $key) 
 {
   global $hints;
   global $labels;
 
   $label = $labels[$scope][$key];
   $hint = $hints[$scope][$key];
-  echo "<div class='$key $extra_classes label'><span>$label:</span></div>";
-  echo "<div class='$key $extra_classes value'>";
+  echo "<div class='$key'><span>$label:</span></div>";
+  echo "<div class='$key'>";
   echo "  <div class='text'></div>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
@@ -249,25 +241,25 @@ function add_type_select()
   echo "</div>";
 }
 
-function add_option_entry($key,$kwargs=[])
+function add_options_entry($kwargs=[])
 {
   global $hints;
   global $labels;
 
-  $label = $labels['question'][$key];
-  $hint  = $hints['question'][$key];
+  $label = $labels['question']['options'];
+  $hint  = $hints['question']['options'];
 
   $tight = ($kwargs['tight'] ?? false) ? 'tight' : '';
 
-  echo "<div class='$key options label $tight'><span>$label:</span></div>";
-  echo "<div class='$key options value $tight'>";
-  echo "  <div class='$key option selected'></div>";
-  echo "  <span class='$key error'></span>";
+  echo "<div class='options label $tight'><span>$label:</span></div>";
+  echo "<div class='options value $tight'>";
+  echo "  <div class='options selected'></div>";
+  echo "  <span class='options error'></span>";
   echo "  <div class='hint'>$hint</div>";
   echo "</div>";
 }
 
-function add_option_pool($kwargs=[])
+function add_options_pool($kwargs=[])
 {
   global $labels;
 
@@ -316,10 +308,9 @@ add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
-add_option_entry('primary');
-add_option_entry('secondary',['tight'=>true]);
-add_option_pool(['tight'=>true]);
-add_editor_input('question','other',['extra_classes'=>'options','maxlen'=>45]);
+add_options_entry();
+add_options_pool(['tight'=>true]);
+add_editor_input('question','other',['maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);
 add_editor_textarea('question','info',['required'=>true,'maxlen'=>1024]);
@@ -331,9 +322,8 @@ echo "  <div class='grid question viewer'>";
 add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
 add_viewer_entry('question','description');
-add_viewer_entry('question','primary','options');
-add_viewer_entry('question','secondary','options');
-add_viewer_entry('question','other','options');
+add_viewer_entry('question','options');
+add_viewer_entry('question','other');
 add_viewer_entry('question','qualifier');
 add_viewer_entry('question','popup');
 add_viewer_entry('question','info');

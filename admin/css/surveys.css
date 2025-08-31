@@ -731,7 +731,7 @@
   position:relative;
 }
 
-#editor-frame .grid.editor div.option.selected {
+#editor-frame .grid.editor div.options.selected {
   min-height: 2em;
   background: white;
   border: solid 1px darkgray;
@@ -742,7 +742,7 @@
 }
 
 #editor-frame .grid.editor .option.pool,
-#editor-frame .grid.editor .option.selected
+#editor-frame .grid.editor .options.selected
 {
   display:flex;
   flex-direction:row;
@@ -751,7 +751,8 @@
   align-items:center;
 }
 
-#editor-frame .grid.editor .option div.chip {
+#editor-frame .grid.editor .options div.chip,
+#editor-frame .grid.editor .option.pool div.chip {
   background: white;
   border: solid 1px black;
   width: fit-content;
@@ -762,7 +763,8 @@
   position:relative;
 }
 
-#editor-frame .grid.editor .option .chip button {
+#editor-frame .grid.editor .options .chip button,
+#editor-frame .grid.editor .option.pool .chip button {
   border :none;
   padding: 0;
   margin-left: 4px;
