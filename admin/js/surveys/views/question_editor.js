@@ -354,7 +354,7 @@ export default function init(ce,controller)
   {
     _primary_selected.empty();
     const all_options = controller.all_options();
-    data.forEach( ($id) => {
+    data.forEach( (id) => {
       const label = all_options[id];
       const chip = create_chip(id,label);
       _primary_selected.append(chip);
@@ -439,7 +439,7 @@ export default function init(ce,controller)
     const rval = [];
     _primary_selected.children('.chip').each( function(i) { 
       const id = $(this).data('id');
-      rval.push([ id, 0]);
+      rval.push(id);
     });
     return rval;
   }

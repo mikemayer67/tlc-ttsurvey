@@ -75,11 +75,8 @@ class MarkdownParser {
   {
     ob_start();
 
-    log_dev("Convert Markdown: $markdown");
-
     // --- Convert Markdown to HTML ---
     $raw_html = $this->converter->convertToHtml($markdown);
-    log_dev("Raw HTML: $raw_html");
 
     // --- Set target to _blank for all <a> tags ---
     $doc = new \DOMDocument();
@@ -88,11 +85,9 @@ class MarkdownParser {
       $a->setAttribute('target', '_blank');
     }
     $new_tgt_html = $doc->saveHTML();
-    log_dev("new_tgt HTML: $new_tgt_html");
 
     // --- Purify the HTML ---
     $clean_html = $this->purifier->purify($new_tgt_html);
-    log_dev("Clean HTML: $clean_html");
 
     todo("Remove the ob_string logging");
     $ob_string = ob_get_clean();

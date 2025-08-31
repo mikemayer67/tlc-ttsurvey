@@ -293,13 +293,12 @@ class Surveys
       WHERE survey_id=? and survey_rev=?
       ORDER BY question_id, sequence
     SQL;
-  
+
     $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
     if(!$rows) { return; }
 
     foreach ($rows as $row) {
       $qid = $row['question_id'];
-
       if(isset($questions[$qid])) {
         $questions[$qid]['options'][] = $row['option_id'];
       }

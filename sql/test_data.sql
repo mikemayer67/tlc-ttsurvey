@@ -337,10 +337,10 @@ INSERT INTO tlc_tt_question_map
 INSERT INTO tlc_tt_question_options VALUES (1,1,  3,1,3);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  3,2,2);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  3,3,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  4,1,3);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  4,1,1);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  4,2,2);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  5,1,1);
-INSERT INTO tlc_tt_question_options VALUES (1,1,  5,2,2);
+INSERT INTO tlc_tt_question_options VALUES (1,1,  5,2,4);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  6,1,1);
 INSERT INTO tlc_tt_question_options VALUES (1,1,  6,2,2);
 INSERT INTO tlc_tt_question_options VALUES (3,1,114,1,1);
@@ -349,12 +349,12 @@ INSERT INTO tlc_tt_question_options VALUES (3,1,115,1,1);
 INSERT INTO tlc_tt_question_options VALUES (3,1,115,2,2);
 INSERT INTO tlc_tt_question_options VALUES (3,1,117,1,5);
 INSERT INTO tlc_tt_question_options VALUES (3,1,117,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,2,117,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,2,117,2,6);
-INSERT INTO tlc_tt_question_options VALUES (3,2,118,1,5);
-INSERT INTO tlc_tt_question_options VALUES (3,2,118,2,6);
 INSERT INTO tlc_tt_question_options VALUES (3,1,119,1,5);
 INSERT INTO tlc_tt_question_options VALUES (3,1,119,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,2,117,1,7);
+INSERT INTO tlc_tt_question_options VALUES (3,2,117,2,6);
+INSERT INTO tlc_tt_question_options VALUES (3,2,118,1,7);
+INSERT INTO tlc_tt_question_options VALUES (3,2,118,2,6);
 INSERT INTO tlc_tt_question_options VALUES (3,2,119,1,5);
 INSERT INTO tlc_tt_question_options VALUES (3,2,119,2,6);
 INSERT INTO tlc_tt_question_options VALUES (4,1,125,1,8);
@@ -380,7 +380,7 @@ INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,42+question_id,s
 INSERT INTO tlc_tt_question_options SELECT survey_id,survey_rev,49+question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id < 7;
 
 INSERT INTO tlc_tt_question_options 
-       SELECT 2,2,question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 in 
+       SELECT 2,2,question_id,sequence,option_id FROM tlc_tt_question_options where survey_id=2 and question_id in 
        ( SELECT distinct question_id from tlc_tt_question_options where survey_id=2 and survey_rev=1);
 
 -- cannot do this sooner or question options insertion will trip FK constraint
