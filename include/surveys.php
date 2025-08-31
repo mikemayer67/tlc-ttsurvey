@@ -140,7 +140,8 @@ class Surveys
              wording.str     as wording,
              q.question_type as question_type,
              q.multiple      as multiple,
-             other.str       as other,
+             q.other_flag    as other_flag,
+             other.str       as other_str,
              qualifier.str   as qualifier,
              description.str as description,
              info.str        as info
@@ -162,7 +163,7 @@ class Surveys
     $q_fields = [
       'INFO'     => ['section','sequence','wording'=>'infotag', 'info'],
       'BOOL'     => ['section','sequence','wording', 'description', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['section','sequence','wording', 'description', 'qualifier', 'other', 'info'=>'popup'],
+      'OPTIONS'  => ['section','sequence','wording', 'description', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
       'FREETEXT' => ['section','sequence','wording', 'description', 'info'=>'popup']
     ];
   
@@ -217,7 +218,7 @@ class Surveys
     $q_fields = [
       'INFO'     => ['wording'=>'infotag', 'info'],
       'BOOL'     => ['wording', 'description', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['wording', 'description', 'qualifier', 'other', 'info'=>'popup'],
+      'OPTIONS'  => ['wording', 'description', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
       'FREETEXT' => ['wording', 'description', 'info'=>'popup']
     ];
   
@@ -246,7 +247,8 @@ class Surveys
                  wording.str     as wording,
                  q.question_type as question_type,
                  q.multiple      as multiple,
-                 other.str       as other,
+                 q.other_flag    as other_flag,
+                 other.str       as other_str,
                  qualifier.str   as qualifier,
                  description.str as description,
                  info.str        as info
