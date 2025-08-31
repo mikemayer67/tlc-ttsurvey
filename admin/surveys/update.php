@@ -229,7 +229,7 @@ function update_question_options($survey_id,$survey_rev,$question_id,$options)
 
   $sequence = 1;
   foreach($options as $option_id) {
-    $rc = MySQLExecute($insert,'iii', $sequence, $option_id);
+    $rc = MySQLExecute($insert,'ii', $sequence, $option_id);
     if($rc === false) {
       throw new FailedToUpdate("Failed to update question options $question_id/$option_id");
     }
