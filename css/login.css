@@ -237,6 +237,7 @@
   float:right;
 }
 
+/* This was needed before updating .htaccess to enforce https
 #ttt-login .safari {
   font-style:italic;
   font-size:90%;
@@ -245,6 +246,7 @@
   margin-right:0;
   width:fit-content;
 }
+*/
 
 
 @media only screen and (max-width:640px) 
