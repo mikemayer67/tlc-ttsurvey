@@ -61,10 +61,10 @@ class RenderEngine
     if($this->is_preview) {
       // don't want to actually submit this if it's only a preview
       echo "<input id='submit' class='submit' type='button' value='Submit'>";
-      echo "<input id='revert' class='revert' type='button' value='Start Over'>";
+      echo "<input id='revert' class='revert hidden' type='button' value='Start Over'>";
     } else {
       echo "<input id='submit' class='submit' type='submit' value='Submit'>";
-      echo "<input id='revert' class='revert' type='submit' value='Start Over' formnovalidate>";
+      echo "<input id='revert' class='revert hidden' type='submit' value='Start Over' formnovalidate>";
     }
     echo "</div>";
   }

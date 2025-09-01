@@ -116,7 +116,7 @@ strong, b { font-weight:bold; }
 #ttt-body input.submit {
 }
 
-#ttt-body input.revert {
+#ttt-body input.revert.hidden {
   display:none;
 }
 
