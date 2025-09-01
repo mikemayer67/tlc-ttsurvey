@@ -79,6 +79,16 @@ function css_uri($css,$ctx='') { return rsrc_uri("$css.css",'css',true, $ctx); }
 // caching is not disabled for js as forced reload clears breakpoints
 function  js_uri($js, $ctx='') { return rsrc_uri("$js.js",  'js', false, $ctx); }
 
+
+function is_safari() {
+  // detects if we're on a safari browser
+  $ua = $_SERVER['HTTP_USER_AGENT'];
+  // Match Safari on macOS or iOS
+  // Exclude Chrome/CriOS, Chromium, Edge (WebKit-based)
+  return preg_match('/Safari/i', $ua)
+    && !preg_match('/Chrome|CriOS|Chromium|Edg/i', $ua);
+}
+
 function validate_entry_uri()
 {
   // Validate the request URI matches our API

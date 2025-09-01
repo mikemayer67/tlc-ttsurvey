@@ -114,12 +114,11 @@ function add_login_input($type,$kwargs=array())
   
   if($type=='new-password') 
   {
-    // Hidden (dummy) password field to get around Safari's strict strong password autofill
-    echo "<div style='display:none;'><input type='password' autocomplete='new-password'></div>";
-    
-    // Visible (actual) password fields
     echo "<input id='$id' type='password' class='text-entry entry empty primary' name='$name' required $ac>";
     echo "<input type='password' class='text-entry entry empty confirm' name='$name-confirm' required $ac>";
+    if(is_safari()) {
+      echo "<div class='safari notice'>You may need to use a different browser if you don't like Safari's suggestion</div>";
+    }
   }
   else
   {

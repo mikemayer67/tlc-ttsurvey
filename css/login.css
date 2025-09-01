@@ -237,7 +237,14 @@
   float:right;
 }
 
-
+#ttt-login .safari {
+  font-style:italic;
+  font-size:90%;
+  color:darkred;
+  margin-left:auto;
+  margin-right:0;
+  width:fit-content;
+}
 
 
 @media only screen and (max-width:640px) 
