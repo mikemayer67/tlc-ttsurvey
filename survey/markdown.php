@@ -68,7 +68,8 @@ class MarkdownParser {
     $this->purifier = new HTMLPurifier($config);
 
     $ob_string = ob_get_clean();
-    if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
+    // uncomment the following to help debug markdown
+    // if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
   }
 
   private function _parse(string $markdown): string 
@@ -89,9 +90,9 @@ class MarkdownParser {
     // --- Purify the HTML ---
     $clean_html = $this->purifier->purify($new_tgt_html);
 
-    todo("Remove the ob_string logging");
     $ob_string = ob_get_clean();
-    if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
+    // uncomment the following to help debug markdown
+    // if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
 
     return $clean_html;
     // --- Return the converted/sanitized markdown -> HTML ---

@@ -28,8 +28,8 @@ start_page('survey',[
 
 render_survey($active_user,$content,['preview'=>true,'preview_js'=>$preview_js]);
 
-echo "<h1>Content</h1>";
-echo "<pre>".print_r($content,true)."</pre>";
+//echo "<h1>Content</h1>";
+//echo "<pre>".print_r($content,true)."</pre>";
 
 end_page();
 

@@ -117,8 +117,8 @@ class RenderEngine
     case 'info':         $this->add_info($question);         break;
     case 'freetext':     $this->add_freetext($question);     break;
     case 'bool':         $this->add_bool($question);         break;
-    case 'select_one':   $this->add_select_one($question);   break;
-    case 'select_multi': $this->add_select_multi($question); break;
+    case 'select_one':   $this->add_select($question,false); break;
+    case 'select_multi': $this->add_select($question,true);  break;
 
     default:
       echo "<h2>$type</h2>";
@@ -171,7 +171,7 @@ class RenderEngine
     $popup       = $question['popup'] ?? '';
 
     $input_id     = "question-input-$id";
-    $qualifer_id  = "question-qualifier-$id";
+    $qualifier_id = "question-qualifier-$id";
     $hint_id      = "hint-toggle-$id";
 
     echo "<div class='bool question' data-question=$id>";
@@ -193,16 +193,17 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_select_one($question)
+  private function add_select($question,$multi)
   {
     $id          = $question['id'];
-    $type        = $multi ? 'multi' : 'one';
     $wording     = $question['wording'];
     $description = $question['description'] ?? '';
-    $other       = $question['other'] ?? '';
     $qualifier   = $question['qualifier'] ?? '';
     $popup       = $question['popup'] ?? '';
     $options     = $question['options'] ?? [];
+
+    $other_flag = $question['other_flag'] ?? false;
+    $other_str  = $question['other_str'] ?? 'Other';
 
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
@@ -210,12 +211,20 @@ class RenderEngine
     }
 
     $input_id     = "question-input-$id";
-    $qualifer_id  = "question-qualifier-$id";
+    $qualifier_id  = "question-qualifier-$id";
     $hint_id      = "hint-toggle-$id";
 
-    echo "<div class='select one question' data-question=$id>";
-    echo "<fieldset class='select one'>";
-//    echo "<legend class='select one'>$wording</legend>";
+    if($multi) {
+      $input_id = "$input_id\[\]";
+      $type = 'checkbox';
+      $class = 'select multi';
+    } else {
+      $type = 'radio';
+      $class = 'select one';
+    }
+
+    echo "<div class='question $class' data-question=$id>";
+    echo "<fieldset class='$class'>";
     echo "<label for='$input_id' class='question'>$wording</label>";
     if($popup) {
       $icon = $this->popup_icon;
@@ -228,8 +237,16 @@ class RenderEngine
     }
     foreach($options as $option) {
       echo "<label>";
-      echo "<input id='$input_id' type='radio' name='$input_id' value='$option'>";
+      echo "<input id='$input_id' type='$type' name='$input_id' value='$option'>";
       echo $option;
+      echo "</label>";
+    }
+    if($other_flag) {
+      $other_id = "question-input-other-$id";
+      echo "<label>";
+      echo "<input id='$input_id' type='$type' name='$input_id' value='0'>";
+      echo "<span class='other label'>$other_str:</span>";
+      echo "<input id='$other_id' type='text' name='$other_id'></input>";
       echo "</label>";
     }
     echo "</fieldset>";
@@ -239,11 +256,6 @@ class RenderEngine
     }
 
     echo "</div>";
-  }
-
-  private function add_select_multi($question)
-  {
-    echo "<pre>".print_r($question,true)."</pre>";
   }
 };
 
