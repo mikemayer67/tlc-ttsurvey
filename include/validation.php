@@ -57,7 +57,7 @@ function validate_user_input($key,$value,&$error=null)
   }
   elseif($key=='userid')
   {
-    if(strlen($value)<8)      { $error = "too short"; }
+    if(strlen($value)<6)      { $error = "too short"; }
     elseif(strlen($value)>16) { $error = "too long"; }
     elseif(preg_match("/\s/",$value)) {
       $error = "cannot contain spaces";
