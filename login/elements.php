@@ -115,7 +115,7 @@ function add_login_input($type,$kwargs=array())
   if($type=='new-password') 
   {
     // Hidden (dummy) password field to get around Safari's strict strong password autofill
-    echo "<input type='password' style='position:absolute; top:-1000px;' autocomplete='new-password'>";
+    echo "<div style='display:none;'><input type='password' autocomplete='new-password'></div>";
     
     // Visible (actual) password fields
     echo "<input id='$id' type='password' class='text-entry entry empty primary' name='$name' required $ac>";
