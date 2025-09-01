@@ -86,7 +86,16 @@ export default function init(ce)
           .forEach((opt) => $('<li>').text(opt).appendTo(ul));
         }
 
-        _other_value.text(data.other || '');
+        if(data.other_flag) {
+          if(data.other_str) {
+            _other_value.text('Enabled  [label: "' + data.other_str + '"]');
+          } else {
+            _other_value.text('Enabled  [default label]');
+          }
+        } else {
+          _other_value.text('Disabled');
+        }
+        
 
         break;
       }

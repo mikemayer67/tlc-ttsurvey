@@ -9,17 +9,23 @@ function input_error(key,value)
   let required = false;
   let markdown = false;
 
+  const common_invalid_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+
   switch(key) {
     case 'wording':
-    case 'infotag':
-      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+      invalid_char_regex = common_invalid_regex;
       required = true;
       break;
 
     case 'info':
       required = true;
       markdown = true;
-      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
+      invalid_char_regex = common_invalid_regex;
+      break;
+
+    case 'infotag':
+    case 'other_str':
+      invalid_char_regex = common_invalid_regex;
       break;
 
     case 'description':
@@ -81,8 +87,10 @@ export default function init(ce,controller)
   const _options            = _box.children('.options');
   const _options_selected   = _options.find('.selected');
   const _option_pool        = _box.find('.option.pool');
+
   const _other              = _box.children('.other');
-  const _other_value        = _other.find('input');
+  const _other_flag         = _other.find('input.other_flag');
+  const _other_str          = _other.find('input.other_str');
 
   const _hints              = _box.find('div.hint');
 
@@ -128,10 +136,14 @@ export default function init(ce,controller)
     this.style.height = this.scrollHeight + 'px';
   });
 
-  _box.find('input,textarea')
+  _box.find('input,textarea').not('[type=checkbox]')
     .on('input',handle_input)
     .on('blur',handle_input_change)
     .on('change',handle_input_change);
+
+  _box.find('input[type=checkbox]')
+    .on('blur',handle_checkbox)
+    .on('change',handle_checkbox);
 
   function handle_input(e) 
   {
@@ -197,6 +209,17 @@ export default function init(ce,controller)
 
     const has_error = Object.keys(_errors).length > 0;
     controller.toggle_question_error(_cur_id,has_error);
+  }
+
+  function handle_checkbox(e)
+  { 
+    const input   = $(this);
+    const key     = input.data('key');
+    const checked = input.prop('checked');
+
+    create_checkbox_undo(key,checked);
+    controller.update_question_data(_cur_id,key,checked);
+    $(document).trigger('SurveyWasModified');
   }
 
   function show(id,data)
@@ -294,19 +317,23 @@ export default function init(ce,controller)
     const wording     = data.wording || '';
     const qualifier   = data.qualifier || '';
     const description = data.description || '';
-    const other       = data.other || '';
+    const other_flag  = data.other_flag || false;
+    const other_str   = data.other_str || '';
     const popup       = data.popup || '';
 
     _wording_value.val(wording);
     _qualifier_value.val(qualifier);
     _description_value.val(description);
-    _other_value.val(other);
+    _other_flag.prop('checked',other_flag);
+    _other_str.val(other_str);
     _popup_value.val(popup);
 
     validate_input('wording'    , wording);
     validate_input('qualifier'  , qualifier);
     validate_input('description', description);
-    validate_input('other'      , other);
+    if(other_flag) {
+      validate_input('other_str'  , other_str);
+    }
     validate_input('popup'      , popup);
 
     show_options(data.options);
@@ -562,7 +589,7 @@ export default function init(ce,controller)
  
   //---------------------------------------------------------------------------------------
   // The following function handles the creation or updating of undo/redo actions
-  //   associated with changes to section data.  As we don't want to create an action
+  //   associated with changes to question data.  As we don't want to create an action
   //   for every keystroke in an <input> fieled, these changes are accumulated in a
   //   single undo action.
   //
@@ -578,8 +605,8 @@ export default function init(ce,controller)
   // The first two of these rules are handled automatically by using the undo manager's
   //    head() method.  This will return null if there is anything on the redo stack.
   //
-  // * In an earlier implementation of the undo actions for section input changes, an
-  //   attempt was made to accumulate all changes for a given section into a single
+  // * In an earlier implementation of the undo actions for question input changes, an
+  //   attempt was made to accumulate all changes for a given question into a single
   //   action regardless of the particular input field.   This became problematic
   //   over time and was abandoned.
   //---------------------------------------------------------------------------------------
@@ -612,7 +639,6 @@ export default function init(ce,controller)
       {
         validate_input(key,value);
         _box.find('.question.'+key).val(value);
-//        controller.update_question_error(question_id,key,value,error);
         controller.update_question_data(question_id,key,value);
         $(document).trigger('SurveyWasModified');
       }
@@ -626,16 +652,91 @@ export default function init(ce,controller)
         redone: false,
         undo() {
           controller.select_question(this.question_id);
-          setTimeout(() => { apply_action(this.question_id, this.old_value); }, 100);
+          setTimeout(() => { 
+            apply_action(this.question_id, this.old_value); 
+          }, 100);
         },
         redo() {
           this.redone = true;
           controller.select_question(this.question_id);
-          setTimeout(() => { apply_action(this.question_id, this.new_value); }, 100);
+          setTimeout(() => { 
+            apply_action(this.question_id, this.new_value); 
+          }, 100);
         }
       });
     }
   }
+
+  //---------------------------------------------------------------------------------------
+  // The following function handles the creation or updating of undo/redo actions
+  //   associated with changes to question checkboxees.
+  //
+  // The issue here deals with the scenario where the user repeatedly toggles a given
+  //   checkbox more than two times in a row, e.g. on, off, on, off, on, off, on.
+  //   Do we really want the undo manager to back through all of these? That will
+  //   get really frustrating for the user as they traverse the undo stack. Instead,
+  //   we want to collapse this, e.g.:
+  //     on  ->  off
+  //     on, off -> on, off
+  //     on, off, on -> off
+  //     on, off, on, off -> on, off
+  //     on, off, on, off, on -> off
+  //     on, off, on, off, on, off -> on, off
+  //
+  // Add a new checkbox action if any of the following is true:
+  //   - the top of the undo stack is not a checkbox action
+  //   - the top of the undo stack is not for the current checkbox
+  //   - the top of the undo stack does not undo the prior action
+  // Otherwise, simply pop the last action off the undo stack (and clear redo stack)
+  //
+  //---------------------------------------------------------------------------------------
+
+  function create_checkbox_undo(key,value)
+  {
+    const cur_undo = ce.undo_manager.head();
+
+    const is_chain = (
+      ( cur_undo?.action === 'toggle-checkbox' ) &&
+      ( cur_undo?.question_id === _cur_id ) && 
+      ( cur_undo?.key === key )
+    );
+
+    if( is_chain && (cur_undo?.reverts_prior) ) {
+      ce.undo_manager.pop(cur_undo);
+    }
+    else {
+      function apply_action(question_id, value)
+      {
+        _box.find('.question.'+key).prop('checked',value);
+        controller.update_question_data(question_id,key,value);
+        $(document).trigger('SurveyWasModified');
+      }
+
+      ce.undo_manager.add({
+        action: 'toggle-checkbox',
+        question_id: _cur_id,
+        key: key,
+        new_value: value,
+        reverts_prior: is_chain,
+        undo() {
+          controller.select_question(this.question_id);
+          setTimeout(() => { 
+            apply_action(this.question_id, !this.new_value); 
+          }, 100);
+        },
+        redo() {
+          controller.select_question(this.question_id);
+          setTimeout(() => { 
+            apply_action(this.question_id, this.new_value); 
+          }, 100);
+        }
+      });
+    }
+  }
+
+
+  // Finally, return the question editor public interface 
+  //   (which is rather small considering all tht happens internally)
 
   return {
     show:show,

@@ -158,8 +158,8 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     INSERT into tlc_tt_survey_questions
            (question_id, survey_id, survey_rev,
             wording_sid,question_type,multiple,
-            other_sid,qualifier_sid,description_sid,info_sid)
-    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?)
+            other_flag,other_sid,qualifier_sid,description_sid,info_sid)
+    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -168,10 +168,12 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
 
     $type        = $question['type'];
     $wording     = $question['wording'] ?? $question['infotag'] ?? null;
-    $other       = $question['other'] ?? null;
     $qualifier   = $question['qualifier'] ?? null;
     $description = $question['description'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
+
+    $other_flag  = $question['other_flag'] ?? null;
+    $other_str   = ($other_flag ? ($question['other_str'] ?? null) : null);
 
     if(str_starts_with($type,'SELECT')) {
       $multiple = str_ends_with($type,'MULTI') ? 1 : 0;
@@ -181,11 +183,11 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     }
 
     $rc = MySQLExecute(
-      $insert, 'iisiiiii',
+      $insert, 'iisiiiiii',
       $question_id,
       strings_find_or_create($wording),
-      $type, $multiple,
-      strings_find_or_create($other),
+      $type, $multiple, $other_flag,
+      strings_find_or_create($other_str),
       strings_find_or_create($qualifier),
       strings_find_or_create($description),
       strings_find_or_create($info)

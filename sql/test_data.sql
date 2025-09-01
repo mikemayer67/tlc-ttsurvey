@@ -162,23 +162,23 @@ UPDATE tlc_tt_survey_options set text_sid=49 where survey_id=3 and survey_rev=2 
 
 INSERT INTO tlc_tt_survey_sections 
             (survey_id, survey_rev, sequence, name_sid, collapsible, description_sid, feedback_sid)
-     VALUES (1, 1, 1, 84, 1, 31,NULL),
-            (1, 1, 2, 39, 1, 75,NULL),
-            (1, 1, 3, 89, 1, 70,NULL),
-            (2, 1, 1, 77, 1, NULL,NULL),
-            (2, 1, 2, 52, 1, 90, NULL),
-            (2, 1, 3, 58, 1, 12, 63 ),
-            (2, 1, 4, 53, 1, 91, NULL),
-            (2, 1, 5, 54, 1, 92, NULL),
-            (2, 1, 7, 55, 1, 93, NULL),
-            (2, 1, 9, 56, 1, 94, NULL),
-            (2, 1, 8, 57, 1, 95, NULL),
-            (3, 1, 1, 96, 1, NULL,NULL),
-            (3, 1, 2, 14, 1, NULL,NULL),
-            (3, 1, 3, 97, 1, NULL,NULL),
-            (4, 1, 1, 13, 1, NULL,NULL),
-            (4, 1, 2, 10, 1, NULL,NULL),
-            (4, 1, 3, 30,1, NULL,NULL);
+     VALUES (1, 1, 1, 84, 1,   31, NULL),
+            (1, 1, 2, 39, 1,   75, NULL),
+            (1, 1, 3, 89, 1,   70, NULL),
+            (2, 1, 1, 77, 1, NULL, NULL),
+            (2, 1, 2, 52, 1,   90, NULL),
+            (2, 1, 3, 58, 1,   12,   63),
+            (2, 1, 4, 53, 1,   91, NULL),
+            (2, 1, 5, 54, 1,   92, NULL),
+            (2, 1, 7, 55, 1,   93, NULL),
+            (2, 1, 9, 56, 1,   94, NULL),
+            (2, 1, 8, 57, 1,   95, NULL),
+            (3, 1, 1, 96, 1, NULL, NULL),
+            (3, 1, 2, 14, 1, NULL, NULL),
+            (3, 1, 3, 97, 1, NULL, NULL),
+            (4, 1, 1, 13, 1, NULL, NULL),
+            (4, 1, 2, 10, 1, NULL, NULL),
+            (4, 1, 3, 30, 1, NULL, NULL);
 
 INSERT INTO tlc_tt_survey_sections 
 SELECT survey_id,2,sequence,name_sid,collapsible,description_sid,feedback_sid
@@ -190,74 +190,74 @@ update tlc_tt_survey_sections set feedback_sid=6     where survey_id=2 and surve
 update tlc_tt_survey_sections set description_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
 
 INSERT INTO tlc_tt_survey_questions 
-            (question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid) 
-     VALUES (  1,1,1,27,'INFO',NULL,NULL,NULL,NULL,69),
-            (  2,1,1,87,'BOOL',NULL,NULL,81,11,68),
-            (  3,1,1,59,'OPTIONS',0,38,5, 41, 68),
-            (  4,1,1,60,'OPTIONS',0,NULL,5, 42, 68),
-            (  5,1,1,35,'OPTIONS',1,38,5, 43, 68),
-            (  6,1,1,36,'OPTIONS',1,NULL,5,44,68),
-            (  7,1,1,88,'FREETEXT',NULL,NULL,NULL,79,68),
-            ( 68,1,1,27,'INFO',NULL,NULL,NULL,NULL,69),
-            ( 69,1,1,87,'BOOL',NULL,NULL,81,11,68),
-            (114,3,1,8,'OPTIONS',NULL,38,21,NULL,NULL),
-            (115,3,1,15,'OPTIONS',NULL,38,NULL,NULL,NULL),
-            (116,3,1,46,'BOOL',NULL,NULL,NULL,48,NULL),
-            (117,3,1,22,'OPTIONS',NULL,NULL,NULL,73,3),
-            (117,3,2,22,'OPTIONS',NULL,NULL,NULL,74,NULL),
-            (118,3,2,28,'OPTIONS',NULL,NULL,NULL,72,50),
-            (119,3,1,33,'OPTIONS',NULL,NULL,NULL,NULL,NULL),
-            (119,3,2,33,'OPTIONS',NULL,NULL,NULL,NULL,NULL),
-            (120,3,1,37,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
-            (120,3,2,37,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
-            (121,4,1,82,'BOOL',NULL,NULL,NULL,NULL,NULL),
-            (122,4,1,83,'BOOL',NULL,NULL,NULL,NULL,NULL),
-            (123,4,1,17,'BOOL',NULL,NULL,NULL,NULL,NULL),
-            (124,4,1,25,'BOOL',NULL,NULL,NULL,NULL,24),
-            (125,4,1,47,'OPTIONS',NULL,NULL,NULL,NULL,NULL),
-            (126,4,1,17,'BOOL',NULL,NULL,NULL,NULL,NULL),
-            (127,4,1,1,'BOOL',NULL,NULL,29,NULL,NULL),
-            (128,4,1,62,'OPTIONS',NULL,NULL,NULL,NULL,NULL),
-            (129,4,1,78,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
-            (130,4,1,26,'OPTIONS',NULL,38,7,NULL,NULL),
-            (131,4,1,86,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
-            (132,4,1,85,'FREETEXT',NULL,NULL,NULL,NULL,NULL),
-            (133,4,1,18,'FREETEXT',NULL,NULL,NULL,34,NULL);
+            (question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid) 
+     VALUES (  1, 1, 1, 27, 'INFO',     NULL, NULL, NULL, NULL, NULL,   69),              
+            (  2, 1, 1, 87, 'BOOL',     NULL, NULL, NULL,   81,   11,   68),              
+            (  3, 1, 1, 59, 'OPTIONS',     0,    1,   38,    5,   41,   68),              
+            (  4, 1, 1, 60, 'OPTIONS',     0,    0, NULL,    5,   42,   68),              
+            (  5, 1, 1, 35, 'OPTIONS',     1,    1, NULL,    5,   43,   68),              
+            (  6, 1, 1, 36, 'OPTIONS',     1,    0, NULL,    5,   44,   68),              
+            (  7, 1, 1, 88, 'FREETEXT', NULL, NULL, NULL, NULL,   79,   68),              
+            ( 68, 1, 1, 27, 'INFO',     NULL, NULL, NULL, NULL, NULL,   69),              
+            ( 69, 1, 1, 87, 'BOOL',     NULL, NULL, NULL,   81,   11,   68),              
+            (114, 3, 1,  8, 'OPTIONS',  NULL,    1, NULL,   21, NULL, NULL),              
+            (115, 3, 1, 15, 'OPTIONS',  NULL,    1,   38, NULL, NULL, NULL),              
+            (116, 3, 1, 46, 'BOOL',     NULL, NULL, NULL, NULL,   48, NULL),              
+            (117, 3, 1, 22, 'OPTIONS',  NULL,    0, NULL, NULL,   73,    3),              
+            (117, 3, 2, 22, 'OPTIONS',  NULL,    0, NULL, NULL,   74, NULL),              
+            (118, 3, 2, 28, 'OPTIONS',  NULL,    0, NULL, NULL,   72,   50),              
+            (119, 3, 1, 33, 'OPTIONS',  NULL,    0, NULL, NULL, NULL, NULL),              
+            (119, 3, 2, 33, 'OPTIONS',  NULL,    0, NULL, NULL, NULL, NULL),              
+            (120, 3, 1, 37, 'FREETEXT', NULL, NULL, NULL, NULL, NULL, NULL),              
+            (120, 3, 2, 37, 'FREETEXT', NULL, NULL, NULL, NULL, NULL, NULL),              
+            (121, 4, 1, 82, 'BOOL',     NULL, NULL, NULL, NULL, NULL, NULL),              
+            (122, 4, 1, 83, 'BOOL',     NULL, NULL, NULL, NULL, NULL, NULL),              
+            (123, 4, 1, 17, 'BOOL',     NULL, NULL, NULL, NULL, NULL, NULL),              
+            (124, 4, 1, 25, 'BOOL',     NULL, NULL, NULL, NULL, NULL,   24),              
+            (125, 4, 1, 47, 'OPTIONS',  NULL,    0, NULL, NULL, NULL, NULL),              
+            (126, 4, 1, 17, 'BOOL',     NULL, NULL, NULL, NULL, NULL, NULL),              
+            (127, 4, 1,  1, 'BOOL',     NULL, NULL, NULL,   29, NULL, NULL),              
+            (128, 4, 1, 62, 'OPTIONS',  NULL,    0, NULL, NULL, NULL, NULL),              
+            (129, 4, 1, 78, 'FREETEXT', NULL, NULL, NULL, NULL, NULL, NULL),              
+            (130, 4, 1, 26, 'OPTIONS',  NULL,    1,   38,    7, NULL, NULL),              
+            (131, 4, 1, 86, 'FREETEXT', NULL, NULL, NULL, NULL, NULL, NULL),              
+            (132, 4, 1, 85, 'FREETEXT', NULL, NULL, NULL, NULL, NULL, NULL),              
+            (133, 4, 1, 18, 'FREETEXT', NULL, NULL, NULL, NULL,   34, NULL);
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, 2, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT question_id, 2, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid
+     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, survey_id, 2, wording_sid, question_type, multiple, other_sid, qualifier_sid, description_sid, info_sid
+     SELECT question_id, survey_id, 2, wording_sid, question_type, multiple, other_flag, other_sid, qualifier_sid, description_sid, info_sid
        from tlc_tt_survey_questions where survey_id=2 and survey_rev=1;
 
 UPDATE tlc_tt_survey_questions set wording_sid=98 where survey_id=2 and survey_rev=2 and question_id=68;
