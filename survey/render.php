@@ -41,19 +41,31 @@ class RenderEngine
 
   public function render($userid=null)
   {
+    todo("add survey form action");
+
     echo "<form id='survey'>";
     foreach($this->sections as $section) {
       $this->add_section($section);
     }
     $this->add_submit_bar();
     echo "</form>";
+
+    if($preview_js || !$is_preview) {
+      echo "<script type='module' src='", js_uri('survey'), "'></script>";
+    }
   }
 
   private function add_submit_bar()
   {
     echo "<div class='submit-bar'>";
-    echo "<input id='changes-submit' class='submit' type='submit' value='Submit'>";
-    echo "<input id='changes-revert' class='revert' type='submit' value='Start Over' formnovalidate>";
+    if($this->is_preview) {
+      // don't want to actually submit this if it's only a preview
+      echo "<input id='submit' class='submit' type='button' value='Submit'>";
+      echo "<input id='revert' class='revert' type='button' value='Start Over'>";
+    } else {
+      echo "<input id='submit' class='submit' type='submit' value='Submit'>";
+      echo "<input id='revert' class='revert' type='submit' value='Start Over' formnovalidate>";
+    }
     echo "</div>";
   }
 

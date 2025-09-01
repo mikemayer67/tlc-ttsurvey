@@ -47,3 +47,21 @@
   margin-right: 1rem;
   font-weight: bold;
 }
+
+/****************************************
+ * submit bar
+ ****************************************/
+
+#ttt-body div.submit-bar {
+  display:flex;
+  flex-direction: row-reverse;
+}
+
+#ttt-body input.submit {
+}
+
+#ttt-body input.revert {
+  display:none;
+}
+
+
