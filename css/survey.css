@@ -18,6 +18,62 @@
   background:none;
 }
 
+em,i { font-style:italic; }
+strong, b { font-weight:bold; }
+
+/* Note that the markdown styling was primary driven by ChatGPT discussion */
+
+.markdown ul,
+.markdown ol {
+  padding-left: 2em !important;
+}
+
+.markdown hr {
+  width:50% !important;
+  margin:0.5em 0 !important;
+}
+
+.markdown blockquote {
+  margin: 1em 0 1em 1em !important;
+  padding: 0.5em 1em !important;
+  border-left: 4px solid #ccc !important;
+  background-color: #f9f9f9 !important;
+  color: #555 !important;
+  font-style: italic !important;
+}
+
+.markdown blockquote p {
+  margin: 0 !important;
+  font-style: italic !important;
+}
+
+.markdown code {
+  font-family: 'Courier New', monospace !important;
+  background-color: #f0f0f0 !important;
+  padding: 0 0.2em !important;
+  border-radius: 3px !important;
+  font-size: 0.95em !important;
+}
+
+.markdown pre {
+  background-color: #f5f5f5 !important;
+  border: 1px solid #ddd !important;
+  margin: 1em 0 1em 1em !important;
+  padding: 0.5em 1em !important;
+  overflow-x: auto !important;
+  border-radius: 4px !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 0.95em !important;
+  line-height: 1.4 !important;
+}
+
+.markdown pre code {
+  background: none !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
 /****************************************
  * question hints
  ****************************************/

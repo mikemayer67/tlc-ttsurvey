@@ -94,7 +94,7 @@ class MarkdownParser {
     // uncomment the following to help debug markdown
     // if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
 
-    return $clean_html;
+    return "<div class='markdown'>$clean_html</div>";
     // --- Return the converted/sanitized markdown -> HTML ---
   }
 
