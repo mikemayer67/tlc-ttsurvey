@@ -24,8 +24,14 @@ class RenderEngine
   private $questions = null;
   private $options   = null;
 
+  private $is_preview = false;
+  private $preview_js = true;
+
   function __construct($content, $kwargs=[])
   {
+    $this->is_preview = $kwargs['is_preview'] ?? false; 
+    $this->preview_js = $kwargs['preview_js'] ?? true;
+
     $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
 
     $this->sections  = $content['sections'];
@@ -39,7 +45,16 @@ class RenderEngine
     foreach($this->sections as $section) {
       $this->add_section($section);
     }
+    $this->add_submit_bar();
     echo "</form>";
+  }
+
+  private function add_submit_bar()
+  {
+    echo "<div class='submit-bar'>";
+    echo "<input id='changes-submit' class='submit' type='submit' value='Submit'>";
+    echo "<input id='changes-revert' class='revert' type='submit' value='Start Over' formnovalidate>";
+    echo "</div>";
   }
 
   private function add_section($section)

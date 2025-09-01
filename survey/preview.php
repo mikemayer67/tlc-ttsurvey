@@ -26,7 +26,7 @@ start_page('survey',[
   'js_enabled'=>$preview_js,
 ]);
 
-render_survey($active_user,$content,['preview'=>true,'preview_js'=>$preview_js]);
+render_survey($active_user,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
 
 //echo "<h1>Content</h1>";
 //echo "<pre>".print_r($content,true)."</pre>";
