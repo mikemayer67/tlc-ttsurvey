@@ -15,8 +15,6 @@ function update_survey($survey_id, $survey_rev, $content, $details)
   //   so that we can do a rollback if something goes wrong
   MySQLBeginTransaction();
 
-  log_dev("update_survey POST[content]: ".print_r(json_decode($_POST['content']),true));
-
   try {
     // begin by purging all data for current survey_id and rev
     //   should only need to remove the survey id/rev from the survey revision table
@@ -170,11 +168,12 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
 
     $type        = $question['type'];
     $wording     = $question['wording'] ?? $question['infotag'] ?? null;
-    $other_flag  = $question['other_flag'] ?? null;
-    $other_str   = $question['other_str'] ?? null;
     $qualifier   = $question['qualifier'] ?? null;
     $description = $question['description'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
+
+    $other_flag  = $question['other_flag'] ?? null;
+    $other_str   = ($other_flag ? ($question['other_str'] ?? null) : null);
 
     if(str_starts_with($type,'SELECT')) {
       $multiple = str_ends_with($type,'MULTI') ? 1 : 0;
@@ -184,7 +183,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     }
 
     $rc = MySQLExecute(
-      $insert, 'iisiiiii',
+      $insert, 'iisiiiiii',
       $question_id,
       strings_find_or_create($wording),
       $type, $multiple, $other_flag,

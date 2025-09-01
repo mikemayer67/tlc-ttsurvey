@@ -665,13 +665,18 @@
   align-items: center;
 }
 
-#editor-frame .grid.editor input.other.flag {
+#editor-frame .grid.editor div.other.value input.other_flag {
   width:min-content;
   margin-right:1em;
 }
 
-#editor-frame .grid.editor input.other.str {
+#editor-frame .grid.editor div.other.value input.other_str {
+  visibility:hidden;
   width:15em;
+}
+
+#editor-frame .grid.editor div.other.value input.other_flag:checked + input.other_str {
+  visibility:visible;
 }
 
 

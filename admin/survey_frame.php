@@ -63,8 +63,8 @@ $hints = [
       '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
     ),
     'other' => (
-      '<b>This field is optional.</b> If the checkbox is selected, the survey will provide the participant' .
-      'a field to enter their own response to a multiple choice question.  This field will be labeled as' .
+      '<b>This field is optional.</b> If the checkbox is selected, the survey will provide the participant ' .
+      'a field to enter their own response to a multiple choice question.  This field will be labeled as ' .
       '"Other" unless a different label is provided here.'),
     'qualifier' => (
       '<b>This field is optional.</b>  This is used when it would be useful to allow the participant '.
@@ -279,10 +279,10 @@ function add_other_input($wargs=[])
   $hint  = $hints['question']['other'];
 
   echo "<div class='other label'><span>$label:</span></div>";
-  echo "<div class='other value'>";
+  echo "<div class='other other_str other_flag value'>";
   echo "  <div class='wrapper'>";
-  echo "    <input class='question other flag' type='checkbox' data-key='other_flag'>";
-  echo "    <input class='question other str' type='text' data-key='other_str' placeholder='Other' maxlength=25>";
+  echo "    <input class='question other_flag' type='checkbox' data-key='other_flag'>";
+  echo "    <input class='question other_str' type='text' data-key='other_str' placeholder='Other' maxlength=25>";
   echo "    <span class='error'></span>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";
