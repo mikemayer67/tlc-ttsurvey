@@ -81,7 +81,7 @@ class RenderEngine
 
     if($collapsible) {
       echo "<details class='section' $index>";
-      echo "<summary>$name</summary>";
+      echo "<summary><span>$name</span></summary>";
       $closing_tag = "</details>";
     }
     else

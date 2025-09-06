@@ -1,21 +1,18 @@
+* {
+  background-color:white;
+}
 
 #ttt-body {
   margin:1em;
-  background-color:#eee;
 }
 
 #ttt-body .section div.question {
-  margin:1em;
-  padding:1em;
-  background-color:white;
-  border: solid 1px #ccc;
-  border-radius:1em;
+  margin:0 1em;
 }
 
 #ttt-body .section div.question * {
   padding:0; 
   margin:0;
-  background:none;
 }
 
 em,i { font-style:italic; }
@@ -72,6 +69,22 @@ strong, b { font-weight:bold; }
   padding: 0 !important;
   font-family: inherit !important;
   font-size: inherit !important;
+}
+
+/****************************************
+ * Sections
+ ****************************************/
+
+#ttt-body details.section summary {
+  font-size:175%;
+}
+
+#ttt-body details.section:not(:first-of-type) {
+  margin-top:1.5em;
+}
+
+#ttt-body details.section summary span {
+  font-weight:700;
 }
 
 /****************************************
