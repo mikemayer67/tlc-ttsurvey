@@ -1,22 +1,50 @@
 * {
-  background-color:white;
+  background-color:#dcb;
 }
+
+em,i { font-style:italic; }
+strong, b { font-weight:bold; }
+
+/* Overall form/section/question blocking */
 
 #ttt-body {
-  margin:1em;
+  max-width:1024px;
+  margin: 1rem 0.5rem 0 0.5rem;
 }
 
-#ttt-body .section div.question {
-  margin:0 1em;
+#ttt-body .section div.question,
+#ttt-body .section div.section
+{
+  padding:0.5rem 1rem;
+  background:white;
+  border-radius: 8px;
+  margin-top:3px;
+  box-shadow: 
+    rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, 
+    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, 
+    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+  box-shadow: 
 }
 
 #ttt-body .section div.question * {
   padding:0; 
   margin:0;
+  background: white;
 }
 
-em,i { font-style:italic; }
-strong, b { font-weight:bold; }
+@media (min-width:768px) { /* tablets and larger */
+  #ttt-body {
+    margin-left: 1.5rem;
+    margin-right: 1em;
+  }
+}
+
+@media (min-width:1024px) { /* desktops and larger */
+  #ttt-body {
+    margin-left: 2rem;
+    margin-right: 1.5em;
+  }
+}
 
 /* Note that the markdown styling was primary driven by ChatGPT discussion */
 

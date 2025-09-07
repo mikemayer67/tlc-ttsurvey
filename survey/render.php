@@ -91,7 +91,7 @@ class RenderEngine
     }
 
     if($description) {
-      echo "<div class='description' $index>";
+      echo "<div class='section description' $index>";
       echo MarkdownParser::parse($description);
       echo "</div>";
     }
@@ -99,7 +99,7 @@ class RenderEngine
     $this->add_questions($sequence);
 
     if($feedback) {
-      echo "<div class='feedback' $index>";
+      echo "<div class='section feedback' $index>";
       echo "<div class='label'>$feedback</div>";
       echo "<textarea class='section feedback' name='section-feedback-$sequence'>";
       echo "</textarea>";
