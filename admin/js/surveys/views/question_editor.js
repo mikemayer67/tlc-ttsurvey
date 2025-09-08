@@ -1,6 +1,6 @@
 import Sortable from '../../../../js/sortable.esm.js';
 import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
-
+import layout_const from './layout.js';
 
 function input_error(key,value) 
 {
@@ -73,6 +73,9 @@ export default function init(ce,controller)
   const _wording            = _box.children('.wording');
   const _wording_value      = _wording.find('input');
 
+  const _layout             = _box.children('.layout');
+  const _layout_value       = _layout.find('select');
+
   const _qualifier          = _box.children('.qualifier');
   const _qualifier_value    = _qualifier.find('input');
 
@@ -129,7 +132,7 @@ export default function init(ce,controller)
     },
   );
 
-  _textareas.on('input change', update_character_count)
+  _textareas.on('input change', update_character_count);
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
     this.style.height = 'auto';
@@ -144,6 +147,8 @@ export default function init(ce,controller)
   _box.find('input[type=checkbox]')
     .on('blur',handle_checkbox)
     .on('change',handle_checkbox);
+
+  _layout_value.on('change', handle_layout_change);
 
   function handle_input(e) 
   {
@@ -222,6 +227,17 @@ export default function init(ce,controller)
     $(document).trigger('SurveyWasModified');
   }
 
+  function handle_layout_change(e)
+  {
+    const new_value     = $(this).val();
+    const old_value     = controller.cur_question_data(_cur_id,'layout');
+    const default_value = _layout_value.data('default');
+
+    create_layout_undo(new_value,old_value,default_value);
+    ce.controller.update_question_data(_cur_id, 'layout', new_value);
+    $(document).trigger('SurveyWasModified');
+  }
+
   function show(id,data)
   {
     _cur_id = id;
@@ -267,16 +283,27 @@ export default function init(ce,controller)
   function show_bool(data)
   {
     _wording.show();
+    _layout.show();
     _qualifier.show();
     _description.show();
     _popup.show();
 
+    _layout_value.empty();
+    _layout_value.data('default',layout_const.bool_default);
+    ['LEFT','RIGHT'].forEach( (key) => {
+      const label = layout_const.bool_label(key);
+      const opt   = $('<option></option>').attr('value',key).text(label);
+      _layout_value.append(opt);
+    });
+
     const wording     = data.wording || '';
+    const layout      = data.layout || layout_const.bool_default;
     const qualifier   = data.qualifier || '';
     const description = data.description || '';
     const popup       = data.popup || '';
-    
+
     _wording_value.val(wording);
+    _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _description_value.val(description);
     _popup_value.val(popup);
@@ -309,12 +336,22 @@ export default function init(ce,controller)
   function show_select_one(data)
   {
     _wording.show();
+    _layout.show();
     _qualifier.show();
     _description.show();
     _other.show();
     _popup.show();
 
+    _layout_value.empty();
+    _layout_value.data('default',layout_const.select_default);
+    ['ROW','LCOL','RCOL'].forEach( (key) => {
+      const label = layout_const.select_label(key);
+      const opt   = $('<option></option>').attr('value',key).text(label);
+      _layout_value.append(opt);
+    });
+
     const wording     = data.wording || '';
+    const layout      = data.layout || layout_const.select_default;
     const qualifier   = data.qualifier || '';
     const description = data.description || '';
     const other_flag  = data.other_flag || false;
@@ -322,6 +359,7 @@ export default function init(ce,controller)
     const popup       = data.popup || '';
 
     _wording_value.val(wording);
+    _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _description_value.val(description);
     _other_flag.prop('checked',other_flag);
@@ -668,11 +706,11 @@ export default function init(ce,controller)
   }
 
   //---------------------------------------------------------------------------------------
-  // The following function handles the creation or updating of undo/redo actions
-  //   associated with changes to question checkboxees.
+  // The following functions handles the creation or updating of undo/redo actions
+  //   associated with changes to question checkboxees and/or select inputs.
   //
-  // The issue here deals with the scenario where the user repeatedly toggles a given
-  //   checkbox more than two times in a row, e.g. on, off, on, off, on, off, on.
+  // The issue here deals with the scenario where the user repeatedly toggles between
+  //   two possible values more than two times in a row, e.g. on, off, on, off, on, off, on.
   //   Do we really want the undo manager to back through all of these? That will
   //   get really frustrating for the user as they traverse the undo stack. Instead,
   //   we want to collapse this, e.g.:
@@ -683,9 +721,9 @@ export default function init(ce,controller)
   //     on, off, on, off, on -> off
   //     on, off, on, off, on, off -> on, off
   //
-  // Add a new checkbox action if any of the following is true:
-  //   - the top of the undo stack is not a checkbox action
-  //   - the top of the undo stack is not for the current checkbox
+  // Add a new undo action if any of the following is true:
+  //   - the top of the undo stack has a different action type
+  //   - the top of the undo stack is not for the current question
   //   - the top of the undo stack does not undo the prior action
   // Otherwise, simply pop the last action off the undo stack (and clear redo stack)
   //
@@ -695,45 +733,91 @@ export default function init(ce,controller)
   {
     const cur_undo = ce.undo_manager.head();
 
-    const is_chain = (
+    const reverts_prior = (
       ( cur_undo?.action === 'toggle-checkbox' ) &&
       ( cur_undo?.question_id === _cur_id ) && 
       ( cur_undo?.key === key )
     );
 
-    if( is_chain && (cur_undo?.reverts_prior) ) {
+    if( reverts_prior && (cur_undo?.reverts_prior) ) {
       ce.undo_manager.pop(cur_undo);
+      return;
     }
-    else {
-      function apply_action(question_id, value)
-      {
-        _box.find('.question.'+key).prop('checked',value);
-        controller.update_question_data(question_id,key,value);
-        $(document).trigger('SurveyWasModified');
-      }
 
-      ce.undo_manager.add({
-        action: 'toggle-checkbox',
-        question_id: _cur_id,
-        key: key,
-        new_value: value,
-        reverts_prior: is_chain,
-        undo() {
-          controller.select_question(this.question_id);
-          setTimeout(() => { 
-            apply_action(this.question_id, !this.new_value); 
-          }, 100);
-        },
-        redo() {
-          controller.select_question(this.question_id);
-          setTimeout(() => { 
-            apply_action(this.question_id, this.new_value); 
-          }, 100);
-        }
-      });
+    function apply_action(question_id, value)
+    {
+      _box.find('.question.'+key).prop('checked',value);
+      controller.update_question_data(question_id,key,value);
+      $(document).trigger('SurveyWasModified');
     }
+
+    ce.undo_manager.add({
+      action: 'toggle-checkbox',
+      question_id: _cur_id,
+      key: key,
+      new_value: value,
+      reverts_prior: reverts_prior,
+      undo() {
+        controller.select_question(this.question_id);
+        setTimeout(() => { 
+          apply_action(this.question_id, !this.new_value); 
+        }, 100);
+      },
+      redo() {
+        controller.select_question(this.question_id);
+        setTimeout(() => { 
+          apply_action(this.question_id, this.new_value); 
+        }, 100);
+      }
+    });
   }
 
+  function create_layout_undo(new_value, old_value, default_value)
+  {
+    const cur_undo = ce.undo_manager.head();
+
+    const reverts_prior = ( cur_undo &&
+      ( cur_undo.action === 'change-layout' ) &&
+      ( cur_undo.question_id === _cur_id   ) && 
+      ( (cur_undo.old_value||default_value) === new_value )
+    );
+
+    if( reverts_prior && (cur_undo?.reverts_prior) ) {
+      ce.undo_manager.pop(cur_undo);
+      return;
+    }
+
+    ce.undo_manager.add({
+      action: 'change-layout',
+      question_id: _cur_id,
+      new_value: new_value,
+      old_value: old_value,
+      default_value: default_value,
+      reverts_prior: reverts_prior,
+      undo() {
+        setTimeout(() => { 
+          // note that we need to be careful how we handle old_value if it was null
+          //   the <select> element doesn't know how to display null, so display default instead
+          //   but we do set the current value go back to null if that was the old value
+          controller.select_question(this.question_id);
+          _layout_value.val(this.old_value||this.default_value);
+          controller.update_question_data(this.question_id,'layout',this.old_value);
+          $(document).trigger('SurveyWasModified');
+        }, 100);
+      },
+      redo() {
+        controller.select_question(this.question_id);
+        setTimeout(() => { 
+          controller.select_question(this.question_id);
+          // no need to worry about a null new_value as the <select> will never change to null
+          _layout_value.val(this.new_value);
+          controller.update_question_data(this.question_id,'layout',this.new_value);
+
+          $(document).trigger('SurveyWasModified');
+        }, 100);
+      }
+    });
+  }
 
   // Finally, return the question editor public interface 
   //   (which is rather small considering all tht happens internally)

@@ -47,8 +47,8 @@ $hints = [
       '<b>This field is optional.</b> If provided, it will be shown in the structure layout tree (&larr;) '.
       'rather than a truncated version of the information text.'.
       '<p>This label will not appear anywhere in the survey itself. It is for use in the Admin Dashboard only</p>'),
-    'wording' => (
-      'The actual wording of the question on the survey'),
+    'wording' => 'The actual wording of the question on the survey',
+    'layout' => 'This field dictates how provided responses are displayed.',
     'description' => (
       '<b>This field is optional.</b>  If provided, this will appear in the survey to provide additional '.
       'information (background, context, whatever...) about the question.  The text can be '.
@@ -92,6 +92,7 @@ $labels = [
     'type'        => 'Type',
     'infotag'     => 'Info Tag',
     'wording'     => 'Wording',
+    'layout'      => 'Layout',
     'description' => 'Description',
     'options'     => 'Options',
     'other'       => 'Other',
@@ -325,6 +326,7 @@ echo "<div class='archive'><span></span></div>";
 add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
+add_editor_select('question','layout',[]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
 add_options_entry();
 add_options_pool(['tight'=>true]);
@@ -339,6 +341,7 @@ echo "  <!--Question Viewer-->";
 echo "  <div class='grid question viewer'>";
 add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
+add_viewer_entry('question','layout');
 add_viewer_entry('question','description');
 add_viewer_entry('question','options');
 add_viewer_entry('question','other');

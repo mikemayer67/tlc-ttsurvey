@@ -157,9 +157,9 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
   $insert = <<<SQL
     INSERT into tlc_tt_survey_questions
            (question_id, survey_id, survey_rev,
-            wording_sid,question_type,multiple,
+            wording_sid,question_type,multiple,layout,
             other_flag,other_sid,qualifier_sid,description_sid,info_sid)
-    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?)
+    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -182,11 +182,17 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
       $multiple = null;
     }
 
+    if($type == 'OPTIONS' || $type == 'BOOL') {
+      $layout = $question['layout'];
+    } else {
+      $layout = null;
+    }
+
     $rc = MySQLExecute(
-      $insert, 'iisiiiiii',
+      $insert, 'iisisiiiii',
       $question_id,
       strings_find_or_create($wording),
-      $type, $multiple, $other_flag,
+      $type, $multiple, $layout, $other_flag,
       strings_find_or_create($other_str),
       strings_find_or_create($qualifier),
       strings_find_or_create($description),

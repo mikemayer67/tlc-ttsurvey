@@ -185,7 +185,7 @@ export default function init(ce)
   function handle_revert()
   {
     for( let key in _last_saved ) {
-      ce.form.find(`[name=${key}]`).val(_last_saved[key]);
+      ce.form.find(`[name="${key}"]`).val(_last_saved[key]);
     }
     if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
     else                                     { _survey_pdf.hide(); }

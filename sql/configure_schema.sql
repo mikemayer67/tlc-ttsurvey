@@ -147,6 +147,8 @@ IF version < 1 THEN
     wording_sid       smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
     question_type     ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
     multiple          tinyint           DEFAULT NULL       COMMENT 'For OPTIONS type, multiple options can be selected',
+    layout            ENUM('LEFT','RIGHT','ROW','LCOL','RCOL') DEFAULT NULL
+                                                           COMMENT 'For OPTION types: ROW, LCOL, RCOL. For BOOL types: LEFT, RIGHT',
     other_flag        tinyint  UNSIGNED DEFAULT NULL       COMMENT 'For OPTIONS type, allow user to write in an "other" value',
     other_sid         smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS type, label to use in the survey for the "other" input field',
     qualifier_sid     smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS/BOOL types, provide a text input field with the specified label',
@@ -163,11 +165,18 @@ IF version < 1 THEN
                 ON UPDATE RESTRICT ON DELETE CASCADE
   );
   -- Notes:
-  -- Thsre are four Survey types:
+  -- There are four Survey question types:
   --    INFO      Not a question, exists to provide info to the survey participants.
   --    BOOL      Yes/No type question (probably will be implemented as a checkbox)
   --    OPTIONS   Multiple choice (option) questions.
   --    FREETEXT  Question where the participant can provide a free form written respone
+  -- For BOOL questions, layout specifies the order of the checkbox and label
+  --    LEFT      checkbox appears before the question
+  --    RIGHT     checkbox appears after the question
+  -- For OPTION questions, layout specifies how the options should appear
+  --    ROW       options appear in a single row after the question (wrapping if necessary)
+  --    LCOL      options appear in a left  aligned column with checkboxes before the option label
+  --    RCOL      options appear in a right aligned column with checkboxes after  the option label
 
   CREATE TABLE tlc_tt_question_map (
     survey_id     smallint UNSIGNED NOT NULL,
@@ -281,6 +290,7 @@ IF version < 1 THEN
     q.wording_sid,     wording.str      AS wording_str,
     q.question_type, 
     q.multiple,
+    q.layout,
     q.other_flag,
     q.other_sid,       other.str        AS other_str,
     q.qualifier_sid,   qualifier.str    AS qualifier_str,

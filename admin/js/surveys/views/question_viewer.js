@@ -1,3 +1,5 @@
+import layout from './layout.js';
+
 export default function init(ce)
 {
   const _box = $('#editor-frame div.grid.question.viewer');
@@ -7,6 +9,9 @@ export default function init(ce)
 
   const _wording           = _box.children('.wording');
   const _wording_value     = _wording.find('div.text');
+
+  const _layout           = _box.children('.layout');
+  const _layout_value     = _layout.find('div.text');
 
   const _qualifier         = _box.children('.qualifier');
   const _qualifier_value   = _qualifier.find('div.text');
@@ -47,6 +52,8 @@ export default function init(ce)
       case 'BOOL': {
         _wording.show();
         _wording_value.text(data.wording || '');
+        _layout.show();
+        _layout_value.text(layout.bool_label(data.layout));
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
         _description.show();
@@ -68,6 +75,8 @@ export default function init(ce)
       case 'SELECT_MULTI': {
         _wording.show();
         _wording_value.text(data.wording || '');
+        _layout.show();
+        _layout_value.text(layout.select_label(data.layout));
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
         _description.show();
