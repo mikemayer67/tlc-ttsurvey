@@ -17,13 +17,10 @@ strong, b { font-weight:bold; }
 {
   padding:0.5rem 1rem;
   background:white;
+  border: solid #888 1.5px;
   border-radius: 8px;
-  margin-top:3px;
-  box-shadow: 
-    rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, 
-    rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, 
-    rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
-  box-shadow: 
+  margin-top:5px;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,.15),0 2px 10px 0 rgba(0,0,0,0.12);
 }
 
 .section .question * {
@@ -202,14 +199,50 @@ details.section summary span {
 
 @media (min-width:768px) { /* tablets and larger */
   .bool.question div.checkbox:not(:first-child) {
-    margin-left:1em;
+    margin-left:0.5em;
   }
 }
 @media (min-width:1024px) { /* tablets and larger */
   .bool.question div.checkbox:not(:first-child) {
-    margin-left:2em;
+    margin-left:1em;
   }
 }
+
+/****************************************
+ * freetext
+ ****************************************/
+
+.freetext.question div.input {
+  display:flex;
+  flex-direction:column;
+  margin-right:0.25em;
+}
+
+.freetext.question div.input label {
+  font-weight:600;
+}
+
+.freetext.question div.input.indent {
+  margin-left: 0.25em;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  .freetext.question div.input {
+    margin-right:0.5em;
+  }
+  .freetext.question div.input.indent {
+    margin-left: 0.5em;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .freetext.question div.input {
+    margin-right:1em;
+  }
+  .freetext.question div.input.indent {
+    margin-left: 1em;
+  }
+}
+
 
 /****************************************
  * hints

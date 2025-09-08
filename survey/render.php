@@ -170,22 +170,28 @@ class RenderEngine
     $label       = $question['wording'];
     $description = $question['description'] ?? '';
     $popup       = $question['popup'] ?? '';
+    $indent      = ''; // for styling the input box
 
     $input_id = "question-input-$id";
     $hint_id  = "hint-toggle-$id";
 
     echo "<div class='freetext question' data-question=$id>";
+    $indent = ''; // for styling the input box
+    if($description) {
+      $description = MarkdownParser::parse($description);
+      echo "<div class='description'>$description</div>";
+      $indent = 'indent';
+    }
+    echo "<div class='input $indent'>";
     echo "<label for='$input_id' class='question'>$label</label>";
+    echo "<textarea id='$input_id' type='text' name='$input_id'></textarea>";
+    echo "</div>";
     if($popup) {
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
       echo "<div class='question-hint'>$popup</div>";
     }
-    if($description) {
-      echo "<div class='description'>$description</div>";
-    }
-    echo "<textarea id='$input_id' type='text' name='$input_id'></textarea>";
     echo "</div>";
   }
 
