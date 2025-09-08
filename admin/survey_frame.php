@@ -50,9 +50,9 @@ $hints = [
     'wording' => 'The actual wording of the question on the survey',
     'layout' => 'This field dictates how provided responses are displayed.',
     'description' => (
-      '<b>This field is optional.</b>  If provided, this will appear in the survey to provide additional '.
-      'information (background, context, whatever...) about the question.  The text can be '.
-      'stylized using markdown. '.
+      '<b>This field is optional.</b>  If provided, this will appear in the survey prior to the quesiton. '.
+      'It can be used to provide additional information (background, context, whatever...) about the question. '.
+      'The text can be stylized using markdown. '.
       "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>" ),
     'options' => (
       'For multiple choice questions, this is the list of options available to choose from. '.
@@ -86,7 +86,7 @@ $labels = [
   'section' => [
     'name'        => 'Name',
     'collapsible' => 'Collapsible',
-    'description' => 'Description',
+    'description' => 'Intro',
     'feedback'    => 'Feedback',
   ],
   'question' => [
@@ -95,7 +95,7 @@ $labels = [
     'infotag'     => 'Info Tag',
     'wording'     => 'Wording',
     'layout'      => 'Layout',
-    'description' => 'Description',
+    'description' => 'Intro',
     'options'     => 'Options',
     'other'       => 'Other',
     'qualifier'   => 'Qualifier',
@@ -305,8 +305,8 @@ echo "  <div class='hint-hint'>Click or hover on any of the entry labels for mor
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
-add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]]);
 add_editor_textarea('section','description',['maxlen'=>512]);
+add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]]);
 add_editor_input('section','feedback',['maxlen'=>128]);
 echo "</div>";
 
@@ -314,8 +314,8 @@ echo "</div>";
 echo "<!--Section Viewer-->";
 echo "<div class='grid section viewer'>";
 add_viewer_entry('section','name');
-add_viewer_entry('section','collapsible');
 add_viewer_entry('section','description');
+add_viewer_entry('section','collapsible');
 add_viewer_entry('section','feedback');
 echo "  </div>";
 
@@ -328,8 +328,8 @@ echo "<div class='archive'><span></span></div>";
 add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
-add_editor_select('question','layout',[]);
 add_editor_textarea('question','description',['maxlen'=>'512']);
+add_editor_select('question','layout',[]);
 add_options_entry();
 add_options_pool(['tight'=>true]);
 add_other_input(['maxlen'=>45]);
@@ -343,8 +343,8 @@ echo "  <!--Question Viewer-->";
 echo "  <div class='grid question viewer'>";
 add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
-add_viewer_entry('question','layout');
 add_viewer_entry('question','description');
+add_viewer_entry('question','layout');
 add_viewer_entry('question','options');
 add_viewer_entry('question','other');
 add_viewer_entry('question','qualifier');
