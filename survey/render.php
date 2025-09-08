@@ -101,7 +101,7 @@ class RenderEngine
     if($feedback) {
       echo "<div class='section feedback' $index>";
       echo "<div class='label'>$feedback</div>";
-      echo "<textarea class='section feedback' name='section-feedback-$sequence'>";
+      echo "<textarea class='section feedback' name='section-feedback-$sequence' placeholder='[optional]'>";
       echo "</textarea>";
       echo "</div>";
     }

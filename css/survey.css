@@ -1,5 +1,7 @@
 * {
-  background-color:#f0e8e0;
+  --survey-background:#f0e8e0;
+  --question-background:#f2efec;
+  background-color:var(--survey-background);
 }
 
 em,i { font-style:italic; }
@@ -16,7 +18,7 @@ strong, b { font-weight:bold; }
 .section div.section
 {
   padding:0.5rem 1rem;
-  background:white;
+  background: var(--question-background);
   border: solid #888 1.5px;
   border-radius: 8px;
   margin-top:5px;
@@ -26,7 +28,7 @@ strong, b { font-weight:bold; }
 .section .question * {
   padding:0; 
   margin:0;
-  background: white;
+  background: inherit;
 }
 
 @media (min-width:768px) { /* tablets and larger */
@@ -45,7 +47,9 @@ strong, b { font-weight:bold; }
 
 .section .question textarea {
   padding:0 0.5em;
+  background: white;
 }
+
 
 /* Note that the markdown styling was primary driven by ChatGPT discussion */
 
@@ -116,6 +120,41 @@ details.section summary span {
   font-weight:700;
 }
 
+.section div.section.feedback,
+.section div.section.description
+{
+  background:none;
+  border:none;
+  box-shadow:none;
+  font-size:110%;
+}
+
+.section div.section.feedback {
+  padding: 1rem 0.5rem;
+}
+
+.section div.section.description {
+  margin: 0 1em 1em 1em;
+  padding: 0;
+}
+
+.section div.section.description .markdown p
+{
+  margin:0;
+  padding:0;
+}
+
+.section div.section.feedback div.label {
+  font-weight:600;
+  font-size:110%;
+}
+
+.section div.section.feedback textarea {
+  background:white;
+  width:100%;
+  padding:0.25em 0.5em;
+}
+
 /****************************************
  * Questions
  ****************************************/
@@ -149,7 +188,7 @@ details.section summary span {
 
 #survey .section .question .question-hint {
   width:fit-content;
-  background:#e8e8e8;
+  background:var(--survey-background);
   margin:0.5em auto 0.5em auto;
   padding:0.25em 1em;
   border-radius:5px;
