@@ -193,6 +193,7 @@ class RenderEngine
   {
     $id          = $question['id'];
     $wording     = $question['wording'];
+    $layout      = strtolower($question['layout'] ?? 'left');
     $description = $question['description'] ?? '';
     $qualifier   = $question['qualifier'] ?? '';
     $popup       = $question['popup'] ?? '';
@@ -202,20 +203,25 @@ class RenderEngine
     $hint_id      = "hint-toggle-$id";
 
     echo "<div class='bool question' data-question=$id>";
+    if($description) {
+      $description = MarkdownParser::parse($description);
+      echo "<div class='description'>$description</div>";
+    }
+    echo "<div class='checkbox $layout'>";
     echo "<input id='$input_id' type='checkbox' name='$input_id'>";
     echo "<label for='$input_id' class='question'>$wording</label>";
+    echo "</div>";
+    if($qualifier) {
+      echo "<div class='qualifier'>";
+      echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='optional' rows='1'></textarea>";
+      echo "</div>";
+    }
     if($popup) {
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
       echo "<div class='question-hint'>$popup</div>";
-    }
-    if($description) {
-      echo "<div class='description'>$description</div>";
-    }
-    if($qualifier) {
-      echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id'></textarea>";
     }
     echo "</div>";
   }

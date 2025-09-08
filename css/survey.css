@@ -12,8 +12,8 @@ strong, b { font-weight:bold; }
   margin: 1rem 0.5rem 0 0.5rem;
 }
 
-#ttt-body .section div.question,
-#ttt-body .section div.section
+.section div.question,
+.section div.section
 {
   padding:0.5rem 1rem;
   background:white;
@@ -26,7 +26,7 @@ strong, b { font-weight:bold; }
   box-shadow: 
 }
 
-#ttt-body .section div.question * {
+.section .question * {
   padding:0; 
   margin:0;
   background: white;
@@ -44,6 +44,10 @@ strong, b { font-weight:bold; }
     margin-left: 2rem;
     margin-right: 1.5em;
   }
+}
+
+.section .question textarea {
+  padding:0 0.5em;
 }
 
 /* Note that the markdown styling was primary driven by ChatGPT discussion */
@@ -103,43 +107,141 @@ strong, b { font-weight:bold; }
  * Sections
  ****************************************/
 
-#ttt-body details.section summary {
+details.section summary {
   font-size:175%;
 }
 
-#ttt-body details.section:not(:first-of-type) {
+details.section:not(:first-of-type) {
   margin-top:1.5em;
 }
 
-#ttt-body details.section summary span {
+details.section summary span {
   font-weight:700;
 }
 
 /****************************************
- * question hints
+ * Questions
  ****************************************/
 
-#ttt-body img.popup {
+#survey .section .question {
+  position:relative;
+}
+
+#survey .section .question .description {
+  margin: 0.25em 0;
+}
+
+#survey .section .question .qualifier {
+  display:flex;
+  flex-direction: row;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  margin: 0.25em auto 0 0.5em;
+}
+
+#survey .section .question .qualifier label {
+  font-weight:600;
+  width:fit-content;
+  margin:0;
+}
+
+#survey .section .question .qualifier textarea {
+  margin:0 0 0 8px;
+  width:70%;
+}
+
+#survey .section .question .question-hint {
+  width:fit-content;
+  background:#e8e8e8;
+  margin:0.5em auto 0.5em auto;
+  padding:0.25em 1em;
+  border-radius:5px;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  #survey .section .question .qualifier {
+    margin: 0.25em auto 0 1em;
+  }
+}
+
+@media (min-width:1024px) { /* tablets and larger */
+  #survey .section .question .qualifier {
+    margin: 0.25em auto 0 2em;
+  }
+  #survey .section .question .qualifier textarea {
+    width:40%;
+  }
+}
+
+/****************************************
+ * bool
+ ****************************************/
+
+.bool.question div.checkbox {
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.bool.question div.checkbox:not(:first-child) {
+  margin-left:0.5em;
+  margin-top:0.25em;
+}
+
+.bool.question div.checkbox.left {
+  flex-direction: row;
+}
+
+.bool.question div.checkbox.right {
+  flex-direction: row-reverse;
+}
+
+.bool.question div.checkbox label {
+  font-weight:600;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  .bool.question div.checkbox:not(:first-child) {
+    margin-left:1em;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .bool.question div.checkbox:not(:first-child) {
+    margin-left:2em;
+  }
+}
+
+/****************************************
+ * hints
+ ****************************************/
+
+img.popup {
   width:1em;
   height:1em;
 }
 
-#ttt-body .question-hint {
+.question-hint {
   display:none;
 }
 
-#ttt-body label.hint-toggle:hover ~ .question-hint,
-#ttt-body input.hint-toggle:checked ~ .question-hint {
+label.hint-toggle {
+  position:absolute;
+  top:8px;
+  right:8px;
+}
+
+label.hint-toggle:hover ~ .question-hint,
+input.hint-toggle:checked ~ .question-hint {
   display:block;
 }
 
-#ttt-body fieldset.select {
+fieldset.select {
   border:none;
   margin:0;
   padding:0;
 }
 
-#ttt-body fieldset.select legend {
+fieldset.select legend {
   padding: 0;
   margin-right: 1rem;
   font-weight: bold;
@@ -149,15 +251,15 @@ strong, b { font-weight:bold; }
  * submit bar
  ****************************************/
 
-#ttt-body div.submit-bar {
+div.submit-bar {
   display:flex;
   flex-direction: row-reverse;
 }
 
-#ttt-body input.submit {
+input.submit {
 }
 
-#ttt-body input.revert.hidden {
+input.revert.hidden {
   display:none;
 }
 
