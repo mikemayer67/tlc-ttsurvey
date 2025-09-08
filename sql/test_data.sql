@@ -161,7 +161,7 @@ UPDATE tlc_tt_survey_options set text_sid=51 where survey_id=3 and survey_rev=2 
 UPDATE tlc_tt_survey_options set text_sid=49 where survey_id=3 and survey_rev=2 and option_id=4;
 
 INSERT INTO tlc_tt_survey_sections 
-            (survey_id, survey_rev, sequence, name_sid, collapsible, description_sid, feedback_sid)
+            (survey_id, survey_rev, sequence, name_sid, collapsible, intro_sid, feedback_sid)
      VALUES (1, 1, 1, 84, 1,   31, NULL),
             (1, 1, 2, 39, 1,   75, NULL),
             (1, 1, 3, 89, 1,   70, NULL),
@@ -181,16 +181,16 @@ INSERT INTO tlc_tt_survey_sections
             (4, 1, 3, 30, 1, NULL, NULL);
 
 INSERT INTO tlc_tt_survey_sections 
-SELECT survey_id,2,sequence,name_sid,collapsible,description_sid,feedback_sid
+SELECT survey_id,2,sequence,name_sid,collapsible,intro_sid,feedback_sid
 FROM tlc_tt_survey_sections where survey_id in (2,3) and survey_rev=1;
 
 update tlc_tt_survey_sections set feedback_sid=80    where survey_id=1 and survey_rev=2 and sequence=2;
 update tlc_tt_survey_sections set name_sid=23        where survey_id=2 and survey_rev=2 and sequence=1;
 update tlc_tt_survey_sections set feedback_sid=6     where survey_id=2 and survey_rev=2 and sequence=1;
-update tlc_tt_survey_sections set description_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
+update tlc_tt_survey_sections set intro_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
 
 INSERT INTO tlc_tt_survey_questions 
-            (question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid) 
+            (question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid) 
      VALUES (  1, 1, 1, 27, 'INFO',     NULL,    NULL, NULL, NULL, NULL, NULL,   69),              
             (  2, 1, 1, 87, 'BOOL',     NULL,  'LEFT', NULL, NULL,   81,   11,   68),              
             (  3, 1, 1, 59, 'OPTIONS',     0,   'ROW',    1,   38,    5,   41,   68),              
@@ -225,39 +225,39 @@ INSERT INTO tlc_tt_survey_questions
             (133, 4, 1, 18, 'FREETEXT', NULL,    NULL, NULL, NULL, NULL,   34, NULL);
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, 2, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT question_id, 2, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid
+     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid 
+     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, survey_id, 2, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, description_sid, info_sid
+     SELECT question_id, survey_id, 2, wording_sid, question_type, multiple, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid
        from tlc_tt_survey_questions where survey_id=2 and survey_rev=1;
 
 UPDATE tlc_tt_survey_questions set wording_sid=98 where survey_id=2 and survey_rev=2 and question_id=68;

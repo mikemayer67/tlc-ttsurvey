@@ -117,12 +117,12 @@ class Surveys
       SELECT s.sequence      as sequence,
              name.str        as name,
              s.collapsible   as collapsible,
-             description.str as description,
+             intro.str       as intro,
              feedback.str    as feedback
       FROM   tlc_tt_survey_sections s
-      INNER JOIN tlc_tt_strings name        ON name.string_id        = s.name_sid
-       LEFT JOIN tlc_tt_strings description ON description.string_id = s.description_sid
-       LEFT JOIN tlc_tt_strings feedback    ON feedback.string_id    = s.feedback_sid
+      INNER JOIN tlc_tt_strings name     ON name.string_id     = s.name_sid
+       LEFT JOIN tlc_tt_strings intro    ON intro.string_id    = s.intro_sid
+       LEFT JOIN tlc_tt_strings feedback ON feedback.string_id = s.feedback_sid
       WHERE s.survey_id=(?) AND s.survey_rev=(?)
       ORDER BY s.sequence;
     SQL;
@@ -144,7 +144,7 @@ class Surveys
              q.other_flag    as other_flag,
              other.str       as other_str,
              qualifier.str   as qualifier,
-             description.str as description,
+             intro.str       as intro,
              info.str        as info
         FROM tlc_tt_survey_questions q
        INNER JOIN tlc_tt_question_map m      
@@ -152,7 +152,7 @@ class Surveys
         LEFT JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
         LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
         LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
-        LEFT JOIN tlc_tt_strings description ON description.string_id = q.description_sid
+        LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
         LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
        WHERE q.survey_id=(?) and q.survey_rev=(?)
        ORDER BY section, sequence;
@@ -163,9 +163,9 @@ class Surveys
   
     $q_fields = [
       'INFO'     => ['section','sequence','wording'=>'infotag', 'info'],
-      'BOOL'     => ['section','sequence','wording', 'layout', 'description', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['section','sequence','wording', 'layout', 'description', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['section','sequence','wording', 'description', 'info'=>'popup']
+      'BOOL'     => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
+      'OPTIONS'  => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'FREETEXT' => ['section','sequence','wording', 'intro', 'info'=>'popup']
     ];
   
     $questions = array();
@@ -218,9 +218,9 @@ class Surveys
 
     $q_fields = [
       'INFO'     => ['wording'=>'infotag', 'info'],
-      'BOOL'     => ['wording', 'layout', 'description', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['wording', 'layout', 'description', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['wording', 'description', 'info'=>'popup']
+      'BOOL'     => ['wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
+      'OPTIONS'  => ['wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'FREETEXT' => ['wording', 'intro', 'info'=>'popup']
     ];
   
 
@@ -252,13 +252,13 @@ class Surveys
                  q.other_flag    as other_flag,
                  other.str       as other_str,
                  qualifier.str   as qualifier,
-                 description.str as description,
+                 intro.str       as intro,
                  info.str        as info
             FROM tlc_tt_survey_questions q
            INNER JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
             LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
             LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
-            LEFT JOIN tlc_tt_strings description ON description.string_id = q.description_sid
+            LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
             LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
            WHERE q.survey_id=(?) and $in_clause
         SQL;

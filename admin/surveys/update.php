@@ -123,7 +123,7 @@ function update_survey_content($survey_id,$survey_rev,$content)
 
   $insert = <<<SQL
     INSERT into tlc_tt_survey_sections
-           (survey_id, survey_rev, sequence, name_sid, collapsible, description_sid, feedback_sid)
+           (survey_id, survey_rev, sequence, name_sid, collapsible, intro_sid, feedback_sid)
     VALUES ($survey_id, $survey_rev,?,?,?,?,?)
   SQL;
 
@@ -134,7 +134,7 @@ function update_survey_content($survey_id,$survey_rev,$content)
       $sequence,
       strings_find_or_create($section['name']),
       ($section['collapsible'] ?? null) ? 1 : 0,
-      strings_find_or_create($section['description']),
+      strings_find_or_create($section['intro']),
       strings_find_or_create($section['feedback'])
     );
     if($rc === false) {
@@ -158,7 +158,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     INSERT into tlc_tt_survey_questions
            (question_id, survey_id, survey_rev,
             wording_sid,question_type,multiple,layout,
-            other_flag,other_sid,qualifier_sid,description_sid,info_sid)
+            other_flag,other_sid,qualifier_sid,intro_sid,info_sid)
     VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?,?)
   SQL;
 
@@ -169,7 +169,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $type        = $question['type'];
     $wording     = $question['wording'] ?? $question['infotag'] ?? null;
     $qualifier   = $question['qualifier'] ?? null;
-    $description = $question['description'] ?? null;
+    $intro       = $question['intro'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
 
     $other_flag  = $question['other_flag'] ?? null;
@@ -195,7 +195,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
       $type, $multiple, $layout, $other_flag,
       strings_find_or_create($other_str),
       strings_find_or_create($qualifier),
-      strings_find_or_create($description),
+      strings_find_or_create($intro),
       strings_find_or_create($info)
     );
     if($rc === false) {

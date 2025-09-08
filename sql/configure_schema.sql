@@ -124,42 +124,42 @@ IF version < 1 THEN
   );
 
   CREATE TABLE tlc_tt_survey_sections (
-    survey_id       smallint UNSIGNED NOT NULL,
-    survey_rev      smallint UNSIGNED NOT NULL,
-    sequence        smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
-    name_sid        smallint UNSIGNED              COMMENT '(StringID) Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
-    collapsible     tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
-    description_sid smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Section description that will appear in the survey form',
-    feedback_sid    smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Text used to prompt for feedback. No feedback allowed if NULL',
+    survey_id    smallint UNSIGNED NOT NULL,
+    survey_rev   smallint UNSIGNED NOT NULL,
+    sequence     smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
+    name_sid     smallint UNSIGNED              COMMENT '(StringID) Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
+    collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
+    intro_sid    smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Section intro that will appear in the survey form',
+    feedback_sid smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Text used to prompt for feedback. No feedback allowed if NULL',
     PRIMARY KEY (survey_id,survey_rev,sequence),
-    FOREIGN KEY (name_sid)        REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (description_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (feedback_sid)    REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (name_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (intro_sid)    REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (feedback_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (survey_id,survey_rev) 
                 REFERENCES tlc_tt_survey_revisions(survey_id,survey_rev) 
                 ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_survey_questions (
-    question_id       smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
-    survey_id         smallint UNSIGNED NOT NULL,
-    survey_rev        smallint UNSIGNED NOT NULL,
-    wording_sid       smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
-    question_type     ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
-    multiple          tinyint           DEFAULT NULL       COMMENT 'For OPTIONS type, multiple options can be selected',
-    layout            ENUM('LEFT','RIGHT','ROW','LCOL','RCOL') DEFAULT NULL
-                                                           COMMENT 'For OPTION types: ROW, LCOL, RCOL. For BOOL types: LEFT, RIGHT',
-    other_flag        tinyint  UNSIGNED DEFAULT NULL       COMMENT 'For OPTIONS type, allow user to write in an "other" value',
-    other_sid         smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS type, label to use in the survey for the "other" input field',
-    qualifier_sid     smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS/BOOL types, provide a text input field with the specified label',
-    description_sid   smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For non-INFO types, provides a description of the question on the survey',
-    info_sid          smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
+    question_id   smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
+    survey_id     smallint UNSIGNED NOT NULL,
+    survey_rev    smallint UNSIGNED NOT NULL,
+    wording_sid   smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
+    question_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
+    multiple      tinyint           DEFAULT NULL       COMMENT 'For OPTIONS type, multiple options can be selected',
+    layout        ENUM('LEFT','RIGHT','ROW','LCOL','RCOL') DEFAULT NULL
+                                                       COMMENT 'For OPTION types: ROW, LCOL, RCOL. For BOOL types: LEFT, RIGHT',
+    other_flag    tinyint  UNSIGNED DEFAULT NULL       COMMENT 'For OPTIONS type, allow user to write in an "other" value',
+    other_sid     smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS type, label to use in the survey for the "other" input field',
+    qualifier_sid smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS/BOOL types, provide a text input field with the specified label',
+    intro_sid     smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For non-INFO types, provides a intro of the question on the survey',
+    info_sid      smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
     PRIMARY KEY (question_id,survey_id,survey_rev),
-    FOREIGN KEY (wording_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (other_sid)       REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (qualifier_sid)   REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (description_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    FOREIGN KEY (info_sid)        REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (wording_sid)   REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (other_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (qualifier_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (intro_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    FOREIGN KEY (info_sid)      REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (survey_id,survey_rev) 
                 REFERENCES tlc_tt_survey_revisions (survey_id,survey_rev)
                 ON UPDATE RESTRICT ON DELETE CASCADE
@@ -276,31 +276,31 @@ IF version < 1 THEN
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_sections AS
   SELECT s.survey_id, s.survey_rev, s.sequence,
-    s.name_sid,        name.str         AS name_str,
+    s.name_sid,        name.str     AS name_str,
     s.collapsible,
-    s.description_sid, description.str  AS description_str,
-    s.feedback_sid,    feedback.str     AS feedback_str
+    s.intro_sid,       intro.str    AS intro_str,
+    s.feedback_sid,    feedback.str AS feedback_str
   FROM tlc_tt_survey_sections s
-  LEFT JOIN tlc_tt_strings name        ON s.name_sid = name.string_id
-  LEFT JOIN tlc_tt_strings description ON s.description_sid = description.string_id
-  LEFT JOIN tlc_tt_strings feedback    ON s.feedback_sid = feedback.string_id;
+  LEFT JOIN tlc_tt_strings name     ON s.name_sid = name.string_id
+  LEFT JOIN tlc_tt_strings intro    ON s.intro_sid = intro.string_id
+  LEFT JOIN tlc_tt_strings feedback ON s.feedback_sid = feedback.string_id;
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_questions AS
   SELECT q.question_id, q.survey_id, q.survey_rev, 
-    q.wording_sid,     wording.str      AS wording_str,
+    q.wording_sid,     wording.str     AS wording_str,
     q.question_type, 
     q.multiple,
     q.layout,
     q.other_flag,
-    q.other_sid,       other.str        AS other_str,
-    q.qualifier_sid,   qualifier.str    AS qualifier_str,
-    q.description_sid, description.str  AS description_str,
-    q.info_sid,        info.str         AS info_str
+    q.other_sid,       other.str       AS other_str,
+    q.qualifier_sid,   qualifier.str   AS qualifier_str,
+    q.intro_sid,       intro.str       AS intro_str,
+    q.info_sid,        info.str        AS info_str
   FROM tlc_tt_survey_questions q
   LEFT JOIN tlc_tt_strings wording     ON q.wording_sid = wording.string_id
   LEFT JOIN tlc_tt_strings other       ON q.other_sid = other.string_id
   LEFT JOIN tlc_tt_strings qualifier   ON q.qualifier_sid = qualifier.string_id
-  LEFT JOIN tlc_tt_strings description ON q.description_sid = description.string_id
+  LEFT JOIN tlc_tt_strings intro       ON q.intro_sid = intro.string_id
   LEFT JOIN tlc_tt_strings info        ON q.info_sid = info.string_id;
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_options AS
@@ -309,8 +309,7 @@ IF version < 1 THEN
   LEFT JOIN tlc_tt_strings text ON o.text_sid = text.string_id;
 
   CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
-  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, 
-    qo.sequence, qo.option_id, os.str AS option_str, q.multiple
+  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, qo.sequence, qo.option_id, os.str AS option_str, q.multiple
   FROM tlc_tt_survey_questions q
   LEFT JOIN tlc_tt_question_options qo on qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
   LEFT JOIN tlc_tt_survey_options so on so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id

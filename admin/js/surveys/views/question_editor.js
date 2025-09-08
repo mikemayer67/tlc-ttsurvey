@@ -28,7 +28,7 @@ function input_error(key,value)
       invalid_char_regex = common_invalid_regex;
       break;
 
-    case 'description':
+    case 'intro':
       markdown = true;
       break;
 
@@ -79,8 +79,8 @@ export default function init(ce,controller)
   const _qualifier          = _box.children('.qualifier');
   const _qualifier_value    = _qualifier.find('input');
 
-  const _description        = _box.children('.description');
-  const _description_value  = _description.find('textarea');
+  const _intro              = _box.children('.intro');
+  const _intro_value        = _intro.find('textarea');
 
   const _info               = _box.children('.info');
   const _info_value         = _info.find('textarea');
@@ -285,7 +285,7 @@ export default function init(ce,controller)
     _wording.show();
     _layout.show();
     _qualifier.show();
-    _description.show();
+    _intro.show();
     _popup.show();
 
     _layout_value.empty();
@@ -296,41 +296,41 @@ export default function init(ce,controller)
       _layout_value.append(opt);
     });
 
-    const wording     = data.wording || '';
-    const layout      = data.layout || layout_const.bool_default;
-    const qualifier   = data.qualifier || '';
-    const description = data.description || '';
-    const popup       = data.popup || '';
+    const wording   = data.wording || '';
+    const layout    = data.layout || layout_const.bool_default;
+    const qualifier = data.qualifier || '';
+    const intro     = data.intro || '';
+    const popup     = data.popup || '';
 
     _wording_value.val(wording);
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
-    _description_value.val(description);
+    _intro_value.val(intro);
     _popup_value.val(popup);
 
-    validate_input('wording'    , wording);
-    validate_input('qualifier'  , qualifier);
-    validate_input('description', description);
-    validate_input('popup'      , popup);
+    validate_input('wording'  , wording);
+    validate_input('qualifier', qualifier);
+    validate_input('intro'    , intro);
+    validate_input('popup'    , popup);
   }
 
   function show_freetext(data)
   {
     _wording.show();
-    _description.show();
+    _intro.show();
     _popup.show();
 
-    const wording     = data.wording || '';
-    const description = data.description || '';
-    const popup       = data.popup || '';
+    const wording = data.wording || '';
+    const intro   = data.intro || '';
+    const popup   = data.popup || '';
 
     _wording_value.val(wording);
-    _description_value.val(description);
+    _intro_value.val(intro);
     _popup_value.val(popup);
 
-    validate_input('wording'    , wording);
-    validate_input('description', description);
-    validate_input('popup'      , popup);
+    validate_input('wording', wording);
+    validate_input('intro'  , intro);
+    validate_input('popup'  , popup);
   }
 
   function show_select_one(data)
@@ -338,7 +338,7 @@ export default function init(ce,controller)
     _wording.show();
     _layout.show();
     _qualifier.show();
-    _description.show();
+    _intro.show();
     _other.show();
     _popup.show();
 
@@ -353,7 +353,7 @@ export default function init(ce,controller)
     const wording     = data.wording || '';
     const layout      = data.layout || layout_const.select_default;
     const qualifier   = data.qualifier || '';
-    const description = data.description || '';
+    const intro       = data.intro || '';
     const other_flag  = data.other_flag || false;
     const other_str   = data.other_str || '';
     const popup       = data.popup || '';
@@ -361,16 +361,16 @@ export default function init(ce,controller)
     _wording_value.val(wording);
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
-    _description_value.val(description);
+    _intro_value.val(intro);
     _other_flag.prop('checked',other_flag);
     _other_str.val(other_str);
     _popup_value.val(popup);
 
     validate_input('wording'    , wording);
     validate_input('qualifier'  , qualifier);
-    validate_input('description', description);
+    validate_input('intro'      , intro);
     if(other_flag) {
-      validate_input('other_str'  , other_str);
+      validate_input('other_str', other_str);
     }
     validate_input('popup'      , popup);
 

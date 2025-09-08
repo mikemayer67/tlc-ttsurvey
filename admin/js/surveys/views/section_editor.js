@@ -19,7 +19,7 @@ function input_error(key,value)
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
-     case 'description':
+     case 'intro':
        markdown = true;
        break;
 
@@ -54,8 +54,8 @@ export default function init(ce,controller)
   const _collapsible       = _box.children('.collapsible');
   const _collapsible_value = _collapsible.find('select');
 
-  const _description       = _box.children('.description');
-  const _description_value = _description.find('textarea');
+  const _intro             = _box.children('.intro');
+  const _intro_value       = _intro.find('textarea');
 
   const _feedback          = _box.children('.feedback');
   const _feedback_value    = _feedback.find('input');
@@ -66,7 +66,7 @@ export default function init(ce,controller)
   let _cur_id = null;  // This is the current section ID displayed in the editor
   let _errors = {};
 
-  _description_value.on('input change', update_character_count);
+  _intro_value.on('input change', update_character_count);
   _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 
@@ -145,17 +145,17 @@ export default function init(ce,controller)
 
     const name        = data.name || '';
     const collapsible = data.collapsible ? 1 : 0;
-    const description = data.description || '';
+    const intro       = data.intro || '';
     const feedback    = data.feedback || '';
 
     _name_value.val(name);
     _collapsible_value.val(collapsible);
-    _description_value.val(description).trigger('change');
+    _intro_value.val(intro).trigger('change');
     _feedback_value.val(feedback);
 
-    validate_input('name',       name);
-    validate_input('description',description);
-    validate_input('feedback',   feedback);
+    validate_input('name'    , name);
+    validate_input('intro'   , intro);
+    validate_input('feedback', feedback);
 
     _hints.removeClass('locked');
   }

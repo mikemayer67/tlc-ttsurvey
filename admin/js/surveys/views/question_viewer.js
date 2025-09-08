@@ -10,14 +10,14 @@ export default function init(ce)
   const _wording           = _box.children('.wording');
   const _wording_value     = _wording.find('div.text');
 
-  const _layout           = _box.children('.layout');
-  const _layout_value     = _layout.find('div.text');
+  const _layout            = _box.children('.layout');
+  const _layout_value      = _layout.find('div.text');
 
   const _qualifier         = _box.children('.qualifier');
   const _qualifier_value   = _qualifier.find('div.text');
 
-  const _description       = _box.children('.description');
-  const _description_value = _description.find('div.text');
+  const _intro             = _box.children('.intro');
+  const _intro_value       = _intro.find('div.text');
 
   const _info              = _box.children('.info');
   const _info_value        = _info.find('div.text');
@@ -56,8 +56,8 @@ export default function init(ce)
         _layout_value.text(layout.bool_label(data.layout));
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
-        _description.show();
-        _description_value.text(data.description || '');
+        _intro.show();
+        _intro_value.text(data.intro || '');
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -65,8 +65,8 @@ export default function init(ce)
       case 'FREETEXT': {
         _wording.show();
         _wording_value.text(data.wording || '');
-        _description.show();
-        _description_value.text(data.description || '');
+        _intro.show();
+        _intro_value.text(data.intro || '');
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -79,8 +79,8 @@ export default function init(ce)
         _layout_value.text(layout.select_label(data.layout));
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
-        _description.show();
-        _description_value.text(data.description || '');
+        _intro.show();
+        _intro_value.text(data.intro || '');
         _popup.show();
         _popup_value.text(data.popup || '');
         _options.show();

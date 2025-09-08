@@ -121,8 +121,8 @@ details.section summary span {
   font-weight:700;
 }
 
-.section div.section.feedback,
-.section div.section.description
+.section div.section.intro,
+.section div.section.feedback
 {
   background:none;
   border:none;
@@ -134,12 +134,12 @@ details.section summary span {
   padding: 1rem 0.5rem;
 }
 
-.section div.section.description {
+.section div.section.intro {
   margin: 0 1em 1em 1em;
   padding: 0;
 }
 
-.section div.section.description .markdown p
+.section div.section.intro .markdown p
 {
   margin:0;
   padding:0;
@@ -164,7 +164,7 @@ details.section summary span {
   position:relative;
 }
 
-#survey .section .question .description {
+#survey .section .question .intro {
   margin: 0.25em 0;
 }
 

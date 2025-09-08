@@ -74,7 +74,7 @@ class RenderEngine
     $sequence    = $section['sequence'];
     $name        = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
-    $description = $section['description'] ?? '';
+    $intro       = $section['intro'] ?? '';
     $feedback    = $section['feedback'] ?? false;
 
     $index = "data-section=$sequence";
@@ -90,9 +90,9 @@ class RenderEngine
       $closing_tag = "</div>";
     }
 
-    if($description) {
-      echo "<div class='section description' $index>";
-      echo MarkdownParser::parse($description);
+    if($intro) {
+      echo "<div class='section intro' $index>";
+      echo MarkdownParser::parse($intro);
       echo "</div>";
     }
 
@@ -166,20 +166,20 @@ class RenderEngine
 
   private function add_freetext($question)
   {
-    $id          = $question['id'];
-    $label       = $question['wording'];
-    $description = $question['description'] ?? '';
-    $popup       = $question['popup'] ?? '';
-    $indent      = ''; // for styling the input box
+    $id     = $question['id'];
+    $label  = $question['wording'];
+    $intro  = $question['intro'] ?? '';
+    $popup  = $question['popup'] ?? '';
+    $indent = ''; // for styling the input box
 
     $input_id = "question-input-$id";
     $hint_id  = "hint-toggle-$id";
 
     echo "<div class='freetext question' data-question=$id>";
     $indent = ''; // for styling the input box
-    if($description) {
-      $description = MarkdownParser::parse($description);
-      echo "<div class='description'>$description</div>";
+    if($intro) {
+      $intro = MarkdownParser::parse($intro);
+      echo "<div class='intro'>$intro</div>";
       $indent = 'indent';
     }
     echo "<div class='input $indent'>";
@@ -198,21 +198,21 @@ class RenderEngine
 
   private function add_bool($question)
   {
-    $id          = $question['id'];
-    $wording     = $question['wording'];
-    $layout      = strtolower($question['layout'] ?? 'left');
-    $description = $question['description'] ?? '';
-    $qualifier   = $question['qualifier'] ?? '';
-    $popup       = $question['popup'] ?? '';
+    $id        = $question['id'];
+    $wording   = $question['wording'];
+    $layout    = strtolower($question['layout'] ?? 'left');
+    $intro     = $question['intro'] ?? '';
+    $qualifier = $question['qualifier'] ?? '';
+    $popup     = $question['popup'] ?? '';
 
     $input_id     = "question-input-$id";
     $qualifier_id = "question-qualifier-$id";
     $hint_id      = "hint-toggle-$id";
 
     echo "<div class='bool question' data-question=$id>";
-    if($description) {
-      $description = MarkdownParser::parse($description);
-      echo "<div class='description'>$description</div>";
+    if($intro) {
+      $intro = MarkdownParser::parse($intro);
+      echo "<div class='intro'>$intro</div>";
     }
     echo "<div class='checkbox $layout'>";
     echo "<input id='$input_id' type='checkbox' name='$input_id'>";
@@ -236,12 +236,12 @@ class RenderEngine
 
   private function add_select($question,$multi)
   {
-    $id          = $question['id'];
-    $wording     = $question['wording'];
-    $description = $question['description'] ?? '';
-    $qualifier   = $question['qualifier'] ?? '';
-    $popup       = $question['popup'] ?? '';
-    $options     = $question['options'] ?? [];
+    $id        = $question['id'];
+    $wording   = $question['wording'];
+    $intro     = $question['intro'] ?? '';
+    $qualifier = $question['qualifier'] ?? '';
+    $popup     = $question['popup'] ?? '';
+    $options   = $question['options'] ?? [];
 
     $other_flag = $question['other_flag'] ?? false;
     $other_str  = $question['other_str'] ?? 'Other';
@@ -274,8 +274,8 @@ class RenderEngine
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
       echo "<div class='question-hint'>$popup</div>";
     }
-    if($description) {
-      echo "<div class='description'>$description</div>";
+    if($intro) {
+      echo "<div class='intro'>$intro</div>";
     }
     foreach($options as $option) {
       echo "<label>";
