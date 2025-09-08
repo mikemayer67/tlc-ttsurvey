@@ -76,7 +76,9 @@ $hints = [
       "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
     'popup' => (
       '<b>This field is optional.</b>  If provided, it provides the text that '.
-      'will appear in the popup hint associated with the question input fields. '),
+      'will appear in the popup hint associated with the question input fields. '.
+      'This text can be stylized uing markdown. '.
+      "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
   ],
 ];
 
@@ -98,7 +100,7 @@ $labels = [
     'other'       => 'Other',
     'qualifier'   => 'Qualifier',
     'info'        => 'Info',
-    'popup'       => 'Popup Hint',
+    'popup'       => 'Popup Info',
   ],
 ];
 

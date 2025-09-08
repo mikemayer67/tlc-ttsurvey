@@ -187,6 +187,7 @@ class RenderEngine
     echo "<textarea id='$input_id' type='text' name='$input_id'></textarea>";
     echo "</div>";
     if($popup) {
+      $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
@@ -224,6 +225,7 @@ class RenderEngine
       echo "</div>";
     }
     if($popup) {
+      $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
@@ -266,6 +268,7 @@ class RenderEngine
     echo "<fieldset class='$class'>";
     echo "<label for='$input_id' class='question'>$wording</label>";
     if($popup) {
+      $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
