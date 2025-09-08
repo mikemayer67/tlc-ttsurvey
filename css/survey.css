@@ -1,5 +1,5 @@
 * {
-  background-color:#dcb;
+  background-color:#f0e8e0;
 }
 
 em,i { font-style:italic; }
@@ -168,6 +168,29 @@ details.section summary span {
   #survey .section .question .qualifier textarea {
     width:40%;
   }
+}
+
+/****************************************
+ * info text
+ ****************************************/
+
+.section div.info.question
+{
+  background:none;
+  border:none;
+  box-shadow:none;
+  padding: 1rem 0.5rem;
+  font-size:110%;
+}
+
+.section div.info.question:first-child
+{
+  padding-top:0;
+}
+
+.section div.info.question *
+{
+  background:none;
 }
 
 /****************************************
