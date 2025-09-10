@@ -311,12 +311,28 @@ details.section summary span {
   column-gap:0.5em;
 }
 
+.select.question div.options .wrapper.lcol {
+  flex-direction:column;
+  align-items:start;
+}
+
+.select.question div.options .wrapper.rcol {
+  flex-direction:column;
+  align-items:end;
+}
+
 .select.question div.options .option {
   display:inline-flex;
   flex-direction:row-reverse;
   align-items:center;
   gap:0.25em;
 }
+
+.select.question div.options .wrapper.rcol .option {
+  flex-direction:row;
+  column-gap:0.5em;
+}
+
 
 .select.question div.options .wrapper .other {
   display:inline-flex;
@@ -334,20 +350,13 @@ details.section summary span {
   max-width:min(500px,75vw);
 }
 
-.select.question div.options .wrapper.lcol {
-  background:pink;
-}
-
 .select.question div.options .wrapper.lcol .other textarea {
   resize:both;
 }
 
-.select.question div.options .wrapper.rcol {
-  background:cyan;
-}
-
 .select.question div.options .wrapper.rcol .other textarea {
   resize:none;
+  width:6em;
 }
 
 
