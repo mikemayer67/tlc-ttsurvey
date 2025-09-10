@@ -280,6 +280,102 @@ details.section summary span {
 }
 
 /****************************************
+ * select
+ ****************************************/
+
+.select.question div.options:not(:first-child) {
+  margin-left:0.5em;
+  margin-top:0.25em;
+}
+
+.select.question div.options {
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+}
+
+.select.question div.options .wording {
+  font-weight:600;
+}
+
+.select.question div.options .wrapper {
+  display:inline-flex;
+  flex-direction:row;
+  align-items:center;
+  padding-left:.5em;
+  margin-bottom:0.25em;
+}
+
+.select.question div.options .wrapper.row {
+  flex-wrap:wrap;
+  column-gap:0.5em;
+}
+
+.select.question div.options .option {
+  display:inline-flex;
+  flex-direction:row-reverse;
+  align-items:center;
+  gap:0.25em;
+}
+
+.select.question div.options .wrapper .other {
+  display:inline-flex;
+  flex-direction:row;
+  align-items:center;
+  gap: 0.25rem;
+}
+
+.select.question div.options .wrapper .other textarea {
+  width:12em;
+}
+
+.select.question div.options .wrapper.row .other textarea {
+  resize:horizontal;
+  max-width:min(500px,75vw);
+}
+
+.select.question div.options .wrapper.lcol {
+  background:pink;
+}
+
+.select.question div.options .wrapper.lcol .other textarea {
+  resize:both;
+}
+
+.select.question div.options .wrapper.rcol {
+  background:cyan;
+}
+
+.select.question div.options .wrapper.rcol .other textarea {
+  resize:none;
+}
+
+
+
+@media (min-width:768px) { /* tablets and larger */
+  .select.question div.options:not(:first-child) {
+    margin-left:0.5em;
+  }
+  .select.question div.options .wrapper {
+    padding-left:1em;
+  }
+  .select.question div.options .wrapper.row {
+    column-gap:1em;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .select.question div.options:not(:first-child) {
+    margin-left:1em;
+  }
+  .select.question div.options .wrapper {
+    padding-left:2em;
+  }
+  .select.question div.options .wrapper.row {
+    column-gap:1.5em;
+  }
+}
+
+/****************************************
  * freetext
  ****************************************/
 

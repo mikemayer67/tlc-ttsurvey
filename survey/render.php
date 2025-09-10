@@ -20,9 +20,9 @@ require_once(app_file('survey/markdown.php'));
 class RenderEngine 
 {
   private $popup_icon = null;
-  private $sections  = null;
-  private $questions = null;
-  private $options   = null;
+  private $sections   = null;
+  private $questions  = null;
+  private $option_map = null;
 
   private $is_preview = false;
   private $preview_js = true;
@@ -34,9 +34,9 @@ class RenderEngine
 
     $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
 
-    $this->sections  = $content['sections'];
-    $this->questions = $content['questions'];
-    $this->options   = $content['options']; 
+    $this->sections   = $content['sections'];
+    $this->questions  = $content['questions'];
+    $this->option_map = $content['options']; 
   }
 
   public function render($userid=null)
@@ -200,37 +200,43 @@ class RenderEngine
   {
     $id        = $question['id'];
     $wording   = $question['wording'];
-    $layout    = strtolower($question['layout'] ?? 'left');
     $intro     = $question['intro'] ?? '';
+    $layout    = strtolower($question['layout'] ?? 'left');
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
 
-    $input_id     = "question-input-$id";
-    $qualifier_id = "question-qualifier-$id";
-    $hint_id      = "hint-toggle-$id";
-
     echo "<div class='bool question' data-question=$id>";
+
     if($intro) {
       $intro = MarkdownParser::parse($intro);
       echo "<div class='intro'>$intro</div>";
     }
+
+    $name     = "question-input-$id";
+    $input_id = $name;
+
     echo "<div class='checkbox $layout'>";
-    echo "<input id='$input_id' type='checkbox' name='$input_id'>";
+    echo "<input id='$input_id' type='checkbox' name='$name'>";
     echo "<label for='$input_id' class='question'>$wording</label>";
     echo "</div>";
+
     if($qualifier) {
+      $qualifier_id = "question-qualifier-$id";
       echo "<div class='qualifier'>";
       echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
       echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='optional' rows='1'></textarea>";
       echo "</div>";
     }
+
     if($popup) {
+      $hint_id = "hint-toggle-$id";
       $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
       echo "<div class='question-hint'>$popup</div>";
     }
+
     echo "</div>";
   }
 
@@ -239,6 +245,7 @@ class RenderEngine
     $id        = $question['id'];
     $wording   = $question['wording'];
     $intro     = $question['intro'] ?? '';
+    $layout    = strtolower($question['layout'] ?? 'row');
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
     $options   = $question['options'] ?? [];
@@ -251,10 +258,6 @@ class RenderEngine
       return;
     }
 
-    $input_id     = "question-input-$id";
-    $qualifier_id  = "question-qualifier-$id";
-    $hint_id      = "hint-toggle-$id";
-
     if($multi) {
       $input_id = "$input_id\[\]";
       $type = 'checkbox';
@@ -265,36 +268,53 @@ class RenderEngine
     }
 
     echo "<div class='question $class' data-question=$id>";
-    echo "<fieldset class='$class'>";
-    echo "<label for='$input_id' class='question'>$wording</label>";
+
+    if($intro) {
+      echo "<div class='intro'>$intro</div>";
+    }
+
+    $name = "question-input-$id";
+
+    echo "<div class='options'>";
+    echo "<div class='wording'>$wording</div>";
+    echo "<div class='wrapper $layout'>";
+    foreach($options as $option) {
+      $input_id = "$name-$option";
+      echo "<div class='option'>";
+      $option_str = $this->option_map[$option] ?? "option #$option";
+      echo "<label for='$input_id'>$option_str</label>";
+      echo "<input id='$input_id' type='$type' name='$name' value='$option'>";
+      echo "</div>";
+    }
+    if($other_flag) {
+      $input_id = "$name-has-other";
+      $other_id = "$name-other";
+      echo "<div class='option'>";
+      echo "<div class='other'>";
+      echo "<label for='$input_id'>$other_str</label>";
+      echo "<textarea id='$other_id' type='text' name='$other_id' rows='1'></textarea>";
+      echo "</div>";
+      echo "<input id='$input_id' type='$type' name='$name' value='0'>";
+      echo "</div>";
+    }
+    echo "</div>"; // option-wrapper
+    echo "</div>"; // options
+
+    if($qualifier) {
+      $qualifier_id  = "question-qualifier-$id";
+      echo "<div class='qualifier'>";
+      echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='optional' rows='1'></textarea>";
+      echo "</div>";
+    }
+
     if($popup) {
+      $hint_id       = "hint-toggle-$id";
       $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
       echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
       echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
       echo "<div class='question-hint'>$popup</div>";
-    }
-    if($intro) {
-      echo "<div class='intro'>$intro</div>";
-    }
-    foreach($options as $option) {
-      echo "<label>";
-      echo "<input id='$input_id' type='$type' name='$input_id' value='$option'>";
-      echo $option;
-      echo "</label>";
-    }
-    if($other_flag) {
-      $other_id = "question-input-other-$id";
-      echo "<label>";
-      echo "<input id='$input_id' type='$type' name='$input_id' value='0'>";
-      echo "<span class='other label'>$other_str:</span>";
-      echo "<input id='$other_id' type='text' name='$other_id'></input>";
-      echo "</label>";
-    }
-    echo "</fieldset>";
-    if($qualifier) {
-      echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id'></textarea>";
     }
 
     echo "</div>";
