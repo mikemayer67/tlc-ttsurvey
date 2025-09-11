@@ -291,10 +291,7 @@ class RenderEngine
       $other_id = "$name-other";
       echo "<div class='option'>";
       echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0'>";
-      echo "<div class='other'>";
-      echo "<label for='$input_id'>$other_str</label>";
-      echo "<textarea id='$other_id' name='$other_id' rows='1' placeholder='$other_str'></textarea>";
-      echo "</div>";
+      echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other_str'></textarea>";
       echo "</div>";
     }
     echo "</div>"; // option-wrapper

@@ -335,36 +335,33 @@ details.section summary span {
 }
 
 
-.select.question div.options .wrapper .other {
-  display:inline-flex;
-  flex-direction:row;
-  align-items:center;
-  gap: 0.25rem;
-}
-
-.select.question div.options .wrapper .other textarea {
+.select.question div.options .wrapper textarea.other {
   width:12em;
   pointer-events: none;
   background: var(--question-background);
+  margin:0 0.25em;
+  border-color:lightgray;
 }
 
-.select.question div.options .option input.has-other:checked ~ .other textarea {
+.select.question div.options .option input.has-other:checked ~ textarea.other {
   pointer-events: auto;
   background:white;
+  border-color:revert;
 }
 
-.select.question div.options .wrapper.row .other textarea {
+.select.question div.options .wrapper.row textarea.other {
   resize:horizontal;
   max-width:min(500px,75vw);
 }
 
-.select.question div.options .wrapper.lcol .other textarea {
+.select.question div.options .wrapper.lcol textarea.other {
   resize:both;
 }
 
-.select.question div.options .wrapper.rcol .other textarea {
+.select.question div.options .wrapper.rcol textarea.other {
   resize:none;
   width:6em;
+  text-align:right;
 }
 
 
