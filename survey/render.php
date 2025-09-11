@@ -184,7 +184,7 @@ class RenderEngine
     }
     echo "<div class='input $indent'>";
     echo "<label for='$input_id' class='question'>$label</label>";
-    echo "<textarea id='$input_id' type='text' name='$input_id'></textarea>";
+    echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'></textarea>";
     echo "</div>";
     if($popup) {
       $popup = MarkdownParser::parse($popup);
@@ -224,7 +224,7 @@ class RenderEngine
       $qualifier_id = "question-qualifier-$id";
       echo "<div class='qualifier'>";
       echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='optional' rows='1'></textarea>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'></textarea>";
       echo "</div>";
     }
 
@@ -280,21 +280,21 @@ class RenderEngine
     echo "<div class='wrapper $layout'>";
     foreach($options as $option) {
       $input_id = "$name-$option";
-      echo "<div class='option'>";
       $option_str = $this->option_map[$option] ?? "option #$option";
-      echo "<label for='$input_id'>$option_str</label>";
+      echo "<div class='option'>";
       echo "<input id='$input_id' type='$type' name='$name' value='$option'>";
+      echo "<label for='$input_id'>$option_str</label>";
       echo "</div>";
     }
     if($other_flag) {
       $input_id = "$name-has-other";
       $other_id = "$name-other";
       echo "<div class='option'>";
+      echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0'>";
       echo "<div class='other'>";
       echo "<label for='$input_id'>$other_str</label>";
-      echo "<textarea id='$other_id' type='text' name='$other_id' rows='1'></textarea>";
+      echo "<textarea id='$other_id' name='$other_id' rows='1' placeholder='$other_str'></textarea>";
       echo "</div>";
-      echo "<input id='$input_id' type='$type' name='$name' value='0'>";
       echo "</div>";
     }
     echo "</div>"; // option-wrapper
@@ -304,7 +304,7 @@ class RenderEngine
       $qualifier_id  = "question-qualifier-$id";
       echo "<div class='qualifier'>";
       echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='optional' rows='1'></textarea>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'></textarea>";
       echo "</div>";
     }
 

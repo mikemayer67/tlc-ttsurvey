@@ -324,13 +324,13 @@ details.section summary span {
 
 .select.question div.options .option {
   display:inline-flex;
-  flex-direction:row-reverse;
+  flex-direction:row;
   align-items:center;
   gap:0.25em;
 }
 
 .select.question div.options .wrapper.rcol .option {
-  flex-direction:row;
+  flex-direction:row-reverse;
   column-gap:0.5em;
 }
 
@@ -344,6 +344,13 @@ details.section summary span {
 
 .select.question div.options .wrapper .other textarea {
   width:12em;
+  pointer-events: none;
+  background: var(--question-background);
+}
+
+.select.question div.options .option input.has-other:checked ~ .other textarea {
+  pointer-events: auto;
+  background:white;
 }
 
 .select.question div.options .wrapper.row .other textarea {
