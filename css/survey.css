@@ -49,6 +49,7 @@ strong, b { font-weight:bold; }
 .section .question textarea {
   padding:0 0.5em;
   background: white;
+  min-height:calc(1rem + 0.5em);
 }
 
 
@@ -151,9 +152,9 @@ details.section summary span {
 }
 
 .section div.section.feedback textarea {
+  padding:0.25em 0.5em;
   background:white;
   width:100%;
-  padding:0.25em 0.5em;
 }
 
 /****************************************
