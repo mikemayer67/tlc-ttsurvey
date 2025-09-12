@@ -95,8 +95,11 @@ export default function init(ce,controller)
   function handle_change(e)
   {
     // this is for changes to non-<input> fields
-    const key      = $(this).data('key');
-    const value    = $(this).val();
+    const key   = $(this).data('key');
+    const type  = $(this).data('type');
+    let   value = $(this).val();
+
+    if( type === 'int' ) { value = parseInt(value,10); }
     handle_update(key,value);
   }
 

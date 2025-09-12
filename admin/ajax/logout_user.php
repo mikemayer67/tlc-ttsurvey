@@ -8,9 +8,13 @@ require_once(app_file('include/login.php'));
 
 validate_ajax_nonce('admin-navbar');
 
+start_ob_logging();
+
 log_info("Logging out Active User");
 
 logout_active_user();
+
+end_ob_logging();
 
 echo json_encode(['success'=>true]);
 die();

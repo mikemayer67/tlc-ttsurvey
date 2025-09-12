@@ -65,7 +65,13 @@ export default function init(ce)
     })
     .done( function(data,status,jqXHR) {
       if (data.success) {
-        _surveys[id].content = data.content;
+        const content = data.content;
+        for( const [key,value] of Object.entries(content) ) {
+          if( Array.isArray(value) && value.length===0 ) {
+            content[key] = {};
+          }
+        }
+        _surveys[id].content = content;
         $(document).trigger('ContentDataLoaded',[id,data.content]);
       }
       else if( 'bad_nonce' in data ) {

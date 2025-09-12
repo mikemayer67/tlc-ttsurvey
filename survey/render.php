@@ -29,6 +29,7 @@ class RenderEngine
 
   function __construct($content, $kwargs=[])
   {
+    log_dev("content: ".print_r($content,true));
     $this->is_preview = $kwargs['is_preview'] ?? false; 
     $this->preview_js = $kwargs['preview_js'] ?? true;
 
@@ -159,9 +160,8 @@ class RenderEngine
     $id   = $question['id'];
     $info = $question['info'] ?? '';
 
-    echo "<div class='info question' data-question=$id>";
-    echo MarkdownParser::parse($info);
-    echo "</div>";
+    $info = MarkdownParser::parse($info);
+    echo "<div class='info question' data-question=$id>$info</div>";
   }
 
   private function add_freetext($question)

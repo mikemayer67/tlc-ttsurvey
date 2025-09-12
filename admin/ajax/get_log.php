@@ -7,7 +7,7 @@ require_once(app_file('include/logger.php'));
 
 validate_ajax_nonce('admin-log');
 
-handle_warnings();
+start_ob_logging();
 
 $level = $_POST['level'] ?? 2;
 $lines = $_POST['lines'] ?? null;
@@ -49,6 +49,8 @@ if($fp) {
 if($lines) { 
   $rval = array_splice($rval,-1*$lines);
 }
+
+end_ob_logging();
 
 echo json_encode($rval);
 die();

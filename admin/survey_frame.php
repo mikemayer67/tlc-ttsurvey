@@ -188,12 +188,15 @@ function add_editor_select($scope, $key, $options, $kwargs=[])
   $hint = $hints[$scope][$key];
 
   $extra = $kwargs['extra_classes'] ?? '';
+  $type  = $kwargs['type'] ?? 'default';
 
   $name = "$scope-$key";
 
+  $data = "data-key='$key' data-type='$type'";
+
   echo "<div class='$key $extra label'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
-  echo "  <select class='$scope $key' name='$name' data-key='$key'>";
+  echo "  <select class='$scope $key' name='$name' $data>";
   foreach($options as [$value,$label]) {
     echo "    <option value=$value>$label</option>";
   }
@@ -306,7 +309,7 @@ echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('section','intro',['maxlen'=>512]);
-add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]]);
+add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]], ['type'=>'int']);
 add_editor_input('section','feedback',['maxlen'=>128]);
 echo "</div>";
 

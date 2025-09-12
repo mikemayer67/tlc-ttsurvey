@@ -157,3 +157,16 @@ function handle_warnings()
 {
   set_error_handler('tlc\tts\warning_handler',E_WARNING|E_NOTICE);
 }
+
+function start_ob_logging()
+{
+  handle_warnings();
+  ob_start();
+}
+
+function end_ob_logging()
+{
+  $warning = ob_get_contents();
+  if($warning) { log_warning("OB Warning: $warning"); }
+  ob_end_clean();
+}

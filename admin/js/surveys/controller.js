@@ -4,6 +4,7 @@ import section_viewer  from './views/section_viewer.js';
 import section_editor  from './views/section_editor.js';
 import question_viewer from './views/question_viewer.js';
 import question_editor from './views/question_editor.js';
+import layout_const    from './views/layout.js';
 
 import { deepCopy }    from '../utils.js';
 import setup_resizer   from '../resizer.js';
@@ -122,7 +123,9 @@ export default function init(ce)
       new_sid += 1;
       const old_sid      = s.section_id;
       const question_ids = s.question_ids;
-      rval.sections[new_sid] = _content.sections[old_sid];
+      const new_s = deepCopy( _content.sections[old_sid] );
+      new_s.sequence = new_sid;
+      rval.sections[new_sid] = new_s;
 
       let seq = 0;
       question_ids.forEach( (qid) => {
@@ -165,11 +168,17 @@ export default function init(ce)
   self.update_question_type = function(question_id,type,old_type) {
     const question = _content.questions[question_id];
     question['type'] = type;
-    if(type === 'SELECT_MULTI' || type == 'SELECT_ONE') {
+    if(type === 'SELECT_MULTI' || type === 'SELECT_ONE') {
+      question.layout = layout_const.select_default;
       question.options = [];
     }
+    else if (type === 'BOOL') {
+      question.layout = layout_const.bool_default;
+      delete question.options;
+    }
     else {
-      delete question.options
+      delete question.layout;
+      delete question.options;
     }
     _tree.update_question_type(question_id,type,old_type);
   }
@@ -179,7 +188,7 @@ export default function init(ce)
   self.add_new_section = function(where)
   {
     const new_section_id = _next_section_id++;
-    const new_section = { name:"", intro:"", collapsible:true, feedback:false };
+    const new_section = { name:"", intro:"", collapsible:1, feedback:false };
     const cur_highlight = _tree.cache_selection();
 
     _content.sections[ new_section_id ] = new_section;

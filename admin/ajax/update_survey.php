@@ -8,7 +8,7 @@ require_once(app_file('admin/surveys/update.php'));
 
 validate_ajax_nonce('admin-surveys');
 
-handle_warnings();
+start_ob_logging();
 
 use Exception;
 
@@ -46,7 +46,7 @@ try {
 }
 catch(Exception $e)
 {
-  log_dev("Something went wrong: ".str($e),0);
+  log_dev("Somthing went wrong in " . $e->getFile() . " on line " . $e->getLine() . ": " . $e->getMessage(), 0);
   $errid = bin2hex(random_bytes(3));
   $error = $e->getMessage();
   log_error("[$errid]: $error",0);
@@ -56,6 +56,8 @@ catch(Exception $e)
     'error'=>"Failed to update survey.  Please report error $errid to a tech admin",
   );
 }
+
+end_ob_logging();
 
 echo json_encode($rval);
 die();

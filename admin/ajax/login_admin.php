@@ -11,6 +11,8 @@ require_once(app_file('include/roles.php'));
 
 validate_ajax_nonce('admin-login');
 
+start_ob_logging();
+
 log_info("Logging in Admin");
 
 $userid   = adjust_user_input('userid',   $_POST['userid']   ?? '');
@@ -43,6 +45,8 @@ else
 {
   $rval = ['success'=>false, 'error'=>'Invalid userid/password'];
 }
+
+end_ob_logging();
 
 echo json_encode($rval);
 die();

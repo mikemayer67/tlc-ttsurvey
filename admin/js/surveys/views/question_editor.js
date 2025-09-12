@@ -231,9 +231,8 @@ export default function init(ce,controller)
   {
     const new_value     = $(this).val();
     const old_value     = controller.cur_question_data(_cur_id,'layout');
-    const default_value = _layout_value.data('default');
 
-    create_layout_undo(new_value,old_value,default_value);
+    create_layout_undo(new_value,old_value);
     ce.controller.update_question_data(_cur_id, 'layout', new_value);
     $(document).trigger('SurveyWasModified');
   }
@@ -289,9 +288,8 @@ export default function init(ce,controller)
     _popup.show();
 
     _layout_value.empty();
-    _layout_value.data('default',layout_const.bool_default);
     ['LEFT','RIGHT'].forEach( (key) => {
-      const label = layout_const.bool_label(key);
+      const label = layout_const.bool_label[key];
       const opt   = $('<option></option>').attr('value',key).text(label);
       _layout_value.append(opt);
     });
@@ -343,9 +341,8 @@ export default function init(ce,controller)
     _popup.show();
 
     _layout_value.empty();
-    _layout_value.data('default',layout_const.select_default);
     ['ROW','LCOL','RCOL'].forEach( (key) => {
-      const label = layout_const.select_label(key);
+      const label = layout_const.select_label[key];
       const opt   = $('<option></option>').attr('value',key).text(label);
       _layout_value.append(opt);
     });
@@ -772,14 +769,14 @@ export default function init(ce,controller)
     });
   }
 
-  function create_layout_undo(new_value, old_value, default_value)
+  function create_layout_undo(new_value, old_value)
   {
     const cur_undo = ce.undo_manager.head();
 
     const reverts_prior = ( cur_undo &&
       ( cur_undo.action === 'change-layout' ) &&
       ( cur_undo.question_id === _cur_id   ) && 
-      ( (cur_undo.old_value||default_value) === new_value )
+      ( cur_undo.old_value === new_value )
     );
 
     if( reverts_prior && (cur_undo?.reverts_prior) ) {
@@ -792,15 +789,11 @@ export default function init(ce,controller)
       question_id: _cur_id,
       new_value: new_value,
       old_value: old_value,
-      default_value: default_value,
       reverts_prior: reverts_prior,
       undo() {
         setTimeout(() => { 
-          // note that we need to be careful how we handle old_value if it was null
-          //   the <select> element doesn't know how to display null, so display default instead
-          //   but we do set the current value go back to null if that was the old value
           controller.select_question(this.question_id);
-          _layout_value.val(this.old_value||this.default_value);
+          _layout_value.val(this.old_value);
           controller.update_question_data(this.question_id,'layout',this.old_value);
           $(document).trigger('SurveyWasModified');
         }, 100);
@@ -809,7 +802,6 @@ export default function init(ce,controller)
         controller.select_question(this.question_id);
         setTimeout(() => { 
           controller.select_question(this.question_id);
-          // no need to worry about a null new_value as the <select> will never change to null
           _layout_value.val(this.new_value);
           controller.update_question_data(this.question_id,'layout',this.new_value);
 

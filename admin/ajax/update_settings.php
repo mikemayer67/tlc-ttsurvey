@@ -7,7 +7,7 @@ require_once(app_file('include/logger.php'));
 
 validate_ajax_nonce('admin-settings');
 
-handle_warnings();
+start_ob_logging();
 
 $settings = $_POST;
 unset($settings['nonce']);
@@ -25,6 +25,8 @@ if($errors) {
 }
 
 $response['nonce'] = gen_nonce('admin-settings');
+
+end_ob_logging();
 
 echo json_encode($response);
 die();

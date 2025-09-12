@@ -7,9 +7,13 @@ require_once(app_file('include/logger.php'));
 
 validate_ajax_nonce('admin-navbar');
 
+start_ob_logging();
+
 log_info("Logging out Admin");
 
 unset($_SESSION['admin-id']);
+
+end_ob_logging();
 
 echo json_encode(['success'=>true]);
 die();
