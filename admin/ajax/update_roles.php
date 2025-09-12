@@ -8,7 +8,7 @@ require_once(app_file('include/roles.php'));
 
 validate_ajax_nonce('admin-roles');
 
-handle_warnings();
+start_ob_logging();
 
 $roles = $_POST;
 unset($roles['ajax']);
@@ -37,6 +37,8 @@ foreach( $roles['add']??null as $add ) {
 }
 
 $response['nonce'] = gen_nonce('admin-roles');
+
+end_ob_logging();
 
 echo json_encode($response);
 die();

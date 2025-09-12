@@ -8,7 +8,7 @@ require_once(app_file('admin/surveys/create_new.php'));
 
 validate_ajax_nonce('admin-surveys');
 
-handle_warnings();
+start_ob_logging();
 
 $name = $_POST['name'] ?? null;
 if(!$name) {
@@ -28,6 +28,8 @@ if($new_id) {
 } else {
   $rval = array('success'=>false, 'error'=>$error);
 }
+
+end_ob_logging();
 
 echo json_encode($rval);
 die();

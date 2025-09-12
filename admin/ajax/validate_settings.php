@@ -8,7 +8,7 @@ require_once(app_file('include/settings.php'));
 
 validate_and_retain_nonce('admin-settings');
 
-handle_warnings();
+start_ob_logging();
 
 $settings = $_POST;
 unset($settings['ajax']);
@@ -20,6 +20,8 @@ $response = Settings::validate($settings);
 //   it shows success if empty
 //   it shows failure if not empty
 $response['success'] = count($response) == 0;
+
+end_ob_logging();
 
 echo json_encode($response);
 die();

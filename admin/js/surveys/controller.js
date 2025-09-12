@@ -122,7 +122,9 @@ export default function init(ce)
       new_sid += 1;
       const old_sid      = s.section_id;
       const question_ids = s.question_ids;
-      rval.sections[new_sid] = _content.sections[old_sid];
+      const new_s = deepCopy( _content.sections[old_sid] );
+      new_s.sequence = new_sid;
+      rval.sections[new_sid] = new_s;
 
       let seq = 0;
       question_ids.forEach( (qid) => {
