@@ -143,7 +143,7 @@ export default function init(ce,controller,editor)
     validate_options()
 
     const chips = _selected.children('.chip');
-    const new_indices = chips.map( (i,e) => { return Number($(e).data('id')); });
+    const new_indices = chips.map( (i,e) => { return Number($(e).data('id')); }).get();
     controller.update_question_data(_question_id, 'options', new_indices);
   }
 
