@@ -254,25 +254,12 @@ function add_options_entry($kwargs=[])
   $label = $labels['question']['options'];
   $hint  = $hints['question']['options'];
 
-  $tight = ($kwargs['tight'] ?? false) ? 'tight' : '';
-
-  echo "<div class='options label $tight'><span>$label:</span></div>";
-  echo "<div class='options value $tight'>";
-  echo "  <div class='options selected'></div>";
-  echo "  <span class='options error'></span>";
+  echo "<div class='options label'><span>$label:</span></div>";
+  echo "<div class='options value'>";
+  echo "  <div class='selected'></div>";
+  echo "  <span class='error'></span>";
+  echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
   echo "  <div class='hint'>$hint</div>";
-  echo "</div>";
-}
-
-function add_options_pool($kwargs=[])
-{
-  global $labels;
-
-  $tight = ($kwargs['tight'] ?? false) ? 'tight' : '';
-
-  echo "<div class='option pool label $tight'></div>"; // needed for flex alignment
-  echo "<div class='option pool $tight'>";
-  echo "  <button class='add option' type='button'>+</button>";
   echo "</div>";
 }
 
@@ -334,7 +321,6 @@ add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','intro',['maxlen'=>'512']);
 add_editor_select('question','layout',[]);
 add_options_entry();
-add_options_pool(['tight'=>true]);
 add_other_input(['maxlen'=>45]);
 add_editor_input('question','qualifier',['maxlen'=>45]);
 add_editor_textarea('question','popup',['maxlen'=>128, 'autoresize'=>true]);
