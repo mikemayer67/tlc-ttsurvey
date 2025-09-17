@@ -139,7 +139,6 @@ class Surveys
              m.question_seq  as sequence,
              wording.str     as wording,
              q.question_type as question_type,
-             q.multiple      as multiple,
              q.layout        as layout,
              q.other_flag    as other_flag,
              other.str       as other_str,
@@ -162,21 +161,21 @@ class Surveys
     if(!$rows) { return array(); }
   
     $q_fields = [
-      'INFO'     => ['section','sequence','wording'=>'infotag', 'info'],
-      'BOOL'     => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['section','sequence','wording', 'intro', 'info'=>'popup']
+      'INFO'         => ['section','sequence','wording'=>'infotag', 'info'],
+      'BOOL'         => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
+      'SELECT_MULTI' => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'SELECT_ONE'   => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'FREETEXT'     => ['section','sequence','wording', 'intro', 'info'=>'popup']
     ];
   
     $questions = array();
     foreach($rows as $row) {
       $id = $row['question_id'];
       $type = $row['question_type'];
-      $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
   
       $q = [ 
         'id'   => $id, 
-        'type' => $actual_type,
+        'type' => $type,
       ];
   
       foreach ($q_fields[$type] ?? [] as $from => $to)
@@ -217,10 +216,11 @@ class Surveys
     $exclude = array_keys($questions);
 
     $q_fields = [
-      'INFO'     => ['wording'=>'infotag', 'info'],
-      'BOOL'     => ['wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['wording', 'intro', 'info'=>'popup']
+      'INFO'         => ['wording'=>'infotag', 'info'],
+      'BOOL'         => ['wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
+      'SELECT_MULTI' => ['wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'SELECT_ONE'   => ['wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
+      'FREETEXT'     => ['wording', 'intro', 'info'=>'popup']
     ];
   
 
@@ -247,7 +247,6 @@ class Surveys
           SELECT q.question_id   as question_id,
                  wording.str     as wording,
                  q.question_type as question_type,
-                 q.multiple      as multiple,
                  q.layout        as layout,
                  q.other_flag    as other_flag,
                  other.str       as other_str,
@@ -267,10 +266,9 @@ class Surveys
         foreach(MySQLSelectRows($query,'i',$sid) as $row) {
           $qid  = $row['question_id'];
           $type = $row['question_type'];
-          $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
           $q = [
             'id'   => $qid,
-            'type' => $actual_type,
+            'type' => $type,
           ];
           foreach ($q_fields[$type] ?? [] as $from => $to)
           {
