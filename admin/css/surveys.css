@@ -647,11 +647,6 @@
   margin:1px 1px 0 0;
 }
 
-#editor-frame .grid.editor .options.tight,
-#editor-frame .grid.editor .option.pool.tight {
-  margin-top:-10px;
-}
-
 #editor-frame .grid.editor ul.options,
 #editor-frame .grid.viewer ul.options {
   margin:0;
@@ -703,7 +698,8 @@
 
 #editor-frame .grid.editor div.value input.section.error,
 #editor-frame .grid.editor div.value input.question.error,
-#editor-frame .grid.editor div.value textarea.question.error {
+#editor-frame .grid.editor div.value textarea.question.error
+{
   background:#ffe8e8;
 }
 
@@ -753,28 +749,80 @@
   position:relative;
 }
 
-#editor-frame .grid.editor div.options.selected {
+#editor-frame .grid.editor .textarea-wrapper {
+  position:relative;
+  width:100%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor div.value textarea {
+  resize: vertical;
+  background:white;
+  width:100%;
+}
+
+#editor-frame .grid.editor div.value textarea.auto-resize {
+  resize: none;
+  overflow-y: hidden;
+  height: auto;
+  min-height: 1.5em;
+}
+
+#editor-frame .grid.editor div.value select {
+  background:white;
+  width:fit-content;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count {
+  position:absolute;
+  right:10px;
+  bottom:5px;
+  background:none;
+  color:green;
+  font-size:85%;
+  font-style:italic;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.warning {
+  color:orange;
+}
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.danger {
+  color:red;
+}
+
+#editor-frame .grid.editor div.options.value {
+  position:relative;
+}
+
+#editor-frame .grid.editor div.options.value .selected {
   min-height: 2em;
   background: white;
   border: solid 1px darkgray;
 }
 
-#editor-frame .grid.editor div.option.pool {
+#editor-frame .grid.editor div.options.value .selected.error {
+  background:#ffe8e8;
+}
+
+
+
+#editor-frame .grid.editor div.options.value .pool {
   min-height:2em;
 }
 
-#editor-frame .grid.editor .option.pool,
-#editor-frame .grid.editor .options.selected
+#editor-frame .grid.editor .options.value .selected,
+#editor-frame .grid.editor .options.value .pool
 {
   display:flex;
   flex-direction:row;
+  flex-wrap:wrap;
   padding: 2px 0.5em;
   column-gap: 2px;
   align-items:center;
 }
 
-#editor-frame .grid.editor .options div.chip,
-#editor-frame .grid.editor .option.pool div.chip {
+#editor-frame .grid.editor .options.value .chip 
+{
   background: white;
   border: solid 1px black;
   width: fit-content;
@@ -785,8 +833,8 @@
   position:relative;
 }
 
-#editor-frame .grid.editor .options .chip button,
-#editor-frame .grid.editor .option.pool .chip button {
+#editor-frame .grid.editor .options.value .chip button
+{
   border :none;
   padding: 0;
   margin-left: 4px;
@@ -795,11 +843,13 @@
   background:none;
 }
 
-#editor-frame .grid.editor .option.pool .chip button {
+#editor-frame .grid.editor .options.value .pool .chip button
+{
   display:none;
 }
 
-#editor-frame .grid.editor .option.pool button.add.option {
+#editor-frame .grid.editor .options.value .pool button.add 
+{
   padding: 0;
   width:1.25em;
   height:1.25em;

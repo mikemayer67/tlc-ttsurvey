@@ -1,6 +1,6 @@
-import Sortable from '../../../../js/sortable.esm.js';
 import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
 import layout_const from './layout.js';
+import option_controller from './options.js'
 
 function input_error(key,value) 
 {
@@ -57,49 +57,69 @@ export default function init(ce,controller)
 {
   const _box = $('#editor-frame div.grid.question.editor');
 
-  const _inputs             = _box.find('input');
-  const _textareas          = _box.find('textarea');
+  const _inputs          = _box.find('input');
+  const _textareas       = _box.find('textarea');
 
-  const _archive            = _box.children('.archive');
-  const _archive_select     = _archive.filter('.value').find('select');
+  const _archive         = _box.children('.archive');
+  const _archive_select  = _archive.filter('.value').find('select');
 
-  const _type               = _box.children('.type');
-  const _type_value         = _type.filter('.value').find('div.text');
-  const _type_select        = _type.filter('.value').find('select');
+  const _type            = _box.children('.type');
+  const _type_value      = _type.filter('.value').find('div.text');
+  const _type_select     = _type.filter('.value').find('select');
 
-  const _infotag             = _box.children('.infotag');
-  const _infotag_value       = _infotag.find('input');
+  const _infotag         = _box.children('.infotag');
+  const _infotag_value   = _infotag.find('input');
 
-  const _wording            = _box.children('.wording');
-  const _wording_value      = _wording.find('input');
+  const _wording         = _box.children('.wording');
+  const _wording_value   = _wording.find('input');
 
-  const _layout             = _box.children('.layout');
-  const _layout_value       = _layout.find('select');
+  const _layout          = _box.children('.layout');
+  const _layout_value    = _layout.find('select');
 
-  const _qualifier          = _box.children('.qualifier');
-  const _qualifier_value    = _qualifier.find('input');
+  const _qualifier       = _box.children('.qualifier');
+  const _qualifier_value = _qualifier.find('input');
 
-  const _intro              = _box.children('.intro');
-  const _intro_value        = _intro.find('textarea');
+  const _intro           = _box.children('.intro');
+  const _intro_value     = _intro.find('textarea');
 
-  const _info               = _box.children('.info');
-  const _info_value         = _info.find('textarea');
-  const _popup              = _box.children('.popup');
-  const _popup_value        = _popup.find('textarea');
+  const _info            = _box.children('.info');
+  const _info_value      = _info.find('textarea');
+  const _popup           = _box.children('.popup');
+  const _popup_value     = _popup.find('textarea');
 
-  const _options            = _box.children('.options');
-  const _options_selected   = _options.find('.selected');
-  const _option_pool        = _box.find('.option.pool');
+  const _other           = _box.children('.other');
+  const _other_flag      = _other.find('input.other_flag');
+  const _other_str       = _other.find('input.other_str');
 
-  const _other              = _box.children('.other');
-  const _other_flag         = _other.find('input.other_flag');
-  const _other_str          = _other.find('input.other_str');
-
-  const _hints              = _box.find('div.hint');
+  const _hints           = _box.find('div.hint');
 
   let _cur_id = null;  // This is the current question ID in the editor
+
   let _errors = {};
- 
+  function set_error(key,msg)
+  {
+    _errors[key] = msg;
+    controller.toggle_question_error(_cur_id,true);
+  }
+  function clear_error(key) {
+    delete _errors[key];
+    const has_error = Object.keys(_errors).length > 0;
+    controller.toggle_question_error(_cur_id,has_error);
+  }
+  function reset_errors() {
+    _errors = {}
+    controller.toggle_question_error(_cur_id,false);
+  }
+
+  const self = {
+    box: _box,
+    set_error:   set_error,
+    clear_error: clear_error,
+  };
+
+  const _options = option_controller(ce,controller,self);
+
+
   const _show_handlers = {
     INFO: show_info,
     BOOL: show_bool,
@@ -107,30 +127,6 @@ export default function init(ce,controller)
     SELECT_ONE: show_select_one,
     SELECT_MULTI: show_select_multi,
   };
-
-  const _options_selected_sorter = new Sortable( _options_selected[0], 
-    {
-      group: {
-        name:'options_selected', 
-        put:['option_pool','options_selected'],
-      },
-      animation: 150,
-      draggable: '.chip',
-      onEnd: handle_option_drag,
-    },
-  );
-  const _option_pool_sorter = new Sortable( _option_pool[1], 
-    {
-      group: {
-        name:'option_pool', 
-        put:false,
-      },
-      animation: 150,
-      draggable: '.chip',
-      sort: false,
-      onEnd: handle_option_drag,
-    },
-  );
 
   _textareas.on('input change', update_character_count);
 
@@ -204,16 +200,13 @@ export default function init(ce,controller)
     const input = _box.find('.question.'+key);
     if(error) {
       span.text(error);
-      _errors[key] = error;
       input.addClass('error');
+      set_error(key,error);
     } else {
       span.text('');
-      delete _errors[key];
       input.removeClass('error');
+      clear_error(key);
     }
-
-    const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_question_error(_cur_id,has_error);
   }
 
   function handle_checkbox(e)
@@ -240,7 +233,8 @@ export default function init(ce,controller)
   function show(id,data)
   {
     _cur_id = id;
-    _errors = {};
+
+    reset_errors();
 
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
@@ -371,7 +365,7 @@ export default function init(ce,controller)
     }
     validate_input('popup'      , popup);
 
-    show_options(data.options);
+    _options.show(data);
   }
 
   function show_select_multi(data)
@@ -404,183 +398,6 @@ export default function init(ce,controller)
     _type_value.hide();
     _type_select.val('').on('change',[id,data],handle_type).show();
   }
-
-  function show_options(data)
-  {
-    populate_options(data);
-    _options.show();
-    _option_pool.hide();
-  }
-
-  function populate_options(data)
-  {
-    _options_selected.empty();
-    const all_options = controller.all_options();
-    data.forEach( (id) => {
-      const label = all_options[id];
-      const chip = create_chip(id,label);
-      _options_selected.append(chip);
-    });
-    validate_options();
-  }
-
-  function update_options(options)
-  {
-    controller.update_question_data(_cur_id,'options',options); 
-    populate_options(options);
-    update_option_pools();
-    $(document).trigger('SurveyWasModified');
-  }
-
-  function validate_options()
-  {
-    const num_options = _options_selected.children().length;
-
-    const span = _options.find('.options.error');
-    if(num_options>0) {
-      delete _errors.options;
-      span.text('');
-    } else {
-      _errors.options = 'needs-selected-option';
-      span.text('missing');
-    }
-    
-    const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_question_error(_cur_id,has_error);
-  }
-
-  function create_chip(id,label) {
-    const chip = $("<div>").addClass('chip').data('id',id).attr('id',id);
-    const span = $("<span>").text(label);
-    const close = $("<button class='option' type='button'>x</button>");
-    return chip.append(span).append(close);
-  }
-
-  //
-  // option pool
-  //
-
-  _options.on('mousedown', '.selected,.pool', toggle_option_pool);
-  _options.on('click','.selected .chip button',handle_close_chip);
-  _options.on('dblclick','.chip',handle_edit_chip);
-
-  function toggle_option_pool(e) {
-    // We want to yield to SortableJS if the mouse down occured in a chip element.
-    if( $(e.target).closest('.chip').length > 0) { return; }
-    if( $(e.target).closest('.add.option').length > 0) { return; }
-
-    if(_option_pool.is(':visible')) {
-      _option_pool.hide();
-    } else {
-      populate_option_pool(_option_pool);
-      _option_pool.show();
-    }
-  }
-
-  function populate_option_pool(pool) {
-    const all_options = controller.all_options();
-
-    let in_use = selected_options();
-    in_use = in_use.map((x) => Number(x));
-    in_use = new Set(in_use);
-
-    const add_button = pool.find('button.add.option');
-    pool.find('.chip').remove();
-    Object.entries(all_options).forEach( ([id,label]) => {
-      if( ! in_use.has(Number(id)) ) {
-        create_chip(id,label).insertBefore(add_button);
-      }
-    });
-  }
-
-  function update_option_pools() {
-    if(_option_pool.is(':visible'))   { populate_option_pool(_option_pool);   }
-  }
-
-  function selected_options() {
-    const rval = [];
-    _options_selected.children('.chip').each( function(i) { 
-      const id = $(this).data('id');
-      rval.push(id);
-    });
-    return rval;
-  }
-
-  function handle_close_chip(e) {
-    const chip = $(this).closest('.chip');
-    chip.remove(); 
-    handle_option_change();
-  }
-
-  function handle_option_change() {
-    const old_options = controller.cur_question_data(_cur_id,'options');
-    const new_options = selected_options();
-    ce.undo_manager.add({
-      action:'option-change',
-      question_id:_cur_id,
-      undo() { 
-        controller.select_question(this.question_id);
-        setTimeout( function() { update_options(old_options) }, 100);
-      },
-      redo() { 
-        controller.select_question(this.question_id);
-        setTimeout( function() { update_options(new_options) }, 100);
-      },
-    });
-    
-    controller.update_question_data(_cur_id,'options',new_options); 
-    update_option_pools();
-    validate_options();
-    $(document).trigger('SurveyWasModified');
-  }
-
-  function handle_edit_chip(e) {
-    const chip = $(this).closest('.chip');
-    const span = chip.children('span');
-    const old_value = span.text();
-    const raw_value = prompt('Edit option',old_value);
-    if( raw_value === null ) { return; }
-
-    const chip_id = chip.data('id');
-
-    const new_value = raw_value.trim();
-    if(new_value && (old_value !== new_value)) {
-      function apply_edit_chip(value) {
-        const all_chips = _options.find('div.chip');
-        const chips = all_chips.filter('[id='+chip_id+']');
-        const spans = chips.children('span');
-        spans.text(value);
-        controller.update_option(chip_id,value);
-        update_option_pools();
-        $(document).trigger('SurveyWasModified');
-      }
-      ce.undo_manager.add_and_exec( {
-        action:'chip_edit',
-        question_id:_cur_id,
-        redo() { 
-          controller.select_question(this.question_id); 
-          setTimeout( function() {apply_edit_chip(new_value)}, 100)
-        },
-        undo() { 
-          controller.select_question(this.question_id);
-          setTimeout( function() {apply_edit_chip(old_value)}, 100);
-        },
-      });
-    }
-  }
-
-  function handle_option_drag(e) {
-    console.log('handle option drag');
-    handle_option_change();
-  }
-
-  _option_pool.find('button.add.option').on('click', function(e) {
-    const new_option = prompt('New option').trim();
-    if(new_option) {
-      const new_id = controller.add_option(new_option);
-      update_option_pools();
-    }
-  });
 
   //
   // New question handlers
