@@ -145,8 +145,7 @@ IF version < 1 THEN
     survey_id     smallint UNSIGNED NOT NULL,
     survey_rev    smallint UNSIGNED NOT NULL,
     wording_sid   smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
-    question_type ENUM('INFO','BOOL','OPTIONS','FREETEXT') NOT NULL ,
-    multiple      tinyint           DEFAULT NULL       COMMENT 'For OPTIONS type, multiple options can be selected',
+    question_type ENUM('INFO','BOOL','SELECT_ONE','SELECT_MULTI','FREETEXT') NOT NULL ,
     layout        ENUM('LEFT','RIGHT','ROW','LCOL','RCOL') DEFAULT NULL
                                                        COMMENT 'For OPTION types: ROW, LCOL, RCOL. For BOOL types: LEFT, RIGHT',
     other_flag    tinyint  UNSIGNED DEFAULT NULL       COMMENT 'For OPTIONS type, allow user to write in an "other" value',
@@ -165,11 +164,12 @@ IF version < 1 THEN
                 ON UPDATE RESTRICT ON DELETE CASCADE
   );
   -- Notes:
-  -- There are four Survey question types:
-  --    INFO      Not a question, exists to provide info to the survey participants.
-  --    BOOL      Yes/No type question (probably will be implemented as a checkbox)
-  --    OPTIONS   Multiple choice (option) questions.
-  --    FREETEXT  Question where the participant can provide a free form written respone
+  -- There are five Survey question types:
+  --    INFO         Not a question, exists to provide info to the survey participants.
+  --    BOOL         Yes/No type question (probably will be implemented as a checkbox)
+  --    SELECT_ONE   Multiple choice (option) questions, select one
+  --    SELECT_MULTI Multiple choice (option) questions, select multiple
+  --    FREETEXT     Question where the participant can provide a free form written respone
   -- For BOOL questions, layout specifies the order of the checkbox and label
   --    LEFT      checkbox appears before the question
   --    RIGHT     checkbox appears after the question
@@ -289,7 +289,6 @@ IF version < 1 THEN
   SELECT q.question_id, q.survey_id, q.survey_rev, 
     q.wording_sid,     wording.str     AS wording_str,
     q.question_type, 
-    q.multiple,
     q.layout,
     q.other_flag,
     q.other_sid,       other.str       AS other_str,
@@ -309,7 +308,7 @@ IF version < 1 THEN
   LEFT JOIN tlc_tt_strings text ON o.text_sid = text.string_id;
 
   CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
-  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, qo.sequence, qo.option_id, os.str AS option_str, q.multiple
+  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, qo.sequence, qo.option_id, os.str AS option_str, q.question_type
   FROM tlc_tt_survey_questions q
   LEFT JOIN tlc_tt_question_options qo on qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
   LEFT JOIN tlc_tt_survey_options so on so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
