@@ -314,7 +314,7 @@ IF version < 1 THEN
   LEFT JOIN tlc_tt_survey_options so on so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
   LEFT JOIN tlc_tt_strings w on w.string_id = q.wording_sid
   LEFT JOIN tlc_tt_strings os on os.string_id = so.text_sid
-  WHERE q.question_type = 'OPTIONS';
+  WHERE q.question_type like 'SELECT%';
 
 
 -- Add version 1 to the history and increment current version

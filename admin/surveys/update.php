@@ -157,9 +157,9 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
   $insert = <<<SQL
     INSERT into tlc_tt_survey_questions
            (question_id, survey_id, survey_rev,
-            wording_sid,question_type,layout,
-            other_flag,other_sid,qualifier_sid,intro_sid,info_sid)
-    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?)
+            wording_sid,question_type,question_flags,
+            other_sid,qualifier_sid,intro_sid,info_sid)
+    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -175,17 +175,28 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $other_flag  = $question['other_flag'] ?? null;
     $other_str   = ($other_flag ? ($question['other_str'] ?? null) : null);
 
+    # encode the question_flags bitmap
+    $question_flags = 0;
     if(str_starts_with($type,'SELECT') || $type == 'BOOL') {
-      $layout = $question['layout'];
-    } else {
-      $layout = null;
+      # bit 0 = alignment (left=0, right=1)
+      # bit 1 = orientation (row=0, column=1)
+      switch($question['layout']) {
+        case 'RIGHT': $question_flags += 1; break;
+        case 'LCOL':  $question_flags += 2; break;
+        case 'RCOL':  $question_flags += 3; break;
+        default: break;
+      }
+    }
+    if(str_starts_with($type,'SELECT')) {
+      # bit 2 = other_flag
+      if($other_flag) { $question_type += 4; }
     }
 
     $rc = MySQLExecute(
-      $insert, 'iisisiiiii',
+      $insert, 'iisiiiii',
       $question_id,
       strings_find_or_create($wording),
-      $type, $layout, $other_flag,
+      $type, $question_flags,
       strings_find_or_create($other_str),
       strings_find_or_create($qualifier),
       strings_find_or_create($intro),
