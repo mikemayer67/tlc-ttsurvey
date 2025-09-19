@@ -272,10 +272,10 @@ function add_other_input($wargs=[])
   $hint  = $hints['question']['other'];
 
   echo "<div class='other label'><span>$label:</span></div>";
-  echo "<div class='other other_str other_flag value'>";
+  echo "<div class='other other_flag value'>";
   echo "  <div class='wrapper'>";
   echo "    <input class='question other_flag' type='checkbox' data-key='other_flag'>";
-  echo "    <input class='question other_str' type='text' data-key='other_str' placeholder='Other' maxlength=25>";
+  echo "    <input class='question other' type='text' data-key='other' placeholder='Other' maxlength=25>";
   echo "    <span class='error'></span>";
   echo "  </div>";
   echo "  <div class='hint'>$hint</div>";

@@ -96,7 +96,7 @@ export default function init(ce)
         }
 
         if(data.other_flag) {
-          if(data.other_str) {
+          if(data.other) {
             _other_value.text('Enabled  [label: "' + data.other + '"]');
           } else {
             _other_value.text('Enabled  [default label]');

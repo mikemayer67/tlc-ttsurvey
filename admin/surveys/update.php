@@ -173,7 +173,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $info        = $question['info'] ?? $question['popup'] ?? null;
 
     $other_flag  = $question['other_flag'] ?? null;
-    $other_str   = ($other_flag ? ($question['other_str'] ?? null) : null);
+    $other       = ($other_flag ? ($question['other'] ?? null) : null);
 
     # encode the question_flags bitmap
     $question_flags = 0;
@@ -192,14 +192,12 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
       if($other_flag) { $question_flags += 4; }
     }
 
-    $other_sid = strings_find_or_create($other_str);
-
     $rc = MySQLExecute(
       $insert, 'iisiiiii',
       $question_id,
       strings_find_or_create($wording),
       $type, $question_flags,
-      strings_find_or_create($other_str),
+      strings_find_or_create($other),
       strings_find_or_create($qualifier),
       strings_find_or_create($intro),
       strings_find_or_create($info)

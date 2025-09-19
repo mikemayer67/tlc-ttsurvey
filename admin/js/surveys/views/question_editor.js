@@ -24,7 +24,7 @@ function input_error(key,value)
       break;
 
     case 'infotag':
-    case 'other_str':
+    case 'other':
       invalid_char_regex = common_invalid_regex;
       break;
 
@@ -89,7 +89,7 @@ export default function init(ce,controller)
 
   const _other           = _box.children('.other');
   const _other_flag      = _other.find('input.other_flag');
-  const _other_str       = _other.find('input.other_str');
+  const _other_value     = _other.find('input.other');
 
   const _hints           = _box.find('div.hint');
 
@@ -341,29 +341,29 @@ export default function init(ce,controller)
       _layout_value.append(opt);
     });
 
-    const wording     = data.wording || '';
-    const layout      = data.layout || layout_const.select_default;
-    const qualifier   = data.qualifier || '';
-    const intro       = data.intro || '';
-    const other_flag  = data.other_flag || false;
-    const other_str   = data.other || '';
-    const popup       = data.popup || '';
+    const wording    = data.wording || '';
+    const layout     = data.layout || layout_const.select_default;
+    const qualifier  = data.qualifier || '';
+    const intro      = data.intro || '';
+    const other_flag = data.other_flag || false;
+    const other      = data.other || '';
+    const popup      = data.popup || '';
 
     _wording_value.val(wording);
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
     _other_flag.prop('checked',other_flag);
-    _other_str.val(other_str);
+    _other_value.val(other);
     _popup_value.val(popup);
 
     validate_input('wording'    , wording);
     validate_input('qualifier'  , qualifier);
     validate_input('intro'      , intro);
-    if(other_flag) {
-      validate_input('other_str', other_str);
-    }
     validate_input('popup'      , popup);
+    if(other_flag) {
+      validate_input('other'    , other);
+    }
 
     _options.show(data);
   }

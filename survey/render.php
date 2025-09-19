@@ -251,7 +251,7 @@ class RenderEngine
     $options   = $question['options'] ?? [];
 
     $other_flag = $question['other_flag'] ?? false;
-    $other_str  = $question['other_str'] ?? 'Other';
+    $other      = $question['other'] ?? 'Other';
 
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
@@ -291,7 +291,7 @@ class RenderEngine
       $other_id = "$name-other";
       echo "<div class='option'>";
       echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0'>";
-      echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other_str'></textarea>";
+      echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'></textarea>";
       echo "</div>";
     }
     echo "</div>"; // option-wrapper

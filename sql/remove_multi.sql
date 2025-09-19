@@ -16,7 +16,7 @@ SELECT q.question_id, q.survey_id, q.survey_rev,
   q.question_type, 
   q.layout,
   q.other_flag,
-  q.other_sid,       other.str       AS other_str,
+  q.other_sid,       other.str       AS other,
   q.qualifier_sid,   qualifier.str   AS qualifier_str,
   q.intro_sid,       intro.str       AS intro_str,
   q.info_sid,        info.str        AS info_str
