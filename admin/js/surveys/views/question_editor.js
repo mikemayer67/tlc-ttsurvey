@@ -346,7 +346,7 @@ export default function init(ce,controller)
     const qualifier   = data.qualifier || '';
     const intro       = data.intro || '';
     const other_flag  = data.other_flag || false;
-    const other_str   = data.other_str || '';
+    const other_str   = data.other || '';
     const popup       = data.popup || '';
 
     _wording_value.val(wording);

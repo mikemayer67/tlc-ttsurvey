@@ -189,8 +189,10 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     }
     if(str_starts_with($type,'SELECT')) {
       # bit 2 = other_flag
-      if($other_flag) { $question_type += 4; }
+      if($other_flag) { $question_flags += 4; }
     }
+
+    $other_sid = strings_find_or_create($other_str);
 
     $rc = MySQLExecute(
       $insert, 'iisiiiii',

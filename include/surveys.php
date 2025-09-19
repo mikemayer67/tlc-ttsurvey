@@ -182,6 +182,7 @@ class Surveys
       foreach ($q_fields[$type] ?? [] as $from => $to)
       {
         if(is_int($from)) { $from = $to; } // straight copy from row to question
+        log_dev("Question $id, Set $to from $from, Value = ".$row[$from]);
         $q[$to] = $row[$from];
       }
 
@@ -198,12 +199,16 @@ class Surveys
         }
         # bit 2 = other_flag
         $q['other_flag'] = ($flags & 0x04) > 0;
+        log_dev("Adding SELECT values ($flags): ".$q['layout'].", ".$q['other_flag']);
       }
       elseif($type==='BOOL') {
         $flags = $row['flags'] ?? 0;
         # bit 0 = alignment (left=0, right=1)
         $q['layout'] = ($flags & 0x01) > 0 ? 'RIGHT' : 'LEFT';
+        log_dev("Adding BOOL values ($flags): ".$q['layout']);
       }
+
+      log_dev(  "q: ".print_r($q,true));
   
       $questions[$id] = $q;
     }
