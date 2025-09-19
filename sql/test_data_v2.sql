@@ -190,74 +190,74 @@ update tlc_tt_survey_sections set feedback_sid=6     where survey_id=2 and surve
 update tlc_tt_survey_sections set intro_sid=76 where survey_id=3 and survey_rev=2 and sequence=2;
 
 INSERT INTO tlc_tt_survey_questions 
-            (question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid) 
-     VALUES (  1, 1, 1, 27, 'INFO',            NULL, NULL, NULL, NULL, NULL,   69),              
-            (  2, 1, 1, 87, 'BOOL',          'LEFT', NULL, NULL,   81,   11,   68),              
-            (  3, 1, 1, 59, 'SELECT_ONE',     'ROW',    1,   38,    5,   41,   68),              
-            (  4, 1, 1, 60, 'SELECT_ONE',    'LCOL',    0, NULL,    5,   42,   68),              
-            (  5, 1, 1, 35, 'SELECT_MULTI',  'RCOL',    1, NULL,    5,   43,   68),              
-            (  6, 1, 1, 36, 'SELECT_MULTI',    NULL,    0, NULL,    5,   44,   68),              
-            (  7, 1, 1, 88, 'FREETEXT',        NULL, NULL, NULL, NULL,   79,   68),              
-            ( 68, 1, 1, 27, 'INFO',            NULL, NULL, NULL, NULL, NULL,   69),              
-            ( 69, 1, 1, 87, 'BOOL',         'RIGHT', NULL, NULL,   81,   11,   68),              
-            (114, 3, 1,  8, 'SELECT_ONE',    'LCOL',    1, NULL,   21, NULL, NULL),              
-            (115, 3, 1, 15, 'SELECT_ONE',    'LCOL',    1,   38, NULL, NULL, NULL),              
-            (116, 3, 1, 46, 'BOOL',          'LEFT', NULL, NULL, NULL,   48, NULL),              
-            (117, 3, 1, 22, 'SELECT_ONE',     'ROW',    0, NULL, NULL,   73,    3),              
-            (117, 3, 2, 22, 'SELECT_ONE',     'ROW',    0, NULL, NULL,   74, NULL),              
-            (118, 3, 2, 28, 'SELECT_ONE',     'ROW',    0, NULL, NULL,   72,   50),              
-            (119, 3, 1, 33, 'SELECT_ONE',     'ROW',    0, NULL, NULL, NULL, NULL),              
-            (119, 3, 2, 33, 'SELECT_ONE',     'ROW',    0, NULL, NULL, NULL, NULL),              
-            (120, 3, 1, 37, 'FREETEXT',        NULL, NULL, NULL, NULL, NULL, NULL),              
-            (120, 3, 2, 37, 'FREETEXT',        NULL, NULL, NULL, NULL, NULL, NULL),              
-            (121, 4, 1, 82, 'BOOL',            NULL, NULL, NULL, NULL, NULL, NULL),              
-            (122, 4, 1, 83, 'BOOL',            NULL, NULL, NULL, NULL, NULL, NULL),              
-            (123, 4, 1, 17, 'BOOL',            NULL, NULL, NULL, NULL, NULL, NULL),              
-            (124, 4, 1, 25, 'BOOL',            NULL, NULL, NULL, NULL, NULL,   24),              
-            (125, 4, 1, 47, 'SELECT_ONE',      NULL,    0, NULL, NULL, NULL, NULL),              
-            (126, 4, 1, 17, 'BOOL',            NULL, NULL, NULL, NULL, NULL, NULL),              
-            (127, 4, 1,  1, 'BOOL',            NULL, NULL, NULL,   29, NULL, NULL),              
-            (128, 4, 1, 62, 'SELECT_ONE',      NULL,    0, NULL, NULL, NULL, NULL),              
-            (129, 4, 1, 78, 'FREETEXT',        NULL, NULL, NULL, NULL, NULL, NULL),              
-            (130, 4, 1, 26, 'SELECT_ONE',      NULL,    1,   38,    7, NULL, NULL),              
-            (131, 4, 1, 86, 'FREETEXT',        NULL, NULL, NULL, NULL, NULL, NULL),              
-            (132, 4, 1, 85, 'FREETEXT',        NULL, NULL, NULL, NULL, NULL, NULL),              
-            (133, 4, 1, 18, 'FREETEXT',        NULL, NULL, NULL, NULL,   34, NULL);
+            (question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid) 
+     VALUES (  1, 1, 1, 27, 'INFO',         0,  NULL, NULL, NULL,   69),              
+            (  2, 1, 1, 87, 'BOOL',         0,  NULL,   81,   11,   68),              
+            (  3, 1, 1, 59, 'SELECT_ONE',   4,  NULL,    5,   41,   68),              
+            (  4, 1, 1, 60, 'SELECT_ONE',   2,  NULL,    5,   42,   68),              
+            (  5, 1, 1, 35, 'SELECT_MULTI', 7,  NULL,    5,   43,   68),              
+            (  6, 1, 1, 36, 'SELECT_MULTI', 0,  NULL,    5,   44,   68),              
+            (  7, 1, 1, 88, 'FREETEXT',     0,  NULL, NULL,   79,   68),              
+            ( 68, 1, 1, 27, 'INFO',         0,  NULL, NULL, NULL,   69),              
+            ( 69, 1, 1, 87, 'BOOL',         1,  NULL,   81,   11,   68),              
+            (114, 3, 1,  8, 'SELECT_ONE',   6,  NULL,   21, NULL, NULL),              
+            (115, 3, 1, 15, 'SELECT_ONE',   6,  NULL, NULL, NULL, NULL),              
+            (116, 3, 1, 46, 'BOOL',         0,  NULL, NULL,   48, NULL),              
+            (117, 3, 1, 22, 'SELECT_ONE',   0,  NULL, NULL,   73,    3),              
+            (117, 3, 2, 22, 'SELECT_ONE',   0,  NULL, NULL,   74, NULL),              
+            (118, 3, 2, 28, 'SELECT_ONE',   0,  NULL, NULL,   72,   50),              
+            (119, 3, 1, 33, 'SELECT_ONE',   0,  NULL, NULL, NULL, NULL),              
+            (119, 3, 2, 33, 'SELECT_ONE',   0,  NULL, NULL, NULL, NULL),              
+            (120, 3, 1, 37, 'FREETEXT',     0,  NULL, NULL, NULL, NULL),              
+            (120, 3, 2, 37, 'FREETEXT',     0,  NULL, NULL, NULL, NULL),              
+            (121, 4, 1, 82, 'BOOL',         0,  NULL, NULL, NULL, NULL),              
+            (122, 4, 1, 83, 'BOOL',         0,  NULL, NULL, NULL, NULL),              
+            (123, 4, 1, 17, 'BOOL',         0,  NULL, NULL, NULL, NULL),              
+            (124, 4, 1, 25, 'BOOL',         0,  NULL, NULL, NULL,   24),              
+            (125, 4, 1, 47, 'SELECT_ONE',   0,  NULL, NULL, NULL, NULL),              
+            (126, 4, 1, 17, 'BOOL',         0,  NULL, NULL, NULL, NULL),              
+            (127, 4, 1,  1, 'BOOL',         0,  NULL,   29, NULL, NULL),              
+            (128, 4, 1, 62, 'SELECT_ONE',   0,  NULL, NULL, NULL, NULL),              
+            (129, 4, 1, 78, 'FREETEXT',     0,  NULL, NULL, NULL, NULL),              
+            (130, 4, 1, 26, 'SELECT_ONE',   4,  NULL,    7, NULL, NULL),              
+            (131, 4, 1, 86, 'FREETEXT',     0,  NULL, NULL, NULL, NULL),              
+            (132, 4, 1, 85, 'FREETEXT',     0,  NULL, NULL, NULL, NULL),              
+            (133, 4, 1, 18, 'FREETEXT',     0,  NULL, NULL,   34, NULL);
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, 2, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT question_id, 2, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=1;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid
+     SELECT  7+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 14+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id in (1,2) and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 21+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 28+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 35+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 42+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid 
+     SELECT 49+question_id, survey_id, survey_rev, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid 
        from tlc_tt_survey_questions where survey_id=2 and question_id < 8;
 
 INSERT INTO tlc_tt_survey_questions
-     SELECT question_id, survey_id, 2, wording_sid, question_type, layout, other_flag, other_sid, qualifier_sid, intro_sid, info_sid
+     SELECT question_id, survey_id, 2, wording_sid, question_type, question_flags, other_sid, qualifier_sid, intro_sid, info_sid
        from tlc_tt_survey_questions where survey_id=2 and survey_rev=1;
 
 UPDATE tlc_tt_survey_questions set wording_sid=98 where survey_id=2 and survey_rev=2 and question_id=68;
