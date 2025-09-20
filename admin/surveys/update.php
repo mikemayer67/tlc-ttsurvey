@@ -6,6 +6,7 @@ require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/strings.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/question_flags.php'));
 
 class FailedToUpdate extends \Exception {}
 
@@ -172,31 +173,20 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $intro       = $question['intro'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
 
-    $other_flag  = $question['other_flag'] ?? null;
+    $other_flag  = $question['other_flag'] ?? false;
     $other       = ($other_flag ? ($question['other'] ?? null) : null);
 
     # encode the question_flags bitmap
-    $question_flags = 0;
-    if(str_starts_with($type,'SELECT') || $type == 'BOOL') {
-      # bit 0 = alignment (left=0, right=1)
-      # bit 1 = orientation (row=0, column=1)
-      switch($question['layout']) {
-        case 'RIGHT': $question_flags += 1; break;
-        case 'LCOL':  $question_flags += 2; break;
-        case 'RCOL':  $question_flags += 3; break;
-        default: break;
-      }
-    }
-    if(str_starts_with($type,'SELECT')) {
-      # bit 2 = other_flag
-      if($other_flag) { $question_flags += 4; }
-    }
+    $flags = new QuestionFlags();
+    $flags->layout($type, $question['layout']??"");
+    $flags->has_other($other_flag);
+    $flags->grouped($question['grouped'] ?? false);
 
     $rc = MySQLExecute(
       $insert, 'iisiiiii',
       $question_id,
       strings_find_or_create($wording),
-      $type, $question_flags,
+      $type, $flags->get_bits(),
       strings_find_or_create($other),
       strings_find_or_create($qualifier),
       strings_find_or_create($intro),

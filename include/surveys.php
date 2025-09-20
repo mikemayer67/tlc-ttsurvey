@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/strings.php'));
+require_once(app_file('include/question_flags.php'));
 
 class Surveys
 {
@@ -182,34 +183,17 @@ class Surveys
       foreach ($q_fields[$type] ?? [] as $from => $to)
       {
         if(is_int($from)) { $from = $to; } // straight copy from row to question
-        log_dev("Question $id, Set $to from $from, Value = ".$row[$from]);
         $q[$to] = $row[$from];
       }
 
       # decode the question_flags bitmap
+      $flags = new QuestionFlags( $row['flags'] ?? 0 );
+      $q['grouped'] = $flags->grouped();
+      $q['layout']  = $flags->layout($type);
       if(str_starts_with($type,'SELECT')) {
-        $flags = $row['flags'] ?? 0;
-        # bit 0 = alignment (left=0, right=1)
-        # bit 1 = orientation (row=0, column=1)
-        switch($flags & 0x03) {
-          case 0:  $q['layout']='ROW';  break;
-          case 2:  $q['layout']='LCOL'; break;
-          case 3:  $q['layout']='RCOL'; break;
-          default: $q['layout']='ROW';  break;
-        }
-        # bit 2 = other_flag
-        $q['other_flag'] = ($flags & 0x04) > 0;
-        log_dev("Adding SELECT values ($flags): ".$q['layout'].", ".$q['other_flag']);
-      }
-      elseif($type==='BOOL') {
-        $flags = $row['flags'] ?? 0;
-        # bit 0 = alignment (left=0, right=1)
-        $q['layout'] = ($flags & 0x01) > 0 ? 'RIGHT' : 'LEFT';
-        log_dev("Adding BOOL values ($flags): ".$q['layout']);
+        $q['other_flag'] = $flags->has_other();
       }
 
-      log_dev(  "q: ".print_r($q,true));
-  
       $questions[$id] = $q;
     }
   
@@ -301,23 +285,11 @@ class Surveys
           }
 
           # decode the question_flags bitmap
+          $flags = new QuestionFlags( $row['flags'] ?? 0 );
+          $q['grouped'] = $flags->grouped();
+          $q['layout']  = $flags->layout($type);
           if(str_starts_with($type,'SELECT')) {
-            $flags = $row['flags'] ?? 0;
-            # bit 0 = alignment (left=0, right=1)
-            # bit 1 = orientation (row=0, column=1)
-            switch($flags & 0x03) {
-              case 0:  $q['layout']='ROW';  break;
-              case 2:  $q['layout']='LCOL'; break;
-              case 3:  $q['layout']='RCOL'; break;
-              default: $q['layout']='ROW';  break;
-            }
-            # bit 2 = other_flag
-            $q['other_flag'] = ($flags & 0x04) > 0;
-          }
-          elseif($type==='BOOL') {
-            $flags = $row['flags'] ?? 0;
-            # bit 0 = alignment (left=0, right=1)
-            $q['layout'] = ($flags & 0x01) > 0 ? 'RIGHT' : 'LEFT';
+            $q['other_flag'] = $flags->has_other();
           }
 
           $new_questions[$qid] = $q;
