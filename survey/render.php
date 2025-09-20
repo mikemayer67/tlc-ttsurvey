@@ -27,6 +27,8 @@ class RenderEngine
   private $is_preview = false;
   private $preview_js = true;
 
+  private $box_started = false;
+
   function __construct($content, $kwargs=[])
   {
     log_dev("content: ".print_r($content,true));
@@ -43,6 +45,8 @@ class RenderEngine
   public function render($userid=null)
   {
     todo("add survey form action");
+
+    $this->box_started = false;
 
     echo "<form id='survey'>";
     foreach($this->sections as $section) {
@@ -79,6 +83,8 @@ class RenderEngine
     $feedback    = $section['feedback'] ?? false;
 
     $index = "data-section=$sequence";
+
+    if($this->box_started) { echo "</div>"; }
 
     if($collapsible) {
       echo "<details class='section' $index>";
@@ -134,12 +140,17 @@ class RenderEngine
     foreach($questions as $question) {
       $this->add_question($question);
     }
+
+    # close the current question box (if open)
+    $this->close_box();
   }
 
 
   private function add_question($question)
   {
     $type = strtolower($question['type']);
+
+    $this->start_box($type,$question['grouped']);
 
     switch($type) {
     case 'info':         $this->add_info($question);         break;
@@ -152,6 +163,39 @@ class RenderEngine
       echo "<h2>$type</h2>";
       echo "<pre>".print_r($question,true),"</pre>";
       break;
+    }
+  }
+
+  private function start_box($type,$grouped)
+  {
+    $need_close = false;
+    $need_open  = false;
+
+    if($type === 'info') {
+      if($grouped) { $need_open  = true; }
+      else         { $need_close = true; }
+    } else {
+      $need_open  = true;
+      $need_close = !$grouped;
+    }
+
+    if($need_close) { $this->close_box(); }
+    if($need_open)  { $this->open_box(); }
+  }
+
+  private function open_box()
+  {
+    if( !$this->box_started ) { 
+      echo "<div class='question-box'>"; 
+      $this->box_started = true;
+    }
+  }
+
+  private function close_box()
+  {
+    if( $this->box_started ) {
+      echo "</div>"; 
+      $this->box_started = false;
     }
   }
 

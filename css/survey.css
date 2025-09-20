@@ -15,8 +15,7 @@ strong, b { font-weight:bold; }
   margin: 1rem 0.5rem 0 0.5rem;
 }
 
-.section div.question,
-.section div.section
+.section div.question-box
 {
   padding:0.5rem 1rem;
   background: var(--question-background);
@@ -24,6 +23,11 @@ strong, b { font-weight:bold; }
   border-radius: 8px;
   margin-top:5px;
   box-shadow: 0 2px 5px 0 rgba(0,0,0,.15),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.section div.question
+{
+  background: var(--question-background);
 }
 
 .section .question * {
@@ -203,9 +207,19 @@ details.section summary span {
   content: "";
   display: block;
   width: 100%;
-  height: 1px;           /* thickness of the line */
+  height: 1px;            /* thickness of the line */
   background-color: #ccc; /* line color */
-  margin-bottom: 1em;    /* space between line and div */
+  margin-bottom: 0.25em;  /* space between line and div */
+}
+
+#survey .section .question .question-hint::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;             /* thickness of the line */
+  background-color: #ccc;  /* line color */
+  margin-top: 0.25em;      /* space between div and line */
+  margin-bottom: 0.5em;    /* space below line           */
 }
 
 @media (min-width:768px) { /* tablets and larger */
