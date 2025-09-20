@@ -31,7 +31,6 @@ class RenderEngine
 
   function __construct($content, $kwargs=[])
   {
-    log_dev("content: ".print_r($content,true));
     $this->is_preview = $kwargs['is_preview'] ?? false; 
     $this->preview_js = $kwargs['preview_js'] ?? true;
 
@@ -172,11 +171,21 @@ class RenderEngine
     $need_open  = false;
 
     if($type === 'info') {
-      if($grouped) { $need_open  = true; }
-      else         { $need_close = true; }
+      switch($grouped) {
+      case "YES":   
+        $need_open = true;
+        break;
+      case "BOXED": 
+        $need_close = true;
+        $need_open  = true; 
+        break;
+      default:
+        $need_close = true;
+        break;
+      }
     } else {
       $need_open  = true;
-      $need_close = !$grouped;
+      $need_close = $grouped === "NO";
     }
 
     if($need_close) { $this->close_box(); }

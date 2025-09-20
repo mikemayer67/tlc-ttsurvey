@@ -357,12 +357,14 @@ IF current_version < 2 THEN
   SELECT q.question_id, q.survey_id, q.survey_rev, 
     q.wording_sid,     wording.str     AS wording_str,
     q.question_type, 
-    CASE WHEN (q.question_flags & 1) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
-    CASE WHEN (q.question_flags & 2) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
-    CASE WHEN q.question_type not like 'SELECT%' THEN NULL
-         WHEN (q.question_flags & 4) > 0 THEN 'YES'
+    CASE WHEN (q.question_flags & 0x01) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
+    CASE WHEN (q.question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
+    CASE WHEN (q.question_flags & 0x08) > 0 THEN 'YES' 
+         WHEN (q.question_flags & 0x10) > 0 THEN 'BOXED' 
          ELSE 'NO'
-         END AS has_other,
+         END AS grouped,
+    CASE WHEN q.question_type not like 'SELECT%' THEN NULL
+         WHEN (q.question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
     q.other_sid,       other.str       AS other_str,
     q.qualifier_sid,   qualifier.str   AS qualifier_str,
     q.intro_sid,       intro.str       AS intro_str,
@@ -374,17 +376,20 @@ IF current_version < 2 THEN
   LEFT JOIN tlc_tt_strings intro       ON q.intro_sid = intro.string_id
   LEFT JOIN tlc_tt_strings info        ON q.info_sid = info.string_id;
 
+  CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
+  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, 
+         qo.sequence, qo.option_id, os.str AS option_str, q.question_type
+  FROM tlc_tt_survey_questions q
+  LEFT JOIN tlc_tt_question_options qo 
+         ON qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
+  LEFT JOIN tlc_tt_survey_options so 
+         ON so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
+  LEFT JOIN tlc_tt_strings w ON w.string_id = q.wording_sid
+  LEFT JOIN tlc_tt_strings os ON os.string_id = so.text_sid
+  WHERE q.question_type like 'SELECT%';
+
   SET current_version = 2;
   INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Consolidated Question Flags");
-
-  CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
-  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, qo.sequence, qo.option_id, os.str AS option_str, q.question_type
-  FROM tlc_tt_survey_questions q
-  LEFT JOIN tlc_tt_question_options qo on qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
-  LEFT JOIN tlc_tt_survey_options so on so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
-  LEFT JOIN tlc_tt_strings w on w.string_id = q.wording_sid
-  LEFT JOIN tlc_tt_strings os on os.string_id = so.text_sid
-  WHERE q.question_type like 'SELECT%';
 
 END IF;
 

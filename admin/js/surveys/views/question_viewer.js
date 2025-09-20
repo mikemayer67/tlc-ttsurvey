@@ -51,7 +51,7 @@ export default function init(ce)
         _info.show();
         _info_value.text(data.info || '');
         _grouped.show();
-        _grouped_value.text( ui_config.grouped.info_label(data.grouped) );
+        _grouped_value.text( ui_config.grouped.info_label[data.grouped] );
         break;
       }
       case 'BOOL': {
@@ -64,7 +64,7 @@ export default function init(ce)
         _intro.show();
         _intro_value.text(data.intro || '');
         _grouped.show();
-        _grouped_value.text( ui_config.grouped.common_label(data.grouped) );
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -75,7 +75,7 @@ export default function init(ce)
         _intro.show();
         _intro_value.text(data.intro || '');
         _grouped.show();
-        _grouped_value.text( ui_config.grouped.common_label(data.grouped) );
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -91,7 +91,7 @@ export default function init(ce)
         _intro.show();
         _intro_value.text(data.intro || '');
         _grouped.show();
-        _grouped_value.text( ui_config.grouped.common_label(data.grouped) );
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         _options.show();

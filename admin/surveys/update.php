@@ -180,7 +180,7 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $flags = new QuestionFlags();
     $flags->layout($type, $question['layout']??"");
     $flags->has_other($other_flag);
-    $flags->grouped($question['grouped'] ?? false);
+    $flags->grouped($question['grouped'] ?? "NO");
 
     $rc = MySQLExecute(
       $insert, 'iisiiiii',

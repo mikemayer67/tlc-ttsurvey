@@ -14,8 +14,15 @@ export default
     select_default: 'ROW',
   },
   grouped: {
-    info_label(v)   { return v ? 'Display in question box' : 'Not displayed in question box'; },
-    common_label(v) { return v ? 'Group with previous' : 'Start new question box'; },
-    default_value: 0,
+    info_label: {
+      'YES':   'Group with previous',
+      'BOXED': 'Start question box',
+      'NO':    'Not in question box',
+    },
+    label: {
+      'YES': 'Group with previous',
+      'NO':  'Start question box',
+    },
+    default_value: 'NO',
   }
 };

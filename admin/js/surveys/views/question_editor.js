@@ -261,8 +261,8 @@ export default function init(ce,controller)
       _type_select.hide();
 
       _grouped_value.empty();
-      [0,1].forEach( (value) => {
-        const label = ui_config.grouped.common_label(value)
+      ["NO","YES"].forEach( (value) => {
+        const label = ui_config.grouped.label[value];
         const opt   = $('<option></option>').attr('value',value).text(label);
         _grouped_value.append(opt);
       });
@@ -283,11 +283,11 @@ export default function init(ce,controller)
 
     const infotag = data.infotag || '';
     const info    = data.info    || '';
-    const grouped = data.grouped || 0;
+    const grouped = data.grouped || 'NO';
 
     _grouped_value.empty();
-    [0,1].forEach( (value) => {
-      const label = ui_config.grouped.info_label(value)
+    ["NO","YES","BOXED"].forEach( (value) => {
+      const label = ui_config.grouped.info_label[value];
       const opt   = $('<option></option>').attr('value',value).text(label);
       _grouped_value.append(opt);
     });

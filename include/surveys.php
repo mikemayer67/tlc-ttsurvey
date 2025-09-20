@@ -188,7 +188,7 @@ class Surveys
 
       # decode the question_flags bitmap
       $flags = new QuestionFlags( $row['flags'] ?? 0 );
-      $q['grouped'] = $flags->grouped() ? 1 : 0;
+      $q['grouped'] = $flags->grouped();
       $q['layout']  = $flags->layout($type);
       if(str_starts_with($type,'SELECT')) {
         $q['other_flag'] = $flags->has_other() ? 1 : 0;
