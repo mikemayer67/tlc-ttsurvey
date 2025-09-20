@@ -54,6 +54,7 @@ $hints = [
       'It can be used to provide additional information (background, context, whatever...) about the question. '.
       'The text can be stylized using markdown. '.
       "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>" ),
+    'grouped' => 'This field controls how adjacent items (questons or info blocks) are grouped in the survey',
     'options' => (
       'For multiple choice questions, this is the list of options available to choose from. '.
       'There must be at least one option provided for the question to be valid.  Ideally, there '.
@@ -96,6 +97,7 @@ $labels = [
     'wording'     => 'Wording',
     'layout'      => 'Layout',
     'intro'       => 'Intro',
+    'grouped'     => 'Grouping',
     'options'     => 'Options',
     'other'       => 'Other',
     'qualifier'   => 'Qualifier',
@@ -319,6 +321,7 @@ add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','intro',['maxlen'=>'512']);
+add_editor_select('question','grouped',[]);
 add_editor_select('question','layout',[]);
 add_options_entry();
 add_other_input(['maxlen'=>45]);
@@ -333,6 +336,7 @@ echo "  <div class='grid question viewer'>";
 add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
 add_viewer_entry('question','intro');
+add_viewer_entry('question','grouped');
 add_viewer_entry('question','layout');
 add_viewer_entry('question','options');
 add_viewer_entry('question','other');

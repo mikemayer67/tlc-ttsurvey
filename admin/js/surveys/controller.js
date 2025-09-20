@@ -4,7 +4,7 @@ import section_viewer  from './views/section_viewer.js';
 import section_editor  from './views/section_editor.js';
 import question_viewer from './views/question_viewer.js';
 import question_editor from './views/question_editor.js';
-import layout_const    from './views/layout.js';
+import ui_config       from './views/ui_config.js';
 
 import { deepCopy }    from '../utils.js';
 import setup_resizer   from '../resizer.js';
@@ -169,17 +169,18 @@ export default function init(ce)
     const question = _content.questions[question_id];
     question['type'] = type;
     if(type === 'SELECT_MULTI' || type === 'SELECT_ONE') {
-      question.layout = layout_const.select_default;
+      question.layout = ui_config.layout.select_default;
       question.options = [];
     }
     else if (type === 'BOOL') {
-      question.layout = layout_const.bool_default;
+      question.layout = ui_config.layout.bool_default;
       delete question.options;
     }
     else {
       delete question.layout;
       delete question.options;
     }
+    question.grouped = ui_config.grouped.default_value;
     _tree.update_question_type(question_id,type,old_type);
   }
 

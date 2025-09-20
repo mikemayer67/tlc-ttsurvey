@@ -357,8 +357,8 @@ IF current_version < 2 THEN
   SELECT q.question_id, q.survey_id, q.survey_rev, 
     q.wording_sid,     wording.str     AS wording_str,
     q.question_type, 
-    CASE WHEN (q.question_flags & 1) > 0 THEN 'RIGHT' ELSE 'LEFT' END AS alignment,
-    CASE WHEN (q.question_flags & 2) > 0 THEN 'COL'   ELSE 'ROW'  END AS orientation,
+    CASE WHEN (q.question_flags & 1) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
+    CASE WHEN (q.question_flags & 2) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
     CASE WHEN q.question_type not like 'SELECT%' THEN NULL
          WHEN (q.question_flags & 4) > 0 THEN 'YES'
          ELSE 'NO'
