@@ -232,6 +232,7 @@ export default function init(ce)
       const new_question_id = _next_question_id++;
       const new_question = deepCopy( _content.questions[data.parent_id] );
       new_question.wording = null;
+      new_question.id = new_question_id;
       const cur_highlight = _tree.cache_selection();
 
       _content.questions[new_question_id] = new_question; 

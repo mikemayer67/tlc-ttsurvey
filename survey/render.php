@@ -27,7 +27,8 @@ class RenderEngine
   private $is_preview = false;
   private $preview_js = true;
 
-  private $box_started = false;
+  private $in_box = false;
+  private $in_grid = false;
   private $follows_info = false;
 
   function __construct($content, $kwargs=[])
@@ -46,7 +47,8 @@ class RenderEngine
   {
     todo("add survey form action");
 
-    $this->box_started = false;
+    $this->in_box = false;
+    $this->in_grid = false;
 
     echo "<form id='survey'>";
     foreach($this->sections as $section) {
@@ -84,7 +86,7 @@ class RenderEngine
 
     $index = "data-section=$sequence";
 
-    if($this->box_started) { echo "</div>"; }
+    if($this->in_box) { echo "</div>"; }
 
     if($collapsible) {
       echo "<details class='section' $index>";
@@ -135,6 +137,23 @@ class RenderEngine
     usort($questions, function($a,$b) {
       return $a['sequence'] <=> $b['sequence'];
     });
+
+    # determine which questions can be put into a grid
+    $prev = $questions[0];
+    $prev['grid'] = false;
+    $prev_can_grid = str_starts_with($prev['type'],"SELECT") && ($prev['grouped']==='YES');
+    for($i=1; $i<count($questions); ++$i) {
+      $cur = $questions[$i];
+      $cur_can_grid = str_starts_with($cur['type'],"SELECT") && ($cur['grouped']==='YES');
+      if( $prev_can_grid && $cur_can_grid ) {
+        $questions[$i-1]['grid'] = true;
+        $questions[$i]['grid'] = true;
+      } else {
+        $questions[$i]['grid'] = false;
+      }
+      $prev_can_grid = $cur_can_grid;
+      $prev = $cur;
+    }
 
     # add the questions to the survey form
     $this->follows_info = false;
@@ -196,19 +215,38 @@ class RenderEngine
 
   private function open_box()
   {
-    if( !$this->box_started ) { 
+    if( !$this->in_box ) { 
       $this->follows_info = false;
 
       echo "<div class='question-box'>"; 
-      $this->box_started = true;
+      $this->in_box = true;
     }
   }
 
   private function close_box()
   {
-    if( $this->box_started ) {
+    $this->close_grid();
+    if( $this->in_box ) {
       echo "</div>"; 
-      $this->box_started = false;
+      $this->in_box = false;
+    }
+  }
+
+  private function open_grid()
+  {
+    if( !$this->in_grid ) { 
+      $class = 'question select grid';
+      if($this->follows_info) { $class = "$class follows-info"; }
+      echo "<div class='$class'>"; 
+      $this->in_grid = true;
+    }
+  }
+
+  private function close_grid()
+  {
+    if( $this->in_grid) { 
+      echo "</div>";
+      $this->in_grid = false;
     }
   }
 
@@ -216,6 +254,8 @@ class RenderEngine
   {
     $id   = $question['id'];
     $info = $question['info'] ?? '';
+
+    $this->close_grid();
 
     $this->follows_info = true;
 
@@ -232,13 +272,13 @@ class RenderEngine
     $indent = ''; // for styling the input box
 
     $input_id = "question-input-$id";
-    $hint_id  = "hint-toggle-$id";
+
+    $this->close_grid();
 
     $class = 'freetext';
-
     if($this->follows_info) { $class = "$class follows-info"; }
-
     echo "<div class='question $class' data-question=$id>";
+
     $indent = ''; // for styling the input box
     if($intro) {
       $intro = MarkdownParser::parse($intro);
@@ -250,11 +290,13 @@ class RenderEngine
     echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'></textarea>";
     echo "</div>";
     if($popup) {
+      $hint_id  = "hint-$id";
+      $hintlock_id  = "hint-lock-$id";
       $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
-      echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
-      echo "<div class='question-hint'>$popup</div>";
+      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
+      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
+      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
     }
     echo "</div>";
   }
@@ -268,10 +310,10 @@ class RenderEngine
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
 
+    $this->close_grid();
+
     $class = 'bool';
-
     if($this->follows_info) { $class = "$class follows-info"; }
-
     echo "<div class='question $class' data-question=$id>";
 
     if($intro) {
@@ -296,12 +338,13 @@ class RenderEngine
     }
 
     if($popup) {
-      $hint_id = "hint-toggle-$id";
+      $hint_id = "hint-$id";
+      $hintlock_id = "hint-lock-$id";
       $popup = MarkdownParser::parse($popup);
       $icon = $this->popup_icon;
-      echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
-      echo "<div class='question-hint'>$popup</div>";
+      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
+      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
+      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
     }
 
     echo "</div>";
@@ -319,6 +362,8 @@ class RenderEngine
 
     $other_flag = $question['other_flag'] ?? false;
     $other      = $question['other'] ?? 'Other';
+    
+    $in_grid = $question['grid']??false;
 
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
@@ -333,9 +378,14 @@ class RenderEngine
       $class = 'select one';
     }
 
-    if($this->follows_info) { $class = "$class follows-info"; }
-
-    echo "<div class='question $class' data-question=$id>";
+    if($in_grid) {
+      $this->open_grid();
+    }
+    else {
+      $this->close_grid();
+      if($this->follows_info) { $class = "$class follows-info"; }
+      echo "<div class='question $class' data-question=$id>";
+    }
 
     if($intro) {
       echo "<div class='intro'>$intro</div>";
@@ -343,9 +393,10 @@ class RenderEngine
 
     $name = "question-input-$id";
 
-    echo "<div class='options'>";
-    echo "<div class='wording'>$wording</div>";
-    echo "<div class='wrapper $layout'>";
+    if(!$in_grid) { echo "<div class='options-box'>"; }
+
+    echo "<div class='options wording'>$wording</div>";
+    echo "<div class='options wrapper $layout'>";
     foreach($options as $option) {
       $input_id = "$name-$option";
       $option_str = $this->option_map[$option] ?? "option #$option";
@@ -362,8 +413,15 @@ class RenderEngine
       echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'></textarea>";
       echo "</div>";
     }
+    if($popup) {
+      $hint_id = "hint-$id";
+      $hintlock_id = "hint-lock-$id";
+      $icon = $this->popup_icon;
+      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
+    }
     echo "</div>"; // option-wrapper
-    echo "</div>"; // options
+
+    if(!$in_grid) { echo "</div>"; } // options
 
     if($qualifier) {
       $qualifier_id  = "question-qualifier-$id";
@@ -374,15 +432,12 @@ class RenderEngine
     }
 
     if($popup) {
-      $hint_id       = "hint-toggle-$id";
       $popup = MarkdownParser::parse($popup);
-      $icon = $this->popup_icon;
-      echo "<input id='$hint_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hint_id' class='hint-toggle'>$icon</label>";
-      echo "<div class='question-hint'>$popup</div>";
+      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
+      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
     }
 
-    echo "</div>";
+    if(!$in_grid) { echo "</div>"; }
   }
 };
 

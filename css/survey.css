@@ -173,7 +173,7 @@ details.section summary span {
   position:relative;
 }
 
-#survey .section .question-box .question.follows-info {
+#survey .section .question-box .follows-info {
   margin-left: 1em;
 }
 
@@ -201,9 +201,15 @@ details.section summary span {
 
 #survey .section .question .question-hint {
   width:fit-content;
-  margin:1em 1em 0 1em;
+  margin:0 1em 0 1em;
   padding:0.25em 1em;
-  border-radius:5px;
+}
+
+#survey .section .question.grid .question-hint {
+  margin:0;
+  padding:0;
+  grid-column: 1 / -1;
+  justify-self: center;
 }
 
 #survey .section .question .question-hint::before {
@@ -225,23 +231,27 @@ details.section summary span {
   margin-bottom: 0.5em;    /* space below line           */
 }
 
+#survey .section .question.grid .question-hint::after {
+  margin-bottom:0;
+}
+
 @media (min-width:768px) { /* tablets and larger */
   #survey .section .question .qualifier {
     margin: 0.25em auto 0 1em;
   }
-  #survey .section .question-box .question.follows-info {
+  #survey .section .question-box .follows-info {
     margin-left: 1.5em;
   }
 }
 
-@media (min-width:1024px) { /* tablets and larger */
+@media (min-width:1024px) { /* larger */
   #survey .section .question .qualifier {
     margin: 0.25em auto 0 2em;
   }
   #survey .section .question .qualifier textarea {
     width:40%;
   }
-  #survey .section .question-box .question.follows-info {
+  #survey .section .question-box .follows-info {
     margin-left: 2em;
   }
 }
@@ -272,6 +282,11 @@ details.section summary span {
 /****************************************
  * bool
  ****************************************/
+
+.bool.question {
+  margin-top:1em;
+  margin-bottom:1em;
+}
 
 .bool.question div.checkbox {
   display:inline-flex;
@@ -311,22 +326,46 @@ details.section summary span {
  * select
  ****************************************/
 
-.select.question div.options:not(:first-child) {
+#survey .select.grid {
+  display:grid;
+  grid-template-columns: 1fr;
+  margin:0.5em 0;
+}
+
+#survey .select.grid .wording {
+  justify-self:start;
+  grid-column: 1 / 2;
+}
+
+#survey .select.grid .intro {
+  justify-self:start;
+  grid-column: 1 / 2;
+  margin: 0.25em 1em 0 0;
+  font-style:italic;
+}
+
+#survey .select.grid .qualifier {
+  grid-column: 1 / 2;
+  margin: 0 0 1em 3em;
+}
+
+.select.question div.options-box:not(:first-child) {
   margin-left:0.5em;
   margin-top:0.25em;
 }
 
-.select.question div.options {
+.select.question div.options-box {
+  position:relative;
   display:flex;
   flex-direction:row;
   flex-wrap:wrap;
 }
 
-.select.question div.options .wording {
+.select.question .options.wording {
   font-weight:600;
 }
 
-.select.question div.options .wrapper {
+.select.question .options.wrapper {
   display:inline-flex;
   flex-direction:row;
   align-items:center;
@@ -334,35 +373,39 @@ details.section summary span {
   margin-bottom:0.25em;
 }
 
-.select.question div.options .wrapper.row {
+.select.question.grid .options.wrapper {
+  position:relative;
+}
+
+.select.question .options.wrapper.row {
   flex-wrap:wrap;
   column-gap:0.5em;
 }
 
-.select.question div.options .wrapper.lcol {
+.select.question .options.wrapper.lcol {
   flex-direction:column;
   align-items:start;
 }
 
-.select.question div.options .wrapper.rcol {
+.select.question .options.wrapper.rcol {
   flex-direction:column;
   align-items:end;
 }
 
-.select.question div.options .option {
+.select.question .options.wrapper .option {
   display:inline-flex;
   flex-direction:row;
   align-items:center;
   gap:0.25em;
 }
 
-.select.question div.options .wrapper.rcol .option {
+.select.question .options.wrapper.rcol .option {
   flex-direction:row-reverse;
   column-gap:0.5em;
 }
 
 
-.select.question div.options .wrapper textarea.other {
+.select.question .options.wrapper textarea.other {
   width:12em;
   pointer-events: none;
   background: var(--question-background);
@@ -370,48 +413,59 @@ details.section summary span {
   border-color:lightgray;
 }
 
-.select.question div.options .option input.has-other:checked ~ textarea.other {
+.select.question .options.wrapper .option input.has-other:checked ~ textarea.other {
   pointer-events: auto;
   background:white;
   border-color:revert;
 }
 
-.select.question div.options .wrapper.row textarea.other {
+.select.question .options.wrapper.row textarea.other {
   resize:horizontal;
   max-width:min(500px,75vw);
 }
 
-.select.question div.options .wrapper.lcol textarea.other {
+.select.question .options.wrapper.lcol textarea.other {
   resize:both;
 }
 
-.select.question div.options .wrapper.rcol textarea.other {
+.select.question .options.wrapper.rcol textarea.other {
   resize:none;
   width:6em;
   text-align:right;
 }
 
 
-
 @media (min-width:768px) { /* tablets and larger */
-  .select.question div.options:not(:first-child) {
+  .select.question div.options-box:not(:first-child) {
     margin-left:0.5em;
   }
-  .select.question div.options .wrapper {
+  .select.question .options.wrapper {
     padding-left:1em;
   }
-  .select.question div.options .wrapper.row {
+  .select.question .options.wrapper.row {
     column-gap:1em;
+  }
+  #survey .select.grid {
+    grid-template-columns: fit-content(50%) 1fr;
+  }
+  #survey .select.grid .wording {
+    justify-self:end;
+  }
+  #survey .select.grid .intro {
+    justify-self:end;
+  }
+  #survey .select.grid .qualifier {
+    grid-column: 2 / 3;
   }
 }
 @media (min-width:1024px) { /* tablets and larger */
-  .select.question div.options:not(:first-child) {
+  .select.question div.options-box:not(:first-child) {
     margin-left:1em;
   }
-  .select.question div.options .wrapper {
+  .select.question .options.wrapper {
     padding-left:2em;
   }
-  .select.question div.options .wrapper.row {
+  .select.question .options.wrapper.row {
     column-gap:1.5em;
   }
 }
@@ -419,6 +473,11 @@ details.section summary span {
 /****************************************
  * freetext
  ****************************************/
+
+.freetext.question {
+  margin-top:1em;
+  margin-bottom:1em;
+}
 
 .freetext.question div.input {
   display:flex;
@@ -471,7 +530,11 @@ label.hint-toggle {
   right:8px;
 }
 
-label.hint-toggle:hover ~ .question-hint,
+.options.wrapper label.hint-toggle {
+  top:2px;
+}
+
+.question-hint.hovering,
 input.hint-toggle:checked ~ .question-hint {
   display:block;
 }
