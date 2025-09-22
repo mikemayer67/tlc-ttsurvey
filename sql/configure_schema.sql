@@ -341,7 +341,7 @@ IF current_version < 2 THEN
   ALTER TABLE tlc_tt_survey_questions
   DROP COLUMN `multiple`;
   
-  ALTER TABLE tlc_tt.tlc_tt_survey_questions 
+  ALTER TABLE tlc_tt_survey_questions 
   ADD COLUMN question_flags INT NOT NULL DEFAULT 0 COMMENT 'See tlc_tt_view_survey_questions for details' AFTER layout;
   
   update tlc_tt_survey_questions set question_flags=1 where layout='RIGHT';
@@ -350,8 +350,8 @@ IF current_version < 2 THEN
 
   update tlc_tt_survey_questions set question_flags=4+question_flags where other_flag = 1;
   
-  ALTER TABLE tlc_tt.tlc_tt_survey_questions DROP COLUMN layout;
-  ALTER TABLE tlc_tt.tlc_tt_survey_questions DROP COLUMN other_flag;
+  ALTER TABLE tlc_tt_survey_questions DROP COLUMN layout;
+  ALTER TABLE tlc_tt_survey_questions DROP COLUMN other_flag;
   
   CREATE OR REPLACE VIEW tlc_tt_view_survey_questions AS
   SELECT q.question_id, q.survey_id, q.survey_rev, 

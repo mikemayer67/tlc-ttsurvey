@@ -28,6 +28,7 @@ class RenderEngine
   private $preview_js = true;
 
   private $box_started = false;
+  private $follows_info = false;
 
   function __construct($content, $kwargs=[])
   {
@@ -54,7 +55,7 @@ class RenderEngine
     $this->add_submit_bar();
     echo "</form>";
 
-    if($preview_js || !$is_preview) {
+    if($this->preview_js || !$this->is_preview) {
       echo "<script type='module' src='", js_uri('survey'), "'></script>";
     }
   }
@@ -136,6 +137,7 @@ class RenderEngine
     });
 
     # add the questions to the survey form
+    $this->follows_info = false;
     foreach($questions as $question) {
       $this->add_question($question);
     }
@@ -195,6 +197,8 @@ class RenderEngine
   private function open_box()
   {
     if( !$this->box_started ) { 
+      $this->follows_info = false;
+
       echo "<div class='question-box'>"; 
       $this->box_started = true;
     }
@@ -213,6 +217,8 @@ class RenderEngine
     $id   = $question['id'];
     $info = $question['info'] ?? '';
 
+    $this->follows_info = true;
+
     $info = MarkdownParser::parse($info);
     echo "<div class='info question' data-question=$id>$info</div>";
   }
@@ -228,7 +234,11 @@ class RenderEngine
     $input_id = "question-input-$id";
     $hint_id  = "hint-toggle-$id";
 
-    echo "<div class='freetext question' data-question=$id>";
+    $class = 'freetext';
+
+    if($this->follows_info) { $class = "$class follows-info"; }
+
+    echo "<div class='question $class' data-question=$id>";
     $indent = ''; // for styling the input box
     if($intro) {
       $intro = MarkdownParser::parse($intro);
@@ -258,7 +268,11 @@ class RenderEngine
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
 
-    echo "<div class='bool question' data-question=$id>";
+    $class = 'bool';
+
+    if($this->follows_info) { $class = "$class follows-info"; }
+
+    echo "<div class='question $class' data-question=$id>";
 
     if($intro) {
       $intro = MarkdownParser::parse($intro);
@@ -312,13 +326,14 @@ class RenderEngine
     }
 
     if($multi) {
-      $input_id = "$input_id\[\]";
       $type = 'checkbox';
       $class = 'select multi';
     } else {
       $type = 'radio';
       $class = 'select one';
     }
+
+    if($this->follows_info) { $class = "$class follows-info"; }
 
     echo "<div class='question $class' data-question=$id>";
 

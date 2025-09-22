@@ -173,6 +173,10 @@ details.section summary span {
   position:relative;
 }
 
+#survey .section .question-box .question.follows-info {
+  margin-left: 1em;
+}
+
 #survey .section .question .intro {
   margin: 0.25em 0;
 }
@@ -186,7 +190,6 @@ details.section summary span {
 }
 
 #survey .section .question .qualifier label {
-  font-weight:600;
   width:fit-content;
   margin:0;
 }
@@ -226,6 +229,9 @@ details.section summary span {
   #survey .section .question .qualifier {
     margin: 0.25em auto 0 1em;
   }
+  #survey .section .question-box .question.follows-info {
+    margin-left: 1.5em;
+  }
 }
 
 @media (min-width:1024px) { /* tablets and larger */
@@ -234,6 +240,9 @@ details.section summary span {
   }
   #survey .section .question .qualifier textarea {
     width:40%;
+  }
+  #survey .section .question-box .question.follows-info {
+    margin-left: 2em;
   }
 }
 
