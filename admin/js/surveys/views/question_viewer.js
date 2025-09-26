@@ -1,4 +1,4 @@
-import layout from './layout.js';
+import ui_config from './ui_config.js';
 
 export default function init(ce)
 {
@@ -18,6 +18,9 @@ export default function init(ce)
 
   const _intro             = _box.children('.intro');
   const _intro_value       = _intro.find('div.text');
+
+  const _grouped           = _box.children('.grouped');
+  const _grouped_value     = _grouped.find('div.text');
 
   const _info              = _box.children('.info');
   const _info_value        = _info.find('div.text');
@@ -47,17 +50,21 @@ export default function init(ce)
       case 'INFO': {
         _info.show();
         _info_value.text(data.info || '');
+        _grouped.show();
+        _grouped_value.text( ui_config.grouped.info_label[data.grouped] );
         break;
       }
       case 'BOOL': {
         _wording.show();
         _wording_value.text(data.wording || '');
         _layout.show();
-        _layout_value.text(layout.bool_label(data.layout));
+        _layout_value.text(ui_config.layout.bool_label[data.layout]);
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
         _intro.show();
         _intro_value.text(data.intro || '');
+        _grouped.show();
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -67,6 +74,8 @@ export default function init(ce)
         _wording_value.text(data.wording || '');
         _intro.show();
         _intro_value.text(data.intro || '');
+        _grouped.show();
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -76,11 +85,13 @@ export default function init(ce)
         _wording.show();
         _wording_value.text(data.wording || '');
         _layout.show();
-        _layout_value.text(layout.select_label(data.layout));
+        _layout_value.text(ui_config.layout.select_label[data.layout]);
         _qualifier.show();
         _qualifier_value.text(data.qualifier || '');
         _intro.show();
         _intro_value.text(data.intro || '');
+        _grouped.show();
+        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         _options.show();
@@ -96,8 +107,8 @@ export default function init(ce)
         }
 
         if(data.other_flag) {
-          if(data.other_str) {
-            _other_value.text('Enabled  [label: "' + data.other_str + '"]');
+          if(data.other) {
+            _other_value.text('Enabled  [label: "' + data.other + '"]');
           } else {
             _other_value.text('Enabled  [default label]');
           }

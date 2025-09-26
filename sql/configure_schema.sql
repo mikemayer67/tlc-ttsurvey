@@ -58,8 +58,8 @@ CREATE PROCEDURE tlc_tt_upgrade_tables ()
 
 BEGIN
 
--- version keeps track of the current version throughout the procedure
-DECLARE version INT DEFAULT 0;
+-- current_version keeps track of the current version throughout the procedure
+DECLARE current_version INT DEFAULT 0;
 
 -- if the version table doesn't yet exist, create it
 CREATE TABLE IF NOT EXISTS tlc_tt_version_history (
@@ -70,12 +70,12 @@ CREATE TABLE IF NOT EXISTS tlc_tt_version_history (
     
 -- see if there are any rows in the table.
 -- if not, then we are at version 0 (initial table creation)
-SELECT IFNULL(MAX(version),0) INTO version FROM tlc_tt_version_history;
+SELECT IFNULL(MAX(version),0) INTO current_version FROM tlc_tt_version_history;
 
 --
 -- VERSION 1 --
 --
-IF version < 1 THEN
+IF current_version < 1 THEN
 -- This is the inital setup of the tlc-ttsurvey tables/views
 --
 -- None of the tables we're creating here should already exist.
@@ -319,9 +319,80 @@ IF version < 1 THEN
 
 
 -- Add version 1 to the history and increment current version
-  INSERT INTO tlc_tt_version_history (description) values ("Initial Setup");
-  SET version = 1;
+  SET current_version = 1;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Initial Setup");
 END IF;
+
+
+--
+-- VERSION 2 --
+--
+IF current_version < 2 THEN
+
+  ALTER TABLE tlc_tt_survey_questions
+  CHANGE COLUMN question_type question_type ENUM('INFO', 'BOOL', 'OPTIONS', 'FREETEXT', 'SELECT_MULTI', 'SELECT_ONE') NOT NULL ;
+   
+  UPDATE tlc_tt_survey_questions set question_type='SELECT_MULTI' where question_type = 'OPTIONS' and multiple=1;
+  UPDATE tlc_tt_survey_questions set question_type='SELECT_ONE' where question_type = 'OPTIONS' and ( multiple=0 or multiple is NULL);
+  
+  ALTER TABLE tlc_tt_survey_questions
+  CHANGE COLUMN question_type question_type ENUM('INFO', 'BOOL', 'FREETEXT', 'SELECT_MULTI', 'SELECT_ONE') NOT NULL ;
+  
+  ALTER TABLE tlc_tt_survey_questions
+  DROP COLUMN `multiple`;
+  
+  ALTER TABLE tlc_tt_survey_questions 
+  ADD COLUMN question_flags INT NOT NULL DEFAULT 0 COMMENT 'See tlc_tt_view_survey_questions for details' AFTER layout;
+  
+  update tlc_tt_survey_questions set question_flags=1 where layout='RIGHT';
+  update tlc_tt_survey_questions set question_flags=2 where layout='LCOL';
+  update tlc_tt_survey_questions set question_flags=3 where layout='RCOL';
+
+  update tlc_tt_survey_questions set question_flags=4+question_flags where other_flag = 1;
+  
+  ALTER TABLE tlc_tt_survey_questions DROP COLUMN layout;
+  ALTER TABLE tlc_tt_survey_questions DROP COLUMN other_flag;
+  
+  CREATE OR REPLACE VIEW tlc_tt_view_survey_questions AS
+  SELECT q.question_id, q.survey_id, q.survey_rev, 
+    q.wording_sid,     wording.str     AS wording_str,
+    q.question_type, 
+    CASE WHEN (q.question_flags & 0x01) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
+    CASE WHEN (q.question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
+    CASE WHEN (q.question_flags & 0x08) > 0 THEN 'YES' 
+         WHEN (q.question_flags & 0x10) > 0 THEN 'BOXED' 
+         ELSE 'NO'
+         END AS grouped,
+    CASE WHEN q.question_type not like 'SELECT%' THEN NULL
+         WHEN (q.question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
+    q.other_sid,       other.str       AS other_str,
+    q.qualifier_sid,   qualifier.str   AS qualifier_str,
+    q.intro_sid,       intro.str       AS intro_str,
+    q.info_sid,        info.str        AS info_str
+  FROM tlc_tt_survey_questions q
+  LEFT JOIN tlc_tt_strings wording     ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tt_strings other       ON q.other_sid = other.string_id
+  LEFT JOIN tlc_tt_strings qualifier   ON q.qualifier_sid = qualifier.string_id
+  LEFT JOIN tlc_tt_strings intro       ON q.intro_sid = intro.string_id
+  LEFT JOIN tlc_tt_strings info        ON q.info_sid = info.string_id;
+
+  CREATE OR REPLACE VIEW tlc_tt_view_question_options AS
+  SELECT q.survey_id,q.survey_rev,q.question_id, w.str AS wording, 
+         qo.sequence, qo.option_id, os.str AS option_str, q.question_type
+  FROM tlc_tt_survey_questions q
+  LEFT JOIN tlc_tt_question_options qo 
+         ON qo.question_id=q.question_id and qo.survey_id=q.survey_id and qo.survey_rev = q.survey_rev
+  LEFT JOIN tlc_tt_survey_options so 
+         ON so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
+  LEFT JOIN tlc_tt_strings w ON w.string_id = q.wording_sid
+  LEFT JOIN tlc_tt_strings os ON os.string_id = so.text_sid
+  WHERE q.question_type like 'SELECT%';
+
+  SET current_version = 2;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Consolidated Question Flags");
+
+END IF;
+
 
 -- The following is a template for new versions
 --   Copy it and place above this line and remove all leading '-- '
@@ -330,12 +401,12 @@ END IF;
 -- --
 -- -- VERSION # --
 -- --
--- IF version < # THEN
--- -- Nothing yet... this is simply a template for adding version 2
+-- IF current_version < # THEN
+-- -- Nothing yet... this is simply a template for adding next version
 --
 -- -- Add version # to the history and increment current version
---   INSERT INTO tlc_tt_version_history (description) values ("Test Increment");
---   SET version = #;
+--   SET current_version = #;
+--   INSERT INTO tlc_tt_version_history (version,description) values (current_version,"<Your Description Here>");
 -- END IF;
 
 END//

@@ -1,11 +1,13 @@
+drop view if exists tlc_tt_active_roles;
+drop view if exists tlc_tt_active_surveys;
+drop view if exists tlc_tt_closed_surveys;
+drop view if exists tlc_tt_draft_surveys;
+drop view if exists tlc_tt_surveys;
+drop view if exists tlc_tt_user_reset_tokens;
+drop view if exists tlc_tt_view_question_options;
 drop view if exists tlc_tt_view_survey_options;
 drop view if exists tlc_tt_view_survey_questions;
 drop view if exists tlc_tt_view_survey_sections;
-drop view if exists tlc_tt_draft_surveys;
-drop view if exists tlc_tt_active_surveys;
-drop view if exists tlc_tt_closed_surveys;
-drop view if exists tlc_tt_user_reset_tokens;
-drop view if exists tlc_tt_active_roles;
 
 drop table if exists tlc_tt_settings;
 drop table if exists tlc_tt_roles;

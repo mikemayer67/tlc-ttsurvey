@@ -6,6 +6,7 @@ require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/strings.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/question_flags.php'));
 
 class FailedToUpdate extends \Exception {}
 
@@ -157,9 +158,9 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
   $insert = <<<SQL
     INSERT into tlc_tt_survey_questions
            (question_id, survey_id, survey_rev,
-            wording_sid,question_type,multiple,layout,
-            other_flag,other_sid,qualifier_sid,intro_sid,info_sid)
-    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?,?,?)
+            wording_sid,question_type,question_flags,
+            other_sid,qualifier_sid,intro_sid,info_sid)
+    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -172,28 +173,21 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
     $intro       = $question['intro'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
 
-    $other_flag  = $question['other_flag'] ?? null;
-    $other_str   = ($other_flag ? ($question['other_str'] ?? null) : null);
+    $other_flag  = $question['other_flag'] ?? false;
+    $other       = ($other_flag ? ($question['other'] ?? null) : null);
 
-    if(str_starts_with($type,'SELECT')) {
-      $multiple = str_ends_with($type,'MULTI') ? 1 : 0;
-      $type = 'OPTIONS';
-    } else {
-      $multiple = null;
-    }
-
-    if($type == 'OPTIONS' || $type == 'BOOL') {
-      $layout = $question['layout'];
-    } else {
-      $layout = null;
-    }
+    # encode the question_flags bitmap
+    $flags = new QuestionFlags();
+    $flags->layout($type, $question['layout']??"");
+    $flags->has_other($other_flag);
+    $flags->grouped($question['grouped'] ?? "NO");
 
     $rc = MySQLExecute(
-      $insert, 'iisisiiiii',
+      $insert, 'iisiiiii',
       $question_id,
       strings_find_or_create($wording),
-      $type, $multiple, $layout, $other_flag,
-      strings_find_or_create($other_str),
+      $type, $flags->get_bits(),
+      strings_find_or_create($other),
       strings_find_or_create($qualifier),
       strings_find_or_create($intro),
       strings_find_or_create($info)

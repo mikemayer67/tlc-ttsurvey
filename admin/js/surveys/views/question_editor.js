@@ -1,5 +1,5 @@
 import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
-import layout_const from './layout.js';
+import ui_config         from './ui_config.js';
 import option_controller from './options.js'
 
 function input_error(key,value) 
@@ -24,7 +24,7 @@ function input_error(key,value)
       break;
 
     case 'infotag':
-    case 'other_str':
+    case 'other':
       invalid_char_regex = common_invalid_regex;
       break;
 
@@ -82,6 +82,9 @@ export default function init(ce,controller)
   const _intro           = _box.children('.intro');
   const _intro_value     = _intro.find('textarea');
 
+  const _grouped         = _box.children('.grouped');
+  const _grouped_value   = _grouped.find('select');
+
   const _info            = _box.children('.info');
   const _info_value      = _info.find('textarea');
   const _popup           = _box.children('.popup');
@@ -89,7 +92,7 @@ export default function init(ce,controller)
 
   const _other           = _box.children('.other');
   const _other_flag      = _other.find('input.other_flag');
-  const _other_str       = _other.find('input.other_str');
+  const _other_value     = _other.find('input.other');
 
   const _hints           = _box.find('div.hint');
 
@@ -144,7 +147,8 @@ export default function init(ce,controller)
     .on('blur',handle_checkbox)
     .on('change',handle_checkbox);
 
-  _layout_value.on('change', handle_layout_change);
+  _layout_value.on('change', handle_select_change);
+  _grouped_value.on('change', handle_select_change);
 
   function handle_input(e) 
   {
@@ -220,13 +224,15 @@ export default function init(ce,controller)
     $(document).trigger('SurveyWasModified');
   }
 
-  function handle_layout_change(e)
+  function handle_select_change(e)
   {
+    const tgt           = $(e.currentTarget);
+    const key           = tgt.data('key');
     const new_value     = $(this).val();
-    const old_value     = controller.cur_question_data(_cur_id,'layout');
+    const old_value     = controller.cur_question_data(_cur_id,key);
 
-    create_layout_undo(new_value,old_value);
-    ce.controller.update_question_data(_cur_id, 'layout', new_value);
+    create_select_undo(new_value,old_value,tgt);
+    ce.controller.update_question_data(_cur_id, key, new_value);
     $(document).trigger('SurveyWasModified');
   }
 
@@ -249,11 +255,22 @@ export default function init(ce,controller)
     //   We'll handle the case where the type is not specified first
     //   We'll then handle all the other case where the type is specified
 
-    if(data.type) {
+    if(data.type) 
+    {
       _type_value.text( typeLabels[data.type] ).show();
       _type_select.hide();
+
+      _grouped_value.empty();
+      ["NO","YES"].forEach( (value) => {
+        const label = ui_config.grouped.label[value];
+        const opt   = $('<option></option>').attr('value',value).text(label);
+        _grouped_value.append(opt);
+      });
+
       _show_handlers[data.type]?.(data);
-    } else {
+    } 
+    else 
+    {
       show_new(id,data);
     }
   }
@@ -262,12 +279,22 @@ export default function init(ce,controller)
   {
     _infotag.show();
     _info.show();
+    _grouped.show();
 
     const infotag = data.infotag || '';
     const info    = data.info    || '';
+    const grouped = data.grouped || 'NO';
+
+    _grouped_value.empty();
+    ["NO","YES","BOXED"].forEach( (value) => {
+      const label = ui_config.grouped.info_label[value];
+      const opt   = $('<option></option>').attr('value',value).text(label);
+      _grouped_value.append(opt);
+    });
 
     _infotag_value.val(infotag).trigger('change');
     _info_value.val(data.info).trigger('change');
+    _grouped_value.val(grouped);
 
     validate_input('infotag', infotag);
     validate_input('info', info);
@@ -279,17 +306,19 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
+    const grouped = data.grouped || 0;
+    _grouped.show();
     _popup.show();
 
     _layout_value.empty();
     ['LEFT','RIGHT'].forEach( (key) => {
-      const label = layout_const.bool_label[key];
+      const label = ui_config.layout.bool_label[key];
       const opt   = $('<option></option>').attr('value',key).text(label);
       _layout_value.append(opt);
     });
 
     const wording   = data.wording || '';
-    const layout    = data.layout || layout_const.bool_default;
+    const layout    = data.layout || ui_config.layout.bool_default;
     const qualifier = data.qualifier || '';
     const intro     = data.intro || '';
     const popup     = data.popup || '';
@@ -298,6 +327,7 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
+    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording'  , wording);
@@ -310,14 +340,17 @@ export default function init(ce,controller)
   {
     _wording.show();
     _intro.show();
+    _grouped.show();
     _popup.show();
 
     const wording = data.wording || '';
     const intro   = data.intro || '';
+    const grouped = data.grouped || 0;
     const popup   = data.popup || '';
 
     _wording_value.val(wording);
     _intro_value.val(intro);
+    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording', wording);
@@ -331,39 +364,42 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
+    _grouped.show();
     _other.show();
     _popup.show();
 
     _layout_value.empty();
     ['ROW','LCOL','RCOL'].forEach( (key) => {
-      const label = layout_const.select_label[key];
+      const label = ui_config.layout.select_label[key];
       const opt   = $('<option></option>').attr('value',key).text(label);
       _layout_value.append(opt);
     });
 
-    const wording     = data.wording || '';
-    const layout      = data.layout || layout_const.select_default;
-    const qualifier   = data.qualifier || '';
-    const intro       = data.intro || '';
-    const other_flag  = data.other_flag || false;
-    const other_str   = data.other_str || '';
-    const popup       = data.popup || '';
+    const wording    = data.wording || '';
+    const layout     = data.layout || ui_config.layout.select_default;
+    const qualifier  = data.qualifier || '';
+    const intro      = data.intro || '';
+    const grouped = data.grouped || 0;
+    const other_flag = data.other_flag || false;
+    const other      = data.other || '';
+    const popup      = data.popup || '';
 
     _wording_value.val(wording);
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
+    _grouped_value.val(grouped);
     _other_flag.prop('checked',other_flag);
-    _other_str.val(other_str);
+    _other_value.val(other);
     _popup_value.val(popup);
 
     validate_input('wording'    , wording);
     validate_input('qualifier'  , qualifier);
     validate_input('intro'      , intro);
-    if(other_flag) {
-      validate_input('other_str', other_str);
-    }
     validate_input('popup'      , popup);
+    if(other_flag) {
+      validate_input('other'    , other);
+    }
 
     _options.show(data);
   }
@@ -586,12 +622,15 @@ export default function init(ce,controller)
     });
   }
 
-  function create_layout_undo(new_value, old_value)
+  function create_select_undo(new_value, old_value, select_ce)
   {
-    const cur_undo = ce.undo_manager.head();
+    const key = select_ce.data('key');
+
+    const cur_undo   = ce.undo_manager.head();
+    const action_key = 'change-' + key;
 
     const reverts_prior = ( cur_undo &&
-      ( cur_undo.action === 'change-layout' ) &&
+      ( cur_undo.action === action_key ) &&
       ( cur_undo.question_id === _cur_id   ) && 
       ( cur_undo.old_value === new_value )
     );
@@ -602,7 +641,7 @@ export default function init(ce,controller)
     }
 
     ce.undo_manager.add({
-      action: 'change-layout',
+      action: action_key,
       question_id: _cur_id,
       new_value: new_value,
       old_value: old_value,
@@ -610,8 +649,8 @@ export default function init(ce,controller)
       undo() {
         setTimeout(() => { 
           controller.select_question(this.question_id);
-          _layout_value.val(this.old_value);
-          controller.update_question_data(this.question_id,'layout',this.old_value);
+          select_ce.val(this.old_value);
+          controller.update_question_data(this.question_id,key,this.old_value);
           $(document).trigger('SurveyWasModified');
         }, 100);
       },
@@ -619,8 +658,8 @@ export default function init(ce,controller)
         controller.select_question(this.question_id);
         setTimeout(() => { 
           controller.select_question(this.question_id);
-          _layout_value.val(this.new_value);
-          controller.update_question_data(this.question_id,'layout',this.new_value);
+          select_ce.val(this.new_value);
+          controller.update_question_data(this.question_id,key,this.new_value);
 
           $(document).trigger('SurveyWasModified');
         }, 100);

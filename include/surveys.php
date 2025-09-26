@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/strings.php'));
+require_once(app_file('include/question_flags.php'));
 
 class Surveys
 {
@@ -134,18 +135,16 @@ class Surveys
   static function _questions($survey_id,$survey_rev)
   {
     $query = <<<SQL
-      SELECT q.question_id   as question_id,
-             m.section_seq   as section,
-             m.question_seq  as sequence,
-             wording.str     as wording,
-             q.question_type as question_type,
-             q.multiple      as multiple,
-             q.layout        as layout,
-             q.other_flag    as other_flag,
-             other.str       as other_str,
-             qualifier.str   as qualifier,
-             intro.str       as intro,
-             info.str        as info
+      SELECT q.question_id    as question_id,
+             m.section_seq    as section,
+             m.question_seq   as sequence,
+             wording.str      as wording,
+             q.question_type  as question_type,
+             q.question_flags as flags,
+             other.str        as other,
+             qualifier.str    as qualifier,
+             intro.str        as intro,
+             info.str         as info
         FROM tlc_tt_survey_questions q
        INNER JOIN tlc_tt_question_map m      
           ON m.survey_id=q.survey_id AND m.survey_rev=q.survey_rev AND m.question_id=q.question_id
@@ -162,21 +161,23 @@ class Surveys
     if(!$rows) { return array(); }
   
     $q_fields = [
-      'INFO'     => ['section','sequence','wording'=>'infotag', 'info'],
-      'BOOL'     => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['section','sequence','wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['section','sequence','wording', 'intro', 'info'=>'popup']
+      'INFO'         => ['wording'=>'infotag',                     'info'         ],
+      'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
+      'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+      'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+      'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
     ];
   
     $questions = array();
     foreach($rows as $row) {
-      $id = $row['question_id'];
+      $id   = $row['question_id'];
       $type = $row['question_type'];
-      $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
   
       $q = [ 
-        'id'   => $id, 
-        'type' => $actual_type,
+        'id'       => $id, 
+        'type'     => $type,
+        'section'  => $row['section'],
+        'sequence' => $row['sequence'],
       ];
   
       foreach ($q_fields[$type] ?? [] as $from => $to)
@@ -184,7 +185,15 @@ class Surveys
         if(is_int($from)) { $from = $to; } // straight copy from row to question
         $q[$to] = $row[$from];
       }
-  
+
+      # decode the question_flags bitmap
+      $flags = new QuestionFlags( $row['flags'] ?? 0 );
+      $q['grouped'] = $flags->grouped();
+      $q['layout']  = $flags->layout($type);
+      if(str_starts_with($type,'SELECT')) {
+        $q['other_flag'] = $flags->has_other() ? 1 : 0;
+      }
+
       $questions[$id] = $q;
     }
   
@@ -217,12 +226,12 @@ class Surveys
     $exclude = array_keys($questions);
 
     $q_fields = [
-      'INFO'     => ['wording'=>'infotag', 'info'],
-      'BOOL'     => ['wording', 'layout', 'intro', 'qualifier', 'info'=>'popup'],
-      'OPTIONS'  => ['wording', 'layout', 'intro', 'qualifier', 'other_flag', 'other_str', 'info'=>'popup'],
-      'FREETEXT' => ['wording', 'intro', 'info'=>'popup']
+      'INFO'         => ['wording'=>'infotag',                     'info'         ],
+      'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
+      'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+      'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+      'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
     ];
-  
 
     # loop over current survey + up the parent tree
     foreach(self::_ancestors($survey_id,$survey_rev) as [$sid,$rev])
@@ -244,16 +253,14 @@ class Surveys
         $in_clause .= ')';
 
         $query = <<<SQL
-          SELECT q.question_id   as question_id,
-                 wording.str     as wording,
-                 q.question_type as question_type,
-                 q.multiple      as multiple,
-                 q.layout        as layout,
-                 q.other_flag    as other_flag,
-                 other.str       as other_str,
-                 qualifier.str   as qualifier,
-                 intro.str       as intro,
-                 info.str        as info
+          SELECT q.question_id    as question_id,
+                 wording.str      as wording,
+                 q.question_type  as question_type,
+                 q.question_flags as flags,
+                 other.str        as other,
+                 qualifier.str    as qualifier,
+                 intro.str        as intro,
+                 info.str         as info
             FROM tlc_tt_survey_questions q
            INNER JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
             LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
@@ -267,15 +274,22 @@ class Surveys
         foreach(MySQLSelectRows($query,'i',$sid) as $row) {
           $qid  = $row['question_id'];
           $type = $row['question_type'];
-          $actual_type = ($type !== 'OPTIONS' ? $type : ($row['multiple'] ? 'SELECT_MULTI' : 'SELECT_ONE'));
           $q = [
             'id'   => $qid,
-            'type' => $actual_type,
+            'type' => $type,
           ];
           foreach ($q_fields[$type] ?? [] as $from => $to)
           {
             if(is_int($from)) { $from = $to; } // straight copy from row to question
             $q[$to] = $row[$from];
+          }
+
+          # decode the question_flags bitmap
+          $flags = new QuestionFlags( $row['flags'] ?? 0 );
+          $q['grouped'] = $flags->grouped();
+          $q['layout']  = $flags->layout($type);
+          if(str_starts_with($type,'SELECT')) {
+            $q['other_flag'] = $flags->has_other();
           }
 
           $new_questions[$qid] = $q;
@@ -345,45 +359,46 @@ class Surveys
 
   static function update($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
   {
-    // TODO: Revision tracking
-  
-    $error = '';
-    $errid = bin2hex(random_bytes(3));
-
-    // We want the update to be all or nothing, so wrap it in a MySQL transaction
-    //   so that we can do a rollback if something goes wrong
-    MySQLBeginTransaction();
-
-    $has_change = false;
-    try {
-      self::_update_timestamp($id);
-
-      if( self::_update_name($id,$name) )                                { $has_change = true; }
-      if( self::_update_options($id,$rev, $new_content['options']) )     { $has_change = true; }
-      if( self::_update_sections($id,$rev, $new_content['sections']) )   { $has_change = true; }
-      if( self::_update_questions($id,$rev, $new_content['questions']) ) { $has_change = true; }
-      self::_update_pdf($id,$rev,$pdf_action,$new_pdf_file);
-  
-    }
-    catch(FailedToUpdate $e)
-    {
-      MySQLRollback();
-      $error = "Failed to update survey. Please report error $errid to a tech admin";
-      return false;
-    }
-  
-    if($has_change) { 
-      // Strip all future survey revision data as this may now be compromised
-      MySQLExecute("delete from tlc_tt_question_options where survey_id=$id and survey_rev>$rev");
-      MySQLExecute("delete from tlc_tt_survey_questions where survey_id=$id and survey_rev>$rev");
-      MySQLExecute("delete from tlc_tt_survey_sections  where survey_id=$id and survey_rev>$rev");
-      MySQLExecute("delete from tlc_tt_survey_options   where survey_id=$id and survey_rev>$rev");
-    }
-    else { 
-      MySQLRollback(); 
-    }
-  
-    return true;
+    internal_error("This should not have been commented out");
+//    // TODO: Revision tracking
+//  
+//    $error = '';
+//    $errid = bin2hex(random_bytes(3));
+//
+//    // We want the update to be all or nothing, so wrap it in a MySQL transaction
+//    //   so that we can do a rollback if something goes wrong
+//    MySQLBeginTransaction();
+//
+//    $has_change = false;
+//    try {
+//      self::_update_timestamp($id);
+//
+//      if( self::_update_name($id,$name) )                                { $has_change = true; }
+//      if( self::_update_options($id,$rev, $new_content['options']) )     { $has_change = true; }
+//      if( self::_update_sections($id,$rev, $new_content['sections']) )   { $has_change = true; }
+//      if( self::_update_questions($id,$rev, $new_content['questions']) ) { $has_change = true; }
+//      self::_update_pdf($id,$rev,$pdf_action,$new_pdf_file);
+//  
+//    }
+//    catch(FailedToUpdate $e)
+//    {
+//      MySQLRollback();
+//      $error = "Failed to update survey. Please report error $errid to a tech admin";
+//      return false;
+//    }
+//  
+//    if($has_change) { 
+//      // Strip all future survey revision data as this may now be compromised
+//      MySQLExecute("delete from tlc_tt_question_options where survey_id=$id and survey_rev>$rev");
+//      MySQLExecute("delete from tlc_tt_survey_questions where survey_id=$id and survey_rev>$rev");
+//      MySQLExecute("delete from tlc_tt_survey_sections  where survey_id=$id and survey_rev>$rev");
+//      MySQLExecute("delete from tlc_tt_survey_options   where survey_id=$id and survey_rev>$rev");
+//    }
+//    else { 
+//      MySQLRollback(); 
+//    }
+//  
+//    return true;
   }
 };
 
