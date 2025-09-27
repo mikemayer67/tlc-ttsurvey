@@ -7,16 +7,31 @@ require_once(app_file('include/surveys.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
-log_dev("Active Roles: ".print_r($active_roles,true));
 $is_admin = in_array('admin',$active_roles);
 
 // survey data
 $all_surveys = all_surveys();
 
 // add content data to the first survey that will be shown
+$id = $_REQUEST['survey'] ?? null;
+log_dev("requested id = $id");
 if($all_surveys) {
-  $id = $all_surveys[0]['survey_id'];
-  $all_surveys[0]['content'] = survey_content($id);
+  $index = null;
+  if(isset($id)) {
+    foreach( $all_surveys as $i => $s ) {
+      if($s['survey_id'] == $id) {
+        $index = $i;
+        break;
+      }
+    }
+  }
+  log_dev("array index=$index");
+  if(!isset($index)) {
+    $index = 0;
+    $id = $all_surveys[0]['survey_id'];
+  }
+  log_dev("array index=$index / id=$id");
+  $all_surveys[$index]['content'] = survey_content($id);
 }
 
 if(! ($all_surveys || $is_admin) ) {
@@ -27,6 +42,7 @@ if(! ($all_surveys || $is_admin) ) {
 echo "<script>";
 echo "const ttt_all_surveys = " . json_encode($all_surveys) . ";";
 echo "const ttt_is_admin = " . ($is_admin ? "true" : "false") . ";";
+echo "const ttt_initial_survey_id = $id;";
 echo "</script>";
 
 $form_uri = app_uri('admin');
