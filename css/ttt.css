@@ -36,13 +36,14 @@ body {
 }
 
 div.noscript {
-  color:#800;
-  font-size:small;
-  font-style:italic;
-  text-align:center;
   position:relative;
   margin:3px auto;
   padding:0 1em;
+}
+div.noscript div {
+  color:#800;
+  font-style:italic;
+  text-align:center;
 }
 
 input.hidden {

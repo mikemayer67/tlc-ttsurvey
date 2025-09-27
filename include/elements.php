@@ -129,6 +129,7 @@ function start_page($context,$kwargs=[])
   //  - all other contexts
   //     - exclude if explicitly excluded by kwargs
   //     - include otherwise
+  $is_preview = array_key_exists('js_enabled',$kwargs);
   switch($context) {
   case 'print':  $include_js = false; break;
   case 'admin':  $include_js = true;  break;
@@ -215,14 +216,15 @@ function start_page($context,$kwargs=[])
     break;
 
   default:
-    echo <<<HTMLNOSCRIPT
-    <!-- Javascript suggestion -->
-    <noscript>
-    <div class='noscript'>
-      Consider enabling JavaScript for a smoother interaction with the survey
-    </div>
-    </noscript>
-    HTMLNOSCRIPT;
+    $wrapper = ($is_preview && !$include_js) ? "div" : "noscript";
+    echo "<!-- Javascript suggestion -->";
+    echo "<$wrapper>";
+    echo "<div class='noscript'>";
+    echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
+    echo "  <div>Less likely to lose your progress by leaving this page.</div>";
+    echo "  <div>Easier to update your name or email</div>";
+    echo "</div>";
+    echo "</$wrapper>";
     break;
   }
   
