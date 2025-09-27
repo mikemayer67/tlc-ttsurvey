@@ -13,9 +13,25 @@ $is_admin = in_array('admin',$active_roles);
 $all_surveys = all_surveys();
 
 // add content data to the first survey that will be shown
+$id = $_REQUEST['survey'] ?? null;
+log_dev("requested id = $id");
 if($all_surveys) {
-  $id = $all_surveys[0]['survey_id'];
-  $all_surveys[0]['content'] = survey_content($id);
+  $index = null;
+  if(isset($id)) {
+    foreach( $all_surveys as $i => $s ) {
+      if($s['survey_id'] == $id) {
+        $index = $i;
+        break;
+      }
+    }
+  }
+  log_dev("array index=$index");
+  if(!isset($index)) {
+    $index = 0;
+    $id = $all_surveys[0]['survey_id'];
+  }
+  log_dev("array index=$index / id=$id");
+  $all_surveys[$index]['content'] = survey_content($id);
 }
 
 if(! ($all_surveys || $is_admin) ) {
@@ -26,6 +42,7 @@ if(! ($all_surveys || $is_admin) ) {
 echo "<script>";
 echo "const ttt_all_surveys = " . json_encode($all_surveys) . ";";
 echo "const ttt_is_admin = " . ($is_admin ? "true" : "false") . ";";
+echo "const ttt_initial_survey_id = $id;";
 echo "</script>";
 
 $form_uri = app_uri('admin');
@@ -47,10 +64,10 @@ echo <<<HTMLCTRLS
 HTMLCTRLS;
 
 if($is_admin) {
-  echo "<a class='action draft' target='active'>Go Live</a>";
-  echo "<a class='action active' target='draft'>Edit</a>";
-  echo "<a class='action active add-sep' target='closed'>Close</a>";
-  echo "<a class='action closed' target='active'>Reopen</a>";
+  echo "<button type='button' class='action draft'          data-target='active'>Go Live</a>";
+  echo "<button type='button' class='action active'         data-target='draft'>Edit</a>";
+  echo "<button type='button' class='action active add-sep' data-target='closed'>Close</a>";
+  echo "<button type='button' class='action closed'         data-target='active'>Reopen</a>";
 }
 
 echo <<<HTML

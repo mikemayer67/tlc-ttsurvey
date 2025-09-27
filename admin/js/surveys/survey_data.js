@@ -140,12 +140,56 @@ export default function init(ce)
     _surveys[id] = survey;
   }
 
+  // modifiers
+  
+  function update_survey_state(id,state) 
+  {
+    $.ajax( {
+      type: 'POST',
+      url: ce.ajaxurl,
+      dataType: 'json',
+      data: {
+        ajax: 'admin/update_survey_state',
+        nonce: ce.nonce,
+        survey_id: id,
+        new_state: state,
+      }
+    })
+    .done( function(data,status,jqXHR) {
+      if (data.success) {
+        alert(data.message + "\n\nUpdating Admin Dashboard");
+        const url = new URL(location.href);
+        url.searchParams.set('tab','surveys');
+        url.searchParams.set('survey',id);
+        location.replace(url.toString());
+      }
+      else if( 'bad_nonce' in data ) {
+        alert("Somthing got out of sync.  Reloading page.");
+        location.reload();
+      } 
+      else {
+        alert("Data got out of sync with database: " + (data.message ?? data.error));
+        const url = new URL(location.href);
+        url.searchParams.set('tab','surveys');
+        url.searchParams.set('survey',id);
+        location.replace(url.toString());
+      }
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) {
+      internal_error(jqXHR);
+    }) ;
+  }
+
   return {
-    active:  get_active_survey,
-    drafts:  get_draft_surveys,
-    closed:  get_closed_surveys,
-    lookup:  get_survey_by_id,
-    add:     add_survey,
+    active:    get_active_survey,
+    drafts:    get_draft_surveys,
+    closed:    get_closed_surveys,
+    lookup:    get_survey_by_id,
+    add:       add_survey,
+
+    activate(id) { update_survey_state(id,'active'); },
+    close(id)    { update_survey_state(id,'closed'); },
+    recall(id)   { update_survey_state(id,'draft');  },
 
     content(id,data) { 
       if(data) { set_content(id,data);   }

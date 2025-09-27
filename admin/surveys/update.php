@@ -10,6 +10,47 @@ require_once(app_file('include/question_flags.php'));
 
 class FailedToUpdate extends \Exception {}
 
+function update_survey_state($survey_id, $new_state, &$message=null)
+{
+  $old_state = get_survey_state($survey_id);
+  if($new_state == $old_state) {
+    $message = "Survey was already in $new_state state";
+    return false;
+  }
+  switch($new_state) {
+  case 'draft':
+    $update = "UPDATE tlc_tt_survey_status SET active=NULL, closed=NULL WHERE survey_id=?";
+    break;
+  case 'active':
+    $update = "UPDATE tlc_tt_survey_status SET active=CURRENT_TIMESTAMP, closed=NULL WHERE survey_id=?";
+    break;
+  case 'closed':
+    $update = "UPDATE tlc_tt_survey_status SET closed=CURRENT_TIMESTAMP WHERE survey_id=?";
+    break;
+  default:
+    throw new FailedToUpdate("Invalid survey state ($new_state)");
+    break;
+  }
+  if( MySQLExecute($update,'i',$survey_id) === false ) {
+    throw new FailedToUpdate("Failed to update state for survey $survey_id to $new_state");
+  }
+  $message = "Updated state of survey $survey_id to $new_state";
+  return true;
+}
+
+function get_survey_state($survey_id)
+{
+  $query = <<<SQL
+    SELECT
+      (CASE WHEN closed IS NOT NULL THEN 'closed'
+            WHEN active IS NOT NULL THEN 'active'
+                                    ELSE 'draft' END) as state
+    FROM tlc_tt_survey_status
+    WHERE survey_id=?
+  SQL;
+  return MySQLSelectValue($query,'i',$survey_id);
+}
+
 function update_survey($survey_id, $survey_rev, $content, $details)
 {
   // We want the update to be all or nothing, so wrap it in a MySQL transaction
