@@ -168,8 +168,11 @@ export default function init(ce)
         location.reload();
       } 
       else {
-        alert("Data got out of sync with database: " + data.error);
-        location.reload();
+        alert("Data got out of sync with database: " + (data.message ?? data.error));
+        const url = new URL(location.href);
+        url.searchParams.set('tab','surveys');
+        url.searchParams.set('survey',id);
+        location.replace(url.toString());
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
