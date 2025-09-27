@@ -2,7 +2,7 @@ export default function init(ce)
 {
   const _survey_select  = $('#survey-select');
   const _survey_status  = ce.form.find('span.survey-status');
-  const _survey_actions = ce.form.find('a.action');
+  const _survey_actions = ce.form.find('button.action');
 
   // initialize survey select list
 
@@ -83,6 +83,8 @@ export default function init(ce)
     ce.form.find('input.watch').off('input').off('change');
     ce.form.find('select.watch').off('change');
 
+    enable_action_links();
+
     ce.dispatch('select_survey',prior_survey);
   }
 
@@ -116,9 +118,17 @@ export default function init(ce)
   }
 
   // event handlers
+  
+  function enable_action_links()  { 
+    _survey_actions.removeClass('disabled').removeAttr('aria-disabled');
+  }
+  function disable_action_links() {
+    _survey_actions.addClass('disabled').attr('aria-disabled',true);
+  }
 
   function handle_action_link(e)
   {
+    const target = $(this).prop('target');
     alert('handle action link');
   }
 
@@ -135,8 +145,10 @@ export default function init(ce)
   $(document).on('SurveyDataChanged',handle_data_changed);
 
   return {
-    cloneable_surveys:  cloneable_surveys,
-    select_survey:      select_survey,
-    add_new_survey:     add_new_survey,
+    cloneable_surveys:    cloneable_surveys,
+    select_survey:        select_survey,
+    add_new_survey:       add_new_survey,
+    disable_action_links: disable_action_links,
+    enable_action_links:  enable_action_links,
   };
 };

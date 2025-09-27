@@ -270,9 +270,10 @@ IF current_version < 1 THEN
         WHERE u.userid = t.userid;
         
   CREATE OR REPLACE VIEW tlc_tt_active_roles
-    AS SELECT userid, admin, content, tech
-         FROM tlc_tt_roles
-        WHERE content=1 OR admin=1 OR tech=1;
+    AS SELECT r.userid, u.fullname, r.admin, r.content, r.tech
+         FROM tlc_tt_roles r
+         LEFT JOIN tlc_tt_userids u ON u.userid=r.userid
+        WHERE r.content=1 OR r.admin=1 OR r.tech=1;
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_sections AS
   SELECT s.survey_id, s.survey_rev, s.sequence,

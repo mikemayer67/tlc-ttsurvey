@@ -57,19 +57,27 @@
   text-align:end;
 }
 
-#ttt-body form .survey-controls a {
-  color:#008;
+#ttt-body form .survey-controls button.action {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #008;
+  cursor: pointer;
+}
+#ttt-body form .survey-controls button.action.disabled {
+  color: #999;
+  cursor: not-allowed;
 }
 
-#ttt-body form .survey-controls a.action.add-sep::before {
+#ttt-body form .survey-controls button.action.add-sep::before {
   content: " | ";
 }
 
-#ttt-body form .survey-controls a.hidden {
+#ttt-body form .survey-controls button.hidden {
   display:none;
 }
 
-#ttt-body form .survey-controls a:hover {
+#ttt-body form .survey-controls button:hover {
   color:#00c;
   text-shadow:1px 1px 5px #888;
 }

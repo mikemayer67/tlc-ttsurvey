@@ -115,8 +115,15 @@ export default function init(ce)
     ce.preview.prop('disabled',!has_content());
     ce.preview_js.parent().toggleClass('hidden',!has_content());
 
-    if(dirty) { ce.revert.prop('disabled',false).css('opacity',1); } 
-    else      { ce.revert.prop('disabled',true).css('opacity',0); }
+    if(dirty) { 
+      ce.revert.prop('disabled',false).css('opacity',1); 
+      ce.controls?.disable_action_links();
+    } 
+    else      
+    { 
+      ce.revert.prop('disabled',true).css('opacity',0); 
+      ce.controls?.enable_action_links();
+    }
 
     ce.submit.prop('disabled', can_submit === false);
   }

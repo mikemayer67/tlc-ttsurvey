@@ -7,6 +7,7 @@ require_once(app_file('include/surveys.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
+log_dev("Active Roles: ".print_r($active_roles,true));
 $is_admin = in_array('admin',$active_roles);
 
 // survey data
@@ -47,10 +48,10 @@ echo <<<HTMLCTRLS
 HTMLCTRLS;
 
 if($is_admin) {
-  echo "<a class='action draft' target='active'>Go Live</a>";
-  echo "<a class='action active' target='draft'>Edit</a>";
-  echo "<a class='action active add-sep' target='closed'>Close</a>";
-  echo "<a class='action closed' target='active'>Reopen</a>";
+  echo "<button type='button' class='action draft'          data-target='active'>Go Live</a>";
+  echo "<button type='button' class='action active'         data-target='draft'>Edit</a>";
+  echo "<button type='button' class='action active add-sep' data-target='closed'>Close</a>";
+  echo "<button type='button' class='action closed'         data-target='active'>Reopen</a>";
 }
 
 echo <<<HTML
