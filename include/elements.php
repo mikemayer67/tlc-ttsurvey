@@ -6,6 +6,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
+require_once(app_file('include/login.php'));
+require_once(app_file('include/users.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -147,6 +149,8 @@ function start_page($context,$kwargs=[])
     foreach($js_uris as $js_uri) {
       echo "<script src='$js_uri'></script>";
     }
+    $icon_uri = img_uri('icons8/menu.png');
+    echo "<script>const ttt_menu_icon='$icon_uri';</script>";
   }
 
   // Add style resources (except for print context)
@@ -177,9 +181,11 @@ function start_page($context,$kwargs=[])
   // Add the navigation bar (unless explicitly excluded via the kwargs)
   if( $kwargs['navbar'] ?? true ) {
     echo "<!-- Navbar -->";
+    echo "<div id='ttt-navbar-wrapper'>";
     echo "<div id='ttt-navbar'>";
-    echo "<span class='ttt-title-box'>";
 
+    // title box
+    echo "<span class='ttt-title-box'>";
     $logo = app_logo() ?? '';
     if($logo) {
       echo "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
@@ -187,10 +193,32 @@ function start_page($context,$kwargs=[])
     echo "<span class='ttt-title'>$title</span>";
     echo "</span>";
 
+    // status
+    $status = $kwargs['status'] ?? '';
+    echo "<span class='status'>$status</span>";
+
+    // User Info
+    $username = User::from_userid(active_userid() ?? '')?->fullname() ?? '';
+    echo "<span class='username'>$username</span>";
+
+//    // user info
+//    echo "<span class='fullname'>$userid";
+//    echo "<div class='user-menu'>";
+//    echo "<img src='".img_uri('icons8/menu.png')."' alt='User Profile Menu'></img>";
+//    echo "<div class='dropdown-menu'>";
+//    echo "<div class='button-wrapper'>";
+//    echo "<button type='button'>profile</button>";
+//    echo "<button type='button'>log out</button>";
+//    echo "</div>";
+//    echo "</div>";
+//    echo "</div>";
+//    echo "</span>";
+
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
     if($menu_cb) { echo $menu_cb(); }
 
-    echo "</div>";
+    echo "</div>"; // navbar
+    echo "</div>"; // wrapper
   }
 
   // Add noscript content

@@ -20,10 +20,11 @@ if(!$active_id) {
 
 $title   = active_survey_title();
 $content = survey_content($active_id);
-$user    = active_userid();
+$user  = active_userid();
 
-start_page('survey',[
+start_page('survey', [
   'survey_title'=>$title,
+  'status'=>'[status goes here]',
 ]);
 
 render_survey($user,$content);

@@ -19,11 +19,11 @@ $content = json_decode($_POST['content'] ?? '',true);
 $preview_js = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
 $active_user = active_userid();
-log_dev("Active User: $active_user");
 
-start_page('survey',[
+start_page('survey', [
   'survey_title'=>$survey_title,
   'js_enabled'=>$preview_js,
+  'status'=>'Preview',
 ]);
 
 render_survey($active_user,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
