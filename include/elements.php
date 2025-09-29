@@ -199,20 +199,18 @@ function start_page($context,$kwargs=[])
 
     // User Info
     $username = User::from_userid(active_userid() ?? '')?->fullname() ?? '';
-    echo "<span class='username'>$username</span>";
+    $logout_uri = app_uri('logout');
+    echo "<span class='username'>";
+    echo "<span>$username</span>";
+    if($username) {
+      // No Javascript logout button (inside the username span)
+      // ... but only if there is a username to log out
+      echo "<noscript>";
+      echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
+      echo "</noscript>";
+    }
+    echo "</span>";
 
-//    // user info
-//    echo "<span class='fullname'>$userid";
-//    echo "<div class='user-menu'>";
-//    echo "<img src='".img_uri('icons8/menu.png')."' alt='User Profile Menu'></img>";
-//    echo "<div class='dropdown-menu'>";
-//    echo "<div class='button-wrapper'>";
-//    echo "<button type='button'>profile</button>";
-//    echo "<button type='button'>log out</button>";
-//    echo "</div>";
-//    echo "</div>";
-//    echo "</div>";
-//    echo "</span>";
 
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
     if($menu_cb) { echo $menu_cb(); }

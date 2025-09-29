@@ -91,7 +91,12 @@ function edit_user(e)
 function logout_user(e)
 {
   hide_user_menu();
-  alert('logout_user');
+  if( ce.confirm_logout ) {
+    if (!confirm( "You have unsaved changes.  Logging out now will lose those changes.")) { return }
+  }
+  const url = new URL(location.href);
+  url.searchParams.set('logout',1);
+  location.replace(url.toString());
 }
 
 $(document).ready( function() {
@@ -100,6 +105,8 @@ $(document).ready( function() {
 
   setup_hints();
   setup_user_menu();
+
+  ce.confirm_logout = true;
 
   ce.revert.removeClass('hidden');
 });
