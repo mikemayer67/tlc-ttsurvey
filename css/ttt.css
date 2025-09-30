@@ -197,7 +197,12 @@ div.ttt-splash img {
   right:0;
   z-index:5;
 
-  display:none;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+  pointer-events:none;
+
+  display:flex;
   flex-direction: column;
   gap: 0.5em;
   background:white;
@@ -207,7 +212,9 @@ div.ttt-splash img {
 }
 
 #ttt-user-menu.locked, #ttt-user-menu.hover {
-  display:flex;
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
 }
 
 #ttt-user-menu button {
@@ -221,7 +228,8 @@ div.ttt-splash img {
   white-space:nowrap;
 }
 
-#ttt-logout {
+
+#ttt-logout {  /* no-js only */
   display: block;
   padding: 1px 4px;
   margin-left:0.5em;
@@ -235,10 +243,41 @@ div.ttt-splash img {
   cursor: pointer;
 }
 
-#ttt-logout:hover {
+#ttt-logout:hover {  /* no-js only */
   background-color:#c0c0c0;
   box-shadow:0 1px 4px 0 rgba(0,0,0,0.16),0 1px 6px 0 rgba(0,0,0,0.12);
 }
+
+#ttt-user-editor, #ttt-password-editor
+{
+  position: absolute;
+  top:50px;
+  right:1em;
+  z-index:4;
+
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+  pointer-events:none;
+
+  display:flex;
+  flex-direction: column;
+  background:white;
+  padding:1em;
+  width:fit-content;
+  box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+#ttt-user-editor.visible, #ttt-password-editor.visible {
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+
+/**
+ * Footer
+ **/
 
 #ttt-footer {
   margin-top:auto;
