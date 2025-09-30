@@ -20,24 +20,24 @@ $remember = $redirect_data['remember'] ?? True;
 add_login_input("userid",array(
   "label" => "Userid",
   "value" => $userid,
-  "info" => login_info_text("userid"),
+  "info" => login_info_html("userid"),
 ));
 
 add_login_input("new-password",array(
   "name" => "password",
-  "info" => login_info_text("new-password"),
+  "info" => login_info_html("new-password"),
 ));
 
 add_login_input("fullname",array(
   "label" => 'Name',
   "value" => $fullname,
-  "info" => login_info_text("fullname"),
+  "info" => login_info_html("fullname"),
 ));
 
 add_login_input("email",array(
   "optional" => True, 
   "value" => $email,
-  "info" => login_info_text("email"),
+  "info" => login_info_html("email"),
 ));
 
 # default to true on blank form
@@ -45,7 +45,7 @@ add_login_input("email",array(
 add_login_checkbox("remember", array(
   "label" => "Add Reconnect Button",
   "value" => $remember,
-  'info' => login_info_text("remember"),
+  'info' => login_info_html("remember"),
 ));
 
 add_login_submit("Register",'register',true);

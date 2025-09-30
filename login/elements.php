@@ -221,72 +221,86 @@ function add_login_instructions($instructions)
   echo "</div>";
 }
 
-function login_info_text($key) 
+
+function login_info_lines($key) 
 {
-  $rval = "";
   switch($key) {
   case 'userid':
-    $rval = <<<INFO
-      Used to log into the survey
-      <p class=info-list><b>must</b> be 8-16 characters</p>
-      <p class=info-list><b>must</b> start with a letter</p>
-      <p class=info-list><b>must</b> contain only letters and numbers</p>
-      INFO;
+    return [
+      "Used to log into the survey",
+      "must be 8-16 characters",
+      "must start with a letter",
+      "must contain only letters and numbers",
+    ];
     break;
 
   case 'new-password':
   case 'password':
-    $rval = <<<INFO
-      Used to log into the survey
-      <p class=info-list><b>must</b> be 8-128 characters</p>
-      <p class=info-list><b>must</b> contain at least one letter</p>
-      <p class=info-list><b>may</b> contain: !@%^*-_=~,.</p>
-      <p class=info-list><b>may</b> contain spaces</p>
-      INFO;
+    return [
+      "Used to log into the survey",
+      "must be 8-128 characters",
+      "must contain at least one letter",
+      "may contain: !@%^*-_=~,.",
+      "may contain spaces",
+    ];
     break;
 
   case 'fullname':
-    $rval = <<<INFO
-      How your name will appear on the survey summary report
-      <p class=info-list><b>must</b> contain a valid full name</p>
-      <p class=info-list><b>may</b> contain apostrophes</p>
-      <p class=info-list><b>may</b> contain hyphens</p>
-      <p class=info-list>Extra whitespace will be removed</p>
-      INFO;
+    return [
+      "How your name will appear on the survey summary report",
+      "must contain a valid full name",
+      "may contain apostrophes",
+      "may contain hyphens",
+      "Extra whitespace will be removed",
+    ];
     break;
 
   case 'email':
-    $rval = <<<INFO
-      The email address is <b>optional</b>. It will only be used in conjunction with 
-      this survey. It will be used to send you:
-      <p class=info-list>confirmation of your registration</p>
-      <p class=info-list>notifcations on your survey state</p>
-      <p class=info-list>login help (on request)</p>
-      INFO;
+    return [
+      "The email address is optional. It will only be used in conjunction with this survey."
+     ." It will be used to send you:",
+      "confirmation of your registration",
+      "notifcations on your survey state",
+      "login help (on request)",
+    ];
     break;
 
   case 'remember':
-    $rval = <<<INFO
-      Sets a cookie on your browser to allow you to resume the survey without a password
-      INFO;
+    return [
+      "Sets a cookie on your browser to allow you to resume the survey without a password",
+    ];
     break;
 
   case 'recover-userid':
-    $rval = <<<INFO
-      If the profile for this userid has an associated email address, instructions
-      for resetting your password will be sent to that address:
-      <p class=info-list>If a userid is provided here, the email address below will be ignored</p>
-      INFO;
+    return [
+      "If the profile for this userid has an associated email address, instructions"
+      ." for resetting your password will be sent to that address:",
+      "If a userid is provided here, the email address below will be ignored",
+    ];
     break;
 
   case 'recover-email':
-    $rval = <<<INFO
-      If a user pofile associated with this email address exists, the userid and
-      instructions for resetting your password will be sent to this address.
-      <p class=info-list>If a userid is provided above, the email address here will be ignored</p>
-      INFO;
+    return [
+      "If a user pofile associated with this email address exists, the userid and instructions"
+     ." for resetting your password will be sent to this address.",
+      "If a userid is provided above, the email address here will be ignored",
+    ];
     break;
-
   }
-  return $rval;
+  return [];
+}
+
+function login_info_string($key) 
+{
+  $lines = login_info_lines($key);
+  return implode("\n    ",$lines);
+}
+
+function login_info_html($key)
+{
+  $lines  = login_info_lines($key);
+  $header = htmlspecialchars( array_shift($lines) ?? '' );
+  $lines  = array_map( fn($line) => htmlspecialchars($line),          $lines);
+  $lines  = array_map( fn($line) => "<p class='info-list'>$line</p>", $lines);
+  return $header . implode("",$lines);
 }
