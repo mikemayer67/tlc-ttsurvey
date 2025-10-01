@@ -133,7 +133,7 @@ function get_user_editor()
   if(!ce.user_editor) {
     const name      = $('<input>').addClass('name');
     const email     = $('<input>').addClass('email').attr('type','email');
-    const submit    = $('<button>').addClass('submit').attr('type','button').append('update');
+    const submit    = $('<button>').addClass('submit disabled').attr('type','button').append('update');
     const cancel    = $('<button>').addClass('cancel').attr('type','button').append('cancel');
     const nameinfo  = $('<img>').addClass('name info');
     const emailinfo = $('<img>').addClass('email info');
@@ -154,6 +154,7 @@ function get_user_editor()
     ce.navbar.parent().append(ce.user_editor);
 
     cancel.on('click', hide_user_editor);
+    submit.on('click', function() { alert('update user')} );
 
     nameinfo.on('click',  function() { alert(ttt_name_hint);  } );
     emailinfo.on('click', function() { alert(ttt_email_hint); } );
@@ -188,7 +189,7 @@ function get_password_editor()
   if(!ce.password_editor) {
     const password = $('<input>').addClass('password').attr('type','password');
     const confirm  = $('<input>').addClass('password').attr('type','password');
-    const submit   = $('<button>').addClass('submit').attr('type','button').append('update');
+    const submit   = $('<button>').addClass('submit disabled').attr('type','button').append('update');
     const cancel   = $('<button>').addClass('cancel').attr('type','button').append('cancel');
     const show     = $('<img>').addClass('hide-pw');
     const pwinfo   = $('<img>').addClass('password info');

@@ -284,14 +284,39 @@ div.ttt-splash img {
 }
 
 #ttt-navbar-wrapper .editor-pane .fields .label {
-  font-weight:500;
+  font-weight:700;
   margin-top:10px;
 }
 
-#ttt-navbar-wrapper .editor-pane .error {
+#ttt-navbar-wrapper .editor-pane div.error {
   color:darkred;
   font-style:italic;
   text-align:center;
+}
+
+#ttt-navbar-wrapper .editor-pane input {
+  border: 1px solid #ccc;   /* light gray */
+  border-radius: 4px;       /* soft corners */
+  padding: 0.25em 0.5em;    /* some inner spacing */
+}
+
+#ttt-navbar-wrapper .editor-pane input:focus {
+  border-color: #666;
+  outline: none;  /* remove default blue outline if you like */
+  box-shadow: 0 0 0 2px rgba(100, 150, 250, 0.3); /* subtle focus ring */
+}
+
+#ttt-navbar-wrapper .editor-pane input.error {
+  background:#fdd;
+  color:darkred;
+}
+
+#ttt-user-editor input {
+  width:30em;
+}
+
+#ttt-password-editor input {
+  width:15em;
 }
 
 #ttt-navbar-wrapper .editor-pane img.info {
@@ -310,6 +335,33 @@ div.ttt-splash img {
   content: url('../img/icons8/hide_pw.png');
   margin-left:0.5em;
   width:20px;
+}
+
+#ttt-navbar-wrapper .editor-pane div.actions {
+  margin-top:1em;
+  display:flex;
+  flex-direction:row-reverse;
+  justify-content:space-between;
+}
+
+#ttt-navbar-wrapper .editor-pane div.actions button {
+  padding: 0 8px;
+  background-color: #d8d8d8;
+  border-radius: 4px;
+  border: 1px solid #222222;
+  cursor: pointer;
+}
+
+#ttt-navbar-wrapper .editor-pane div.actions button:hover {
+  background-color:#c0c0c0;
+  box-shadow:0 1px 4px 0 rgba(0,0,0,0.16),0 1px 6px 0 rgba(0,0,0,0.12);
+}
+
+#ttt-navbar-wrapper .editor-pane div.actions button.disabled {
+  pointer-events:none;
+  background:#eee;
+  color:#aaa;
+  border-color:#ddd;
 }
 
 
