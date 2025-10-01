@@ -24,7 +24,7 @@ add_login_input("password");
 add_login_checkbox("remember", array(
   "label" => "Add Reconnect Button",
   "value" => $remember,
-  'info' => login_info_text('remember'),
+  'info' => login_info_html('remember'),
 ));
 
 

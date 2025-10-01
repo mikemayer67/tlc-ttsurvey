@@ -21,7 +21,7 @@ add_login_input("token", array (
 add_login_input('new-password',array(
   'label' => 'New Password',
   'name'=>'password',
-  'info'=>login_info_text('new-password'),
+  'info'=>login_info_html('new-password'),
 ));
 
 add_login_submit('Set Password','pwreset',true);

@@ -149,8 +149,7 @@ function start_page($context,$kwargs=[])
     foreach($js_uris as $js_uri) {
       echo "<script src='$js_uri'></script>";
     }
-    $icon_uri = img_uri('icons8/menu.png');
-    echo "<script>const ttt_menu_icon='$icon_uri';</script>";
+    echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
   }
 
   // Add style resources (except for print context)

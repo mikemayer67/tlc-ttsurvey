@@ -32,6 +32,10 @@ function setup_hints()
 function logout_user(e)
 {
   hide_user_menu();
+  if(ttt_preview) { 
+    alert('Logout is disabled in preview mode');
+    return; 
+  }
   if( ce.confirm_logout ) {
     if (!confirm( "You have unsaved changes.  Logging out now will lose those changes.")) { return }
   }
@@ -116,6 +120,10 @@ function show_user_editor()
 {
   hide_user_menu();
   hide_password_editor();
+  if(ttt_preview) { 
+    alert('Profile editor is disabled in preview mode');
+    return;
+  }
   const editor = get_user_editor();
   editor.addClass('visible');
 }
@@ -123,15 +131,22 @@ function show_user_editor()
 function get_user_editor()
 {
   if(!ce.user_editor) {
-    const name     = $('<input>').addClass('name');
-    const email    = $('<input>').addClass('email');
-    const submit   = $('<button>').addClass('submit').attr('type','button').append('update');
-    const cancel   = $('<button>').addClass('cancel').attr('type','button').append('cancel');
+    const name      = $('<input>').addClass('name');
+    const email     = $('<input>').addClass('email').attr('type','email');
+    const submit    = $('<button>').addClass('submit').attr('type','button').append('update');
+    const cancel    = $('<button>').addClass('cancel').attr('type','button').append('cancel');
+    const nameinfo  = $('<img>').addClass('name info');
+    const emailinfo = $('<img>').addClass('email info');
 
     ce.user_editor = $('<div>').attr('id','ttt-user-editor').addClass('editor-pane').append(
       $('<div>').addClass('fields').append(
-        $('<span>').addClass('label name').append('Name'),  name,
-        $('<span>').addClass('label email').append('Email'), email,
+        $('<div>').addClass('error').append('error text'),
+        $('<div>').addClass('wrapper').append(
+          $('<div>').addClass('label name').append('Name'), nameinfo ),
+        name,
+        $('<div>').addClass('wrapper').append(
+          $('<div>').addClass('label email').append('email'), emailinfo ),
+        email,
       ),
       $('<div>').addClass('actions').append(submit, cancel),
     );
@@ -139,6 +154,9 @@ function get_user_editor()
     ce.navbar.parent().append(ce.user_editor);
 
     cancel.on('click', hide_user_editor);
+
+    nameinfo.on('click',  function() { alert(ttt_name_hint);  } );
+    emailinfo.on('click', function() { alert(ttt_email_hint); } );
   }
   return ce.user_editor;
 }
@@ -156,22 +174,33 @@ function show_password_editor()
 {
   hide_user_menu();
   hide_user_editor();
+  if(ttt_preview) { 
+    alert('Password editor is disabled in preview mode');
+    return;
+  }
   const editor = get_password_editor();
+  editor.find('input').val('');
   editor.addClass('visible');
 }
 
 function get_password_editor()
 {
   if(!ce.password_editor) {
-    const password = $('<input>').addClass('password');
-    const confirm  = $('<input>').addClass('password');
+    const password = $('<input>').addClass('password').attr('type','password');
+    const confirm  = $('<input>').addClass('password').attr('type','password');
     const submit   = $('<button>').addClass('submit').attr('type','button').append('update');
     const cancel   = $('<button>').addClass('cancel').attr('type','button').append('cancel');
+    const show     = $('<img>').addClass('hide-pw');
+    const pwinfo   = $('<img>').addClass('password info');
 
     ce.password_editor = $('<div>').attr('id','ttt-password-editor').addClass('editor-pane').append(
       $('<div>').addClass('fields').append(
-        $('<span>').addClass('label password').append('New Password'), password,
-        $('<span>').addClass('label confirm').append('Confirm Password'), confirm,
+        $('<div>').addClass('error').append('error text'),
+        $('<div>').addClass('wrapper').append(
+          $('<div>').addClass('label password').append('New Password'), pwinfo),
+        $('<div>').addClass('wrapper').append(password,show),
+        $('<div>').addClass('label confirm').append('Confirm Password'),
+        confirm,
       ),
       $('<div>').addClass('actions').append(submit, cancel),
     );
@@ -179,6 +208,19 @@ function get_password_editor()
     ce.navbar.parent().append(ce.password_editor);
 
     cancel.on('click', hide_password_editor);
+
+    show.on('click',function() { 
+      show.toggleClass('show-pw hide-pw')
+      if(show.hasClass('show-pw')) {
+        password.attr('type','text');
+        confirm.attr('type','text');
+      } else {
+        password.attr('type','password');
+        confirm.attr('type','password');
+      }
+    });
+
+    pwinfo.on('click',function() { alert(ttt_password_hint); } );
   }
   return ce.password_editor;
 }

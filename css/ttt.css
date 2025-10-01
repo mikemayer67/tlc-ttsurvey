@@ -248,7 +248,7 @@ div.ttt-splash img {
   box-shadow:0 1px 4px 0 rgba(0,0,0,0.16),0 1px 6px 0 rgba(0,0,0,0.12);
 }
 
-#ttt-user-editor, #ttt-password-editor
+#ttt-navbar-wrapper .editor-pane
 {
   position: absolute;
   top:50px;
@@ -268,10 +268,48 @@ div.ttt-splash img {
   box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
 }
 
-#ttt-user-editor.visible, #ttt-password-editor.visible {
+#ttt-navbar-wrapper .editor-pane * {
+  background:inherit;
+}
+
+#ttt-navbar-wrapper .editor-pane.visible {
   opacity:1;
   transform:translateY(0);
   pointer-events:auto;
+}
+
+#ttt-navbar-wrapper .editor-pane .wrapper {
+  display:flex;
+  align-items: center;
+}
+
+#ttt-navbar-wrapper .editor-pane .fields .label {
+  font-weight:500;
+  margin-top:10px;
+}
+
+#ttt-navbar-wrapper .editor-pane .error {
+  color:darkred;
+  font-style:italic;
+  text-align:center;
+}
+
+#ttt-navbar-wrapper .editor-pane img.info {
+  content: url('../img/icons8/info.png');
+  margin-left:5px;
+  width:13px;
+}
+
+#ttt-password-editor img.show-pw {
+  content: url('../img/icons8/show_pw.png');
+  margin-left:0.5em;
+  width:20px;
+}
+
+#ttt-password-editor img.hide-pw {
+  content: url('../img/icons8/hide_pw.png');
+  margin-left:0.5em;
+  width:20px;
 }
 
 
