@@ -15,7 +15,7 @@ var active=false;
 function internal_error(jqXHR)
 {
   alert("Internal error (#" + jqXHR.status
-                         + "): "+ jqXHR.statusMessage
+                         + "): "+ jqXHR.statusText
                          + "\nPlease let the survey admin know something went wrong."
        );
 }

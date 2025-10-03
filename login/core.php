@@ -9,9 +9,8 @@ require_once(app_file('include/redirect.php'));
 
 if(key_exists('forget',$_GET)) 
 {
-  // nonce from get request, but don't drop it as this isn't an actual
-  //   form submission
-  validate_nonce('login',false);
+  // nonce from get request, but don't drop it as this isn't an actual form submission
+  validate_get_nonce('login',false);
 
   $forget = $_GET['forget'] ?? null;
   forget_user_token($forget);

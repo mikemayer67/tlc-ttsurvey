@@ -102,7 +102,7 @@ function handle_register_new_user()
 
   // user created
   //   set this as the active user
-  //   add userid/token to cached tokens if requested
+  //   add userid/token to cached access tokens if requested
   start_survey_as($user);
 
   if( $remember ) { remember_user_token($userid,$user->access_token()); }

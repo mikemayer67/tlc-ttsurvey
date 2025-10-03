@@ -311,6 +311,10 @@ div.ttt-splash img {
   color:darkred;
 }
 
+#ttt-navbar-wrapper .editor-pane input:placeholder-shown {
+  background:#ffd;
+}
+
 #ttt-user-editor input {
   width:30em;
 }
