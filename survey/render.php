@@ -51,6 +51,11 @@ class RenderEngine
     $this->in_grid = false;
 
     echo "<form id='survey'>";
+    if(!$this->is_preview) {
+      $nonce = gen_nonce('survey-form');
+      add_hidden_input('nonce',$nonce);
+      add_hidden_input('ajaxuri',app_uri());
+    }
     foreach($this->sections as $section) {
       $this->add_section($section);
     }

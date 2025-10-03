@@ -110,13 +110,13 @@ validate_entry_uri();
 
 function gen_token($token_length=25)
 {
-  $access_token = '';
+  $token = '';
   $token_pool = '123456789123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for($i=0; $i<$token_length; $i++) {
     $index = rand(0,strlen($token_pool)-1);
-    $access_token .= $token_pool[$index];
+    $token .= $token_pool[$index];
   }
-  return $access_token;
+  return $token;
 }
 
 function gen_nonce($key)

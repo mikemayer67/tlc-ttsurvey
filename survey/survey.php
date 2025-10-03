@@ -21,23 +21,32 @@ if(!$active_id) {
 
 $title   = active_survey_title();
 $content = survey_content($active_id);
-$user    = active_userid();
+$userid  = active_userid();
+$user    = User::from_userid($userid);
 
-$show_pw_icon = json_encode(img_uri('icons8/show_pw.png'));
-$hide_pw_icon = json_encode(img_uri('icons8/hide_pw.png'));
-$name_hint    = json_encode(login_info_string('fullname'));
-$email_hint   = json_encode(login_info_string('email')   );
-$passwd_hint  = json_encode(login_info_string('password'));
-echo <<<SCRIPT
-<script>
-  const ttt_show_pw_icon='$show_pw_icon';
-  const ttt_hide_pw_icon='$hide_pw_icon';
-  const ttt_preview = false;
-  const ttt_name_hint='$name_hint';
-  const ttt_email_hint='$email_hint';
-  const ttt_password_hint='$passwd_hint';
-</script>
-SCRIPT;
+$icons = [
+  'show' => img_uri('icon8/show_pw.png'),
+  'hide' => img_uri('icon8/hide_pw.png'),
+];
+
+$hints = [
+  'name'     => login_info_string('fullname'),
+  'email'    => login_info_string('email'),
+  'password' => login_info_string('password'),
+];
+
+$user_info = [
+  'userid' => $userid,
+  'name'   => $user->fullname(),
+  'email'  => $user->email(),
+];
+
+echo "<script>";
+echo "const ttt_icons = ".json_encode($icons).";";
+echo "const ttt_hints = ".json_encode($hints).";";
+echo "const ttt_user = ".json_encode($user_info).";";
+echo "const ttt_preview = false;";
+echo "</script>";
 
 start_page('survey', [
   'survey_title'=>$title,

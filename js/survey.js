@@ -1,5 +1,28 @@
 var ce = {};
 
+function internal_error(jqXHR)
+{
+  alert(
+    "Internal error (#" + jqXHR.status + "): "
+    + jqXHR.statusText
+    + "\nPlease let the survey admin know something went wrong."
+  );
+}
+
+function hide_status()
+{
+  ce.status.removeClass().addClass('none');
+  clearTimeout(ce.status_timer);
+  ce.status_timer = setTimeout(() => {ce.status.html('')},250);
+}
+
+function show_status(level,msg)
+{
+  clearTimeout(ce.status_timer);
+  ce.status_timer = null;
+  ce.status.removeClass('none').addClass(level).html(msg);
+}
+
 
 function setup_hints()
 {
@@ -156,8 +179,8 @@ function get_user_editor()
     cancel.on('click', hide_user_editor);
     submit.on('click', function() { alert('update user')} );
 
-    nameinfo.on('click',  function() { alert(ttt_name_hint);  } );
-    emailinfo.on('click', function() { alert(ttt_email_hint); } );
+    nameinfo.on('click',  function() { alert(ttt.hints.name);  } );
+    emailinfo.on('click', function() { alert(ttt.hints_email); } );
   }
   return ce.user_editor;
 }
@@ -187,48 +210,127 @@ function show_password_editor()
 function get_password_editor()
 {
   if(!ce.password_editor) {
-    const password = $('<input>').addClass('password').attr('type','password');
-    const confirm  = $('<input>').addClass('password').attr('type','password');
-    const submit   = $('<button>').addClass('submit disabled').attr('type','button').append('update');
-    const cancel   = $('<button>').addClass('cancel').attr('type','button').append('cancel');
-    const show     = $('<img>').addClass('hide-pw');
-    const pwinfo   = $('<img>').addClass('password info');
+    ce.pw = {
+      error    : $('<div>').addClass('error'),
+      old_pw   : $('<input>').addClass('old password').attr('type','password').attr('placeholder','old password'),
+      new_pw   : $('<input>').addClass('new password').attr('type','password').attr('placeholder','new password'),
+      confirm  : $('<input>').addClass('conform password').attr('type','password').attr('placeholder','retype new password'),
+      submit   : $('<button>').addClass('submit disabled').attr('type','button').prop('diabled',true).append('update'),
+      cancel   : $('<button>').addClass('cancel').attr('type','button').append('cancel'),
+      show_old : $('<img>').addClass('hide-pw'),
+      show_new : $('<img>').addClass('hide-pw'),
+      reset    : $('<img>').addClass('password info reset'),
+      rules    : $('<img>').addClass('password info rules'),
+    };
 
-    ce.password_editor = $('<div>').attr('id','ttt-password-editor').addClass('editor-pane').append(
+    const old_label = $('<div>').addClass('label old password').append('Current Password');
+    const new_label = $('<div>').addClass('label new password').append('New Password');
+
+    ce.pw.editor = $('<div>').attr('id','ttt-password-editor').addClass('editor-pane').append(
       $('<div>').addClass('fields').append(
-        $('<div>').addClass('error').append('error text'),
-        $('<div>').addClass('wrapper').append(
-          $('<div>').addClass('label password').append('New Password'), pwinfo),
-        $('<div>').addClass('wrapper').append(password,show),
-        $('<div>').addClass('label confirm').append('Confirm Password'),
-        confirm,
+        $('<div>').addClass('wrapper').append(old_label, ce.pw.reset),
+        $('<div>').addClass('wrapper').append(ce.pw.old_pw, ce.pw.show_old),
+        $('<div>').addClass('wrapper').append(new_label, ce.pw.rules),
+        $('<div>').addClass('wrapper').append(ce.pw.new_pw, ce.pw.show_new),
+        ce.pw.confirm,
+        ce.pw.error,
       ),
-      $('<div>').addClass('actions').append(submit, cancel),
+      $('<div>').addClass('actions').append(ce.pw.submit, ce.pw.cancel),
     );
 
-    ce.navbar.parent().append(ce.password_editor);
+    ce.navbar.parent().append(ce.pw.editor);
 
-    cancel.on('click', hide_password_editor);
+    ce.pw.editor.find('input.password').on('input',check_password_inputs);
 
-    show.on('click',function() { 
-      show.toggleClass('show-pw hide-pw')
-      if(show.hasClass('show-pw')) {
-        password.attr('type','text');
-        confirm.attr('type','text');
-      } else {
-        password.attr('type','password');
-        confirm.attr('type','password');
-      }
+    ce.pw.cancel.on('click', hide_password_editor);
+    ce.pw.submit.on('click', submit_password_change);
+
+    ce.pw.show_old.on('click',function() {
+      ce.pw.show_old.toggleClass('show-pw hide-pw');
+      const show_old = ce.pw.show_old.hasClass('show-pw');
+      ce.pw.old_pw.attr('type',( show_old ? 'text' : 'password'));
+    });
+    ce.pw.show_new.on('click',function() {
+      ce.pw.show_new.toggleClass('show-pw hide-pw');
+      const show_new = ce.pw.show_new.hasClass('show-pw');
+      ce.pw.new_pw.attr('type',( show_new ? 'text' : 'password'));
+      ce.pw.confirm.attr('type',( show_new ? 'text' : 'password'));
     });
 
-    pwinfo.on('click',function() { alert(ttt_password_hint); } );
+    ce.pw.rules.on('click',function() { alert(ttt_hints.password); } );
+    ce.pw.reset.on('click',function() {
+      if( (ttt_user.email ?? "").length > 0) {
+        alert("If you cannot recall your current password:\n" +
+              "  - log out of the survey\n" +
+              "  - select 'forgot login info' in the login box\n" +
+              "  - follow the instructions for resetting your password\n");
+      } else {
+        alert("If you cannot recall your current password, contact a survey admin to help you reset it.\n\n" +
+              "Consider adding your email address to enable future password recovery.");
+      }
+    });
   }
-  return ce.password_editor;
+  return ce.pw.editor;
 }
 
 function hide_password_editor()
 {
-  ce.password_editor?.removeClass('visible');
+  ce.pw.editor?.removeClass('visible');
+}
+
+function check_password_inputs()
+{
+  const old_pw  = ce.pw.old_pw.val();
+  const new_pw  = ce.pw.new_pw.val();
+  const confirm = ce.pw.confirm.val();
+
+  const confirmed = (new_pw.length > 0) && (new_pw === confirm);
+  const can_submit = confirmed && (old_pw.length > 0);
+
+  ce.pw.old_pw.toggleClass('missing', old_pw.length === 0);
+  ce.pw.new_pw.toggleClass('missing', new_pw.length === 0);
+  ce.pw.confirm.toggleClass('missing', confirm.length === 0);
+  ce.pw.confirm.toggleClass('error', new_pw.length > 0 && !confirmed);
+
+  ce.pw.error.html('');
+
+  ce.pw.submit
+    .toggleClass('disabled',!can_submit)
+    .prop('disabled',!can_submit);
+}
+
+function submit_password_change()
+{
+  const nonce   = $('#survey input[name=nonce]').val();
+  const ajaxuri = $('#survey input[name=ajaxuri]').val();
+  
+  $.ajax({
+    type:'POST',
+    url:ajaxuri,
+    dataType:'json',
+    data:{ 
+      ajax:  'survey/update_password',
+      nonce: nonce,
+      userid: ttt_user.userid,
+      old_pw: ce.pw.old_pw.val(),
+      new_pw: ce.pw.new_pw.val(),
+    },
+  })
+  .done( function(data,status,jqXHR) {
+    if(data.success) {
+      alert('Password Updated');
+      hide_password_editor();
+    } else {
+      ce.pw.error.html(data.error);
+    }
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    if(jqXHR.status===405) {
+      location.replace('405.php');
+    } else {
+      internal_error(jqXHR);
+    }
+  });
 }
 
 //
@@ -236,8 +338,11 @@ function hide_password_editor()
 //
 
 $(document).ready( function() {
-  ce.submit = $('#ttt-body form input.submit')
-  ce.revert = $('#ttt-body form input.revert')
+  ce.submit = $('#ttt-body form input.submit');
+  ce.revert = $('#ttt-body form input.revert');
+  ce.status = $('#ttt-status');
+
+  ce.status_timer = null;
 
   setup_hints();
   setup_user_menu();
@@ -245,4 +350,6 @@ $(document).ready( function() {
   ce.confirm_logout = true;
 
   ce.revert.removeClass('hidden');
+
+  ce.status.on('click',hide_status);
 });

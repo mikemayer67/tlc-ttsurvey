@@ -44,7 +44,7 @@ function close_login_form()
 
 function add_resume_buttons($nonce)
 {
-  $tokens = cached_tokens();
+  $tokens = access_tokens();
   if(!$tokens) { return; }
   
   $icon = img_uri('icons8/delete_sign.png');

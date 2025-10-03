@@ -67,7 +67,7 @@ class User {
     // The data in this array must have been validated/sanitized
     //   BEFORE calling this constructor.  The constructor assumes
     //   it to be valid and complete.
-
+    
     $this->_userid   = $user_data['userid'];
     $this->_fullname = $user_data['fullname'];
     $this->_email    = $user_data['email'] ?? null;
@@ -235,6 +235,13 @@ class User {
 
   public function set_password($password,&$error=0)
   {
+    $rval = set_password_no_email($password,$error);
+    if($rval) { $this->send_set_password_email(); }
+    return $rval;
+  }
+
+  public function set_password_no_email($password,&$error=0)
+  {
     $error = null;
     if(!adjust_and_validate_user_input('password',$password) ) {
       log_info("Cannot update password for $this->_userid: invalid password");
@@ -247,13 +254,18 @@ class User {
     if(!$result) { return false; }
     $this->_password = $password;
 
+    return true;
+  }
+
+  public function send_set_password_email()
+  {
     $email = $this->email();
     if($email) {
       require_once app_file('include/sendmail.php');
       sendmail_profile($email, $this->userid(), 'password', '(undisclosed)', '(undisclosed)');
     }
-    return true;
   }
+  
 
   // Access Token
 
