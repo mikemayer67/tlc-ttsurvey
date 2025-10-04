@@ -1,3 +1,5 @@
+import './jquery_helpers.js'
+
 var ce = {};
 
 function internal_error(jqXHR)
@@ -31,14 +33,12 @@ function setup_hints()
       const id = $(this).data('question-id');
       const hintlock = $('#hint-lock-'+id);
       const hint = $('#hint-'+id);
-      if(hintlock.prop('checked')) {
-        // reentering the trigger icon when the hint is locked visible should hide it
-        hintlock.prop('checked',false);
-        hint.removeClass('hovering')
-      } else {
-        // otherwise, this action should show the hint
-        hint .addClass('hovering')
-      }
+
+      // reentering the trigger icon when the hint is locked visible should hide it
+      // otherwise, this action should show the hint
+      // either way, the trigger should be unlocked
+      hint.toggleClass('hovering', !hintlock.isChecked());
+      hintlock.setUnchecked();
     });
 
     ce.hint_toggles.on('pointerleave', function(e) {
@@ -77,10 +77,10 @@ function setup_user_menu()
 
   navbar.find('.username').append(trigger);
 
-  const profile = $('<button>').attr('type','button').append('edit profile');
-  const passwd = $('<button>').attr('type','button').append('change password');
-  const logout = $('<button>').attr('type','button').append('logout');
-  const menu = $('<div>').attr('id','ttt-user-menu').append(profile,passwd,logout);
+  const profile = $('<button>').setType('button').append('edit profile');
+  const passwd = $('<button>').setType('button').append('change password');
+  const logout = $('<button>').setType('button').append('logout');
+  const menu = $('<div>').setId('ttt-user-menu').append(profile,passwd,logout);
   menu.insertAfter(navbar);
 
   trigger.on('click', function(e) { menu.toggleClass('locked') } );
@@ -150,41 +150,49 @@ function show_user_editor()
 
 function get_user_editor()
 {
-  if(!ce.user_editor) {
-    const name      = $('<input>').addClass('name');
-    const email     = $('<input>').addClass('email').attr('type','email');
-    const submit    = $('<button>').addClass('submit disabled').attr('type','button').append('update');
-    const cancel    = $('<button>').addClass('cancel').attr('type','button').append('cancel');
-    const nameinfo  = $('<img>').addClass('name info');
-    const emailinfo = $('<img>').addClass('email info');
+  if(!ce.user) {
+    ce.user = {
+      name_err  : $('<div>').addClass('error'),
+      email_err : $('<div>').addClass('error'),
+      name      : $('<input>').addClass('name').setType('text'),
+      email     : $('<input>').addClass('email').setType('email'),
+      submit    : $('<button>').addClass('submit').setType('button').text('update').disable(),
+      cancel    : $('<button>').addClass('cancel').setType('button').text('cancel'),
+      nameinfo  : $('<img>').addClass('name info'),
+      emailinfo : $('<img>').addClass('email info'),
+    },
+    ce.user.name.autocomplete('name').placeholder('as you wish it to appear');
+    ce.user.email.autocomplete('email').placeholder('optional, but recommended');
 
-    ce.user_editor = $('<div>').attr('id','ttt-user-editor').addClass('editor-pane').append(
+    const name_label  = $('<div>').addClass('label name' ).append('Name');
+    const email_label = $('<div>').addClass('label email').append('Email');
+
+    ce.user.editor = $('<div>').setId('ttt-user-editor').addClass('editor-pane').append(
       $('<div>').addClass('fields').append(
-        $('<div>').addClass('error').append('error text'),
-        $('<div>').addClass('wrapper').append(
-          $('<div>').addClass('label name').append('Name'), nameinfo ),
-        name,
-        $('<div>').addClass('wrapper').append(
-          $('<div>').addClass('label email').append('email'), emailinfo ),
-        email,
+        $('<div>').addClass('wrapper').append( name_label, ce.user.nameinfo ),
+        ce.user.name,
+        ce.user.name_err,
+        $('<div>').addClass('wrapper').append( email_label, ce.user.emailinfo ),
+        ce.user.email,
+        ce.user.email_err,
       ),
-      $('<div>').addClass('actions').append(submit, cancel),
+      $('<div>').addClass('actions').append(ce.user.submit, ce.user.cancel),
     );
 
-    ce.navbar.parent().append(ce.user_editor);
+    ce.navbar.parent().append(ce.user.editor);
 
-    cancel.on('click', hide_user_editor);
-    submit.on('click', function() { alert('update user')} );
+    ce.user.cancel.on('click', hide_user_editor);
+    ce.user.submit.on('click', function() { alert('update user')} );
 
-    nameinfo.on('click',  function() { alert(ttt.hints.name);  } );
-    emailinfo.on('click', function() { alert(ttt.hints_email); } );
+    ce.user.nameinfo.on('click',  function() { alert(ttt_hints.name);  } );
+    ce.user.emailinfo.on('click', function() { alert(ttt_hints.email); } );
   }
-  return ce.user_editor;
+  return ce.user.editor;
 }
 
 function hide_user_editor()
 {
-  ce.user_editor?.removeClass('visible');
+  ce.user?.editor.removeClass('visible');
 }
 
 //
@@ -206,31 +214,36 @@ function show_password_editor()
 
 function get_password_editor()
 {
-  if(!ce.password_editor) {
+  if(!ce.pw) {
     ce.pw = {
-      error    : $('<div>').addClass('error'),
-      old_pw   : $('<input>').addClass('old password').attr('type','password').attr('placeholder','old password'),
-      new_pw   : $('<input>').addClass('new password').attr('type','password').attr('placeholder','new password'),
-      confirm  : $('<input>').addClass('conform password').attr('type','password').attr('placeholder','retype new password'),
-      submit   : $('<button>').addClass('submit disabled').attr('type','button').prop('diabled',true).append('update'),
-      cancel   : $('<button>').addClass('cancel').attr('type','button').append('cancel'),
+      old_err  : $('<div>').addClass('error'),
+      new_err  : $('<div>').addClass('error'),
+      old_pw   : $('<input>').addClass('old password').setType('password'),
+      new_pw   : $('<input>').addClass('new password').setType('password'),
+      confirm  : $('<input>').addClass('conform password').setType('password'),
+      submit   : $('<button>').addClass('submit').setType('button').text('update').disable(),
+      cancel   : $('<button>').addClass('cancel').setType('button').text('cancel'),
       show_old : $('<img>').addClass('hide-pw'),
       show_new : $('<img>').addClass('hide-pw'),
       reset    : $('<img>').addClass('password info reset'),
       rules    : $('<img>').addClass('password info rules'),
     };
+    ce.pw.old_pw.autocomplete('current-password').placeholder('current password');
+    ce.pw.new_pw.autocomplete('new-password').placeholder('new password');
+    ce.pw.confirm.autocomplete('new-password').placeholder('retype new password');
 
     const old_label = $('<div>').addClass('label old password').append('Current Password');
     const new_label = $('<div>').addClass('label new password').append('New Password');
 
-    ce.pw.editor = $('<div>').attr('id','ttt-password-editor').addClass('editor-pane').append(
+    ce.pw.editor = $('<div>').setId('ttt-password-editor').addClass('editor-pane').append(
       $('<div>').addClass('fields').append(
         $('<div>').addClass('wrapper').append(old_label, ce.pw.reset),
         $('<div>').addClass('wrapper').append(ce.pw.old_pw, ce.pw.show_old),
+        ce.pw.old_err,
         $('<div>').addClass('wrapper').append(new_label, ce.pw.rules),
         $('<div>').addClass('wrapper').append(ce.pw.new_pw, ce.pw.show_new),
         ce.pw.confirm,
-        ce.pw.error,
+        ce.pw.new_err,
       ),
       $('<div>').addClass('actions').append(ce.pw.submit, ce.pw.cancel),
     );
@@ -245,13 +258,13 @@ function get_password_editor()
     ce.pw.show_old.on('click',function() {
       ce.pw.show_old.toggleClass('show-pw hide-pw');
       const show_old = ce.pw.show_old.hasClass('show-pw');
-      ce.pw.old_pw.attr('type',( show_old ? 'text' : 'password'));
+      ce.pw.old_pw.setType(( show_old ? 'text' : 'password'));
     });
     ce.pw.show_new.on('click',function() {
       ce.pw.show_new.toggleClass('show-pw hide-pw');
       const show_new = ce.pw.show_new.hasClass('show-pw');
-      ce.pw.new_pw.attr('type',( show_new ? 'text' : 'password'));
-      ce.pw.confirm.attr('type',( show_new ? 'text' : 'password'));
+      ce.pw.new_pw.setType(( show_new ? 'text' : 'password'));
+      ce.pw.confirm.setType(( show_new ? 'text' : 'password'));
     });
 
     ce.pw.rules.on('click',function() { alert(ttt_hints.password); } );
@@ -272,7 +285,7 @@ function get_password_editor()
 
 function hide_password_editor()
 {
-  ce.pw.editor?.removeClass('visible');
+  ce.pw?.editor.removeClass('visible');
 }
 
 function check_password_inputs()
@@ -289,16 +302,15 @@ function check_password_inputs()
   ce.pw.confirm.toggleClass('missing', confirm.length === 0);
   ce.pw.confirm.toggleClass('error', new_pw.length > 0 && !confirmed);
 
-  ce.pw.error.html('');
+  ce.pw.old_err.html('');
+  ce.pw.new_err.html('');
 
-  ce.pw.submit
-    .toggleClass('disabled',!can_submit)
-    .prop('disabled',!can_submit);
+  ce.pw.submit.disable(!can_submit);
 }
 
 function submit_password_change()
 {
-  ce.pw.submit.addClass('disabled').prop('disabled',true);
+  ce.pw.submit.disable();
 
   const nonce   = $('#survey input[name=nonce]').val();
   const ajaxuri = $('#survey input[name=ajaxuri]').val();
@@ -334,7 +346,8 @@ function submit_password_change()
       }
 
     } else {
-      ce.pw.error.html(data.error);
+      ce.pw.old_err.html(data.old_error);
+      ce.pw.new_err.html(data.new_error);
     }
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
@@ -345,7 +358,7 @@ function submit_password_change()
     }
   })
   .always( function() {
-    ce.pw.submit.removeClass('disabled').prop('disabled',false);
+    ce.pw.submit.enable();
   });
 }
 

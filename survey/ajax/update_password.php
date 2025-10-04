@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require(app_file('survey/ajax/validate.php'));
 
 require_once(app_file('include/users.php'));
+require_once(app_file('include/validation.php'));
 require_once(app_file('include/login.php'));
 
 validate_ajax_nonce('survey-form');
@@ -22,16 +23,31 @@ if( !$user ) {
 }
 
 $response = array('success'=>true, 'email'=>$user->email());
-if( !$user->validate_password($old_pw) ) 
+
+// validate current/old password
+$old_pw_valid = $user->validate_password($old_pw);
+$response['old_error'] = $old_pw_valid ? '' : 'Incorrect';
+
+// validate new password
+$error = '';
+$new_pw_valid = adjust_and_validate_user_input('password',$new_pw,$error);
+$response['new_error'] = $error;
+
+if( $old_pw_valid && $new_pw_valid )
 {
-  $response['success'] = false;
-  $response['error']   = 'Current password is incorrect';
+  // try to update the password
+  if( !$user->set_password_no_email($new_pw) ) 
+  {
+    // sometihng unexpected went wrong...
+    $response['success'] = false;
+    $response['new_error'] = 'Failed to set new password';
+  }
 }
-elseif( !$user->set_password_no_email($new_pw) )
+else 
 {
+  // there was a problem with either old or new password
   $response['success'] = false;
-  $response['error']   = 'New password is invalid';
-} 
+}
 
 end_ob_logging();
 
