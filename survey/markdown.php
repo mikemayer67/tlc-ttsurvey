@@ -10,8 +10,6 @@ use HTMLPurifier_Config;
 
 require_once(app_file('include/logger.php'));
 
-log_dev("-------------- Markdown Sanitizer  --------------");
-
 handle_warnings();
 
 class MarkdownParser {
@@ -68,8 +66,6 @@ class MarkdownParser {
     $this->purifier = new HTMLPurifier($config);
 
     $ob_string = ob_get_clean();
-    // uncomment the following to help debug markdown
-    // if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
   }
 
   private function _parse(string $markdown): string 
@@ -91,8 +87,6 @@ class MarkdownParser {
     $clean_html = $this->purifier->purify($new_tgt_html);
 
     $ob_string = ob_get_clean();
-    // uncomment the following to help debug markdown
-    // if($ob_string) { log_dev("Unhandled warning: $ob_string"); }
 
     return "<div class='markdown'>$clean_html</div>";
     // --- Return the converted/sanitized markdown -> HTML ---

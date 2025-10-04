@@ -235,8 +235,8 @@ class User {
 
   public function set_password($password,&$error=0)
   {
-    $rval = set_password_no_email($password,$error);
-    if($rval) { $this->send_set_password_email(); }
+    $rval = $this->set_password_no_email($password,$error);
+    if($rval) { $this->send_password_update_email(); }
     return $rval;
   }
 
@@ -257,15 +257,16 @@ class User {
     return true;
   }
 
-  public function send_set_password_email()
+  public function send_password_update_email()
   {
     $email = $this->email();
     if($email) {
       require_once app_file('include/sendmail.php');
       sendmail_profile($email, $this->userid(), 'password', '(undisclosed)', '(undisclosed)');
+      return true;
     }
+    return false;
   }
-  
 
   // Access Token
 

@@ -12,15 +12,12 @@ function internal_error(jqXHR)
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
-  clearTimeout(ce.status_timer);
-  ce.status_timer = setTimeout(() => {ce.status.html('')},250);
+  setTimeout(() => {ce.status.html('')},0);
 }
 
 function show_status(level,msg)
 {
-  clearTimeout(ce.status_timer);
-  ce.status_timer = null;
-  ce.status.removeClass('none').addClass(level).html(msg);
+  ce.status.removeClass().addClass(level).html(msg);
 }
 
 
@@ -301,6 +298,8 @@ function check_password_inputs()
 
 function submit_password_change()
 {
+  ce.pw.submit.addClass('disabled').prop('disabled',true);
+
   const nonce   = $('#survey input[name=nonce]').val();
   const ajaxuri = $('#survey input[name=ajaxuri]').val();
   
@@ -318,8 +317,22 @@ function submit_password_change()
   })
   .done( function(data,status,jqXHR) {
     if(data.success) {
-      alert('Password Updated');
+      show_status('info','Password Updated');
       hide_password_editor();
+
+      if(data.email) {
+        $.ajax({
+          type:'POST',
+          url:ajaxuri,
+          data:{ 
+            ajax:  'survey/notify_updated_password',
+            nonce:  nonce,
+            userid: ttt_user.userid,
+            email:  data.email,
+          },
+        });
+      }
+
     } else {
       ce.pw.error.html(data.error);
     }
@@ -330,6 +343,9 @@ function submit_password_change()
     } else {
       internal_error(jqXHR);
     }
+  })
+  .always( function() {
+    ce.pw.submit.removeClass('disabled').prop('disabled',false);
   });
 }
 
@@ -341,8 +357,6 @@ $(document).ready( function() {
   ce.submit = $('#ttt-body form input.submit');
   ce.revert = $('#ttt-body form input.revert');
   ce.status = $('#ttt-status');
-
-  ce.status_timer = null;
 
   setup_hints();
   setup_user_menu();

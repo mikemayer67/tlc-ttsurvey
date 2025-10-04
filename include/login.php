@@ -115,7 +115,6 @@ class LoginCookies
 
   public function replace_active_token($token)
   {
-    log_dev("replace_active_token($token)");
     $_SESSION['active-token'] = $token;
     $this->_set_cookie(ACTIVE_TOKEN_COOKIE,$token,0);
   }
@@ -169,7 +168,6 @@ function resume_survey_as($userid,$user_token)
 function regen_active_token()
 {
   $token = gen_token();
-  log_dev("regen_active_token: $token");
   LoginCookies::instance()->replace_active_token($token);
 }
 

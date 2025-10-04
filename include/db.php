@@ -120,8 +120,7 @@ function MySQLSelect($all,$mode,$query,$types=null,$params=[])
       return $result->fetch_array($mode);
     }
   }
-  log_dev("MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
-  log_dev("MySQLSelect: failed");
+  log_dev("Failed MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
   return false;
 }
 
