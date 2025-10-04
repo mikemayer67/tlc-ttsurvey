@@ -7,6 +7,11 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/login.php'));
 
+<<<<<<< HEAD
+=======
+log_dev("PHP_SAPI: ".print_r(PHP_SAPI,true));
+
+>>>>>>> origin/27-add-dropdown-menu-to-survey-pages
 validate_ajax_nonce('survey-form');
 
 start_ob_logging();
