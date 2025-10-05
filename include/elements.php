@@ -6,6 +6,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
+require_once(app_file('include/login.php'));
+require_once(app_file('include/users.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -129,6 +131,7 @@ function start_page($context,$kwargs=[])
   //  - all other contexts
   //     - exclude if explicitly excluded by kwargs
   //     - include otherwise
+  $is_preview = array_key_exists('js_enabled',$kwargs);
   switch($context) {
   case 'print':  $include_js = false; break;
   case 'admin':  $include_js = true;  break;
@@ -146,6 +149,7 @@ function start_page($context,$kwargs=[])
     foreach($js_uris as $js_uri) {
       echo "<script src='$js_uri'></script>";
     }
+    echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
   }
 
   // Add style resources (except for print context)
@@ -176,9 +180,11 @@ function start_page($context,$kwargs=[])
   // Add the navigation bar (unless explicitly excluded via the kwargs)
   if( $kwargs['navbar'] ?? true ) {
     echo "<!-- Navbar -->";
+    echo "<div id='ttt-navbar-wrapper'>";
     echo "<div id='ttt-navbar'>";
-    echo "<span class='ttt-title-box'>";
 
+    // title box
+    echo "<span class='ttt-title-box'>";
     $logo = app_logo() ?? '';
     if($logo) {
       echo "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
@@ -186,10 +192,30 @@ function start_page($context,$kwargs=[])
     echo "<span class='ttt-title'>$title</span>";
     echo "</span>";
 
+    // status
+    $status = $kwargs['status'] ?? '';
+    echo "<span class='status'>$status</span>";
+
+    // User Info
+    $username = User::from_userid(active_userid() ?? '')?->fullname() ?? '';
+    $logout_uri = app_uri('logout');
+    echo "<span class='username'>";
+    echo "<span>$username</span>";
+    if($username) {
+      // No Javascript logout button (inside the username span)
+      // ... but only if there is a username to log out
+      echo "<noscript>";
+      echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
+      echo "</noscript>";
+    }
+    echo "</span>";
+
+
     $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
     if($menu_cb) { echo $menu_cb(); }
 
-    echo "</div>";
+    echo "</div>"; // navbar
+    echo "</div>"; // wrapper
   }
 
   // Add noscript content
@@ -215,14 +241,15 @@ function start_page($context,$kwargs=[])
     break;
 
   default:
-    echo <<<HTMLNOSCRIPT
-    <!-- Javascript suggestion -->
-    <noscript>
-    <div class='noscript'>
-      Consider enabling JavaScript for a smoother interaction with the survey
-    </div>
-    </noscript>
-    HTMLNOSCRIPT;
+    $wrapper = ($is_preview && !$include_js) ? "div" : "noscript";
+    echo "<!-- Javascript suggestion -->";
+    echo "<$wrapper>";
+    echo "<div class='noscript'>";
+    echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
+    echo "  <div>Less likely to lose your progress by leaving this page.</div>";
+    echo "  <div>Easier to update your name or email</div>";
+    echo "</div>";
+    echo "</$wrapper>";
     break;
   }
   

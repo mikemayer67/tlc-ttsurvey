@@ -67,7 +67,7 @@ class User {
     // The data in this array must have been validated/sanitized
     //   BEFORE calling this constructor.  The constructor assumes
     //   it to be valid and complete.
-
+    
     $this->_userid   = $user_data['userid'];
     $this->_fullname = $user_data['fullname'];
     $this->_email    = $user_data['email'] ?? null;
@@ -136,6 +136,14 @@ class User {
   
   public function set_fullname($fullname,&$error=0)
   {
+    $old_fullname = $this->_fullname;
+    $rval = $this>set_fullname_quiet($fullname,$error);
+    if($rval) { $this->notify_fullname_update($old_fullname, $fullname); }
+    return $rval;
+  }
+
+  public function set_fullname_quiet($fullname,&$error=0)
+  {
     $error = null;
     if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
       log_warning("Cannot update full name for $this->_userid: invalid name ($fullname)");
@@ -146,11 +154,15 @@ class User {
     if(!$result) { return false; }
 
     $this->_fullname = $fullname;
+    return true;
+  }
 
+  public function notify_fullname_update($old_fullname,$fullname)
+  {
     $email = $this->email();
     if($email) {
       require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), 'name', $old_fullname, $fullname);
+      sendmail_profile($email, $this->userid(), ['name'=>[$old_fullname,$fullname]]);
     }
     return true;
   }
@@ -158,6 +170,14 @@ class User {
   // Email
 
   public function set_email($email,&$error=0)
+  {
+    $old_email = $this->_email;
+    $rval = $this>set_email_quiet($email,$error);
+    if($rval) { $this->notify_email_update($old_email, $email); }
+    return $rval;
+  }
+
+  public function set_email_quiet($email,&$error=0)
   {
     $error = null;
     if(!adjust_and_validate_user_input('email',$email,$error)) {
@@ -172,17 +192,21 @@ class User {
     }
     if(!$result) { return false; }
 
-    $this->_email = $fullname;
+    $this->_email = $email;
+    return true;
+  }
 
+  public function notify_email_update($old_email,$email)
+  {
     if($email) {
       log_info("Sent updated email address to new address: $email");
       require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), 'email', $old_email, $email);
+      sendmail_profile($email, $this->userid(), ['email'=>[$old_email,$email]]);
     }
     if($old_email) {
       log_info("Sent updated email address to old address: $old_email");
       require_once app_file('include/sendmail.php');
-      sendmail_profile($old_email, $this->userid(), 'email', $old_email, $email);
+      sendmail_profile($old_email, $this->userid(), ['email'=>[$old_email,$email]]);
     }
     return true;
   }
@@ -235,6 +259,13 @@ class User {
 
   public function set_password($password,&$error=0)
   {
+    $rval = $this->set_password_quiet($password,$error);
+    if($rval) { $this->notify_password_update(); }
+    return $rval;
+  }
+
+  public function set_password_quiet($password,&$error=0)
+  {
     $error = null;
     if(!adjust_and_validate_user_input('password',$password) ) {
       log_info("Cannot update password for $this->_userid: invalid password");
@@ -247,12 +278,18 @@ class User {
     if(!$result) { return false; }
     $this->_password = $password;
 
+    return true;
+  }
+
+  public function notify_password_update()
+  {
     $email = $this->email();
     if($email) {
       require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), 'password', '(undisclosed)', '(undisclosed)');
+      sendmail_profile($email, $this->userid(), ['password']);
+      return true;
     }
-    return true;
+    return false;
   }
 
   // Access Token

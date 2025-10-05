@@ -14,7 +14,6 @@ $all_surveys = all_surveys();
 
 // add content data to the first survey that will be shown
 $id = $_REQUEST['survey'] ?? null;
-log_dev("requested id = $id");
 if($all_surveys) {
   $index = null;
   if(isset($id)) {
@@ -25,12 +24,10 @@ if($all_surveys) {
       }
     }
   }
-  log_dev("array index=$index");
   if(!isset($index)) {
     $index = 0;
     $id = $all_surveys[0]['survey_id'];
   }
-  log_dev("array index=$index / id=$id");
   $all_surveys[$index]['content'] = survey_content($id);
 }
 

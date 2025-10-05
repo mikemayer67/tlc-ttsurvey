@@ -34,7 +34,6 @@ try
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
     list($scope,$action) = explode('/',$_POST['ajax']);
-    log_dev("AJAX scope='$scope' action='$action'");
     if(!isset($action)) { http_response_code(405); die(); }
     require safe_app_file("$scope/ajax/$action.php");
     die();
@@ -54,7 +53,6 @@ try
 
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));
-
   $active_user = active_userid();
 
   if(!$active_user) {
@@ -74,8 +72,8 @@ try
   // Handle logout and forget token requests
   //   Allow from get or post queries
   if(key_exists('logout',$_REQUEST)) {
-    @todo('implement logout');
-    handle_logout();
+    logout_active_user();
+    header('Location: '.app_uri());
     die();
   }
   if(key_exists('forget',$_REQUEST)) {

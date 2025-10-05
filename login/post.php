@@ -79,7 +79,7 @@ function handle_login_with_password()
 
   // success
   //   set the active user
-  //   add userid/token to cached tokens if requested
+  //   add userid/token to cached access tokens if requested
   //   redirect to survey entry point to reload with the survey
   start_survey_as($user);
 

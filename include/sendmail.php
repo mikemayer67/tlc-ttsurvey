@@ -91,7 +91,10 @@ function sendmail($email,$subject,$text,$html=null)
   }
   finally
   {
-    log_dev("SMTP logging:\n".ob_get_contents());
+    $smtp_logging = ob_get_contents();
+    if($smtp_logging) { 
+      log_dev("SMTP uogging: $smtp_logging");
+    }
     ob_end_clean();
   }
 }
@@ -100,15 +103,33 @@ function sendmail($email,$subject,$text,$html=null)
 // Profile Update Notice
 //------------------------------------------------
 
-function sendmail_profile($email,$userid,$change,$old_value,$new_value)
+function sendmail_profile($email,$userid,$changes)
 {
   $html  = "<div style='font-weight:bolder;'>";
   $html .= "A change has been made to the profile associated with userid: $userid";
   $html .= "</div>";
   $html .= "<div style='margin-left:1em;'>";
-  $html .= "<ul>";
-  $html .= "<li>Old $change: $old_value</li>";
-  $html .= "<li>New $change: $new_value</li>";
+
+  $text  = "A change has been made to the profile associated with userid: $userid";
+  $text .= "";
+
+  foreach($changes as $k=>$v) {
+    $html .= "<ul>";
+    if(is_string($k)) {
+      [$old,$new] = $v;
+      $html .= "<li>Old $k: $old</li>";
+      $html .= "<li>New $k: $new</li>";
+      $text .= "  Old $k: $old";
+      $text .= "  New $k: $new";
+    } else {
+      $html .= "<li>Old $v: (undisclosed)</li>";
+      $html .= "<li>New $v: (undisclosed)</li>";
+      $text .= "  Old $v: (undisclosed)";
+      $text .= "  New $v: (undisclosed)";
+    }
+    $html .= "</ul>";
+  }
+
   $html .= "</ul>";
   $html .= "</div>";
   $html .= "<br>";
@@ -116,15 +137,9 @@ function sendmail_profile($email,$userid,$change,$old_value,$new_value)
   $html .= "<div style='margin-left:1em;'>";
   $html .= html_contacts(); 
 
-  $text = <<<TEXT
-A change has been made to the profile associated with userid: $userid"
-
-  Old $change: $old_value
-  New $change: $new_value
-
-If you did not make this change, please contact one of the following:
-TEXT;
-  $text .= text_contacts(); 
+  $text .= "";
+  $text .= "If you did not make this change, please contact one of the following:";
+  $text .= text_contacts();
 
   return sendmail($email, "Profile Update", $text, $html);
 }
