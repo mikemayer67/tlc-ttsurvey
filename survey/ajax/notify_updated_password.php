@@ -11,7 +11,7 @@ require_once(app_file('include/sendmail.php'));
 start_ob_logging();
 $userid = $_POST['userid'];
 $email  = $_POST['email'];
-sendmail_profile($email,$userid,'password','(undisclosed)','(undisclosed)');
+sendmail_profile($email,$userid,['password']);
 end_ob_logging();
 
 http_response_code(200);

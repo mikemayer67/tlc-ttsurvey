@@ -139,6 +139,7 @@ function hide_user_menu()
 function show_user_editor()
 {
   hide_user_menu();
+  hide_status();
   hide_password_editor();
   if(ttt_preview) { 
     alert('Profile editor is disabled in preview mode');
@@ -146,6 +147,10 @@ function show_user_editor()
   }
   const editor = get_user_editor();
   editor.addClass('visible');
+  
+  ce.user.name.val(ttt_user.name);
+  ce.user.email.val(ttt_user.email);
+  check_user_inputs();
 }
 
 function get_user_editor()
@@ -161,7 +166,7 @@ function get_user_editor()
       nameinfo  : $('<img>').addClass('name info'),
       emailinfo : $('<img>').addClass('email info'),
     },
-    ce.user.name.autocomplete('name').placeholder('as you wish it to appear');
+    ce.user.name.autocomplete('name').placeholder('required');
     ce.user.email.autocomplete('email').placeholder('optional, but recommended');
 
     const name_label  = $('<div>').addClass('label name' ).append('Name');
@@ -181,8 +186,10 @@ function get_user_editor()
 
     ce.navbar.parent().append(ce.user.editor);
 
+    ce.user.editor.find('input').on('input',check_user_inputs);
+
     ce.user.cancel.on('click', hide_user_editor);
-    ce.user.submit.on('click', function() { alert('update user')} );
+    ce.user.submit.on('click', submit_user_change);
 
     ce.user.nameinfo.on('click',  function() { alert(ttt_hints.name);  } );
     ce.user.emailinfo.on('click', function() { alert(ttt_hints.email); } );
@@ -195,6 +202,92 @@ function hide_user_editor()
   ce.user?.editor.removeClass('visible');
 }
 
+function check_user_inputs()
+{
+  const name  = ce.user.name.val();
+  const email = ce.user.email.val();
+
+  const has_change = (name !== ttt_user.name) || (email !== ttt_user.email);
+  const can_submit = has_change && (name.length > 0);
+
+  ce.user.name.toggleClass('missing',name.length===0);
+
+  ce.user.name_err.text('');
+  ce.user.email_err.text('');
+
+  ce.user.submit.disable(!can_submit);
+}
+
+function submit_user_change()
+{
+  ce.user.submit.disable();
+
+  const nonce   = $('#survey input[name=nonce]').val();
+  const ajaxuri = $('#survey input[name=ajaxuri]').val();
+
+  const new_name  = ce.user.name.val();
+  const new_email = ce.user.email.val();
+  const old_name  = ttt_user.name;
+  const old_email = ttt_user.email;
+  
+  $.ajax({
+    type:'POST',
+    url:ajaxuri,
+    dataType:'json',
+    data:{ 
+      ajax:  'survey/update_user_info',
+      nonce:  nonce,
+      userid: ttt_user.userid,
+      name:   new_name,
+      email:  new_email,
+    },
+  })
+  .done( function(data,status,jqXHR) {
+    if(data.success) {
+      show_status('info','User Profile Updated');
+      hide_user_editor();
+
+      ttt_user.name  = data.name;
+      ttt_user.email = data.email;
+
+      ce.user.name.val(data.name);
+      ce.user.email.val(data.email);
+
+      $('#ttt-navbar span.username span').text(data.name);
+
+      if(data.email || old_email) {
+        $.ajax({
+          type:'POST',
+          url:ajaxuri,
+          data:{ 
+            ajax:  'survey/notify_updated_userinfo',
+            nonce:  nonce,
+            userid: ttt_user.userid,
+            old_name:  old_name,
+            new_name:  data.name,
+            old_email: old_email,
+            new_email: data.email,
+          },
+        });
+      }
+
+    } else {
+      ce.user.name_err.text(data.name_error);
+      ce.user.email_err.text(data.email_error);
+    }
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    if(jqXHR.status===405) {
+      location.replace('405.php');
+    } else {
+      internal_error(jqXHR);
+    }
+  })
+  .always( function() {
+    ce.user.submit.enable();
+  });
+}
+
 //
 // Password Editor
 //
@@ -202,6 +295,7 @@ function hide_user_editor()
 function show_password_editor()
 {
   hide_user_menu();
+  hide_status();
   hide_user_editor();
   if(ttt_preview) { 
     alert('Password editor is disabled in preview mode');
@@ -302,8 +396,8 @@ function check_password_inputs()
   ce.pw.confirm.toggleClass('missing', confirm.length === 0);
   ce.pw.confirm.toggleClass('error', new_pw.length > 0 && !confirmed);
 
-  ce.pw.old_err.html('');
-  ce.pw.new_err.html('');
+  ce.pw.old_err.text('');
+  ce.pw.new_err.text('');
 
   ce.pw.submit.disable(!can_submit);
 }
@@ -346,8 +440,8 @@ function submit_password_change()
       }
 
     } else {
-      ce.pw.old_err.html(data.old_error);
-      ce.pw.new_err.html(data.new_error);
+      ce.pw.old_err.text(data.old_error);
+      ce.pw.new_err.text(data.new_error);
     }
   })
   .fail( function(jqXHR,textStatus,errorThrown) {

@@ -319,6 +319,10 @@ div.ttt-splash img {
   width:30em;
 }
 
+#ttt-navbar-wrapper #ttt-user-editor input.missing {
+  background:#fdd;
+}
+
 #ttt-password-editor input {
   width:15em;
 }
