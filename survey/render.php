@@ -63,9 +63,9 @@ class RenderEngine
     $this->add_submit_bar();
     echo "</form>";
 
-    if($this->preview_js || !$this->is_preview) {
-      echo "<script type='module' src='", js_uri('survey'), "'></script>";
-    }
+//    if($this->preview_js || !$this->is_preview) {
+//      echo "<script type='module' src='", js_uri('survey'), "'></script>";
+//    }
   }
 
   private function add_submit_bar()

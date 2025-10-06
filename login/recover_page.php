@@ -7,7 +7,7 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('login/elements.php'));
 
-start_page('login');
+start_login_page('login');
 
 $redirect_data = get_redirect_data();
 

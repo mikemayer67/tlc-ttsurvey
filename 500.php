@@ -14,7 +14,7 @@ if(isset($errid)) {
 }
 
 $url = dirname($_SERVER['SCRIPT_NAME']);
-start_page('500');
+start_fault_page('500');
 
 echo "<div class='ttt-splash'>";
 add_link_tag(app_uri(),img_tag('500.png','','Something went terribly wrong'));

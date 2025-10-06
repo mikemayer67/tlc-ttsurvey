@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/elements.php'));
 require_once(app_file('login/elements.php'));
 
-start_page('login');
+start_login_page('login');
 
 $nonce = start_login_form("Password Reset","pwreset");
 

@@ -1,4 +1,4 @@
-import './jquery_helpers.js'
+//import './jquery_helpers.js'
 
 var ce = {};
 
@@ -52,7 +52,7 @@ function setup_hints()
 function logout_user(e)
 {
   hide_user_menu();
-  if(ttt_preview) { 
+  if(ce.is_preview) { 
     alert('Logout is disabled in preview mode');
     return; 
   }
@@ -141,7 +141,7 @@ function show_user_editor()
   hide_user_menu();
   hide_status();
   hide_password_editor();
-  if(ttt_preview) { 
+  if(ce.is_preview) { 
     alert('Profile editor is disabled in preview mode');
     return;
   }
@@ -297,7 +297,7 @@ function show_password_editor()
   hide_user_menu();
   hide_status();
   hide_user_editor();
-  if(ttt_preview) { 
+  if(ce.is_preview) { 
     alert('Password editor is disabled in preview mode');
     return;
   }
@@ -465,10 +465,12 @@ $(document).ready( function() {
   ce.revert = $('#ttt-body form input.revert');
   ce.status = $('#ttt-status');
 
+  ce.is_preview = (typeof ttt_preview === 'undefined' ? false : ttt_preview);
+
   setup_hints();
   setup_user_menu();
 
-  ce.confirm_logout = true;
+  ce.confirm_logout = false;
 
   ce.revert.removeClass('hidden');
 

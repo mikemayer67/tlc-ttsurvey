@@ -8,6 +8,7 @@ require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('login/elements.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -50,257 +51,314 @@ function add_hidden_submit($name,$value)
   echo "<input type='submit' class='hidden' name='$name' value='$value'>";
 }
 
+// Common page setup function for different contexts
 
-// The start_page function adds all theh motherhood and apple pie that belongs
-//   at the start of any web page (<html>, <head>, <title>, <body>, etc.).
-//
-// The page title is set to one of the following:  (in order)
-//   - value specified in kwargs (survey_title)
-//   - active survey title
-//   - the name of the survey application as set in Admin/settings
-//
-// Conditionally adds loading of javascript resource 
-//   - never loads js resources if context is 'print'
-//   - always loads js resources if context is 'admin'
-//   - otherwise, load js resources unless overridden in kwargs (js_enabled)
-//   Loads:
-//   - jquery
-//   - $context/js/$context.js  (if it exists)
-//
-// Conditionally adds loading of css resources
-//   - never loads css resources if context is 'print'
-//   Loads:
-//   - css/ttt.php
-//   - css/$context.css (if it exists)
-//   - any css URI listed in the kwargs (css)
-//
-// Closes the header and opens the body
-//
-// Conditioinally adds a navigation bar
-//   - loads unless overridden by kwargs (navbar=false)
-//   - includes the survey app logo if specified in Admin/Settings
-//   - includes the survey title (see above)
-//   - adds navbar items (most likely menus) specified in kwargs (navbar-menu-cb)
-//     - is included in kwargs, the specified callback is invoked
-//     - that callback is pretty much free to do whatever it can with the DOM
-//
-// Conditionally adds noscript content
-//   - if context is 'admin', displays a message that the Admin Dashboard requires javascript
-//   - If context is 'print', no noscript is added
-//   - Otherwise, a suggestion is displayed suggeting use of javascript for a richer experience
-//
-// Conditinally initializes the admin lock mechanism if context is 'admin'
-//
-// Adds a status bar (at the top of the page) unless overridden by kwargs (status=false)
-//   - initially hidden if there is no current status message to be shown
-//   - initially visible/stylized if there is a current status message to be shown
-//   - subsequently, The appearance and visisbility of this status bar is handled via js logic
-//
-// Opens a div element with id of ttt-body.
-//   - This will be THE container for the survey content.
-//   - It will be closed/finalized by the end_page function
-//
-function start_page($context,$kwargs=[])
+function start_login_page()
 {
-  $context = strtolower($context);
+  log_dev("start_login_page()");
+  $context = 'login';
+  start_header();
+  add_js_resources($context);
+  add_css_resources($context);
+  end_header();
+  add_navbar($context);
+  add_js_recommended();
+  add_status_bar();
+  start_body();
+}
 
-  $title = $kwargs['survey_title'] ?? active_survey_title() ?? app_name();
-  $title_len = strlen($title);
+function start_admin_page($cur_tab=null)
+{
+  log_dev("start_admin_page()");
+  $context = 'admin';
 
-  $base = base_uri();
+  start_header();
 
-  log_dev("start_page($context)");
-#  $trace = debug_backtrace();
-
-  echo <<<HTMLHEAD
-  <!DOCTYPE html><html><head>
-  <meta charset='UTF-8'>
-  <meta name='viewport' content='width=device-width, initial-scale=1'>
-  <base href='$base'>
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-  <!-- Title -->
-  <title>$title</title>
-  HTMLHEAD;
-
-  // Add javascript resources
-  //  - exclude if context is print
-  //  - require if context is admin
-  //  - all other contexts
-  //     - exclude if explicitly excluded by kwargs
-  //     - include otherwise
-  $is_preview = array_key_exists('js_enabled',$kwargs);
-  switch($context) {
-  case 'print':  $include_js = false; break;
-  case 'admin':  $include_js = true;  break;
-  default:       $include_js = ($kwargs['js_enabled'] ?? true); break;
+  add_js_resources($context);
+  if($cur_tab) { // admin tab page
+    add_css_resources($context, css_uri($cur_tab,'admin') );
+  } else { // admin login page
+    add_css_resources($context, css_uri('login'), css_uri('login','admin') );
   }
 
-  if($include_js) {
-    $js_uris = [ js_uri('jquery-3.7.1.min') ];
+  end_header();
 
-    if(file_exists( app_file("$context/js/$context.js")) ) { 
-      $js_uris[] = js_uri($context,$context);
-    }
+  add_navbar($context);
+  add_js_required();
+  add_admin_lock();
+  add_status_bar();
 
-    echo "<!-- Javascript -->";
-    foreach($js_uris as $js_uri) {
-      echo "<script src='$js_uri'></script>";
-    }
-    echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
-  }
+  start_body();
+}
 
-  // Add style resources (except for print context)
-  //  - always include base CSS
-  //  - add context specific URI if css file exists
-  //  - add kwargs provided URIs
-  if($context !== 'print') 
-  {
-    $css_uris = [ css_uri('ttt') ];
+function start_survey_page($title,$userid)
+{
+  log_dev("start_survey_page()");
+  $context = 'survey';
 
-    if( file_exists(app_file("css/$context.css"))) { 
-      $css_uris[] = css_uri($context); 
-    }
+  start_header($title);
 
-    foreach( (array)($kwargs['css'] ?? []) as $css_uri ) { 
-      $css_uris[] = $css_uri; 
-    }
+  add_js_resources($context, js_uri('jquery_helpers'));
+  add_css_resources($context);
 
-    echo "<!-- Style -->";
-    foreach ($css_uris as $uri) {
-       echo "<link rel='stylesheet' type='text/css' href='$uri'>";
-    }
-  }
+  end_header();
 
-  // close the head element and open the body element
-  echo "</head><body>";
+  add_navbar($context, $userid, $title, '[status]');
+  add_js_recommended();
+  add_status_bar();
 
-  // Add the navigation bar (unless explicitly excluded via the kwargs)
-  if( $kwargs['navbar'] ?? true ) {
-    echo "<!-- Navbar -->";
-    echo "<div id='ttt-navbar-wrapper'>";
-    echo "<div id='ttt-navbar'>";
+  start_body();
+}
 
-    // title box
-    echo "<span class='ttt-title-box'>";
-    $logo = app_logo() ?? '';
-    if($logo) {
-      echo "<img class='ttt-logo' src='".img_uri($logo)."' alt='Trinity Logo'>";
-    }
-    echo "<span class='ttt-title'>$title</span>";
-    echo "</span>";
+function start_preview_page($title,$userid,$enable_js=true)
+{
+  log_dev("start_preview_page()");
+  $context = 'survey';
 
-    // status
-    $status = $kwargs['status'] ?? '';
-    echo "<span class='status'>$status</span>";
+  start_header($title);
 
-    // User Info
-    $username = User::from_userid(active_userid() ?? '')?->fullname() ?? '';
-    $logout_uri = app_uri('logout');
-    echo "<span class='username'>";
-    echo "<span>$username</span>";
-    if($username) {
-      // No Javascript logout button (inside the username span)
-      // ... but only if there is a username to log out
-      echo "<noscript>";
-      echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
-      echo "</noscript>";
-    }
-    echo "</span>";
+  if($enable_js) { add_js_resources($context, js_uri('jquery_helpers')); }
+  add_css_resources($context);
+
+  end_header();
+
+  add_navbar($context, $userid, $title, 'Preview');
+  add_js_recommended($enable_js ? 'noscript' : 'div');
+  add_status_bar();
+
+  start_body();
+}
+
+function start_nosurvey_page()
+{
+  log_dev("start_nosurvey_page()");
+  $context = 'survey';
+
+  start_header();
+
+  add_js_resources($context, js_uri('jquery_helpers'));
+  add_css_resources($context);
+
+  end_header();
+
+  $userid = active_userid() ?? null;
+  add_navbar($context,$userid);
+  add_js_recommended();
+
+  start_body();
+}
 
 
-    $menu_cb = $kwargs['navbar-menu-cb'] ?? null;
-    if($menu_cb) { echo $menu_cb(); }
+function start_fault_page($context)
+{
+  log_dev("start_fault_page($context)");
 
-    echo "</div>"; // navbar
-    echo "</div>"; // wrapper
-  }
+  start_header();
 
-  // Add noscript content
-  //   - javascript is required for admin context
-  //   - javascript is excluded for print context
-  //   - javascript is recommended for all other contexts
-  switch($context) 
-  {
-  case 'admin':
-    echo <<<HTMLNOSCRIPT
-    <!-- Javascript required -->
-    <noscript>
-    <div class='noscript'>
-      <div class='ttt-card'>
-        Javascript is required for the Admin Dashboard
-      </div>
-    </div>
-    </noscript>
-    HTMLNOSCRIPT;
-    break;
+  add_css_resources($context);
+  end_header();
+  add_navbar($context); 
 
-  case 'print':
-    break;
-
-  default:
-    $wrapper = ($is_preview && !$include_js) ? "div" : "noscript";
-    echo "<!-- Javascript suggestion -->";
-    echo "<$wrapper>";
-    echo "<div class='noscript'>";
-    echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
-    echo "  <div>Less likely to lose your progress by leaving this page.</div>";
-    echo "  <div>Easier to update your name or email</div>";
-    echo "</div>";
-    echo "</$wrapper>";
-    break;
-  }
-  
-  // Add admin lock (only in admin context)
-  if($context === 'admin') 
-  {
-    require_once(app_file('admin/admin_lock.php'));
-    $lock = json_encode(obtain_admin_lock());
-    echo <<<ADMINLOCK
-    <div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>
-    <script>
-      var admin_lock = $lock;
-    </script>
-    ADMINLOCK;
-  }
-
-  // Add the status bar (unless explicitly excluded via the kwargs)
-  if( $kwargs['status'] ?? true ) {
-    echo "<!-- Status Bar -->";
-    $status = get_status_message();
-    if($status) {
-      $level = $status[0];
-      $msg   = $status[1];
-      echo "<div id='ttt-status' class='$level'>$msg</div>";
-    } else {
-      echo "<div id='ttt-status' class='none'></div>";
-    }
-  }
-
-  // Start the container for survey body
-  echo "<div id='ttt-body'>";
+  start_body();
 }
 
 // The end_page function simply closes the ttt-boday <div>, <body>, and <html>
-//   - oh yeah... and it adds a footer that acknowleges the use of icons from icons8.com.
+//   - it also adds a footer that acknowleges the use of icons from icons8.com.
 function end_page()
 {
   // close the body and html elements
   echo "</div>\n";  // #ttt-body
 
-  echo <<<HTMLFOOTER
-    <!-- Footer -->
-    <div id='ttt-footer'>
-      <span class='ttt-ack'>
-        icons by <a href='https://icons8.com' target='_blank'>icons8</a>
-      </span>
-    </div>
-    HTMLFOOTER;
+  echo "<!-- Footer -->";
+  echo "<div id='ttt-footer'>";
+  echo "  <span class='ttt-ack'>";
+  echo "    icons by <a href='https://icons8.com' target='_blank'>icons8</a>";
+  echo "  </span>";
+  echo "</div>";
 
   // close the html elements
   echo "</body>\n"; // html body
   echo "</html>\n";
+}
+
+function start_header($title = null)
+{
+  $base  = base_uri();
+  $title = $title ?? active_survey_title() ?? app_name();
+
+  $google_fonts = "https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap";
+
+  echo "<!DOCTYPE html><html><head>";
+  echo "<meta charset='UTF-8'>";
+  echo "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+  echo "<base href='$base'>";
+  echo "<!-- Google Fonts -->";
+  echo "<link rel='preconnect' href='https://fonts.googleapis.com'>";
+  echo "<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>";
+  echo "<link href='$google_fonts' rel='stylesheet'>";
+  echo "<!-- Title -->";
+  echo "<title>$title</title>";
+}
+
+function add_js_resources($context, ...$extra_js)
+{
+  //  - always include jquery
+  //  - add context specific URI if js file exists
+  //  - add any extra js that may have been provided
+  $js_uris = array_merge(
+    [ js_uri('jquery-3.7.1.min') ],
+    $extra_js,
+    file_exists(app_file("$context/js/$context.js")) ? [js_uri($context,$context)] : [],
+  );
+  echo "<!-- Javascript -->";
+  foreach($js_uris as $js_uri) {
+    echo "<script src='$js_uri'></script>";
+  }
+  echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
+}
+
+function add_css_resources($context, ...$extra_css)
+{
+  //  - always include base CSS
+  //  - add context specific URI if css file exists
+  //  - add any extra css that may have been provided
+  $css_uris = array_merge(
+    [css_uri('ttt')],
+    file_exists(app_file("css/$context.css")) ? [css_uri($context)] : [],
+    $extra_css
+  );
+
+  echo "<!-- Style -->";
+  foreach ($css_uris as $uri) {
+    echo "<link rel='stylesheet' type='text/css' href='$uri'>";
+  }
+}
+
+function end_header()
+{
+  // ends the HTML header
+  // starts the HTML body
+  echo "</head><body>";
+}
+
+function start_body()
+{
+  // starts the ttt body
+  echo "<div id='ttt-body'>";
+}
+
+function add_navbar($context,$userid=null,$title=null,$status='')
+{
+  $title = $title ?? active_survey_title() ?? app_name();
+  $logo_file = app_logo();
+  $logo_uri  = $logo_file ? img_uri($logo_file) : '';
+
+  echo "<!-- Navbar -->";
+  // include both a wrapper and the navbar itself for purpose of css layout of the user menu
+  echo "<div id='ttt-navbar-wrapper'>";
+  echo "<div id='ttt-navbar'>";
+
+  // title box
+  echo "<span class='ttt-title-box'>";
+  if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
+  echo "<span class='ttt-title'>$title</span>";
+  echo "</span>";
+
+  // status
+  echo "<span class='status'>$status</span>";
+
+  // User Info
+  echo "<span class='username'>";
+  $user = User::from_userid($userid) ?? null;
+  if($user) {
+    $username = $user->fullname();
+    echo "<span>$username</span>";
+    add_usermenu($context,$user);
+  }
+  echo "</span>";
+
+  echo "</div>"; // navbar
+  echo "</div>"; // wrapper
+}
+
+function add_usermenu($context,$user) 
+{
+  // No-Javascript user menu
+
+  // @@@ TODO: Modify this to take place of javascript user menu
+  //   Will include profile/password items in survey context
+  $logout_uri = app_uri('logout');
+  echo "<noscript>";
+  echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
+  echo "</noscript>";
+
+  // Javascript enabled user menu
+
+  $icons = [
+    'show' => img_uri('icon8/show_pw.png'),
+    'hide' => img_uri('icon8/hide_pw.png'),
+  ];
+
+  $hints = [
+    'name'     => login_info_string('fullname'),
+    'email'    => login_info_string('email'),
+    'password' => login_info_string('password'),
+  ];
+
+  $user_info = [
+    'userid' => $user->userid(),
+    'name'   => $user->fullname(),
+    'email'  => $user->email(),
+  ];
+
+  echo "<script>";
+  echo "const ttt_icons = ".json_encode($icons).";";
+  echo "const ttt_hints = ".json_encode($hints).";";
+  echo "const ttt_user = ".json_encode($user_info).";";
+  echo "const ttt_preview = false;";
+  echo "</script>";
+}
+
+function add_js_required()
+{
+  echo "<!-- Javascript required -->";
+  echo "<noscript>";
+  echo "<div class='noscript'>";
+  echo "<div class='ttt-card'>Javascript is required for the Admin Dashboard</div>";
+  echo "</div>";
+  echo "</noscript>";
+}
+
+function add_js_recommended($wrapper="noscript")
+{
+  echo "<!-- Javascript suggestion -->";
+  echo "<$wrapper>";
+  echo "<div class='noscript'>";
+  echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
+  echo "  <div>Less likely to lose your progress by leaving this page.</div>";
+  echo "  <div>Easier to update your name or email</div>";
+  echo "</div>";
+  echo "</$wrapper>";
+}
+
+function add_admin_lock()
+{
+  require_once(app_file('admin/admin_lock.php'));
+  $lock = json_encode(obtain_admin_lock());
+  echo "<div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>";
+  echo "<script>var admin_lock = $lock;</script>";
+}
+
+function add_status_bar()
+{
+  echo "<!-- Status Bar -->";
+  $status = get_status_message();
+  if($status) {
+    $level = $status[0];
+    $msg   = $status[1];
+    echo "<div id='ttt-status' class='$level'>$msg</div>";
+  } else {
+    echo "<div id='ttt-status' class='none'></div>";
+  }
 }
 

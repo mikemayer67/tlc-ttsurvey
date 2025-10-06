@@ -113,11 +113,7 @@ if(!in_array($cur_tab,$active_tabs)) {
 // Everything that follows handle populating the admin dashboard content
 //   for the current tab
 
-$tab_css = css_uri($cur_tab,'admin');
-
-start_page('admin',
-  [ 'css'=>css_uri($cur_tab,'admin'), ]
-);
+start_admin_page($cur_tab);
 
 $form_uri = app_uri('admin');
 $nonce = gen_nonce('admin-navbar');
