@@ -51,6 +51,7 @@ class RenderEngine
     $this->in_grid = false;
 
     echo "<form id='survey'>";
+    $this->add_nojs_user_menu();
     if(!$this->is_preview) {
       $nonce = gen_nonce('survey-form');
       add_hidden_input('nonce',$nonce);
@@ -79,6 +80,14 @@ class RenderEngine
       echo "<input id='revert' class='revert hidden' type='submit' value='Start Over' formnovalidate>";
     }
     echo "</div>";
+  }
+
+  private function add_nojs_user_menu()
+  {
+    echo "<noscript>";
+    echo "<input id='nojs-user-menu-toggle' type='checkbox'>";
+    echo "<div id='nojs-user-menu'>abc</div>";
+    echo "</noscript>";
   }
 
   private function add_section($section)

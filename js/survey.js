@@ -72,7 +72,7 @@ function setup_user_menu()
 {
   const navbar  = $('#ttt-navbar');
   const trigger = $('<div>').addClass('menu-trigger').append(
-    $('<img>').attr('src',ttt_menu_icon).attr('alt','User Menu'),
+    $('<img>').addClass('menu-trigger').attr('src',ttt_menu_icon).attr('alt','User Menu'),
   );
 
   navbar.find('.username').append(trigger);
