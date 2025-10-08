@@ -292,6 +292,11 @@ div.ttt-splash img {
   color:darkred;
 }
 
+#ttt-navbar-wrapper .editor-pane input.mismatch {
+  background:#fdd;
+  color:darkred;
+}
+
 #ttt-navbar-wrapper .editor-pane input:placeholder-shown {
   background:#ffd;
 }

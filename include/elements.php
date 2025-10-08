@@ -117,7 +117,9 @@ function start_preview_page($title,$userid,$enable_js=true)
 
   start_header($title);
 
-  if($enable_js) { add_js_resources($context, js_uri('jquery_helpers')); }
+  if($enable_js) { 
+    add_js_resources($context, js_uri('jquery_helpers')); 
+  }
   add_css_resources($context);
 
   end_header();
@@ -315,7 +317,6 @@ function add_usermenu($context,$user)
   echo "const ttt_icons = ".json_encode($icons).";";
   echo "const ttt_hints = ".json_encode($hints).";";
   echo "const ttt_user = ".json_encode($user_info).";";
-  echo "const ttt_preview = false;";
   echo "</script>";
 }
 

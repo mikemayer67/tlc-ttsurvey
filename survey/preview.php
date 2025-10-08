@@ -20,15 +20,13 @@ $preview_js   = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEA
 
 $userid = active_userid();
 
-echo "<script>const ttt_preview = true;</script>";
-
 start_preview_page($survey_title,$userid,$preview_js);
 
 render_survey($userid,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
 
-//echo "<h1>Content</h1>";
-//echo "<pre>".print_r($content,true)."</pre>";
+$user_menu = js_uri('user_menu','survey');
+echo "<script>const ttt_preview = true;</script>";
+echo "<script type='module' src='$user_menu'></script>";
 
 end_page();
-
 die();

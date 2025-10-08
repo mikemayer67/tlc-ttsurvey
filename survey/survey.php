@@ -7,8 +7,6 @@ require_once(app_file('include/status.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('survey/render.php'));
 
-todo("Flesh out survey page");
-
 // Verify that there is an active survey
 //   If not, display the "No survey" page
 require_once(app_file('include/surveys.php'));
@@ -25,6 +23,8 @@ $userid  = active_userid() ?? null;
 start_survey_page($title,$userid);
 render_survey($userid,$content);
 
+$user_menu = js_uri('user_menu','survey');
+echo "<script type='module' src='$user_menu'></script>";
+
 end_page();
-
-
+die();

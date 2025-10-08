@@ -157,7 +157,7 @@ export default function init(ce)
     })
     .done( function(data,status,jqXHR) {
       if (data.success) {
-        alert(data.message + "\n\nUpdating Admin Dashboard");
+//        alert(data.message + "\n\nUpdating Admin Dashboard");
         const url = new URL(location.href);
         url.searchParams.set('tab','surveys');
         url.searchParams.set('survey',id);

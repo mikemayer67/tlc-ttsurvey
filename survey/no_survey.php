@@ -22,4 +22,8 @@ echo "</div>";
 
 echo "</form>";
 
+$user_menu = js_uri('user_menu','survey');
+echo "<script type='module' src='$user_menu'></script>";
+
 end_page();
+die();
