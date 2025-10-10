@@ -228,6 +228,12 @@ div.ttt-splash img {
   white-space:nowrap;
 }
 
+#ttt-user-menu button:hover {
+  color:#2f6bd6;
+  text-shadow: 0 4px 5px rgba(100, 100, 200, 0.5);
+  cursor:pointer;
+}
+
 
 #ttt-navbar-wrapper .editor-pane
 {
@@ -372,18 +378,22 @@ div.ttt-splash img {
   pointer-events:auto;
 }
 
-/*
 #ttt-user-menu a.user-menu-item {
-  justify-content:center;
-  width:fit-content;
+  width:100%;
   font-size:large;
   background:inherit;
   white-space:nowrap;
+
+  text-decoration: none;
+  color:black;
+  transition: text-shadow 0.1s ease, color 0.1s ease;
 }
 
 #ttt-user-menu a.user-menu-item:hover {
+  color:#2f6bd6;
+  text-shadow: 0 4px 5px rgba(100, 100, 200, 0.5);
+  cursor:pointer;
 }
-*/
 
 
 /**

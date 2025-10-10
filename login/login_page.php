@@ -18,8 +18,13 @@ $userid   = $redirect_data['userid']   ?? null;
 $remember = $redirect_data['remember'] ?? True;
 
 add_resume_buttons($nonce);
-add_login_input("userid", array('value' => $userid) );
-add_login_input("password");
+add_login_input("userid", array(
+  'value' => $userid,
+  'placeholder' => 'userid selected when you registered',
+));
+add_login_input("password", array(
+  'placeholder' => 'password associated with your userid',
+));
 
 add_login_checkbox("remember", array(
   "label" => "Add Reconnect Button",

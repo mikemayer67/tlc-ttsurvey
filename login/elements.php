@@ -80,6 +80,7 @@ function add_login_input($type,$kwargs=array())
   $label = $kwargs['label'] ?? ucwords($name);
   $value = stripslashes($kwargs['value'] ?? '');
   $optional = $kwargs['optional'] ?? False;
+  $placeholder = $kwargs['placeholder'] ?? '';
   $info = $kwargs['info'] ?? null;
   $id = "ttt-input-$name";
 
@@ -106,28 +107,35 @@ function add_login_input($type,$kwargs=array())
 
   # add input fields
   
-  $value = $value ? "value=\"$value\"" : "";
-
-  $empty = $optional ? '' : 'empty';
-  $required = $optional ? "placeholder='[optional]'" : 'required';
+  $optional = $optional ? 'optional' : '';
+  $required = $optional ? "placeholder='[optional] $placeholder'" : 'required';
   $ac = "autocomplete='$type'";
   
-  if($type=='new-password') 
+  if($type=='locked')
   {
-    echo "<input id='$id' type='password' class='text-entry entry empty primary' name='$name' required $ac>";
-    echo "<input type='password' class='text-entry entry empty confirm' name='$name-confirm' required $ac>";
-//    if(is_safari()) {
-//      echo "<div class='safari notice'>You may need to use a different browser if you don't like Safari's suggestion</div>";
-//    }
+    add_hidden_input($name,$value);
+    $value = $placeholder ?: $value;
+    echo "<div class='locked-input'>$value</div>";
+  }
+  elseif($type=='new-password') 
+  {
+    $classes = 'text-entry entry $optional';
+    $attributes = "required $ac placeholder='new password'";
+    echo "<input id='$id' type='password' class='$classes primary' name='$name'         $attributes>";
+    $attributes = "required $ac placeholder='retype password'";
+    echo "<input          type='password' class='$classes confirm' name='$name-confirm' $attributes>";
   }
   else
   {
+    $value = $value ? "value=\"$value\"" : "";
+
     switch($type) {
     case 'password': $value = '';    break;
     case 'email':                    break;
     default:         $type = 'text'; break;
     }
-    echo "<input id='$id' type='$type' class='text-entry $empty' name='$name' $value $required $ac>";
+    $attributes = "$value $required $ac placeholder='$placeholder'";
+    echo "<input id='$id' type='$type' class='text-entry $optional' name='$name' $attributes>";
   }
 
   # add info box

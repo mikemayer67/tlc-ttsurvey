@@ -281,7 +281,9 @@ function add_navbar($context,$userid=null,$title=null,$status='')
 
   echo "</div>"; // navbar
 
-  add_nojs_user_menu($context);
+  if($user) {
+    add_nojs_user_menu($context);
+  }
 
   echo "</div>"; // wrapper
 }
@@ -336,12 +338,16 @@ function add_menu_trigger($context,$user)
 
 function add_nojs_user_menu($context)
 {
+  $nonce = gen_nonce('user-menu');
+  $logout_uri = app_uri("logout&ttt=$nonce");
+  $change_pw_uri = app_uri("update=password&ttt=$nonce");
+  $update_prof_uri = app_uri("update=profile&ttt=$nonce");
   echo "<noscript>";
   echo "<input id='nojs-menu-toggle' type='checkbox'>";
   echo "<div id='ttt-user-menu'>";
-  echo "<a class='user-menu-item'>edit profile</button>";
-  echo "<a class='user-menu-item'>edit password</button>";
-  echo "<a class='user-menu-item'>logout</button>";
+  echo "<a class='user-menu-item' href='$update_prof_uri' target='ttt_blank'>edit profile</a>";
+  echo "<a class='user-menu-item' href='$change_pw_uri' target='ttt_blank'>edit password</a>";
+  echo "<a class='user-menu-item' href='$logout_uri'>logout</a>";
   echo "</div>";
   echo "</noscript>";
 }

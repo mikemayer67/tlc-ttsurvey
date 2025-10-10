@@ -30,6 +30,7 @@ require_once(app_file('dev/hacks.php'));
 try
 {
   log_dev("-------------- Start of TT --------------");
+  log_dev("REQUEST: ".print_r($_REQUEST,true));
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
@@ -68,10 +69,10 @@ try
     die();
   }
 
-  // password change requests require you be logged in... thus this appears
+  // update requests require you be logged in... thus this appears
   //   only after the check for an active user.
-  if(key_exists('changepw',$_REQUEST)) {
-    require(app_file('login/changepw_page.php'));
+  if(key_exists('update',$_REQUEST)) {
+    require(app_file('login/update_'.$_REQUEST['update'].'_page.php'));
     die();
   }
 

@@ -1,5 +1,6 @@
 * {
   --empty-field-color:#ffffe0;
+  --empty-optional-color:#f0f0f0;
   --login-background:#ddd;
   --header-background:#008;
   --header-foreground:white;
@@ -132,14 +133,26 @@
   align-self:flex-end;
 }
 #ttt-login .input input.text-entry {
+  background-color:white;
   display:block;
   padding:0.25em 0.5em;
   margin-left:1em;
   width: calc(100% - 1em);
   border: inset 1px #ccc;
 }
-#ttt-login .input input.empty {
+
+#ttt-login div.locked-input {
+  margin-left:1em;
+  border: inset 1px #ccc;
+  padding:0.25em 0.5em;
+}
+
+#ttt-login .input input.text-entry:placeholder-shown {
   background-color:var(--empty-field-color);
+}
+
+#ttt-login .input input.optional.text-entry:placeholder-shown {
+  background-color:var(--empty-optional-color);
 }
 
 #ttt-login .input .info-box {
