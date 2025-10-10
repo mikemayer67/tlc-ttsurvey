@@ -60,15 +60,6 @@ try
     die();
   }
 
-  // If we get a password reset request when there is an active user,
-  //   set the status to let the user know that they will need to log
-  //   out to handle the reset requst
-  if(key_exists('pwreset',$_REQUEST)) {
-    set_warning_status(
-      "<div>A password recovery request was recieved...</div>".
-      "<div style='font-style:italic;margin-left:1em;font-size:small;'>Ignoring it as you are clearly already logged in.</div>");
-  };
-
   // Handle logout and forget token requests
   //   Allow from get or post queries
   if(key_exists('logout',$_REQUEST)) {
@@ -76,6 +67,25 @@ try
     header('Location: '.app_uri());
     die();
   }
+
+  // password change requests require you be logged in... thus this appears
+  //   only after the check for an active user.
+  if(key_exists('changepw',$_REQUEST)) {
+    require(app_file('login/changepw_page.php'));
+    die();
+  }
+
+  // If we get a password reset request when there is an active user,
+  //   set the status to let the user know that they will need to log
+  //   out to handle the reset requst
+  if(key_exists('pwreset',$_REQUEST)) {
+    log_dev("set_warning_status");
+    set_warning_status(
+      "<div style='font-weight:700'>A password recovery request was recieved...</div>".
+      "<div>If you wish to change your password, select 'change password' from the user profile maneu.</div>"
+    );
+  };
+
   if(key_exists('forget',$_REQUEST)) {
     forget_user_token($_REQUEST['forget'] ?? '');
     // .. no reason to abort at this point... 
