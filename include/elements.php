@@ -275,23 +275,37 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   if($user) {
     $username = $user->fullname();
     echo "<span>$username</span>";
-    add_usermenu($context,$user);
+    add_menu_trigger($context,$user);
   }
   echo "</span>";
 
   echo "</div>"; // navbar
+
+  add_nojs_user_menu($context);
+
   echo "</div>"; // wrapper
 }
 
-function add_usermenu($context,$user) 
+function add_menu_trigger($context,$user) 
 {
   // No-Javascript user menu
 
   // @@@ TODO: Modify this to take place of javascript user menu
   //   Will include profile/password items in survey context
-  $logout_uri = app_uri('logout');
+  //----------
+  //  $logout_uri = app_uri('logout');
+  //  echo "<noscript>";
+  //  echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
+  //  echo "</noscript>";
+  //----------
+
+  $menu_icon = img_uri('icons8/menu.png');
   echo "<noscript>";
-  echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
+  echo "<div class='menu-trigger'>";
+  echo "<label for='nojs-menu-toggle'>";
+  echo "<img class='menu-trigger' src='$menu_icon' alt='User Menu'>";
+  echo "</label>";
+  echo "</div>";
   echo "</noscript>";
 
   // Javascript enabled user menu
@@ -316,8 +330,20 @@ function add_usermenu($context,$user)
   echo "<script>";
   echo "const ttt_icons = ".json_encode($icons).";";
   echo "const ttt_hints = ".json_encode($hints).";";
-  echo "const ttt_user = ".json_encode($user_info).";";
+  echo "const ttt_user  = ".json_encode($user_info).";";
   echo "</script>";
+}
+
+function add_nojs_user_menu($context)
+{
+  echo "<noscript>";
+  echo "<input id='nojs-menu-toggle' type='checkbox'>";
+  echo "<div id='ttt-user-menu'>";
+  echo "<a class='user-menu-item'>edit profile</button>";
+  echo "<a class='user-menu-item'>edit password</button>";
+  echo "<a class='user-menu-item'>logout</button>";
+  echo "</div>";
+  echo "</noscript>";
 }
 
 function add_js_required()

@@ -193,7 +193,7 @@ div.ttt-splash img {
 
 #ttt-user-menu {
   position: absolute;
-  top:50px;
+  top:100%;
   right:0;
   z-index:5;
 
@@ -362,39 +362,28 @@ div.ttt-splash img {
  * No-Javascript styling
  **/
 
-#ttt-logout {  /* no-js only */
-  display: block;
-  padding: 1px 4px;
-  margin-left:0.5em;
-  background-color: #d8d8d8;
-  color: black;
-  text-decoration: none;
-  border-radius: 4px;
-  border: 1px solid #222222;
-  font-family: sans-serif;
-  font-size: 65%;
-  cursor: pointer;
-}
-
-#ttt-logout:hover {  /* no-js only */
-  background-color:#c0c0c0;
-  box-shadow:0 1px 4px 0 rgba(0,0,0,0.16),0 1px 6px 0 rgba(0,0,0,0.12);
-}
-
-#nojs-user-menu-toggle {
+#nojs-menu-toggle {
   display:none;
 }
 
-
-#nojs-user-menu {
-/*  display:none; */
+#nojs-menu-toggle:checked + #ttt-user-menu {
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
 }
 
-
-
-#nojs-user-menu-toggle:checked + #nojs-user-menu {
-  display:block;
+/*
+#ttt-user-menu a.user-menu-item {
+  justify-content:center;
+  width:fit-content;
+  font-size:large;
+  background:inherit;
+  white-space:nowrap;
 }
+
+#ttt-user-menu a.user-menu-item:hover {
+}
+*/
 
 
 /**
