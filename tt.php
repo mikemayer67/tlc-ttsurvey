@@ -19,18 +19,14 @@ namespace tlc\tts;
 define('APP_DIR',realpath(dirname(__FILE__)));
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 
 session_start();
 
-// Developer hacks
-todo("remove these hacks");
-require_once(app_file('dev/hacks.php'));
-
 try
 {
   log_dev("-------------- Start of TT --------------");
-  log_dev("REQUEST: ".print_r($_REQUEST,true));
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
@@ -61,6 +57,15 @@ try
     die();
   }
 
+  // Handle any explicit redirect request
+  $redirect_page = get_redirect_page();
+  if($redirect_page) {
+    $page = safe_app_file("login/{$redirect_page}_page.php");
+    if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
+    require($page);
+    die();
+  }
+
   // Handle logout and forget token requests
   //   Allow from get or post queries
   if(key_exists('logout',$_REQUEST)) {
@@ -69,10 +74,15 @@ try
     die();
   }
 
-  // update requests require you be logged in... thus this appears
-  //   only after the check for an active user.
+  // update requests require you be logged in... thus the following two 
+  //   appear only after the check for an active user.
   if(key_exists('update',$_REQUEST)) {
-    require(app_file('login/update_'.$_REQUEST['update'].'_page.php'));
+    require(app_file('login/'.$_REQUEST['update'].'_page.php'));
+    die();
+  }
+  $form = $_POST['form'] ?? null;
+  if( in_array( $form, ['changepw','changeprof'], true) ) {
+    require('login/'.$form.'_handler.php');
     die();
   }
 
@@ -80,7 +90,6 @@ try
   //   set the status to let the user know that they will need to log
   //   out to handle the reset requst
   if(key_exists('pwreset',$_REQUEST)) {
-    log_dev("set_warning_status");
     set_warning_status(
       "<div style='font-weight:700'>A password recovery request was recieved...</div>".
       "<div>If you wish to change your password, select 'change password' from the user profile maneu.</div>"

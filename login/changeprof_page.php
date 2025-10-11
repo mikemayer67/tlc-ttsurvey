@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 // don't drop the nonce as this may be required multiple times from same user menu
-validate_get_nonce('user-menu',false);
+validate_get_nonce('changeprof',false);
 
 require_once(app_file('include/elements.php'));
 require_once(app_file('login/elements.php'));
@@ -17,7 +17,7 @@ $user     = User::from_userid($userid);
 $fullname = $user->fullname();
 $email    = $user->email();
 
-$nonce = start_login_form("Update User Profile","changeprof");
+$nonce = start_login_form("Update User Profile","update-form");
 
 add_login_input("locked",array(
   'name'  => 'userid',

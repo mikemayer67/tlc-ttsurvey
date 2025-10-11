@@ -488,3 +488,23 @@ div.ttt-splash img {
 {
 }
 
+/**
+ * Close Tab/Window Page
+ **/
+
+#ttt-body div.close {
+  margin:1em;
+  width:100%;
+  text-align:center;
+  font-weight:bold;
+}
+
+#ttt-body div.close.message {
+  font-size: x-large;
+}
+
+#ttt-body div.close.notification {
+  font-size: large;
+  font-weight:normal;
+  font-style: italic;
+}

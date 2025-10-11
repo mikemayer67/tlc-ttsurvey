@@ -20,12 +20,13 @@ function handle_pwreset_form()
 {
   validate_nonce('pwreset');
 
-  try{
-    if(!key_exists('action',$_POST)) {
-      internal_error("Password reset handler triggered without action");
-    }
+  $action = $_POST['action'] ?? null;
+  if(!$action) {
+    internal_error("Password reset handler triggered without action");
+  }
 
-    switch( $action = $_POST['action'] )
+  try{
+    switch($action)
     {
     case 'cancel':
       clear_redirect_data();

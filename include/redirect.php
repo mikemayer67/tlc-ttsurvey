@@ -10,7 +10,7 @@ define('REDIRECT_TIMEOUT', 'redirect-timeout');
 // The functions in this file allow for data to be retained across a http
 //   redirection back to the app's main entry point.  
 //
-// As there is no mechaism for sending POST data with the redirection, this
+// As there is no mechanism for sending POST data with the redirection, this
 //   data is stored in the SESSION data.  There are two pieces to this data:
 //     - page: (string) contains the page/action to be resumed after the redirect
 //     - data: (array) auxilary data needed to resume the page/action after the redirect 

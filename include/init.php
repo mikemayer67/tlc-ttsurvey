@@ -126,6 +126,11 @@ function gen_nonce($key)
   return $nonce;
 }
 
+function get_nonce($key)
+{
+  return $_SESSION['nonce'][$key] ?? null;
+}
+
 function validate_nonce($key,$src='POST',$invalidate=true)
 {
   $expected = $_SESSION['nonce'][$key] ?? null;

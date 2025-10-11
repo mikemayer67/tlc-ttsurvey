@@ -338,14 +338,14 @@ function add_menu_trigger($context,$user)
 
 function add_nojs_user_menu($context)
 {
-  $nonce = gen_nonce('user-menu');
-  $logout_uri = app_uri("logout&ttt=$nonce");
-  $change_pw_uri = app_uri("update=password&ttt=$nonce");
-  $update_prof_uri = app_uri("update=profile&ttt=$nonce");
+  $logout_uri = app_uri("logout");
+  $nonce = gen_nonce('update-page');
+  $change_pw_uri = app_uri("update=changepw&ttt=$nonce");
+  $change_prof_uri = app_uri("update=changeprof&ttt=$nonce");
   echo "<noscript>";
   echo "<input id='nojs-menu-toggle' type='checkbox'>";
   echo "<div id='ttt-user-menu'>";
-  echo "<a class='user-menu-item' href='$update_prof_uri' target='ttt_blank'>edit profile</a>";
+  echo "<a class='user-menu-item' href='$change_prof_uri' target='ttt_blank'>edit profile</a>";
   echo "<a class='user-menu-item' href='$change_pw_uri' target='ttt_blank'>edit password</a>";
   echo "<a class='user-menu-item' href='$logout_uri'>logout</a>";
   echo "</div>";
