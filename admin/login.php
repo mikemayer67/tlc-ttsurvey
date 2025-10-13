@@ -8,13 +8,7 @@ require_once(app_file('login/elements.php'));
 
 log_dev("------------------ Start of Admin Login -------------------");
 
-start_page('admin', [
-  'css'=>[
-    css_uri('login'),
-    css_uri('login','admin'),
-  ]
-]);
-
+start_admin_page();
 
 $admin_login_requested = ($_REQUEST['admin']??'') === 'login';
 

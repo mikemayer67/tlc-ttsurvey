@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/elements.php'));
 require_once(app_file('login/elements.php'));
 
-start_page('login');
+start_login_page('login');
 
 $redirect_data = get_redirect_data();
 
@@ -20,6 +20,7 @@ $remember = $redirect_data['remember'] ?? True;
 add_login_input("userid",array(
   "label" => "Userid",
   "value" => $userid,
+  "placeholder" => "enter your desired survey login name",
   "info" => login_info_html("userid"),
 ));
 
@@ -31,12 +32,14 @@ add_login_input("new-password",array(
 add_login_input("fullname",array(
   "label" => 'Name',
   "value" => $fullname,
+  "placeholder" => "how your name will appear on the survey",
   "info" => login_info_html("fullname"),
 ));
 
 add_login_input("email",array(
   "optional" => True, 
   "value" => $email,
+  "placeholder" => "for notifcations and password reset",
   "info" => login_info_html("email"),
 ));
 

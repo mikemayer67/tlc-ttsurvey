@@ -7,7 +7,7 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('login/elements.php'));
 
-start_page('login');
+start_login_page('login');
 
 $redirect_data = get_redirect_data();
 
@@ -18,8 +18,13 @@ $userid   = $redirect_data['userid']   ?? null;
 $remember = $redirect_data['remember'] ?? True;
 
 add_resume_buttons($nonce);
-add_login_input("userid", array('value' => $userid) );
-add_login_input("password");
+add_login_input("userid", array(
+  'value' => $userid,
+  'placeholder' => 'userid selected when you registered',
+));
+add_login_input("password", array(
+  'placeholder' => 'password associated with your userid',
+));
 
 add_login_checkbox("remember", array(
   "label" => "Add Reconnect Button",

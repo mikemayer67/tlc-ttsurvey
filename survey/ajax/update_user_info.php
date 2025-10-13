@@ -36,20 +36,25 @@ $response['email_error'] = $email_valid ? '' : $error;
 
 if($name_valid && $email_valid) 
 {
+  MySQLBeginTransaction();
+
   if( $name !== $user->fullname() ) {
     $error = '';
-    if( !$user->set_fullname_quiet($name,$error) ) {
+    if( !$user->set_fullname($name,$error) ) {
       $response['success'] = false;
       $response['name_error'] = $error;
     }
   }
+
   if( $email !== $user->email() ) {
     $error = '';
-    if( !$user->set_email_quiet($email,$error) ) {
+    if( !$user->set_email($email,$error) ) {
       $response['success'] = false;
       $response['email_error'] = $error;
     }
   }
+
+  if($response['success']) { MySQLCommit(); } else { MySQLRollback(); }
 }
 else
 {

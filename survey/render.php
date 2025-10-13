@@ -59,12 +59,8 @@ class RenderEngine
     foreach($this->sections as $section) {
       $this->add_section($section);
     }
-    $this->add_submit_bar();
+    if(!$this->is_preview) { $this->add_submit_bar(); }
     echo "</form>";
-
-    if($this->preview_js || !$this->is_preview) {
-      echo "<script type='module' src='", js_uri('survey'), "'></script>";
-    }
   }
 
   private function add_submit_bar()

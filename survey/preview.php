@@ -18,21 +18,15 @@ $survey_title = $_POST['title'] ?? '[No Name]';
 $content      = json_decode($_POST['content'] ?? '',true);
 $preview_js   = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-$active_user = active_userid();
+$userid = active_userid();
 
+start_preview_page($survey_title,$userid,$preview_js);
+
+render_survey($userid,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
+
+$user_menu = js_uri('user_menu','survey');
 echo "<script>const ttt_preview = true;</script>";
-
-start_page('survey', [
-  'survey_title'=>$survey_title,
-  'js_enabled'=>$preview_js,
-  'status'=>'Preview',
-]);
-
-render_survey($active_user,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
-
-//echo "<h1>Content</h1>";
-//echo "<pre>".print_r($content,true)."</pre>";
+echo "<script type='module' src='$user_menu'></script>";
 
 end_page();
-
 die();

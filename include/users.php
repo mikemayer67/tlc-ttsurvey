@@ -67,7 +67,7 @@ class User {
     // The data in this array must have been validated/sanitized
     //   BEFORE calling this constructor.  The constructor assumes
     //   it to be valid and complete.
-    
+
     $this->_userid   = $user_data['userid'];
     $this->_fullname = $user_data['fullname'];
     $this->_email    = $user_data['email'] ?? null;
@@ -133,85 +133,167 @@ class User {
   }
 
   // Full Name
-  
+
   public function set_fullname($fullname,&$error=0)
   {
-    $old_fullname = $this->_fullname;
-    $rval = $this>set_fullname_quiet($fullname,$error);
-    if($rval) { $this->notify_fullname_update($old_fullname, $fullname); }
-    return $rval;
-  }
+    // Note this function will return:
+    //   false if there was an issue with the update command
+    //   0     if the command was ok, but no database update was needed
+    //   1     if the command was ok and the fullname was updated
 
-  public function set_fullname_quiet($fullname,&$error=0)
-  {
     $error = null;
     if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
       log_warning("Cannot update full name for $this->_userid: invalid name ($fullname)");
       return false;
     }
-    $old_fullname = $this->_fullname;
+
     $result = MySQLExecute('update tlc_tt_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
-    if(!$result) { return false; }
 
-    $this->_fullname = $fullname;
-    return true;
+    if($result) { $this->_fullname = $fullname; }
+
+    return $result;
   }
 
-  public function notify_fullname_update($old_fullname,$fullname)
+  public function set_fullname_and_notify($fullname,&$error=0)
   {
-    $email = $this->email();
-    if($email) {
-      require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), ['name'=>[$old_fullname,$fullname]]);
+    $old_fullname = $this->_fullname;
+    $rval = $this>set_fullname($fullname,$error);
+
+    if($rval) { 
+      if($email = $this->email()) {
+        require_once app_file('include/sendmail.php');
+        sendmail_profile($email, $this->userid(), ['name'=>[$old_fullname,$fullname]]);
+      }
     }
-    return true;
+    return $rval;
   }
+
 
   // Email
 
   public function set_email($email,&$error=0)
   {
-    $old_email = $this->_email;
-    $rval = $this>set_email_quiet($email,$error);
-    if($rval) { $this->notify_email_update($old_email, $email); }
-    return $rval;
-  }
+    // Note this function will return: 
+    //   false if there was an issue with the update command
+    //   0     if the command was ok, but no database update was needed
+    //   1     if the command was ok and the email address was updated
 
-  public function set_email_quiet($email,&$error=0)
-  {
     $error = null;
     if(!adjust_and_validate_user_input('email',$email,$error)) {
       log_warning("Cannot update email for $this->_userid: invalid email ($email)");
       return false;
     }
-    $old_email = $this->_email;
     if($email) {
       $result = MySQLExecute('update tlc_tt_userids set email=? where userid=?','ss',$email,$this->_userid);
     } else {
       $result = MySQLExecute('update tlc_tt_userids set email=NULL where userid=?','s',$this->_userid);
     }
-    if(!$result) { return false; }
 
-    $this->_email = $email;
-    return true;
+    if($result) { $this->_email = $email; }
+
+    return $result;
   }
 
-  public function notify_email_update($old_email,$email)
+  public function set_email_and_notify($email,&$error=0)
   {
-    if($email) {
-      log_info("Sent updated email address to new address: $email");
-      require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), ['email'=>[$old_email,$email]]);
+    $old_email = $this->_email;
+    $rval = $this->set_email($email,$error);
+
+    if($rval) { 
+      if($email) {
+        require_once app_file('include/sendmail.php');
+        log_info("Sent updated email address to new address: $email");
+        sendmail_profile($email, $this->userid(), ['email'=>[$old_email,$email]]);
+      }
+      if($old_email) {
+        require_once app_file('include/sendmail.php');
+        log_info("Sent updated email address to old address: $old_email");
+        sendmail_profile($old_email, $this->userid(), ['email'=>[$old_email,$email]]);
+      }
     }
-    if($old_email) {
-      log_info("Sent updated email address to old address: $old_email");
-      require_once app_file('include/sendmail.php');
-      sendmail_profile($old_email, $this->userid(), ['email'=>[$old_email,$email]]);
+
+    return $rval;
+  }
+
+  public function clear_email()            { return $this->set_email(null);            }
+  public function clear_email_and_notify() { return $this->set_email_and_notify(null); }
+
+  // Profile (fullname + email)
+
+  public function update_profile($fullname,$email,&$error=0)
+  {
+    // $fullname should NOT be falsey... this will cause the update to fail
+    // $email MAY be falsey... this will remove the email from the profile
+    //
+    // Note this function will return: 
+    //   false if there was an issue with the update command
+    //   0     if the command was ok, but no database update was needed
+    //   true  if the command was ok and the either name or email address was updated
+
+    // Grab the current values for fullname and email in case we need to reset them
+    $old_fullname = $this->_fullname;
+    $old_email    = $this->_email;
+    
+    // We're going to call two functions which modify the database.  If the second one
+    //  fails, we're going to want to undo the first one.
+    MySQLBeginTransaction();
+
+    $fullname_updated = $this->set_fullname($fullname); 
+    $email_updated    = $this->set_email($email); 
+
+    if( ($fullname_updated === false) || ($email_updated === false) ) {
+      // A return value of false indicates an issue with the user input or the update query
+      // A return value of 0 indicates that the update query was valid, but there was no change 
+      //   required in the database values.  This is ok
+      MySQLRollback();
+      $this->_fullname = $old_fullname;
+      $this->_email    = $old_email;
+      return false;
+    } else {
+      // The queries were successful (even if they had no change)
+      //   Issue a commit to close the current transaction
+      MySQLCommit();
     }
+
+    if(!($fullname_updated || $email_updated)) {
+      // neither was updated, but there was no error, per se.  return 0
+      return 0;
+    }
+
     return true;
   }
 
-  public function clear_email() { return $this->set_email(null); }
+  public function update_profile_and_notify($fullname,$email,&$error=0)
+  {
+    $old_fullname = $this->_fullname;
+    $old_email    = $this->_email;
+
+    $rval = $this->update_profile($fullname,$email,$error);
+
+    if($rval) {
+      $is_new_email = ($email !== $old_email);
+      if($email) {
+        $to = $is_new_email ? 'to new address' : 'to';
+        log_info("Sending updated profile $to: $email");
+        require_once app_file('include/sendmail.php');
+        sendmail_profile($email, $this->userid(), [
+          'name' =>[$old_fullname, $fullname],
+          'email'=>[$old_email,$email]
+        ]);
+      }
+      if($old_email && $is_new_email) {
+        log_info("Sending updated profile to old address: $old_email");
+        require_once app_file('include/sendmail.php');
+        sendmail_profile($old_email, $this->userid(), [
+          'name' =>[$old_fullname, $fullname],
+          'email'=>[$old_email,$email]
+        ]);
+      }
+    }
+
+    return $rval;
+  }
+
 
   // Password
 
@@ -254,18 +336,16 @@ class User {
       return false;
     }
 
-    return $this->set_password($password,$error);
+    return $this->set_password_and_notify($password,$error);
   }
 
   public function set_password($password,&$error=0)
   {
-    $rval = $this->set_password_quiet($password,$error);
-    if($rval) { $this->notify_password_update(); }
-    return $rval;
-  }
+    // Note this function will return: 
+    //   false if there was an issue with the update command
+    //   0     if the command was ok, but no database update was needed
+    //   1     if the command was ok and the password was updated
 
-  public function set_password_quiet($password,&$error=0)
-  {
     $error = null;
     if(!adjust_and_validate_user_input('password',$password) ) {
       log_info("Cannot update password for $this->_userid: invalid password");
@@ -275,21 +355,24 @@ class User {
     $password = password_hash($password,PASSWORD_DEFAULT);
 
     $result = MySQLExecute('update tlc_tt_userids set password=? where userid=?', 'ss', $password, $this->_userid);
-    if(!$result) { return false; }
-    $this->_password = $password;
 
-    return true;
+    if($result) { $this->_password = $password; }
+
+    return $result;
   }
 
-  public function notify_password_update()
+  public function set_password_and_notify($password,&$error=0)
   {
-    $email = $this->email();
-    if($email) {
-      require_once app_file('include/sendmail.php');
-      sendmail_profile($email, $this->userid(), ['password']);
-      return true;
+    $rval = $this->set_password($password,$error);
+
+    if($rval) { 
+      $email = $this->email();
+      if($email) {
+        require_once app_file('include/sendmail.php');
+        sendmail_profile($email, $this->userid(), ['password']);
+      }
     }
-    return false;
+    return $rval;
   }
 
   // Access Token
@@ -309,7 +392,7 @@ class User {
   }
 
   // Anonymous Proxy
-  
+
   public function get_anonid()
   {
     if( password_verify( $this->_userid, $this->_anonid ) ) { return null; }
@@ -334,7 +417,7 @@ class User {
 
     // wrap this in a transaction so that we ensure either both or neither
     //   the userid and anonid tables are updated
-    
+
     MySQLBeginTransaction();
     $anonid = 'anon_' . strtolower(gen_token(10));
     $result = MySQLExecute('insert into tlc_tt_anonids values (?)','s',$anonid);
