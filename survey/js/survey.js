@@ -47,6 +47,30 @@ function setup_hints()
   }
 }
 
+function enable_radio_button_deselect()
+{
+  const radio_buttons = $('#ttt-body form input[type=radio]');
+
+  radio_buttons.each(function() {
+    $(this).data('is-checked',$(this).is(':checked'));
+  });
+
+  radio_buttons.on('click', function(e) {
+    const rb = $(this);
+    const is_checked  = rb.is(':checked');
+    const was_checked = rb.data('is-checked');
+    if( is_checked && was_checked ) {
+      rb.data('is-checked',false);
+      rb.prop('checked',false);
+    } else if(is_checked) {
+      rb.data('is-checked',true);
+      radio_buttons.filter('input[type=radio]').not(rb).data('is-checked',false);
+    } else {
+      rb.data('is-checked',false);
+    }
+  });
+}
+
 //
 // User Menu Hooks
 //
@@ -74,4 +98,6 @@ $(document).ready( function() {
 
   ce.revert.removeClass('hidden');
   ce.status.on('click',hide_status);
+
+  enable_radio_button_deselect();
 });
