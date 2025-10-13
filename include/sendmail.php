@@ -114,20 +114,24 @@ function sendmail_profile($email,$userid,$changes)
   $text .= "";
 
   foreach($changes as $k=>$v) {
-    $html .= "<ul>";
     if(is_string($k)) {
       [$old,$new] = $v;
-      $html .= "<li>Old $k: $old</li>";
-      $html .= "<li>New $k: $new</li>";
-      $text .= "  Old $k: $old";
-      $text .= "  New $k: $new";
+      if($old !== $new) {
+        $html .= "<ul>";
+        $html .= "<li>Old $k: $old</li>";
+        $html .= "<li>New $k: $new</li>";
+        $html .= "</ul>";
+        $text .= "  Old $k: $old";
+        $text .= "  New $k: $new";
+      }
     } else {
+      $html .= "<ul>";
       $html .= "<li>Old $v: (undisclosed)</li>";
       $html .= "<li>New $v: (undisclosed)</li>";
+      $html .= "</ul>";
       $text .= "  Old $v: (undisclosed)";
       $text .= "  New $v: (undisclosed)";
     }
-    $html .= "</ul>";
   }
 
   $html .= "</ul>";

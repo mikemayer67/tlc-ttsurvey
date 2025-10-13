@@ -12,9 +12,9 @@ require_once(app_file('include/redirect.php'));
 //
 // As sumch this file should be included using require rather than require_once.
 
-function handle_changepw_form()
+function handle_updatepw_form()
 {
-  validate_and_retain_nonce('changepw');
+  validate_and_retain_nonce('updatepw');
 
   $action = $_POST['action'] ?? null;
   if(!$action) { internal_error("Missing action in update request");   }
@@ -64,7 +64,7 @@ function handle_changepw_form()
     return;
   }
 
-  if(!$user->set_password($new_pw)) {
+  if(!$user->set_password_and_notify($new_pw)) {
     handle_error("Failed to update password");
     return;
   }
@@ -78,15 +78,16 @@ function handle_changepw_form()
 function handle_error($msg)
 {
   add_redirect_data('status',[$msg,'error']);
-  set_redirect_page('changepw');
+  set_redirect_page('updatepw');
   $nonce = get_nonce('update-page');
   $app_uri = app_uri("ttt=$nonce");
   header("Location: $app_uri");
   die();
 }
 
-handle_changepw_form();
+handle_updatepw_form();
 
+$app_uri = app_uri();
 header("Location: $app_uri");
 die();
  

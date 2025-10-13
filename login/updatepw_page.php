@@ -21,7 +21,7 @@ $status = $redirect_data['status'] ?? null;
 if($status) { set_status_message(...$status); }
 
 start_login_page('login');
-$nonce = start_login_form("Change Password","changepw");
+$nonce = start_login_form("Change Password","updatepw");
 
 $username = $user->fullname();
 add_login_input("locked",array(
@@ -32,7 +32,6 @@ add_login_input("locked",array(
 
 add_login_input("password",array(
   'name'  => "password",
-  'value' => $cur_pw,
   'label' => 'Current Password',
   'info'  => login_info_html('password'),
   'placeholder' => "password associated with $userid",

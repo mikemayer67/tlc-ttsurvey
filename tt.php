@@ -81,7 +81,7 @@ try
     die();
   }
   $form = $_POST['form'] ?? null;
-  if( in_array( $form, ['changepw','changeprof'], true) ) {
+  if( in_array( $form, ['updatepw','updateprof'], true) ) {
     require('login/'.$form.'_handler.php');
     die();
   }

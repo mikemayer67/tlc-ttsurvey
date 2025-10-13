@@ -36,7 +36,7 @@ $response['new_error'] = $error;
 if( $old_pw_valid && $new_pw_valid )
 {
   // try to update the password
-  if( !$user->set_password_quiet($new_pw) ) 
+  if( !$user->set_password($new_pw) ) 
   {
     // sometihng unexpected went wrong...
     $response['success'] = false;
