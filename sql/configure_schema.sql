@@ -328,6 +328,12 @@ END IF;
 --
 -- VERSION 2 --
 --
+-- Replaces the OPTIONS question type with SELECT_MULTI and SELECT_ONE
+--   and eliminates the 'multiple' column
+--
+-- Consolidates all question qualfier flag type columns into a single 'question_flags' column.
+--   See the the tlc_tt_view_survey_questions view for interpreting the question_flags values.
+--
 IF current_version < 2 THEN
 
   ALTER TABLE tlc_tt_survey_questions
@@ -389,9 +395,53 @@ IF current_version < 2 THEN
   LEFT JOIN tlc_tt_strings os ON os.string_id = so.text_sid
   WHERE q.question_type like 'SELECT%';
 
+-- Add version 2 to the history and increment current version
   SET current_version = 2;
   INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Consolidated Question Flags");
 
+END IF;
+
+--
+-- VERSION 3 --
+--
+-- Finally adds the tables that will capture the user responses
+--
+IF current_version < 3 THEN
+  CREATE TABLE tlc_tt_user_responses (
+    userid      varchar(24)          NOT NULL,
+    survey_id   smallint    UNSIGNED NOT NULL,
+    question_id smallint    UNSIGNED NOT NULL,
+    draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
+    selected    smallint    UNSIGNED DEFAULT NULL COMMENT 'yes/no or option_id based on question type',
+    free_text   blob                 DEFAULT NULL COMMENT 'reponse to free text questions',
+    qualifier   blob                 DEFAULT NULL COMMENT 'response qualifying information',
+    other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
+    PRIMARY KEY (userid,survey_id,question_id,draft),
+    FOREIGN KEY (userid)      REFERENCES tlc_tt_userids(userid)               ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (survey_id)   REFERENCES tlc_tt_survey_status(survey_id)      ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES tlc_tt_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+  ALTER TABLE tlc_tt_survey_options ADD INDEX idx_survey_option (survey_id, option_id);
+
+  CREATE TABLE tlc_tt_user_response_options (
+    userid      varchar(24)          NOT NULL,
+    survey_id   smallint    UNSIGNED NOT NULL,
+    question_id smallint    UNSIGNED NOT NULL,
+    draft       tinyint     UNSIGNED NOT NULL  COMMENT '1=draft response, 0=submitted response',
+    option_id   smallint    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
+    UNIQUE KEY  (userid,survey_id,question_id,draft,option_id),
+    FOREIGN KEY (userid,survey_id,question_id,draft) 
+                REFERENCES tlc_tt_user_responses (userid,survey_id,question_id,draft)
+                ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,option_id)
+                ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+    
+
+-- Add version 3 to the history and increment current version
+  SET current_version = 3;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Adds Response Tables");
 END IF;
 
 
