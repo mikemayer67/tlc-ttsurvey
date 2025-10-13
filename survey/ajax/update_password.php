@@ -52,6 +52,7 @@ else
 end_ob_logging();
 
 regen_active_token();
+remember_user_token($userid, $user->regenerate_access_token() );
 
 echo json_encode($response);
 die();

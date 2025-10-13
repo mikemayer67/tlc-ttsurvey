@@ -81,3 +81,9 @@ function clear_redirect_data()
   unset($_SESSION[REDIRECT_DATA]);
   unset($_SESSION[REDIRECT_TIMEOUT]);
 }
+
+function clear_redirect()
+{
+  clear_redirect_page();
+  clear_redirect_data();
+}

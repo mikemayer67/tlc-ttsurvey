@@ -6,6 +6,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/users.php'));
 require_once(app_file('include/redirect.php'));
 
+clear_redirect();
+
 // Note that all the logic in this file is wrapped up in functions...
 //   the very last action in this file is execute the main entry point for 
 //   handling post requests from the pwreset form.
@@ -73,6 +75,11 @@ function handle_updatepw_form()
   add_redirect_data('message',"User Password Updated");
   add_redirect_data('email',$user->email() ?? '');
   set_redirect_page('close');
+
+  // update session and user access tokens
+  require_once(app_file('include/login.php'));
+  regen_active_token();
+  remember_user_token($userid, $user->regenerate_access_token() );
 }
 
 function handle_error($msg)
