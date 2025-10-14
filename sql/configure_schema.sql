@@ -412,9 +412,9 @@ IF current_version < 3 THEN
     survey_id   smallint    UNSIGNED NOT NULL,
     question_id smallint    UNSIGNED NOT NULL,
     draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
-    selected    smallint    UNSIGNED DEFAULT NULL COMMENT 'yes/no or option_id based on question type',
-    free_text   blob                 DEFAULT NULL COMMENT 'reponse to free text questions',
-    qualifier   blob                 DEFAULT NULL COMMENT 'response qualifying information',
+    selected    smallint    UNSIGNED DEFAULT NULL COMMENT '1/0 or option_id based on question type',
+    free_text   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
+    qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
     other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
     PRIMARY KEY (userid,survey_id,question_id,draft),
     FOREIGN KEY (userid)      REFERENCES tlc_tt_userids(userid)               ON UPDATE RESTRICT ON DELETE CASCADE,
@@ -422,7 +422,10 @@ IF current_version < 3 THEN
     FOREIGN KEY (question_id) REFERENCES tlc_tt_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
-  ALTER TABLE tlc_tt_survey_options ADD INDEX idx_survey_option (survey_id, option_id);
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR 1061 BEGIN END;
+    ALTER TABLE tlc_tt_survey_options ADD INDEX idx_survey_option (survey_id, option_id);
+  END;
 
   CREATE TABLE tlc_tt_user_response_options (
     userid      varchar(24)          NOT NULL,
@@ -437,7 +440,77 @@ IF current_version < 3 THEN
     FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,option_id)
                 ON UPDATE RESTRICT ON DELETE CASCADE
   );
-    
+
+  CREATE OR REPLACE VIEW tlc_tt_view_responses_freetext AS
+  SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+         q.question_id, wording.str as question,
+         r.free_text, r.qualifier
+    FROM tlc_tt_user_responses r
+    LEFT JOIN tlc_tt_survey_questions q 
+           ON q.question_id=r.question_id and q.survey_id=r.survey_id
+    LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+   WHERE r.free_text is not NULL
+     AND q.survey_rev = (SELECT max(survey_rev) from tlc_tt_survey_revisions x where x.survey_id=q.survey_id)
+     AND q.question_type='FREETEXT';
+
+  CREATE OR REPLACE VIEW tlc_tt_view_responses_bool AS
+  SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+         q.question_id, wording.str as question,
+         CASE WHEN r.selected=0 THEN 'NO' ELSE 'YES' END AS selected,
+         r.qualifier
+    FROM tlc_tt_user_responses r
+    LEFT JOIN tlc_tt_survey_questions q 
+           ON q.question_id=r.question_id and q.survey_id=r.survey_id
+    LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+   WHERE r.selected is not NULL
+     AND q.survey_rev = (SELECT max(survey_rev) from tlc_tt_survey_revisions x where x.survey_id=q.survey_id)
+     AND q.question_type='BOOL';
+
+  CREATE OR REPLACE VIEW tlc_tt_view_responses_select_one AS
+  SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+         q.question_id, wording.str as question,
+         r.selected, 
+         CASE WHEN r.selected = 0 THEN r.other ELSE opt.str END as 'option', 
+         r.qualifier
+    FROM tlc_tt_user_responses r
+    LEFT JOIN tlc_tt_survey_questions q 
+           ON q.question_id=r.question_id and q.survey_id=r.survey_id
+	  LEFT JOIN tlc_tt_question_options qo
+           ON qo.survey_id=q.survey_id and qo.survey_rev=q.survey_rev and qo.question_id=q.question_id and qo.sequence=r.selected
+	  LEFT JOIN tlc_tt_survey_options so
+           ON so.survey_id=qo.survey_id and so.survey_rev=qo.survey_rev and so.option_id=qo.option_id
+    LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+    LEFT JOIN tlc_tt_strings opt     ON so.text_sid = opt.string_id
+   WHERE r.selected is not NULL
+     AND q.survey_rev = (SELECT max(survey_rev) from tlc_tt_survey_revisions x where x.survey_id=q.survey_id)
+     AND q.question_type='SELECT_ONE';
+
+  CREATE OR REPLACE VIEW tlc_tt_view_responses_select_multi AS
+  SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+         q.question_id, wording.str as question,
+         r.other, r.qualifier
+    FROM tlc_tt_user_responses r
+    LEFT JOIN tlc_tt_survey_questions q 
+           ON q.question_id=r.question_id and q.survey_id=r.survey_id
+    LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+   WHERE survey_rev = (SELECT max(survey_rev) from tlc_tt_survey_revisions x where x.survey_id=q.survey_id)
+     AND q.question_type='SELECT_MULTI';
+
+   CREATE OR REPLACE VIEW tlc_tt_view_response_options AS
+   SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+          q.question_id, wording.str as question, opt.str
+     FROM tlc_tt_user_responses r
+     LEFT JOIN tlc_tt_survey_questions q 
+            ON q.question_id=r.question_id and q.survey_id=r.survey_id
+	   LEFT JOIN tlc_tt_user_response_options ro
+            ON ro.userid=r.userid and ro.survey_id=r.survey_id and ro.question_id=r.question_id
+	   LEFT JOIN tlc_tt_survey_options so
+            ON so.survey_id=ro.survey_id and so.survey_rev=q.survey_rev and so.option_id=ro.option_id
+     LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+	   LEFT JOIN tlc_tt_strings opt ON opt.string_id = so.text_sid
+    WHERE q.survey_rev = (SELECT max(survey_rev) from tlc_tt_survey_revisions x where x.survey_id=q.survey_id)
+      AND q.question_type='SELECT_MULTI'
+      AND ro.option_id is not NULL;
 
 -- Add version 3 to the history and increment current version
   SET current_version = 3;
