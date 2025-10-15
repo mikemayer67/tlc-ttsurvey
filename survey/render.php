@@ -277,7 +277,6 @@ class RenderEngine
     $indent = ''; // for styling the input box
 
     $response = $this->responses[$id]['free_text'] ?? '';
-    log_dev("Freetext response $id: ".print_r($response,true));
 
     $input_id = "question-input-$id";
 
@@ -318,6 +317,10 @@ class RenderEngine
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
 
+    $selected  = $this->responses[$id]['selected'] ?? '';
+    $qualified = $this->responses[$id]['qualifier'] ?? '';
+    $checked   = $selected ? 'checked' : '';
+
     $this->close_grid();
 
     $class = 'bool';
@@ -333,7 +336,7 @@ class RenderEngine
     $input_id = $name;
 
     echo "<div class='checkbox $layout'>";
-    echo "<input id='$input_id' type='checkbox' name='$name'>";
+    echo "<input id='$input_id' type='checkbox' name='$name' $checked>";
     echo "<label for='$input_id' class='question'>$wording</label>";
     echo "</div>";
 
@@ -341,7 +344,7 @@ class RenderEngine
       $qualifier_id = "question-qualifier-$id";
       echo "<div class='qualifier'>";
       echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'></textarea>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
       echo "</div>";
     }
 
@@ -386,6 +389,13 @@ class RenderEngine
       $class = 'select one';
     }
 
+    $response = $this->responses[$id] ?? null;
+    $other_value = $response['other'] ?? '';
+    $other_selected = ($response['selected'] ?? null);
+    $other_checked = (isset($other_selected) && ($other_selected == 0)) ? 'checked' : '';
+    $qualified = $response['qualifier'] ?? '';
+    $selected  = $response['options'] ?? [];
+
     if($in_grid) {
       $this->open_grid();
     }
@@ -408,8 +418,9 @@ class RenderEngine
     foreach($options as $option) {
       $input_id = "$name-$option";
       $option_str = $this->option_map[$option] ?? "option #$option";
+      $checked = in_array($option,$selected) ? 'checked' : '';
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' name='$name' value='$option'>";
+      echo "<input id='$input_id' type='$type' name='$name' value='$option' $checked>";
       echo "<label for='$input_id'>$option_str</label>";
       echo "</div>";
     }
@@ -417,8 +428,8 @@ class RenderEngine
       $input_id = "$name-has-other";
       $other_id = "$name-other";
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0'>";
-      echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'></textarea>";
+      echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0' $other_checked>";
+      echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'>$other_value</textarea>";
       echo "</div>";
     }
     if($popup) {
@@ -435,7 +446,7 @@ class RenderEngine
       $qualifier_id  = "question-qualifier-$id";
       echo "<div class='qualifier'>";
       echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'></textarea>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
       echo "</div>";
     }
 
