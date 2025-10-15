@@ -27,9 +27,11 @@ class RenderEngine
   private $is_preview = false;
   private $preview_js = true;
 
-  private $in_box = false;
-  private $in_grid = false;
+  private $in_box       = false;
+  private $in_grid      = false;
   private $follows_info = false;
+
+  private $responses = null;
 
   function __construct($content, $kwargs=[])
   {
@@ -41,6 +43,8 @@ class RenderEngine
     $this->sections   = $content['sections'];
     $this->questions  = $content['questions'];
     $this->option_map = $content['options']; 
+
+    $this->responses = $kwargs['responses'] ?? [];
   }
 
   public function render($userid=null)
@@ -272,6 +276,9 @@ class RenderEngine
     $popup  = $question['popup'] ?? '';
     $indent = ''; // for styling the input box
 
+    $response = $this->responses[$id]['free_text'] ?? '';
+    log_dev("Freetext response $id: ".print_r($response,true));
+
     $input_id = "question-input-$id";
 
     $this->close_grid();
@@ -288,7 +295,7 @@ class RenderEngine
     }
     echo "<div class='input $indent'>";
     echo "<label for='$input_id' class='question'>$label</label>";
-    echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'></textarea>";
+    echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'>$response</textarea>";
     echo "</div>";
     if($popup) {
       $hint_id  = "hint-$id";

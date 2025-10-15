@@ -407,7 +407,18 @@ END IF;
 -- Finally adds the tables that will capture the user responses
 --
 IF current_version < 3 THEN
-  CREATE TABLE tlc_tt_user_responses (
+
+  CREATE TABLE tlc_tt_user_status (
+    userid      varchar(24)          NOT NULL,
+    survey_id   smallint    UNSIGNED NOT NULL,
+    draft       datetime             DEFAULT NULL,
+    submitted   datetime             DEFAULT NULL,
+    PRIMARY KEY (userid,survey_id),
+    FOREIGN KEY (userid)    REFERENCES tlc_tt_userids(userid)          ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (survey_id) REFERENCES tlc_tt_survey_status(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+  CREATE TABLE tlc_tt_responses (
     userid      varchar(24)          NOT NULL,
     survey_id   smallint    UNSIGNED NOT NULL,
     question_id smallint    UNSIGNED NOT NULL,
@@ -417,8 +428,7 @@ IF current_version < 3 THEN
     qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
     other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
     PRIMARY KEY (userid,survey_id,question_id,draft),
-    FOREIGN KEY (userid)      REFERENCES tlc_tt_userids(userid)               ON UPDATE RESTRICT ON DELETE CASCADE,
-    FOREIGN KEY (survey_id)   REFERENCES tlc_tt_survey_status(survey_id)      ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (userid,survey_id) REFERENCES tlc_tt_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (question_id) REFERENCES tlc_tt_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
@@ -427,7 +437,7 @@ IF current_version < 3 THEN
     ALTER TABLE tlc_tt_survey_options ADD INDEX idx_survey_option (survey_id, option_id);
   END;
 
-  CREATE TABLE tlc_tt_user_response_options (
+  CREATE TABLE tlc_tt_response_options (
     userid      varchar(24)          NOT NULL,
     survey_id   smallint    UNSIGNED NOT NULL,
     question_id smallint    UNSIGNED NOT NULL,
@@ -435,7 +445,7 @@ IF current_version < 3 THEN
     option_id   smallint    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
     UNIQUE KEY  (userid,survey_id,question_id,draft,option_id),
     FOREIGN KEY (userid,survey_id,question_id,draft) 
-                REFERENCES tlc_tt_user_responses (userid,survey_id,question_id,draft)
+                REFERENCES tlc_tt_responses (userid,survey_id,question_id,draft)
                 ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,option_id)
                 ON UPDATE RESTRICT ON DELETE CASCADE
@@ -445,7 +455,7 @@ IF current_version < 3 THEN
   SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
          q.question_id, wording.str as question,
          r.free_text, r.qualifier
-    FROM tlc_tt_user_responses r
+    FROM tlc_tt_responses r
     LEFT JOIN tlc_tt_survey_questions q 
            ON q.question_id=r.question_id and q.survey_id=r.survey_id
     LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
@@ -458,7 +468,7 @@ IF current_version < 3 THEN
          q.question_id, wording.str as question,
          CASE WHEN r.selected=0 THEN 'NO' ELSE 'YES' END AS selected,
          r.qualifier
-    FROM tlc_tt_user_responses r
+    FROM tlc_tt_responses r
     LEFT JOIN tlc_tt_survey_questions q 
            ON q.question_id=r.question_id and q.survey_id=r.survey_id
     LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
@@ -472,7 +482,7 @@ IF current_version < 3 THEN
          r.selected, 
          CASE WHEN r.selected = 0 THEN r.other ELSE opt.str END as 'option', 
          r.qualifier
-    FROM tlc_tt_user_responses r
+    FROM tlc_tt_responses r
     LEFT JOIN tlc_tt_survey_questions q 
            ON q.question_id=r.question_id and q.survey_id=r.survey_id
 	  LEFT JOIN tlc_tt_question_options qo
@@ -489,7 +499,7 @@ IF current_version < 3 THEN
   SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
          q.question_id, wording.str as question,
          r.other, r.qualifier
-    FROM tlc_tt_user_responses r
+    FROM tlc_tt_responses r
     LEFT JOIN tlc_tt_survey_questions q 
            ON q.question_id=r.question_id and q.survey_id=r.survey_id
     LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
@@ -499,10 +509,10 @@ IF current_version < 3 THEN
    CREATE OR REPLACE VIEW tlc_tt_view_response_options AS
    SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
           q.question_id, wording.str as question, opt.str
-     FROM tlc_tt_user_responses r
+     FROM tlc_tt_responses r
      LEFT JOIN tlc_tt_survey_questions q 
             ON q.question_id=r.question_id and q.survey_id=r.survey_id
-	   LEFT JOIN tlc_tt_user_response_options ro
+	   LEFT JOIN tlc_tt_response_options ro
             ON ro.userid=r.userid and ro.survey_id=r.survey_id and ro.question_id=r.question_id
 	   LEFT JOIN tlc_tt_survey_options so
             ON so.survey_id=ro.survey_id and so.survey_rev=q.survey_rev and so.option_id=ro.option_id

@@ -91,7 +91,7 @@ function start_admin_page($cur_tab=null)
   start_body();
 }
 
-function start_survey_page($title,$userid)
+function start_survey_page($title,$userid,$status)
 {
   log_dev("start_survey_page()");
   $context = 'survey';
@@ -103,7 +103,7 @@ function start_survey_page($title,$userid)
 
   end_header();
 
-  add_navbar($context, $userid, $title, '[status]');
+  add_navbar($context, $userid, $title, $status);
   add_js_recommended();
   add_status_bar();
 

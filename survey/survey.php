@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/status.php'));
 require_once(app_file('include/elements.php'));
+require_once(app_file('include/responses.php'));
 require_once(app_file('survey/render.php'));
 
 // Verify that there is an active survey
@@ -16,12 +17,33 @@ if(!$active_id) {
   die();
 }
 
-$title   = active_survey_title();
-$content = survey_content($active_id);
-$userid  = active_userid() ?? null;
+$title     = active_survey_title();
+$content   = survey_content($active_id);
+$userid    = active_userid() ?? null;
 
-start_survey_page($title,$userid);
-render_survey($userid,$content);
+$status    = 'New Survey';
+$key       = null;
+
+$responses = get_user_responses( $userid,$active_id);
+
+if($responses) {
+  if( array_key_exists('draft',$responses) ) {
+    $key    = 'draft';
+    $status = 'Unsubmitted Responses';
+  } elseif(array_key_exists('submitted',$responses) ) {
+    $key    = 'filed';
+    $status = 'Submitted Responses';
+  }
+}
+
+$data = $responses[$key]['responses'] ?? null;
+
+start_survey_page($title,$userid,$status);
+render_survey($userid,$content,['responses'=>$data]);
+
+$responses['key'] = $key;
+$js_data   = json_encode($responses);
+echo "<script>const ttt_user_responses = $js_data;</script>";
 
 $user_menu = js_uri('user_menu','survey');
 echo "<script type='module' src='$user_menu'></script>";
