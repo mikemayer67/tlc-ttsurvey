@@ -36,14 +36,34 @@ body {
 }
 
 div.noscript {
+  display:none;
   position:relative;
   margin:3px auto;
-  padding:0 1em;
+  padding:0 1.5em;
+  flex-direction:column;
+  width:fit-content;
+  background:white;
+  border: solid 1px darkred;
 }
 div.noscript div {
   color:#800;
   font-style:italic;
   text-align:center;
+  background:inherit;
+}
+div.noscript img.dismiss {
+  position:absolute;
+  top:2px;
+  right:2px;
+  width:12px;
+  height:12px;
+  background:white;
+}
+#nojs-toggle {
+  display:none;
+}
+#nojs-toggle:checked ~ noscript div.noscript {
+  display:flex;
 }
 
 input.hidden {

@@ -364,12 +364,15 @@ function add_js_required()
 
 function add_js_recommended($wrapper="noscript")
 {
+  $dismiss_icon = img_uri('icons8/dismiss.png');
   echo "<!-- Javascript suggestion -->";
+  echo "<input id='nojs-toggle' type='checkbox' checked></input>";
   echo "<$wrapper>";
   echo "<div class='noscript'>";
   echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
-  echo "  <div>Less likely to lose your progress by leaving this page.</div>";
-  echo "  <div>Easier to update your name or email</div>";
+  echo "  <div>Incremental saves without submitting an incomplete form</div>";
+  echo "  <div>Easier to update your profile info</div>";
+  echo "  <label for='nojs-toggle'><img class='dismiss' src='$dismiss_icon' alt='dismiss'></img></label>";
   echo "</div>";
   echo "</$wrapper>";
 }
