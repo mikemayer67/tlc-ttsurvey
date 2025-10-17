@@ -162,10 +162,14 @@ div.ttt-splash img {
 #ttt-navbar .ttt-title
 {
   font-family: var(--serif-font);
-  font-size: x-large;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #ttt-navbar .status {
+  display:none;
   font-family: var(--serif-font);
   font-size:large;
   margin-left:auto;
@@ -194,7 +198,6 @@ div.ttt-splash img {
 
 #ttt-navbar .username {
   font-family: var(--serif-font);
-  font-size: large;
   margin-left:auto;
   padding:0 1em;
   display:flex;
@@ -209,8 +212,43 @@ div.ttt-splash img {
 }
 
 #ttt-navbar img.menu-trigger {
-  width: 20px;
+  width: 16px;
 }
+
+
+@media only screen and (min-width:320px) 
+{
+  #ttt-navbar .ttt-title {
+    font-size: large;
+  }
+}
+
+@media only screen and (min-width:480px) 
+{
+  #ttt-navbar .ttt-title {
+    font-size: x-large;
+  }
+  #ttt-navbar .username {
+    font-size: large;
+  }
+  #ttt-navbar img.menu-trigger {
+    width: 20px;
+  }
+
+}
+
+@media only screen and (min-width:640px) 
+{
+  #ttt-navbar .status {
+    display:inline-block;
+  }
+}
+
+@media only screen and (min-width:1024px)
+{
+}
+
+/* User Menu */
 
 #ttt-user-menu {
   position: absolute;
@@ -259,7 +297,7 @@ div.ttt-splash img {
 #ttt-navbar-wrapper .editor-pane
 {
   position: absolute;
-  top:50px;
+  top:100%;
   right:1em;
   z-index:4;
 
@@ -273,6 +311,7 @@ div.ttt-splash img {
   background:white;
   padding:1em;
   width:fit-content;
+  max-width: 
   box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
 }
 
@@ -330,6 +369,7 @@ div.ttt-splash img {
 
 #ttt-user-editor input {
   width:30em;
+  max-width:75vw;
 }
 
 #ttt-navbar-wrapper #ttt-user-editor input.missing {
