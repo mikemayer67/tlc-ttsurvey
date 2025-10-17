@@ -7,6 +7,8 @@ let menu_timer = null;
 
 export default function init()
 {
+  const canHover = !window.matchMedia('(any-hover: none)').matches;
+  
   const self = {
     is_preview,
   };
@@ -23,12 +25,17 @@ export default function init()
   const menu = $('<div>').setId('ttt-user-menu').append(profile,passwd,logout);
   menu.insertAfter(ce.navbar);
 
-  trigger.on('click', function(e) { menu.toggleClass('locked') } );
+  trigger.on('click', function(e) { 
+    console.log('click trigger');
+    menu.toggleClass('locked') 
+  });
 
-  trigger.on('pointerenter', start_menu_hover);
-  trigger.on('pointerleave', end_menu_hover);
-  menu.on(   'pointerenter', start_menu_hover);
-  menu.on(   'pointerleave', end_menu_hover);
+  if(canHover) {
+    trigger.on('pointerenter', start_menu_hover);
+    trigger.on('pointerleave', end_menu_hover);
+    menu.on(   'pointerenter', start_menu_hover);
+    menu.on(   'pointerleave', end_menu_hover);
+  }
 
   profile.on('click', () => self.show_profile_editor() );
   passwd.on( 'click', () => self.show_password_editor() );
@@ -47,6 +54,7 @@ export default function init()
 
   function start_menu_hover(e)
   {
+    console.log('start_menu_hover');
     if( menu_timer) {
       clearTimeout(menu_timer);
       menu_timer = null;
@@ -56,6 +64,7 @@ export default function init()
 
   function end_menu_hover(e)
   {
+    console.log('end_menu_hover');
     clearTimeout(menu_timer);
     menu_timer = setTimeout( function() {
       menu_timer = null;
@@ -65,6 +74,7 @@ export default function init()
 
   function hide_user_menu()
   {
+    console.log('hide_user_menu');
     clearTimeout(menu_timer);
     self.menu.removeClass('locked').removeClass('hover');
   }
