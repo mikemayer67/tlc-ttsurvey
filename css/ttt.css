@@ -167,8 +167,29 @@ div.ttt-splash img {
 
 #ttt-navbar .status {
   font-family: var(--serif-font);
+  font-size:large;
   margin-left:auto;
   margin-right:auto;
+}
+
+#ttt-navbar .status .survey-status {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  font-size:80%;
+}
+
+#ttt-navbar .status .survey-status .key {
+  justify-self: right;
+  font-weight:bold;
+}
+#ttt-navbar .status .survey-status .key::after {
+  content:':';
+  padding-right:0.5em;
+}
+
+
+#ttt-navbar .status .survey-status .timestamp {
+  justify-self: left;
 }
 
 #ttt-navbar .username {

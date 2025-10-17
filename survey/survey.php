@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/status.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('include/timestamps.php'));
 require_once(app_file('survey/render.php'));
 
 // Verify that there is an active survey
@@ -21,22 +22,37 @@ $title     = active_survey_title();
 $content   = survey_content($active_id);
 $userid    = active_userid() ?? null;
 
-$status    = 'New Survey';
-$key       = null;
+$status = '';
+$key    = null;
+$data   = null;
 
 $responses = get_user_responses( $userid,$active_id);
 
+log_dev("Responses: ".print_r($responses,true));
+
 if($responses) {
-  if( array_key_exists('draft',$responses) ) {
-    $key    = 'draft';
-    $status = 'Unsubmitted Responses';
-  } elseif(array_key_exists('submitted',$responses) ) {
-    $key    = 'filed';
-    $status = 'Submitted Responses';
+  $submitted = $responses['submitted'] ?? [];
+  $draft     = $responses['draft'] ?? [];
+  if($submitted) {
+    $responses['key'] = 'submitted';
+    $data   = $submitted['responses'];
+    $ts     = $submitted['timestamp'];
+    $ts     = recent_timestamp_string($ts);
+    $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
+
+  }
+  if($draft) {
+    $responses['key'] = 'draft';
+    $data   = $draft['responses'];
+    $ts     = $draft['timestamp'];
+    $ts     = recent_timestamp_string($ts);
+    $status .= "<div class='key'>Unsubmitted Edits</div><div class='timestamp'>$ts</div>";
   }
 }
 
-$data = $responses[$key]['responses'] ?? null;
+if($status) {
+  $status = "<div class='survey-status'>$status</div>";
+}
 
 start_survey_page($title,$userid,$status);
 render_survey($userid,$content,['responses'=>$data]);

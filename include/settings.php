@@ -117,6 +117,7 @@ class Settings {
 };
 
 Settings::load_all();
+date_default_timezone_set(Settings::get('timezone'));
 
 //
 // Convenience Accessors
@@ -170,6 +171,17 @@ function smtp_port() {
     $port = smtp_auth() ? 587 : 465;
   }
   return $port;
+}
+
+//
+// Date and Time
+//
+
+date_default_timezone_set(timezone());
+
+function time_date_string($tmestamp,$fmt = 'g:ia on D M j, Y') {
+  $dt = new DateTime('@'.$timestamp);
+  return $dt->format($fmt);
 }
 
 //

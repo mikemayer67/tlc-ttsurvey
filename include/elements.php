@@ -267,7 +267,7 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   echo "</span>";
 
   // status
-  echo "<span class='status'>$status</span>";
+  echo "<div class='status'>$status</div>";
 
   // User Info
   echo "<span class='username'>";

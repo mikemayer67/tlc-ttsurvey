@@ -9,19 +9,19 @@ require_once(app_file('include/logger.php'));
 function get_user_responses($userid,$survey_id,$draft=null)
 {
   // The responses that this function returns depends on the value of $draft:
-  //      0 : returns only filed responses (submitted)  
+  //      0 : returns only submitted responses
   //      1 : returns only draft responses 
-  //   null : returns both filed and draft responses
+  //   null : returns both submitted and draft responses
   //
   // The return value is an associated array
   //   responses : [ 'timestamp' => unix timestamp, 'responses' => response array ] 
   //   draft     : responses
-  //   filed     : responses
-  //   both      : [ 'draft' => responses, 'filed => responses ]
+  //   submitted : responses
+  //   both      : [ 'draft' => responses, 'submitted => responses ]
 
   $query = <<<SQL
     SELECT UNIX_TIMESTAMP(draft)     as draft,
-           UNIX_TIMESTAMP(submitted) as filed
+           UNIX_TIMESTAMP(submitted) as submitted
       FROM tlc_tt_user_status 
      WHERE userid=(?) AND survey_id=(?)
   SQL;
@@ -31,17 +31,17 @@ function get_user_responses($userid,$survey_id,$draft=null)
   
   if(is_null($draft))
   {
-    // returns both draft and filed by recursively calling get_user_responses
+    // returns both draft and submitted by recursively calling get_user_responses
     //   recursion is limited to a depth of 1 because of non-null $draft value
     return [
-      'filed' => get_user_responses($userid,$survey_id,0),
-      'draft' => get_user_responses($userid,$survey_id,1),
+      'submitted' => get_user_responses($userid,$survey_id,0),
+      'draft'     => get_user_responses($userid,$survey_id,1),
     ];
   }
 
-  // returns either draft or filed, not both
+  // returns either draft or submitted, not both
 
-  $timestamp = $status[$draft ? 'draft' : 'filed'] ?? null;
+  $timestamp = $status[$draft ? 'draft' : 'submitted'] ?? null;
   if(!$timestamp ) { return []; }
 
   $query = <<<SQL
