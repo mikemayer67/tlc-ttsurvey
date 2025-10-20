@@ -23,41 +23,55 @@ $content   = survey_content($active_id);
 $userid    = active_userid() ?? null;
 
 $status = '';
-$key    = null;
-$data   = null;
+$state  = 'new';
+$data   = [];
+$draft_exists     = false;
+$submitted_exists = false;
+
+$render_args = [ 
+  'state'         => 'new',
+  'has_draft'     => false,
+  'has_submitted' => false,
+];
 
 $responses = get_user_responses( $userid,$active_id);
-
 log_dev("Responses: ".print_r($responses,true));
 
 if($responses) {
   $submitted = $responses['submitted'] ?? [];
-  $draft     = $responses['draft'] ?? [];
-  if($submitted) {
-    $responses['key'] = 'submitted';
-    $data   = $submitted['responses'];
-    $ts     = $submitted['timestamp'];
-    $ts     = recent_timestamp_string($ts);
-    $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
+  $draft     = $responses['draft']     ?? [];
 
+  $state = $submitted 
+    ? ( $draft ? 'draft_updates' : 'submitted' )
+    : ( $draft ? 'draft'         : 'new'       );
+
+  if($submitted) {
+    $render_args['responses']    = $submitted['responses'];
+    $ts      = recent_timestamp_string( $submitted['timestamp'] );
+    $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
   }
+  else {
+    $status .= "<div class='key'>Submitted</div><div class='timestamp'>---</div>";
+  }
+
   if($draft) {
-    $responses['key'] = 'draft';
-    $data   = $draft['responses'];
-    $ts     = $draft['timestamp'];
-    $ts     = recent_timestamp_string($ts);
-    $status .= "<div class='key'>Unsubmitted Edits</div><div class='timestamp'>$ts</div>";
+    $render_args['responses'] = $draft['responses'];
+    $ts      = recent_timestamp_string($draft['timestamp']);
+    $status .= "<div class='key'>Last Saved Draft</div><div class='timestamp'>$ts</div>";
   }
 }
+
+$responses['state']   = $state;
 
 if($status) {
   $status = "<div class='survey-status'>$status</div>";
+} else {
+  $status = "Welcome";
 }
 
 start_survey_page($title,$userid,$status);
-render_survey($userid,$content,['responses'=>$data]);
+render_survey($state,$content,$render_args);
 
-$responses['key'] = $key;
 $js_data   = json_encode($responses);
 echo "<script>const ttt_user_responses = $js_data;</script>";
 

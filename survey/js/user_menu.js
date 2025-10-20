@@ -26,7 +26,6 @@ export default function init()
   menu.insertAfter(ce.navbar);
 
   trigger.on('click', function(e) { 
-    console.log('click trigger');
     menu.toggleClass('locked') 
   });
 
@@ -46,7 +45,6 @@ export default function init()
 
   const ro = new ResizeObserver( entries => { 
     for( let entry of entries ) {
-      console.log("resize triggered " + entry.contentRect.height);
       self.menu.css('top',(5+entry.contentRect.bottom));
     }
   });
@@ -54,7 +52,6 @@ export default function init()
 
   function start_menu_hover(e)
   {
-    console.log('start_menu_hover');
     if( menu_timer) {
       clearTimeout(menu_timer);
       menu_timer = null;
@@ -64,7 +61,6 @@ export default function init()
 
   function end_menu_hover(e)
   {
-    console.log('end_menu_hover');
     clearTimeout(menu_timer);
     menu_timer = setTimeout( function() {
       menu_timer = null;
@@ -74,7 +70,6 @@ export default function init()
 
   function hide_user_menu()
   {
-    console.log('hide_user_menu');
     clearTimeout(menu_timer);
     self.menu.removeClass('locked').removeClass('hover');
   }

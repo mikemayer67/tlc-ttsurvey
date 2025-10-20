@@ -558,15 +558,50 @@ fieldset.select legend {
  ****************************************/
 
 div.submit-bar {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  width:100%;
+  padding:5px 1em;
+  background:rgb(255 255 255 / 90%);
+
+  box-shadow: 0 -2px 5px 0 rgba(0,0,0,0.16),0 -2px 10px 0 rgba(0,0,0,0.12);
+
   display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
   flex-direction: row-reverse;
 }
 
-input.submit {
+div.submit-bar div {
+  display:flex;
+  flex-wrap:wrap;
+  flex-direction: row-reverse;
+  column-gap:5px;
 }
 
-input.revert.hidden {
-  display:none;
+@media (max-width: 480px), (max-height: 600px) {
+  div.submit-bar {
+    position: static;
+    margin-top: 1em;
+    padding: 1em 0 5px 0;
+    border-top: solid 1px gray;
+    background: inherit;
+    box-shadow:none;
+  }
 }
+
+div.submit-bar button {
+  color:black;
+  border: outset 2px #ccc;
+}
+
+div.submit-bar button:disabled {
+  color:#ccc;
+  border: outset 2px #f0f0f0;
+}
+
+
 
 

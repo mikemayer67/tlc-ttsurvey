@@ -20,68 +20,98 @@ require_once(app_file('survey/markdown.php'));
 class RenderEngine 
 {
   private $popup_icon = null;
-  private $sections   = null;
-  private $questions  = null;
-  private $option_map = null;
-
-  private $is_preview = false;
-  private $preview_js = true;
 
   private $in_box       = false;
   private $in_grid      = false;
   private $follows_info = false;
 
-  private $responses = null;
-
-  function __construct($content, $kwargs=[])
+  function __construct()
   {
-    $this->is_preview = $kwargs['is_preview'] ?? false; 
-    $this->preview_js = $kwargs['preview_js'] ?? true;
-
     $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
-
-    $this->sections   = $content['sections'];
-    $this->questions  = $content['questions'];
-    $this->option_map = $content['options']; 
-
-    $this->responses = $kwargs['responses'] ?? [];
   }
 
-  public function render($userid=null)
+  public function render($state, $content, $kwargs)
   {
-    todo("add survey form action");
+    $this->in_box       = false;
+    $this->in_grid      = false;
+    $this->follows_info = false;
 
-    $this->in_box = false;
-    $this->in_grid = false;
+    $responses = $kwargs['responses'] ?? [];
 
-    echo "<form id='survey'>";
-    if(!$this->is_preview) {
+    if($state === 'preview')
+    {
+      $action = null;
+      echo "<form id='survey'>";
+    } 
+    else {
+      $action = app_uri('submit');
+
+      echo "<form id='survey' action='$action' method='post'>";
       $nonce = gen_nonce('survey-form');
       add_hidden_input('nonce',$nonce);
       add_hidden_input('ajaxuri',app_uri());
     }
-    foreach($this->sections as $section) {
-      $this->add_section($section);
+
+    foreach($content['sections'] as $section) {
+      $this->add_section($section,$content,$responses);
     }
-    if(!$this->is_preview) { $this->add_submit_bar(); }
+
+    if($action) { $this->add_submit_bar($state); }
+
     echo "</form>";
   }
 
-  private function add_submit_bar()
+  private function add_submit_bar($state)
   {
     echo "<div class='submit-bar'>";
-    if($this->is_preview) {
-      // don't want to actually submit this if it's only a preview
-      echo "<input id='submit' class='submit' type='button' value='Submit'>";
-      echo "<input id='revert' class='revert hidden' type='button' value='Start Over'>";
-    } else {
-      echo "<input id='submit' class='submit' type='submit' value='Submit'>";
-      echo "<input id='revert' class='revert hidden' type='submit' value='Start Over' formnovalidate>";
+    // Cases:
+    // New:           "Save As Draft", "Submit"
+    // Draft:         "Revert to Saved", "Update Draft", "Submit"
+    // Draft Updates: "Revert to Saved", "Delete Draft", "Save Draft", "Submit"
+    // Submitted:     "Save as Draft", "Submit"
+    //
+    // submit: Save form data as submitted, clear draft
+    // save:   Save form data as draft
+    // cancel: Save nothing, reload page
+    // delete: Delete draft, reload page
+    switch($state) {
+    case 'new':
+      echo "<div>";
+      echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
+      echo "<button class='save'   type='submit' name='action' value='save'  >Save As Draft</button>";
+      echo "</div>";
+      echo "<div></div>"; // empty, but needed for alignment
+      break;
+    case 'draft':
+      echo "<div>";
+      echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
+      echo "<button class='save'   type='submit' name='action' value='save'  >Update Draft</button>";
+      echo "</div><div>";
+      echo "<button class='cancel' type='submit' name='action' value='cancel'>Cancel</button>";
+      echo "</div>";
+      break;
+    case 'draft_updates':
+      echo "<div>";
+      echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
+      echo "<button class='save'   type='submit' name='action' value='save'  >Update Draft</button>";
+      echo "</div><div>";
+      echo "<button class='delete' type='submit' name='action' value='delete'>Drop Draft</button>";
+      echo "<button class='cancel' type='submit' name='action' value='cancel'>Cancel</button>";
+      echo "</div>";
+      break;
+    case 'submitted':
+      echo "<div>";
+      echo "<button class='submit' type='submit' name='action' value='submit'>Resubmit</button>";
+      echo "<button class='save'   type='submit' name='action' value='save'  >Save As Draft</button>";
+      echo "</div><div>";
+      echo "<button class='cancel' type='submit' name='action' value='cancel'>Cancel</button>";
+      echo "</div>";
+      break;
     }
     echo "</div>";
   }
 
-  private function add_section($section)
+  private function add_section($section,$content,$responses)
   {
     $sequence    = $section['sequence'];
     $name        = $section['name'];
@@ -110,7 +140,7 @@ class RenderEngine
       echo "</div>";
     }
 
-    $this->add_questions($sequence);
+    $this->add_questions($sequence,$content,$responses);
 
     if($feedback) {
       echo "<div class='section feedback' $index>";
@@ -124,19 +154,17 @@ class RenderEngine
   }
 
 
-  private function add_questions($section)
+  private function add_questions($section,$content,$responses)
   {
-    # find all the questions that are assined to this section
-    $questions = [];
-    foreach($this->questions as $question) {
-      # if question doesn't have an assigned sequence, ignore it
-      if(array_key_exists('sequence',$question)) {
-        # if section doesn't match the current section, ignore it
-        if( ($question['section']??null) === $section ) {
-          $questions[] = $question;
-        }
-      }
-    }
+    # find all the questions that are assigned to this section
+    #   (and have an associated sequence value)
+    $questions = array_values(array_filter(
+      $content['questions'],
+      fn($q) => (
+        array_key_exists('sequence', $q) &&
+        ($q['section'] ?? null) === $section
+      )
+    ));
 
     # sort the questions by sequence value
     usort($questions, function($a,$b) {
@@ -163,7 +191,7 @@ class RenderEngine
     # add the questions to the survey form
     $this->follows_info = false;
     foreach($questions as $question) {
-      $this->add_question($question);
+      $this->add_question($question,$content,$responses);
     }
 
     # close the current question box (if open)
@@ -171,18 +199,28 @@ class RenderEngine
   }
 
 
-  private function add_question($question)
+  private function add_question($question,$content,$responses)
   {
     $type = strtolower($question['type']);
 
     $this->start_box($type,$question['grouped']);
 
     switch($type) {
-    case 'info':         $this->add_info($question);         break;
-    case 'freetext':     $this->add_freetext($question);     break;
-    case 'bool':         $this->add_bool($question);         break;
-    case 'select_one':   $this->add_select($question,false); break;
-    case 'select_multi': $this->add_select($question,true);  break;
+    case 'info':         
+      $this->add_info($question);
+      break;
+    case 'freetext':
+      $this->add_freetext($question,$responses);
+      break;
+    case 'bool':
+      $this->add_bool($question,$responses);
+      break;
+    case 'select_one':   
+      $this->add_select($question,$content['options'],false,$responses); 
+      break;                                              
+    case 'select_multi':                                  
+      $this->add_select($question,$content['options'],true, $responses); 
+      break;
 
     default:
       echo "<h2>$type</h2>";
@@ -268,7 +306,7 @@ class RenderEngine
     echo "<div class='info question' data-question=$id>$info</div>";
   }
 
-  private function add_freetext($question)
+  private function add_freetext($question,$responses)
   {
     $id     = $question['id'];
     $label  = $question['wording'];
@@ -276,7 +314,7 @@ class RenderEngine
     $popup  = $question['popup'] ?? '';
     $indent = ''; // for styling the input box
 
-    $response = $this->responses[$id]['free_text'] ?? '';
+    $response = $responses[$id]['free_text'] ?? '';
 
     $input_id = "question-input-$id";
 
@@ -308,7 +346,7 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_bool($question)
+  private function add_bool($question,$responses)
   {
     $id        = $question['id'];
     $wording   = $question['wording'];
@@ -317,8 +355,8 @@ class RenderEngine
     $qualifier = $question['qualifier'] ?? '';
     $popup     = $question['popup'] ?? '';
 
-    $selected  = $this->responses[$id]['selected'] ?? '';
-    $qualified = $this->responses[$id]['qualifier'] ?? '';
+    $selected  = $responses[$id]['selected'] ?? '';
+    $qualified = $responses[$id]['qualifier'] ?? '';
     $checked   = $selected ? 'checked' : '';
 
     $this->close_grid();
@@ -361,7 +399,7 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_select($question,$multi)
+  private function add_select($question,$option_strings,$multi,$responses)
   {
     $id        = $question['id'];
     $wording   = $question['wording'];
@@ -389,7 +427,7 @@ class RenderEngine
       $class = 'select one';
     }
 
-    $response = $this->responses[$id] ?? null;
+    $response = $responses[$id] ?? null;
     $other_value = $response['other'] ?? '';
     $other_selected = ($response['selected'] ?? null);
     $other_checked = (isset($other_selected) && ($other_selected == 0)) ? 'checked' : '';
@@ -417,7 +455,7 @@ class RenderEngine
     echo "<div class='options wrapper $layout'>";
     foreach($options as $option) {
       $input_id = "$name-$option";
-      $option_str = $this->option_map[$option] ?? "option #$option";
+      $option_str = $option_strings[$option];
       $checked = in_array($option,$selected) ? 'checked' : '';
       echo "<div class='option'>";
       echo "<input id='$input_id' type='$type' name='$name' value='$option' $checked>";
@@ -460,9 +498,9 @@ class RenderEngine
   }
 };
 
-function render_survey($userid, $content, $kwargs=[])
+function render_survey($state, $content, $kwargs=[])
 {
-  $re = new RenderEngine($content,$kwargs);
-  $re->render($userid);
+  $re = new RenderEngine();
+  $re->render($state, $content, $kwargs);
 }
 
