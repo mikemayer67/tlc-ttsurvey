@@ -168,6 +168,7 @@ div.ttt-splash img {
 #ttt-navbar .ttt-title-box {
   display: flex;
   flex-flow: row nowrap;
+  flex: 0 0 auto;
   align-items: center;
   gap: 10px;
 
@@ -257,7 +258,7 @@ div.ttt-splash img {
 
 }
 
-@media only screen and (min-width:640px) 
+@media only screen and (min-width:850px) 
 {
   #ttt-navbar .status {
     display:inline-block;

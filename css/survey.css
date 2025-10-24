@@ -11,8 +11,22 @@ strong, b { font-weight:bold; }
 /* Overall form/section/question blocking */
 
 #ttt-body {
+  margin: 1em clamp(3px, 1vw, 2em) 0;
+}
+
+#ttt-body:has( > form#survey ) {
+  display:grid;
+  grid-template-columns: 1fr minmax(0,1024px) 2fr;
+}
+
+#ttt-body div.spacer {
+  width:0;
+  min-width:0;
+}
+
+#ttt-body form#survey {
   max-width:1024px;
-  margin: 1rem 0.5rem 0 0.5rem;
+  width:100%;
 }
 
 .section div.question-box
@@ -34,20 +48,6 @@ strong, b { font-weight:bold; }
   padding:0; 
   margin:0;
   background: inherit;
-}
-
-@media (min-width:768px) { /* tablets and larger */
-  #ttt-body {
-    margin-left: 1.5rem;
-    margin-right: 1em;
-  }
-}
-
-@media (min-width:1024px) { /* desktops and larger */
-  #ttt-body {
-    margin-left: 2rem;
-    margin-right: 1.5em;
-  }
 }
 
 .section .question textarea {
@@ -603,5 +603,89 @@ div.submit-bar button:disabled {
 }
 
 
+/****************************************
+ * Submitted Page/Form
+ ****************************************/
 
+form#submitted { 
+  max-width:calc(100% - 2em);
+  width:fit-content;
+  background:white;
+  margin: 2em auto;
+  padding:.5em 1em;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  border: solid 1px #aaa;
+  border-radius:10px;
+}
 
+form#submitted * {
+  background:inherit;
+}
+
+form#submitted div {
+  margin-left:auto;
+  margin-right:auto;
+  width:fit-content;
+  text-align:center;
+}
+
+form#submitted div.message {
+  margin-top:0.5em;
+  font-size:130%;
+  font-weight:700;
+  color:#369;
+}
+
+form#submitted div.timestamp
+{
+  margin-top:0.25em;
+  font-size:110%;
+}
+
+form#submitted div.email
+{
+  margin:1em auto;
+}
+
+form#submitted div 
+{
+  margin-bottom:0.5em;
+}
+
+form#submitted div:last-child
+{
+  margin-bottom:0.5em;
+}
+
+form#submitted button.linkbutton {
+  background: none;
+  border: none;
+  color: #06c;            /* standard link blue, tweak as desired */
+  padding: 0;
+  font: inherit;          /* matches surrounding text */
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+form#submitted button.linkbutton:hover,
+form#submitted button.linkbutton:focus {
+  color: #039;            /* darker blue on hover */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* subtle lift */
+  
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  form#submitted { 
+    padding:1.5em 2em;
+  }
+  form#submitted div 
+  {
+    margin-bottom:0;
+  }
+}
+
+@media (min-width:1024px) { /* desktops and larger */
+  form#submitted { 
+    padding:1.5em 4em;
+  }
+}

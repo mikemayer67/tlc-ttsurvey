@@ -27,6 +27,7 @@ session_start();
 try
 {
   log_dev("-------------- Start of TT --------------");
+  log_dev("POST: ".print_r($_POST,true));
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
@@ -47,7 +48,7 @@ try
     require(app_file('admin/admin.php'));
     die();
   } 
-
+  
   // If there is no active user, present the login page
   require_once(app_file('include/login.php'));
   $active_user = active_userid();
@@ -99,6 +100,12 @@ try
   if(key_exists('forget',$_REQUEST)) {
     forget_user_token($_REQUEST['forget'] ?? '');
     // .. no reason to abort at this point... 
+  }
+
+  // If response data is being submitted, handle updating the database
+  if(key_exists('submit',$_REQUEST) && key_exists('action',$_POST)) {
+    require(app_file('survey/handle_submit.php'));
+    die();
   }
 
   // Otherwise, jump to the survey

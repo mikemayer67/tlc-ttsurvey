@@ -212,7 +212,7 @@ $(document).ready(
     function() { ace.tabs[$(this).attr('value')] = $(this) }
   );
 
-  $('span.ttt-title-box *').on('click', handle_exit_admin);
+  $('.ttt-title-box *').on('click', handle_exit_admin);
   $('#admin-tabs a.admin.login').on('click',handle_admin_login);
   $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
   $('#admin-tabs a.user.logout').on('click',handle_user_logout);

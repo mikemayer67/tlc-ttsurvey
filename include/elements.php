@@ -169,6 +169,7 @@ function start_fault_page($context)
 function end_page()
 {
   // close the body and html elements
+  echo "<div class='spacer' style='width:0; min-width:0;'></div>";
   echo "</div>\n";  // #ttt-body
 
   echo "<!-- Footer -->";
@@ -247,6 +248,7 @@ function start_body()
 {
   // starts the ttt body
   echo "<div id='ttt-body'>";
+  echo "<div class='spacer' style='width:0; min-width:0;'></div>";
 }
 
 function add_navbar($context,$userid=null,$title=null,$status='')
@@ -261,10 +263,10 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   echo "<div id='ttt-navbar'>";
 
   // title box
-  echo "<span class='ttt-title-box'>";
+  echo "<div class='ttt-title-box'>";
   if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
   echo "<span class='ttt-title'>$title</span>";
-  echo "</span>";
+  echo "</div>";
 
   // status
   echo "<div class='status'>$status</div>";
