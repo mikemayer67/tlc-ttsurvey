@@ -27,7 +27,7 @@ $data   = [];
 $draft_exists     = false;
 $submitted_exists = false;
 
-$reopen_submitted = false;
+$reopen_submitted = ($_POST['action'] ?? '') === "reopen"; 
 
 $responses = get_user_responses( $userid,$active_id);
 $submitted = $responses['submitted'] ?? [];

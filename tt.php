@@ -27,7 +27,6 @@ session_start();
 try
 {
   log_dev("-------------- Start of TT --------------");
-  log_dev("POST: ".print_r($_POST,true));
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
