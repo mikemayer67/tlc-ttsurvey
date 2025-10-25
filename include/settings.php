@@ -50,9 +50,9 @@ class Settings {
       $kv = $args[0];
     } else {
       $kv = array();
-      while(count($kv) > 1) {
-        $k = array_shift($kv);
-        $v = array_shift($kv);
+      while(count($args) > 1) {
+        $k = array_shift($args);
+        $v = array_shift($args);
         $kv[$k] = $v;
       }
     }
@@ -140,9 +140,12 @@ function admin_email()         { return get_setting('admin_email'); }
 function primary_admin()       { return get_setting('primary_admin'); }
 
 function admin_contact() {
-  $contact = admin_name();
+  $contact = htmlspecialchars(admin_name(), ENT_QUOTES, 'UTF-8');
   $email = admin_email();
-  if($email) { $contact = sprintf("<a href='mailto:%s'>%s</a>",$email,$contact); }
+  if ($email) {
+      $email_escaped = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+      $contact = sprintf("<a href='mailto:%s'>%s</a>", $email_escaped, $contact);
+  }
   return $contact;
 }
 
@@ -211,6 +214,16 @@ function validate_app_logo($logo,&$error=null) {
   $imgfile = safe_app_file("img/$logo");
   if( !getimagesize($imgfile) ) {
     $error = "not found on server";
+  }
+  return strlen($error) == 0;
+}
+
+function validate_admin_name($name, &$error = null): bool {
+  $error = '';
+  _fix_validate_value($name);
+  if($name==='') { return true; }
+  if (!preg_match("/^[\p{L}\p{N} .'_-]+$/u", $name)) {
+      $error = "Admin name contains invalid characters";
   }
   return strlen($error) == 0;
 }

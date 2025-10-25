@@ -54,7 +54,7 @@ elseif($submitted)
     $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
     $status .= "</div>";
   } else {
-    $status = 'Thank You';
+    $status = '';
   }
 
 }
@@ -78,8 +78,28 @@ start_survey_page($title,$userid,$status);
 
 if($submitted && !$draft && !$reopen_submitted)
 {
+  log_dev("POST: ".print_r($_POST,true));
   require_once(app_file('survey/submitted.php'));
-  show_submitted_page($userid,$content,$submitted);
+
+  switch($_POST['action']??'') {
+  case 'sendemail':
+    $email = $_POST['email'] ?? null;
+    if(!$email) {internal_error("Email was missing from request");}
+    send_confirmation_email($userid,$email,$content,$submitted);
+    break;
+
+  case 'withdraw':
+    withdraw_responses($userid,$active_id);
+    break;
+
+  case 'restart':
+    withdraw_and_restart($userid,$active_id);
+    break;
+
+  default:
+    show_submitted_page($userid,$submitted['timestamp']);
+    break;
+  }
 }
 else
 {

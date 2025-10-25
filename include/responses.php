@@ -83,3 +83,77 @@ function get_user_responses($userid,$survey_id,$draft=null)
     'responses' => $responses,
   ];
 }
+
+
+function withdraw_user_responses($userid,$survey_id)
+{
+  $queries = [];
+
+  // remove all existing draft responses
+  $queries[] = <<<SQL
+    DELETE from tlc_tt_responses
+     WHERE userid=(?)
+       AND survey_id=(?)
+       AND draft=1;
+  SQL;
+
+  // copy any submitted responses to draft versions
+  //  (cannot simply update the status as this would break the response option foreign key)
+  $queries[] = <<<SQL
+    INSERT into tlc_tt_responses 
+           ( userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
+    SELECT   userid, survey_id, question_id, 1,     selected, free_text, qualifier, other
+      FROM tlc_tt_responses
+     WHERE userid=(?)
+       AND survey_id=(?);
+  SQL;
+
+  // relink the response options from their submitted parent to the draft parent
+  $queries[] = <<<SQL
+    UPDATE tlc_tt_response_options
+       SET draft=1
+     WHERE userid=(?)
+       AND survey_id=(?);
+  SQL;
+
+  // remove the submitted responses
+  $queries[] = <<<SQL
+    DELETE from tlc_tt_responses
+     WHERE userid=(?)
+       AND survey_id=(?)
+       AND draft=0;
+  SQL;
+
+  // update the user status table
+  $queries[] = <<<SQL
+    UPDATE tlc_tt_user_status 
+       SET draft = submitted, submitted = NULL
+     WHERE userid=(?)
+       AND survey_id=(?);
+  SQL;
+
+  MySQLBeginTransaction();
+
+  foreach( $queries as $query ) {
+    if( false === MySQLExecute($query,'si',$userid,$survey_id) ) {
+      MySQLRollback();
+      return false;
+    }
+  }
+
+  MySQLCommit();
+  return true;
+}
+
+
+function restart_user_responses($userid,$survey_id)
+{
+  $query = <<<SQL
+    DELETE from tlc_tt_user_status 
+     WHERE userid=(?) 
+       AND survey_id=(?)
+  SQL;
+
+  $result = MySQLExecute($query, 'si', $userid, $survey_id);
+  return false !== $result;
+}
