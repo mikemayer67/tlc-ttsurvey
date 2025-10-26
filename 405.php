@@ -7,6 +7,8 @@ require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/logger.php'));
 
+define('RENDERING_ERR_PHP',true);
+
 $url = dirname($_SERVER['SCRIPT_NAME']);
 
 start_fault_page('405');

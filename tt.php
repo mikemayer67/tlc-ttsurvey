@@ -102,7 +102,7 @@ try
   }
 
   // If response data is being submitted, handle updating the database
-  if(key_exists('submit',$_REQUEST) && key_exists('action',$_POST)) {
+  if(key_exists('submit',$_POST) && key_exists('action',$_POST)) {
     require(app_file('survey/handle_submit.php'));
     die();
   }

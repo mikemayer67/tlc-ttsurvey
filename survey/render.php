@@ -32,11 +32,15 @@ class RenderEngine
 
   public function render($state, $content, $kwargs)
   {
+    log_dev("render kwargs: ".print_r($kwargs,true));
     $this->in_box       = false;
     $this->in_grid      = false;
     $this->follows_info = false;
 
     $responses = $kwargs['responses'] ?? [];
+    $feedback  = $kwargs['feedback']  ?? [];
+
+    log_dev('render feedback: '.print_r($feedback,true));
 
     if($state === 'preview')
     {
@@ -44,16 +48,24 @@ class RenderEngine
       echo "<form id='survey'>";
     } 
     else {
-      $action = app_uri('submit');
+      $action = app_uri();
+      $userid    = $kwargs['userid'] ?? null;
+      $survey_id = $kwargs['survey_id'] ?? null;
+
+      if(is_null($userid))    { internal_error("missing userid in kwargs");    }
+      if(is_null($survey_id)) { internal_error("missing survey_id in kwargs"); }
 
       echo "<form id='survey' action='$action' method='post'>";
       $nonce = gen_nonce('survey-form');
+      add_hidden_input('submit',1);
       add_hidden_input('nonce',$nonce);
       add_hidden_input('ajaxuri',app_uri());
+      add_hidden_input('userid',$userid);
+      add_hidden_input('survey_id',$survey_id);
     }
 
     foreach($content['sections'] as $section) {
-      $this->add_section($section,$content,$responses);
+      $this->add_section($section,$content,$responses,$feedback);
     }
 
     if($action) { $this->add_submit_bar($state); }
@@ -87,7 +99,7 @@ class RenderEngine
       echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
       echo "<button class='save'   type='submit' name='action' value='save'  >Update Draft</button>";
       echo "</div><div>";
-      echo "<button class='cancel' type='submit' name='action' value='cancel'>Cancel</button>";
+      echo "<button class='cancel' type='submit' name='action' value='cancel'>Discard Changes</button>";
       echo "</div>";
       break;
     case 'draft_updates':
@@ -95,8 +107,8 @@ class RenderEngine
       echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
       echo "<button class='save'   type='submit' name='action' value='save'  >Update Draft</button>";
       echo "</div><div>";
-      echo "<button class='delete' type='submit' name='action' value='delete'>Drop Draft</button>";
-      echo "<button class='cancel' type='submit' name='action' value='cancel'>Cancel</button>";
+      echo "<button class='delete' type='submit' name='action' value='delete'>Delete Draft</button>";
+      echo "<button class='cancel' type='submit' name='action' value='cancel'>Discard Changes</button>";
       echo "</div>";
       break;
     case 'submitted':
@@ -111,13 +123,12 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_section($section,$content,$responses)
+  private function add_section($section,$content,$responses,$feedback)
   {
     $sequence    = $section['sequence'];
     $name        = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
     $intro       = $section['intro'] ?? '';
-    $feedback    = $section['feedback'] ?? false;
 
     $index = "data-section=$sequence";
 
@@ -142,10 +153,12 @@ class RenderEngine
 
     $this->add_questions($sequence,$content,$responses);
 
-    if($feedback) {
+    if( $section['feedback'] ?? false )
+    {
       echo "<div class='section feedback' $index>";
       echo "<div class='label'>$feedback</div>";
       echo "<textarea class='section feedback' name='section-feedback-$sequence' placeholder='[optional]'>";
+      echo $feedback[$sequence] ?? '';
       echo "</textarea>";
       echo "</div>";
     }
@@ -316,7 +329,7 @@ class RenderEngine
 
     $response = $responses[$id]['free_text'] ?? '';
 
-    $input_id = "question-input-$id";
+    $input_id = "question-freetext-$id";
 
     $this->close_grid();
 
@@ -370,11 +383,11 @@ class RenderEngine
       echo "<div class='intro'>$intro</div>";
     }
 
-    $name     = "question-input-$id";
+    $name     = "question-bool-$id";
     $input_id = $name;
 
     echo "<div class='checkbox $layout'>";
-    echo "<input id='$input_id' type='checkbox' name='$name' $checked>";
+    echo "<input id='$input_id' type='checkbox' name='$name' value='1' $checked>";
     echo "<label for='$input_id' class='question'>$wording</label>";
     echo "</div>";
 
@@ -422,9 +435,11 @@ class RenderEngine
     if($multi) {
       $type = 'checkbox';
       $class = 'select multi';
+      $name = "question-multi-$id";
     } else {
       $type = 'radio';
       $class = 'select one';
+      $name = "question-select-$id";
     }
 
     $response = $responses[$id] ?? null;
@@ -447,26 +462,27 @@ class RenderEngine
       echo "<div class='intro'>$intro</div>";
     }
 
-    $name = "question-input-$id";
-
     if(!$in_grid) { echo "<div class='options-box'>"; }
 
     echo "<div class='options wording'>$wording</div>";
     echo "<div class='options wrapper $layout'>";
     foreach($options as $option) {
       $input_id = "$name-$option";
+      $input_name = $multi ? $input_id : $name;
       $option_str = $option_strings[$option];
       $checked = in_array($option,$selected) ? 'checked' : '';
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' name='$name' value='$option' $checked>";
+      echo "<input id='$input_id' type='$type' name='$input_name' value='$option' $checked>";
       echo "<label for='$input_id'>$option_str</label>";
       echo "</div>";
     }
     if($other_flag) {
       $input_id = "$name-has-other";
+      $input_name = $multi ? $input_id : $name;
+      $value      = $multi ? 1 : 0;
       $other_id = "$name-other";
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' class='has-other' name='$name' value='0' $other_checked>";
+      echo "<input id='$input_id' type='$type' class='has-other' name='$input_name' value='$value' $other_checked>";
       echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'>$other_value</textarea>";
       echo "</div>";
     }

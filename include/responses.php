@@ -78,9 +78,28 @@ function get_user_responses($userid,$survey_id,$draft=null)
     $responses[$qid]['options'][] = $row['option_id'];
   }
 
+  $query = <<<SQL
+    SELECT sequence, feedback
+      FROM tlc_tt_section_feedback
+     WHERE userid=(?)
+       AND survey_id=(?)
+       AND draft=(?);
+  SQL;
+
+  $rows = MySQLSelectRows($query,'sii',$userid, $survey_id, $draft?1:0);
+  log_dev("Feedback rows ($draft): ".print_r($rows,true));
+
+  $feedback = array();
+  foreach($rows as $row) {
+    $feedback[$row['sequence']] = $row['feedback'];
+  }
+
+  log_dev("Feedback response ($draft): ".print_r($feedback,true));
+
   return [
     'timestamp' => $timestamp,
     'responses' => $responses,
+    'feedback'  => $feedback,
   ];
 }
 
@@ -131,6 +150,44 @@ function withdraw_user_responses($userid,$survey_id)
      WHERE userid=(?)
        AND survey_id=(?);
   SQL;
+  
+  // proceed to executing the queries in a single transaction
+
+  MySQLBeginTransaction();
+
+  foreach( $queries as $query ) {
+    if( false === MySQLExecute($query,'si',$userid,$survey_id) ) {
+      MySQLRollback();
+      return false;
+    }
+  }
+
+  MySQLCommit();
+  return true;
+}
+
+
+function drop_user_draft_responses($userid,$survey_id)
+{
+  $queries = [];
+
+  // remove all existing draft responses
+  $queries[] = <<<SQL
+    DELETE from tlc_tt_responses
+     WHERE userid=(?)
+       AND survey_id=(?)
+       AND draft=1;
+  SQL;
+
+  // update the user status table
+  $queries[] = <<<SQL
+    UPDATE tlc_tt_user_status 
+       SET draft = NULL
+     WHERE userid=(?)
+       AND survey_id=(?);
+  SQL;
+
+  // proceed to executing the queries in a single transaction
 
   MySQLBeginTransaction();
 
@@ -156,4 +213,160 @@ function restart_user_responses($userid,$survey_id)
 
   $result = MySQLExecute($query, 'si', $userid, $survey_id);
   return false !== $result;
+}
+
+
+function update_user_responses($userid,$survey_id,$action,$responses)
+{
+  log_dev("update_user_responses($userid,$survey_id,$action): ".print_r($responses,true));
+
+  // handle the action specific setup
+
+  switch($action) 
+  {
+    case 'delete':
+      drop_user_draft_responses($userid,$survey_id);
+      return;
+
+    case 'save':
+      $draft = 1;
+      break;
+
+    case 'submit':
+      $draft = 0;
+      break;
+
+    default:
+      internal_error("Invalid update_user_responses action ($action)");
+      break;
+  }
+
+  // wrap all database updates in a transaction to allow for rollback on failure
+  MySQLBeginTransaction();
+
+  // remove the existing reponses
+  // if saving a draft, only remove the draft responses
+  // if submitting, remove all responses 
+  $action_clause = $draft ? 'AND draft=1' : '';
+  $query = <<<SQL
+    DELETE from tlc_tt_responses 
+     WHERE userid=(?) AND survey_id=(?)
+     $action_clause;
+  SQL;
+  if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
+
+  $query = <<<SQL
+    DELETE from tlc_tt_section_feedback
+     WHERE userid=(?) AND survey_id=(?)
+     $action_clause;
+  SQL;
+  if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
+
+  // update the user status table
+  $action_clause = $draft ? 'draft=CURRENT_TIMESTAMP' : 'draft=NULL, submitted=CURRENT_TIMESTAMP';
+  $query = <<<SQL
+    UPDATE tlc_tt_user_status
+       SET $action_clause
+     WHERE userid=(?)
+       AND survey_id=(?);
+  SQL;
+  if(!_update_user_response($query,'si', $userid, $survey_id) ) { return false; }
+  
+  foreach( $responses as $k=>$v )
+  {
+    // skip any empty input responses
+    if( $v==='' ) { continue; }
+
+    // Freetext questions
+    if(preg_match('/^question-freetext-(\d+)$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,free_text)
+         VALUES     (?,?,?,$draft,?)
+         ON DUPLICATE KEY UPDATE free_text=?;
+      SQL;
+      if(!_update_user_response($query,'siiss', $userid, $survey_id, $m[1], $v, $v) ) { return false; }
+    }
+
+    // Boolean questions
+    elseif(preg_match('/^question-bool-(\d+)$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         VALUES     (?,?,?,$draft,1)
+         ON DUPLICATE KEY UPDATE selected=1;
+      SQL;
+      if(!_update_user_response($query,'sii', $userid, $survey_id, $m[1]) ) { return false; }
+    }
+
+    // Single and multi select questions
+    elseif(preg_match('/^question-select-(\d+)$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         VALUES     (?,?,?,$draft,?)
+         ON DUPLICATE KEY UPDATE selected=?;
+      SQL;
+      if(!_update_user_response($query,'siiii', $userid, $survey_id, $m[1],$v,$v) ) { return false; }
+    }
+    elseif(preg_match('/^question-multi-(\d+)-(\d+)$/',$k,$m)) {
+      // need an entry in both the responses and the response options tables
+      $query = <<<SQL
+         INSERT IGNORE into tlc_tt_responses (userid,survey_id,question_id,draft)
+         VALUES     (?,?,?,$draft);
+      SQL;
+      if(!_update_user_response($query,'sii', $userid, $survey_id, $m[1]) ) { return false; }
+
+      $query = <<<SQL
+         INSERT into tlc_tt_response_options (userid,survey_id,question_id,draft,option_id)
+         VALUES     (?,?,?,$draft,?);
+      SQL;
+      if(!_update_user_response($query,'siii', $userid, $survey_id, $m[1],$m[2]) ) { return false; }
+    }
+    elseif(preg_match('/^question-(?:multi|select)-(\d+)-has-other$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         VALUES     (?,?,?,$draft,0)
+         ON DUPLICATE KEY UPDATE selected=0;
+      SQL;
+      if(!_update_user_response($query,'sii', $userid, $survey_id, $m[1]) ) { return false; }
+    }
+    elseif(preg_match('/^question-(?:multi|select)-(\d+)-other/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,other)
+         VALUES     (?,?,?,$draft,?)
+         ON DUPLICATE KEY UPDATE other=?;
+      SQL;
+      if(!_update_user_response($query,'siiss', $userid, $survey_id, $m[1],$v, $v) ) { return false; }
+    }
+
+    // Add qualifiers
+    elseif(preg_match('/^question-qualifier-(\d+)$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,qualifier)
+         VALUES     (?,?,?,$draft,?)
+         ON DUPLICATE KEY UPDATE qualifier=?;
+      SQL;
+      if(!_update_user_response($query,'siiss', $userid, $survey_id, $m[1],$v,$v)) { return false; }
+    }
+
+    // Section feedback
+    elseif(preg_match('/^section-feedback-(\d+)$/',$k,$m)) {
+      $query = <<<SQL
+         INSERT into tlc_tt_section_feedback (userid,survey_id,sequence,draft,feedback)
+         VALUES     (?,?,?,$draft,?);
+      SQL;
+      if(!_update_user_response($query,'siis', $userid, $survey_id, $m[1],$v)) { return false; }
+    }
+  }
+
+  // Done... commit the changes
+  MySQLCommit();
+  return true;
+}
+
+function _update_user_response($query, $types, ...$params)
+{
+  if( false === MySQLExecute($query,$types,...$params) ) {
+    MySQLRollback();
+    return false;
+  }
+  return true;
 }

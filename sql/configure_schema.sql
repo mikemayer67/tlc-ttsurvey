@@ -434,6 +434,22 @@ IF current_version < 3 THEN
 
   BEGIN
     DECLARE CONTINUE HANDLER FOR 1061 BEGIN END;
+    ALTER TABLE tlc_tt_survey_sections ADD INDEX idx_survey_section (survey_id, sequence);
+  END;
+
+  CREATE TABLE tlc_tt_section_feedback (
+    userid      varchar(24)          NOT NULL,
+    survey_id   smallint    UNSIGNED NOT NULL,
+    sequence    smallint    UNSIGNED NOT NULL,
+    draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
+    feedback    text                 DEFAULT NULL,
+    PRIMARY KEY (userid,survey_id,sequence,draft),
+    FOREIGN KEY (userid,survey_id) REFERENCES tlc_tt_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+    FOREIGN KEY (survey_id,sequence) REFERENCES tlc_tt_survey_sections(survey_id,sequence) ON UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+  BEGIN
+    DECLARE CONTINUE HANDLER FOR 1061 BEGIN END;
     ALTER TABLE tlc_tt_survey_options ADD INDEX idx_survey_option (survey_id, option_id);
   END;
 

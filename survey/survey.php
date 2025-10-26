@@ -32,11 +32,15 @@ $reopen_submitted = ($_POST['action'] ?? '') === "reopen";
 $responses = get_user_responses( $userid,$active_id);
 $submitted = $responses['submitted'] ?? [];
 $draft     = $responses['draft']     ?? [];
+$state     = '';
+
+$render_args = ['userid'=>$userid, 'survey_id'=>$active_id];
 
 if($submitted && $draft)
 {
-  $render_args['state']     = 'draft_updates';
+  $state   = 'draft_updates';
   $render_args['responses'] = $draft['responses'];
+  $render_args['feedback']  = $draft['feedback'];
   $ts1     = recent_timestamp_string( $submitted['timestamp'] );
   $ts2     = recent_timestamp_string($draft['timestamp']);
   $status  = "<div class='survey-status'>";
@@ -46,8 +50,9 @@ if($submitted && $draft)
 }
 elseif($submitted)
 {
-  $render_args['state']     = 'submitted';
+  $state     = 'submitted';
   $render_args['responses'] = $submitted['responses'];
+  $render_args['feedback']  = $submitted['feedback'];
   if($reopen_submitted) {
     $ts      = recent_timestamp_string( $submitted['timestamp'] );
     $status  = "<div class='survey-status'>";
@@ -59,8 +64,9 @@ elseif($submitted)
 
 }
 elseif($draft) {
-  $render_args['state']     = 'draft';
+  $state   = 'draft';
   $render_args['responses'] = $draft['responses'];
+  $render_args['feedback']  = $draft['feedback'];
   $ts      = recent_timestamp_string($draft['timestamp']);
   $status  = "<div class='survey-status'>";
   $status .= "<div class='key'>Submitted</div><div class='timestamp'></div>";
@@ -68,11 +74,11 @@ elseif($draft) {
   $status .= "</div>";
 }
 else {
-  $render_args['state'] = 'new';
+  $state  = 'new';
   $status = "Welcome";
 }
 
-$responses['state']   = $render_args['state'];
+$responses['state'] = $state;
 
 start_survey_page($title,$userid,$status);
 
@@ -103,10 +109,12 @@ if($submitted && !$draft && !$reopen_submitted)
 }
 else
 {
-  render_survey($render_args['state'],$content,$render_args);
+  render_survey($state,$content,$render_args);
 
-  $js_data   = json_encode($responses);
-  echo "<script>const ttt_user_responses = $js_data;</script>";
+  $js_responses = json_encode($responses);
+  echo "<script>";
+  echo "const ttt_user_responses = $js_responses;";
+  echo "</script>";
 }
 
 $user_menu = js_uri('user_menu','survey');
