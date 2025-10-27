@@ -292,17 +292,6 @@ function add_navbar($context,$userid=null,$title=null,$status='')
 
 function add_menu_trigger($context,$user) 
 {
-  // No-Javascript user menu
-
-  // @@@ TODO: Modify this to take place of javascript user menu
-  //   Will include profile/password items in survey context
-  //----------
-  //  $logout_uri = app_uri('logout');
-  //  echo "<noscript>";
-  //  echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
-  //  echo "</noscript>";
-  //----------
-
   $menu_icon = img_uri('icons8/menu.png');
   echo "<noscript>";
   echo "<div class='menu-trigger'>";

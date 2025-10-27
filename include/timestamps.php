@@ -13,8 +13,9 @@ function recent_timestamp_string($timestamp)
   $delta = ($now - $timestamp)/86400;  // days:  
 
   // using DateTimeImmutable so that add/sub return new objects rather than mutating the DateTime
-  $ts  = new \DateTimeImmutable('@'.$timestamp);
-  $now = new \DateTimeImmutable('@'.$now);
+  $tz  = new \DateTimeZone(date_default_timezone_get());
+  $ts  = (new \DateTimeImmutable('@'.$timestamp))->setTimezone($tz);
+  $now = (new \DateTimeImmutable('@'.$now))->setTimezone($tz);
 
   // Start with the "actual" date format, only including the year if not thie current year.
   $date_fmt = ($ts->format('Y') === $now->format('Y')) ? 'M j' : 'M j, Y';

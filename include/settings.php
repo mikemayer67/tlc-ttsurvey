@@ -117,7 +117,10 @@ class Settings {
 };
 
 Settings::load_all();
+
+// fix timezone
 date_default_timezone_set(Settings::get('timezone'));
+MySQLExecute("SET time_zone = '".date('P')."'");
 
 //
 // Convenience Accessors

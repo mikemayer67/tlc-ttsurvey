@@ -87,14 +87,11 @@ function get_user_responses($userid,$survey_id,$draft=null)
   SQL;
 
   $rows = MySQLSelectRows($query,'sii',$userid, $survey_id, $draft?1:0);
-  log_dev("Feedback rows ($draft): ".print_r($rows,true));
 
   $feedback = array();
   foreach($rows as $row) {
     $feedback[$row['sequence']] = $row['feedback'];
   }
-
-  log_dev("Feedback response ($draft): ".print_r($feedback,true));
 
   return [
     'timestamp' => $timestamp,
@@ -218,8 +215,6 @@ function restart_user_responses($userid,$survey_id)
 
 function update_user_responses($userid,$survey_id,$action,$responses)
 {
-  log_dev("update_user_responses($userid,$survey_id,$action): ".print_r($responses,true));
-
   // handle the action specific setup
 
   switch($action) 

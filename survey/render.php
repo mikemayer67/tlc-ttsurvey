@@ -32,15 +32,12 @@ class RenderEngine
 
   public function render($state, $content, $kwargs)
   {
-    log_dev("render kwargs: ".print_r($kwargs,true));
     $this->in_box       = false;
     $this->in_grid      = false;
     $this->follows_info = false;
 
     $responses = $kwargs['responses'] ?? [];
     $feedback  = $kwargs['feedback']  ?? [];
-
-    log_dev('render feedback: '.print_r($feedback,true));
 
     if($state === 'preview')
     {
@@ -153,10 +150,11 @@ class RenderEngine
 
     $this->add_questions($sequence,$content,$responses);
 
-    if( $section['feedback'] ?? false )
+    $feedback_label = $section['feedback'] ?? false;
+    if( $feedback_label )
     {
       echo "<div class='section feedback' $index>";
-      echo "<div class='label'>$feedback</div>";
+      echo "<div class='label'>$feedback_label</div>";
       echo "<textarea class='section feedback' name='section-feedback-$sequence' placeholder='[optional]'>";
       echo $feedback[$sequence] ?? '';
       echo "</textarea>";

@@ -41,7 +41,7 @@ if($submitted && $draft)
   $state   = 'draft_updates';
   $render_args['responses'] = $draft['responses'];
   $render_args['feedback']  = $draft['feedback'];
-  $ts1     = recent_timestamp_string( $submitted['timestamp'] );
+  $ts1     = recent_timestamp_string($submitted['timestamp'] );
   $ts2     = recent_timestamp_string($draft['timestamp']);
   $status  = "<div class='survey-status'>";
   $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts1</div>";
@@ -54,7 +54,7 @@ elseif($submitted)
   $render_args['responses'] = $submitted['responses'];
   $render_args['feedback']  = $submitted['feedback'];
   if($reopen_submitted) {
-    $ts      = recent_timestamp_string( $submitted['timestamp'] );
+    $ts      = recent_timestamp_string($submitted['timestamp'] );
     $status  = "<div class='survey-status'>";
     $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
     $status .= "</div>";
@@ -84,7 +84,6 @@ start_survey_page($title,$userid,$status);
 
 if($submitted && !$draft && !$reopen_submitted)
 {
-  log_dev("POST: ".print_r($_POST,true));
   require_once(app_file('survey/submitted.php'));
 
   switch($_POST['action']??'') {
