@@ -24,7 +24,7 @@
   border-width:2px;
   padding:0.5em;
   resize:vertical;
-  font-family:'Courier New';
+  font-family:var(--monospace-font);
   font-size:75%;
 }
 

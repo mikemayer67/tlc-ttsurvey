@@ -1,7 +1,10 @@
-* {
+:root {
   --survey-background:#f0e8e0;
   --question-background:#f2efec;
   --hint-background:#6a5430;
+}
+
+body {
   background-color:var(--survey-background);
 }
 
@@ -84,7 +87,7 @@ strong, b { font-weight:bold; }
 }
 
 .markdown code {
-  font-family: 'Courier New', monospace !important;
+  font-family: var(--monospace-font) !important;
   background-color: #f0f0f0 !important;
   padding: 0 0.2em !important;
   border-radius: 3px !important;
@@ -98,7 +101,7 @@ strong, b { font-weight:bold; }
   padding: 0.5em 1em !important;
   overflow-x: auto !important;
   border-radius: 4px !important;
-  font-family: 'Courier New', monospace !important;
+  font-family: var(--monospace-font) !important;
   font-size: 0.95em !important;
   line-height: 1.4 !important;
 }

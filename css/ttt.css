@@ -6,7 +6,7 @@ body {
   min-height: 100vh;
 }
 
-* {
+:root {
   --navbar-color:white;
   --font-red:darkred;
   --empty-field-color:#ffffcc;
@@ -14,12 +14,12 @@ body {
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
   --monospace-font: 'Courier New', Monospace;
+}
 
-  font-optical-sizing:auto;
+html,body {
   font-weight:normal;
   font-style:normal;
-  font-variation-settings: "wdth" 100;
-
+  font-optical-sizing:auto;
   background: #f4f4f4;
 }
 
@@ -83,25 +83,6 @@ html{box-sizing:border-box}
 body{margin:0}
 button,input,select,textarea { font:inherit; margin:0 }
 html,body{ font-size:15px; line-height:1.5 }
-
-/*******************************************************
- * From Google Fonts
- *******************************************************
-.noto-serif-display-<uniquifier> {
-  font-family: "Noto Serif Display", serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
- *******************************************************
-.quicksand-<uniquifier> {
-  font-family: "Quicksand", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-*******************************************************/
 
 .ttt-red {
   color:var(--font-red);

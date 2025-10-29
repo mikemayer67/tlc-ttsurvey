@@ -263,7 +263,6 @@ $(document).ready( function() {
 
   ce.confirm_logout = false;
 
-  ce.cancel.removeClass('hidden');
   ce.status.on('click',hide_status);
 
   setup_toggle_cache();
