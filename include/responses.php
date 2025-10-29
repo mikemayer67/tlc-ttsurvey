@@ -217,6 +217,8 @@ function update_user_responses($userid,$survey_id,$action,$responses)
 {
   // handle the action specific setup
 
+  unset($_SESSION['prior-nonce']);
+
   switch($action) 
   {
     case 'delete':
@@ -224,6 +226,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
       return;
 
     case 'save':
+      $_SESSION['prior-nonce'] = $_POST['nonce'];
       $draft = 1;
       break;
 
