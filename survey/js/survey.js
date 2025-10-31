@@ -259,6 +259,9 @@ $(document).ready( function() {
   ce.checkable = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
   ce.inputs    = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
 
+  // add a hidden input to let PHP know that we have javascript enabled on the browswer
+  $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);
+
   setup_hints();
 
   ce.confirm_logout = false;

@@ -117,8 +117,8 @@ export default function init()
   {
     submit_btn.disable();
 
-    const nonce   = $('#survey input[name=nonce]').val();
-    const ajaxuri = $('#survey input[name=ajaxuri]').val();
+    const nonce   = $('form input[name=nonce]').val();
+    const ajaxuri = $('form input[name=ajaxuri]').val();
 
     const old_pw = old_pw_input.val();
     const new_pw = new_pw_input.val();

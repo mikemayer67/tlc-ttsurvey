@@ -9,29 +9,44 @@ require_once(app_file('include/responses.php'));
 function show_submitted_page($userid,$timestamp,$email_sent_to=null)
 {
   $action = app_uri();
-  $nonce = gen_nonce('submitted');
+  $nonce = gen_nonce('survey-form');
   $timestamp = recent_timestamp_string($timestamp);
 
+  $user = User::from_userid($userid);
+  $email = $user->email();
+
+  $queued_email = $_SESSION['queued-confirmation-email'] ?? false;
+  if($queued_email && !$email) {
+    $queued_email = false;
+    $_SESSION['queued-confirmation-email'] = false;
+  }
+
   echo "<form id='submitted' class='submitted-box' method='post' action='$action'>";
-  echo "<input type='hidden' name='nonce' value='$nonce'>";
-  echo "<input type='hidden' name='submitted' value='1'>";
+  add_hidden_input('nonce',$nonce);
+  add_hidden_input('submitted',1);
+  if($queued_email) {
+    add_hidden_input('userid',$userid);
+    add_hidden_input('ajaxuri',app_uri());
+  }
   echo "<div class='message'>Your survey was successfully submitted</div>";
   echo "<div class='timestamp'>Recieved $timestamp</div>";
+  echo "<div class='email'>";
   if($email_sent_to) {
-    echo "<div class='email'>A summary was sent to $email_sent_to</div>";
+    echo "A confirmation email was sent to $email_sent_to";
   }
-  else {
-    $user = User::from_userid($userid);
-    $email = $user->email();
-    if($email) {
-      echo "<div class='email'>";
-      echo "<input type='hidden' name='email' value='$email'>";
-      echo "<button type='submit' class='linkbutton' name='action' value='sendemail'>";
-      echo "Send summary to $email";
-      echo "</button>";
-      echo "</div>";
-    }
+  elseif($queued_email) {
+    echo "A confirmation email will be sent to $email";
+  }
+  elseif($email) {
+    echo "<input type='hidden' name='email' value='$email'>";
+    echo "<button type='submit' class='linkbutton' name='action' value='sendemail'>";
+    echo "Send summary to $email";
+    echo "</button>";
   } 
+  else {
+    echo "Cannot send confirmation email as no address was provided";
+  }
+  echo "</div>";
   echo "<div class='reopen'>";
   echo "<button type='submit' class='linkbutton' name='action' value='reopen'>";
   echo "I would like to review my responses and possibly make some updates";
@@ -51,12 +66,17 @@ function show_submitted_page($userid,$timestamp,$email_sent_to=null)
   echo "</div>";
 
   echo "</form>";
+
+  if($queued_email) {
+    $submitted = js_uri('submitted','survey');
+    echo "<script type='module' src='$submitted'></script>";
+  }
 }
 
-function send_confirmation_email($userid,$email,$content,$responses)
+function send_confirmation_email($userid,$email,$content,$submitted)
 {
-  log_dev("send_email_confirmation to $email");
-  show_submitted_page($userid,$submitted['timestamp'],$email);
+  todo("send the confirmaiton email");
+  $_SESSION['queued-confirmation-email'] = false;
 }
 
 function withdraw_responses($userid,$survey_id,$restart=false)

@@ -43,5 +43,20 @@ if(intval($active_survey_id) !== intval($submitted_survey_id)) {
 
 $result = update_user_responses($submitted_userid,$submitted_survey_id,$action,$_POST);
 
+if(empty($_POST['js_enabled'])) {
+  // We cannot use javascript to send an async AJAX call to send the email, so we need
+  // to handle that now.  Non-JS users will just have to deal with the lag this causes.
+  require_once(app_file('include/users.php'));
+  $active_user = User::from_userid($active_userid);
+  $email = $active_user->email();
+  if($email) {
+    todo("replace logging with function call to send email");
+    log_dev("Send email notification to $email (no javascript on browser)");
+  }
+  $_SESSION['queued-confirmation-email']=false;
+} else {
+  $_SESSION['queued-confirmation-email']=true;
+}
+
 header('Location: '.app_uri());
 die();

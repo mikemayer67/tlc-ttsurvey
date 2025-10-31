@@ -598,6 +598,7 @@ div.submit-bar div {
 div.submit-bar button {
   color:black;
   border: outset 2px #ccc;
+  background-color: var(--survey-background);
 }
 
 div.submit-bar button:disabled {

@@ -6,12 +6,12 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/status.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('include/surveys.php'));
 require_once(app_file('include/timestamps.php'));
 require_once(app_file('survey/render.php'));
 
 // Verify that there is an active survey
 //   If not, display the "No survey" page
-require_once(app_file('include/surveys.php'));
 $active_id = active_survey_id();
 if(!$active_id) {
   require(app_file('survey/no_survey.php'));
@@ -91,6 +91,7 @@ if($submitted && !$draft && !$reopen_submitted)
     $email = $_POST['email'] ?? null;
     if(!$email) {internal_error("Email was missing from request");}
     send_confirmation_email($userid,$email,$content,$submitted);
+    show_submitted_page($userid,$submitted['timestamp'],$email);
     break;
 
   case 'withdraw':
