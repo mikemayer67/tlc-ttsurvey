@@ -413,6 +413,8 @@ IF current_version < 3 THEN
     survey_id   smallint    UNSIGNED NOT NULL,
     draft       datetime             DEFAULT NULL,
     submitted   datetime             DEFAULT NULL,
+    email_sent  datetime             DEFAULT NULL,
+    sent_to     varchar(45)          DEFAULT NULL,
     PRIMARY KEY (userid,survey_id),
     FOREIGN KEY (userid)    REFERENCES tlc_tt_userids(userid)          ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (survey_id) REFERENCES tlc_tt_survey_status(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE

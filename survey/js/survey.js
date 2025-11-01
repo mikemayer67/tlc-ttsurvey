@@ -163,10 +163,18 @@ function handle_input_change(e)
 
 function update_submit_buttons()
 {
-  // the submit, save, and cancel buttons should be disabled if there are no changes.
-  ce.submit.prop('disabled',!ce.dirty);
+  // If currently showing the latest submitted responses:
+  //   the submit, save, and cancel buttons should be disabled if there are no changes.
+  // If currently showing a working draft:
+  //   the submit button should always be enabled
+  //   the save and cancel buttons should be disabled if there are no changes.
   ce.save.prop(  'disabled',!ce.dirty);
   ce.cancel.prop('disabled',!ce.dirty);
+  if(ttt_user_responses.state === 'submitted') {
+    ce.submit.prop('disabled',!ce.dirty);
+  } else {
+    ce.submit.prop('disabled',false);
+  }
 }
 
 //
@@ -268,18 +276,21 @@ $(document).ready( function() {
 
   ce.status.on('click',hide_status);
 
-  setup_toggle_cache();
-  ce.details.on('toggle',update_toggle_cache);
+  if(ce.submit.length) {
+    // the following only apply if there is a submit button bar
+    setup_toggle_cache();
+    ce.details.on('toggle',update_toggle_cache);
 
-  ce.cancel.on('click',handle_cancel);
-  ce.save.on('click',handle_save);
+    ce.cancel.on('click',handle_cancel);
+    ce.save.on('click',handle_save);
 
-  enable_radio_button_deselect();
+    enable_radio_button_deselect();
 
-  ce.dirty = false;
-  update_submit_buttons();
-  ce.checkable.on('change',handle_input_change);
-  ce.inputs.on(   'input', handle_input_change);
+    ce.dirty = false;
+    update_submit_buttons();
+    ce.checkable.on('change',handle_input_change);
+    ce.inputs.on(   'input', handle_input_change);
 
-  cache_input_values();
+    cache_input_values();
+  }
 });

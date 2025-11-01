@@ -63,7 +63,5 @@ else
 
 end_ob_logging();
 
-regen_active_token();
-
 echo json_encode($response);
 die();

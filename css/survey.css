@@ -611,9 +611,14 @@ div.submit-bar button:disabled {
  * Submitted Page/Form
  ****************************************/
 
+.submitted-wrapper {
+  width:100%;
+  text-align:center;  /* works because .submitted-box is inline-block */
+}
+
 .submitted-box { 
+  display:inline-block;
   max-width:calc(100% - 2em);
-  width:fit-content;
   background:white;
   margin: 2em auto;
   padding:.5em 1em;

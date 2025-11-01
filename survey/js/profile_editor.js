@@ -128,8 +128,10 @@ export default function init()
               old_email: old_email,
               new_email: data.email,
             },
-          });
+          })
         }
+
+        $(document).trigger('UserProfileUpdated',[old_email,new_email] );
 
       } else {
         name_err.text(data.name_error);

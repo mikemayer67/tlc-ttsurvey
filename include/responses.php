@@ -20,15 +20,15 @@ function get_user_responses($userid,$survey_id,$draft=null)
   //   both      : [ 'draft' => responses, 'submitted => responses ]
 
   $query = <<<SQL
-    SELECT UNIX_TIMESTAMP(draft)     as draft,
-           UNIX_TIMESTAMP(submitted) as submitted
+    SELECT UNIX_TIMESTAMP(draft)      as draft,
+           UNIX_TIMESTAMP(submitted)  as submitted
       FROM tlc_tt_user_status 
      WHERE userid=(?) AND survey_id=(?)
   SQL;
 
   $status = MySQLSelectRow($query,'si', $userid, $survey_id);
   if (!$status || !is_array($status)) { return []; }
-  
+
   if(is_null($draft))
   {
     // returns both draft and submitted by recursively calling get_user_responses
@@ -143,7 +143,7 @@ function withdraw_user_responses($userid,$survey_id)
   // update the user status table
   $queries[] = <<<SQL
     UPDATE tlc_tt_user_status 
-       SET draft = submitted, submitted = NULL
+       SET draft = submitted, submitted=NULL, email_sent=NULL, sent_to=NULL
      WHERE userid=(?)
        AND survey_id=(?);
   SQL;
@@ -213,6 +213,39 @@ function restart_user_responses($userid,$survey_id)
 }
 
 
+function confirmation_email_sent($userid,$survey_id,$email=null)
+{
+  // note this function is both getter and setter depending on if $email is provided
+  
+  if($email) {
+    // setter
+    $query = <<<SQL
+      UPDATE tlc_tt_user_status
+         SET email_sent = CURRENT_TIMESTAMP, sent_to=(?)
+       WHERE userid=(?)
+         AND survey_id=(?) 
+    SQL;
+    return MySQLExecute($query,'ssi',$email,$userid,$survey_id);
+  }
+  else {
+    // getter
+    $query = <<<SQL
+    SELECT UNIX_TIMESTAMP(email_sent) as timestamp,
+           sent_to                    as address
+      FROM tlc_tt_user_status 
+     WHERE userid=(?) AND survey_id=(?)
+    SQL;
+
+    $row = MySQLSelectRow($query,'si', $userid, $survey_id);
+
+    if(!$row || empty($row['timestamp'])) {
+      return []; 
+    }
+    return $row;
+  }
+}
+
+
 function update_user_responses($userid,$survey_id,$action,$responses)
 {
   // handle the action specific setup
@@ -261,12 +294,17 @@ function update_user_responses($userid,$survey_id,$action,$responses)
   if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
 
   // update the user status table
-  $action_clause = $draft ? 'draft=CURRENT_TIMESTAMP' : 'draft=NULL, submitted=CURRENT_TIMESTAMP';
+  if($draft) {
+    $insert_list = '(userid,survey_id,draft)';
+    $update_list = 'draft=CURRENT_TIMESTAMP';
+  } else {
+    $insert_list = '(userid,survey_id,submitted)';
+    $update_list = 'draft=NULL, submitted=CURRENT_TIMESTAMP, email_sent=NULL, sent_to=NULL';
+  }
   $query = <<<SQL
-    UPDATE tlc_tt_user_status
-       SET $action_clause
-     WHERE userid=(?)
-       AND survey_id=(?);
+    INSERT into tlc_tt_user_status $insert_list
+    VALUES (?,?,CURRENT_TIMESTAMP)
+    ON DUPLICATE KEY UPDATE $update_list;
   SQL;
   if(!_update_user_response($query,'si', $userid, $survey_id) ) { return false; }
   

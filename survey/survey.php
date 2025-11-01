@@ -3,6 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/users.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
@@ -88,10 +89,17 @@ if($submitted && !$draft && !$reopen_submitted)
 
   switch($_POST['action']??'') {
   case 'sendemail':
-    $email = $_POST['email'] ?? null;
-    if(!$email) {internal_error("Email was missing from request");}
-    send_confirmation_email($userid,$email,$content,$submitted);
-    show_submitted_page($userid,$submitted['timestamp'],$email);
+    if( 
+      $userid &&
+      (($_POST['userid'] ?? null) === $userid) &&
+      ($user = User::from_userid($userid)) &&
+      ($email = $user->email())
+    ) {
+      send_confirmation_email($userid,$active_id,$email,$content,$submitted);
+    }
+
+    show_submitted_page($userid,$active_id,$submitted['timestamp']);
+
     break;
 
   case 'withdraw':
@@ -103,7 +111,7 @@ if($submitted && !$draft && !$reopen_submitted)
     break;
 
   default:
-    show_submitted_page($userid,$submitted['timestamp']);
+    show_submitted_page($userid,$active_id,$submitted['timestamp']);
     break;
   }
 }

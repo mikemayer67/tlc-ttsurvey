@@ -5,15 +5,58 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('include/sendmail.php'));
 
-function show_submitted_page($userid,$timestamp,$email_sent_to=null)
+function show_submitted_page($userid,$survey_id,$timestamp)
 {
+  // We can get to this function by a few different means and in various states.
+  //   Let's take a look at them and also note what should happen in javascript (if anything).
+  //
+  // Email status states:
+  //   - queued: A confirmation email needs to be sent, but hasn't been sent yet
+  //   -   sent: A conirmaation email has been sent
+  //   -   link: No confirmation email has been sent, a link is provided for user to request it
+  //   -   none: There is no email address on record for the user, not confirmation email can be sent
+  //
+  // Case 1: User came back to (or reloaded) tt.php when there is a submitted but no draft.
+  //     1a: queued
+  //         - we should only see this if something went screwy... but possible
+  //         - js: send confirmation via ajax and change status to sent
+  //         - no-js: n/a - only queued when js is enabled. (not handling the edge case where user
+  //                 disabled js in the very short period between submitting the form and loading this page)
+  //
+  //     1b: sent
+  //         - js: no need to do anything, changing user email has no effect on this status
+  //
+  //     1c: link
+  //         - add the <a> link to request a new confirmation email
+  //         - no-js: redirects to the page that sends the email and then redirects back here
+  //         - js: things get interesting here
+  //           - if user removes their email address, jump to case 1d
+  //           - if user clicks on link to send email, send via ajax and jump to case 1b
+  //     
+  //     1d: none
+  //         - email status should be set to none
+  //         - no-js: n/a (adding email will require manual reload to take effect)
+  //         - js: if user adds an email address, jump to case 1c
+  //
+  // Case 2: User just submitted new responses
+  //   - 2a: no email address associated with user
+  //         - email status is set to none
+  //         - proceed as in Case 1
+  //   - 2b: email address exists for user
+  //         - no-js: confirmation email should have been sent prior to this function being 
+  //                  called, status should be set to sent
+  //         - js: status should have been sent to queued
+  //         - proceed to Case 1
+  
   $action = app_uri();
   $nonce = gen_nonce('survey-form');
   $timestamp = recent_timestamp_string($timestamp);
 
-  $user = User::from_userid($userid);
-  $email = $user->email();
+  $user       = User::from_userid($userid);
+  $email      = $user->email();
+  $email_sent = confirmation_email_sent($userid,$survey_id);
 
   $queued_email = $_SESSION['queued-confirmation-email'] ?? false;
   if($queued_email && !$email) {
@@ -21,31 +64,54 @@ function show_submitted_page($userid,$timestamp,$email_sent_to=null)
     $_SESSION['queued-confirmation-email'] = false;
   }
 
+  echo "<div class='submitted-wrapper'>";
   echo "<form id='submitted' class='submitted-box' method='post' action='$action'>";
   add_hidden_input('nonce',$nonce);
   add_hidden_input('submitted',1);
-  if($queued_email) {
-    add_hidden_input('userid',$userid);
-    add_hidden_input('ajaxuri',app_uri());
-  }
+  add_hidden_input('userid',$userid);
+
   echo "<div class='message'>Your survey was successfully submitted</div>";
   echo "<div class='timestamp'>Recieved $timestamp</div>";
   echo "<div class='email'>";
-  if($email_sent_to) {
-    echo "A confirmation email was sent to $email_sent_to";
+
+  // See discussion on confirmation email status above
+  if($queued_email) 
+  {
+    $needs_js = true;
+    add_hidden_input('email-status','queued');
+    add_hidden_input('ajaxuri',app_uri());
+    echo "A confirmation email will be sent to $email shortly";
   }
-  elseif($queued_email) {
-    echo "A confirmation email will be sent to $email";
+  elseif($email_sent) 
+  {
+    $needs_js = false;
+    add_hidden_input('email-status','sent');
+    $email     = $email_sent['address'];
+    $timestamp = $email_sent['timestamp'];
+    $now       = time();
+    if($now > $timestamp + 300) {
+      // only add timestamp if it's been over 5 minutes
+      $timestamp = ' at ' . recent_timestamp_string($timestamp);
+    } else {
+      $timestamp = '';
+    }
+    echo "A confirmation email was sent to $email$timestamp";
   }
-  elseif($email) {
-    echo "<input type='hidden' name='email' value='$email'>";
+  elseif($email) 
+  {
+    $needs_js = true;
+    add_hidden_input('email-status','link');
     echo "<button type='submit' class='linkbutton' name='action' value='sendemail'>";
     echo "Send summary to $email";
     echo "</button>";
   } 
-  else {
+  else 
+  {
+    $needs_js = true;
+    add_hidden_input('email-status','none');
     echo "Cannot send confirmation email as no address was provided";
   }
+
   echo "</div>";
   echo "<div class='reopen'>";
   echo "<button type='submit' class='linkbutton' name='action' value='reopen'>";
@@ -66,17 +132,23 @@ function show_submitted_page($userid,$timestamp,$email_sent_to=null)
   echo "</div>";
 
   echo "</form>";
+  echo "</div>";  // .submitted-wrapper
 
-  if($queued_email) {
+  if($needs_js) {
     $submitted = js_uri('submitted','survey');
     echo "<script type='module' src='$submitted'></script>";
   }
 }
 
-function send_confirmation_email($userid,$email,$content,$submitted)
+function send_confirmation_email($userid,$survey_id,$email,$content,$submitted)
 {
-  todo("send the confirmaiton email");
-  $_SESSION['queued-confirmation-email'] = false;
+  todo("Add summary info to confirmation email");
+  $error = '';
+  sendmail_confirmation($email,'',$error);
+  if(empty($error)) {
+    confirmation_email_sent($userid,$survey_id,$email);
+    $_SESSION['queued-confirmation-email'] = false;
+  }
 }
 
 function withdraw_responses($userid,$survey_id,$restart=false)
@@ -86,7 +158,7 @@ function withdraw_responses($userid,$survey_id,$restart=false)
   } else {
     $result = withdraw_user_responses($userid,$survey_id);
   }
-  echo "<div class='submitted-box'>";
+  echo "<div class='submitted-wrapper'><div class='submitted-box'>";
   if($result) {
     echo "<div class='message'>Your responses have been withdrawn.</div>";
     insert_withdraw_redirect();
@@ -97,7 +169,7 @@ function withdraw_responses($userid,$survey_id,$restart=false)
     echo "<div class='contact'>Please contact $contact for help.</div>";
     echo "<div class='return'><a href='$uri'>return to survey</a></div>";
   }
-  echo "</div>";
+  echo "</div></div>";
 }
 
 function withdraw_and_restart($userid,$survey_id)

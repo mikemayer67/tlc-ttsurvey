@@ -55,7 +55,6 @@ function add_hidden_submit($name,$value)
 
 function start_login_page()
 {
-  log_dev("start_login_page()");
   $context = 'login';
   start_header();
   add_js_resources($context);
@@ -69,7 +68,6 @@ function start_login_page()
 
 function start_admin_page($cur_tab=null)
 {
-  log_dev("start_admin_page()");
   $context = 'admin';
 
   start_header();
@@ -93,7 +91,6 @@ function start_admin_page($cur_tab=null)
 
 function start_survey_page($title,$userid,$status)
 {
-  log_dev("start_survey_page()");
   $context = 'survey';
 
   start_header($title);
@@ -112,7 +109,6 @@ function start_survey_page($title,$userid,$status)
 
 function start_preview_page($title,$userid,$enable_js=true)
 {
-  log_dev("start_preview_page()");
   $context = 'survey';
 
   start_header($title);
@@ -133,7 +129,6 @@ function start_preview_page($title,$userid,$enable_js=true)
 
 function start_nosurvey_page()
 {
-  log_dev("start_nosurvey_page()");
   $context = 'survey';
 
   start_header();
@@ -153,8 +148,6 @@ function start_nosurvey_page()
 
 function start_fault_page($context)
 {
-  log_dev("start_fault_page($context)");
-
   start_header();
 
   add_css_resources($context);
