@@ -17,7 +17,7 @@ $active_userid = active_userid();
 $session_userid = $_SESSION['active-userid'] ?? '(none)';
 
 if( $session_userid !== $active_userid ) {
-  log_warning("Invalid userid in password reset attempt: session=$session_userid, cookie=$active_userid");
+  log_warning("Invalid userid in ajax validation: session=$session_userid, cookie=$active_userid");
   http_response_code(405);
   die();
 }
@@ -26,7 +26,7 @@ $active_token = active_token();
 $session_token = $_SESSION['active-token'] ?? '(none)';
 
 if( $session_token !== $active_token ) {
-  log_warning("Invalid token in password reset attempt: session=$session_token, cookie=$active_token");
+  log_warning("Invalid token in ajax validation: session=$session_token, cookie=$active_token");
   http_response_code(405);
   die();
 }
@@ -34,7 +34,7 @@ if( $session_token !== $active_token ) {
 $userid = $_POST['userid'];
 
 if($userid !== $session_userid) {
-  log_warning("Invalid userid in password reset attempt: session=$session_userid, ajax=$userid");
+  log_warning("Invalid userid in ajax validation: session=$session_userid, ajax=$userid");
   http_response_code(405);
   die();
 }

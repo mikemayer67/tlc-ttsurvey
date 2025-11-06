@@ -8,11 +8,18 @@ drop view if exists tlc_tt_view_question_options;
 drop view if exists tlc_tt_view_survey_options;
 drop view if exists tlc_tt_view_survey_questions;
 drop view if exists tlc_tt_view_survey_sections;
+drop view if exists tlc_tt_view_responses_freetext;
+drop view if exists tlc_tt_view_responses_bool;
+drop view if exists tlc_tt_view_responses_select_one;
+drop view if exists tlc_tt_view_responses_select_multi;
 
 drop table if exists tlc_tt_settings;
 drop table if exists tlc_tt_roles;
 drop table if exists tlc_tt_reset_tokens;
+drop table if exists tlc_tt_response_options;
+drop table if exists tlc_tt_responses;
 drop table if exists tlc_tt_anonids;
+drop table if exists tlc_tt_user_status;
 drop table if exists tlc_tt_userids;
 drop table if exists tlc_tt_question_options;
 drop table if exists tlc_tt_question_map;

@@ -82,8 +82,8 @@ export default function init()
   function submit() {
     submit_btn.disable();
 
-    const nonce   = $('#survey input[name=nonce]').val();
-    const ajaxuri = $('#survey input[name=ajaxuri]').val();
+    const nonce   = $('form input[name=nonce]').val();
+    const ajaxuri = $('form input[name=ajaxuri]').val();
 
     const new_name  = name_input.val();
     const new_email = email_input.val();
@@ -128,8 +128,10 @@ export default function init()
               old_email: old_email,
               new_email: data.email,
             },
-          });
+          })
         }
+
+        $(document).trigger('UserProfileUpdated',[old_email,new_email] );
 
       } else {
         name_err.text(data.name_error);

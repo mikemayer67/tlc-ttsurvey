@@ -72,30 +72,11 @@ function admin_contacts($role='admin')
   $rval = array();
   foreach($contacts as $userid) {
     if($user = User::lookup($userid)) {
-      $name = $user->fullname();
-      if($email = $user->email()) {
-        $subject = "Question regarding ".app_name();
-        $rval[] = "<a href='mailto:$name<$email>?subject=$subject'>$name</a>";
-      } else {
-        $rval[] = $name;
-      }
+      $rval[] = [
+        'name'  => $user->fullname(),
+        'email' => $user->email(),
+      ];
     }
-  }
-
-  switch(count($rval)) {
-  case 0:
-    $rval = '';
-    break;
-  case 1:
-    $rval = $rval[0];
-    break;
-  case 2:
-    $rval = "$rval[0] or $rval[1]";
-    break;
-  default:
-    $last = array_pop($rval);
-    $rval = implode(', ',$rval) . ", or $last";
-    break;
   }
 
   return $rval;

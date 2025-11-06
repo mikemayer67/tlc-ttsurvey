@@ -6,7 +6,7 @@ body {
   min-height: 100vh;
 }
 
-* {
+:root {
   --navbar-color:white;
   --font-red:darkred;
   --empty-field-color:#ffffcc;
@@ -14,12 +14,12 @@ body {
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
   --monospace-font: 'Courier New', Monospace;
+}
 
-  font-optical-sizing:auto;
+html,body {
   font-weight:normal;
   font-style:normal;
-  font-variation-settings: "wdth" 100;
-
+  font-optical-sizing:auto;
   background: #f4f4f4;
 }
 
@@ -36,14 +36,34 @@ body {
 }
 
 div.noscript {
+  display:none;
   position:relative;
   margin:3px auto;
-  padding:0 1em;
+  padding:0 1.5em;
+  flex-direction:column;
+  width:fit-content;
+  background:white;
+  border: solid 1px darkred;
 }
 div.noscript div {
   color:#800;
   font-style:italic;
   text-align:center;
+  background:inherit;
+}
+div.noscript img.dismiss {
+  position:absolute;
+  top:2px;
+  right:2px;
+  width:12px;
+  height:12px;
+  background:white;
+}
+#nojs-toggle {
+  display:none;
+}
+#nojs-toggle:checked ~ noscript div.noscript {
+  display:flex;
 }
 
 input.hidden {
@@ -63,25 +83,6 @@ html{box-sizing:border-box}
 body{margin:0}
 button,input,select,textarea { font:inherit; margin:0 }
 html,body{ font-size:15px; line-height:1.5 }
-
-/*******************************************************
- * From Google Fonts
- *******************************************************
-.noto-serif-display-<uniquifier> {
-  font-family: "Noto Serif Display", serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-  font-variation-settings: "wdth" 100;
-}
- *******************************************************
-.quicksand-<uniquifier> {
-  font-family: "Quicksand", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-*******************************************************/
 
 .ttt-red {
   color:var(--font-red);
@@ -148,6 +149,7 @@ div.ttt-splash img {
 #ttt-navbar .ttt-title-box {
   display: flex;
   flex-flow: row nowrap;
+  flex: 0 0 auto;
   align-items: center;
   gap: 10px;
 
@@ -162,18 +164,42 @@ div.ttt-splash img {
 #ttt-navbar .ttt-title
 {
   font-family: var(--serif-font);
-  font-size: x-large;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #ttt-navbar .status {
+  display:none;
   font-family: var(--serif-font);
+  font-size:large;
   margin-left:auto;
   margin-right:auto;
 }
 
+#ttt-navbar .status .survey-status {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  font-size:80%;
+}
+
+#ttt-navbar .status .survey-status .key {
+  justify-self: right;
+  font-weight:bold;
+}
+#ttt-navbar .status .survey-status .key::after {
+  content:':';
+  padding-right:0.5em;
+}
+
+
+#ttt-navbar .status .survey-status .timestamp {
+  justify-self: left;
+}
+
 #ttt-navbar .username {
   font-family: var(--serif-font);
-  font-size: large;
   margin-left:auto;
   padding:0 1em;
   display:flex;
@@ -188,8 +214,43 @@ div.ttt-splash img {
 }
 
 #ttt-navbar img.menu-trigger {
-  width: 20px;
+  width: 16px;
 }
+
+
+@media only screen and (min-width:320px) 
+{
+  #ttt-navbar .ttt-title {
+    font-size: large;
+  }
+}
+
+@media only screen and (min-width:480px) 
+{
+  #ttt-navbar .ttt-title {
+    font-size: x-large;
+  }
+  #ttt-navbar .username {
+    font-size: large;
+  }
+  #ttt-navbar img.menu-trigger {
+    width: 20px;
+  }
+
+}
+
+@media only screen and (min-width:850px) 
+{
+  #ttt-navbar .status {
+    display:inline-block;
+  }
+}
+
+@media only screen and (min-width:1024px)
+{
+}
+
+/* User Menu */
 
 #ttt-user-menu {
   position: absolute;
@@ -238,7 +299,7 @@ div.ttt-splash img {
 #ttt-navbar-wrapper .editor-pane
 {
   position: absolute;
-  top:50px;
+  top:100%;
   right:1em;
   z-index:4;
 
@@ -252,6 +313,7 @@ div.ttt-splash img {
   background:white;
   padding:1em;
   width:fit-content;
+  max-width: 
   box-shadow:0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
 }
 
@@ -309,6 +371,7 @@ div.ttt-splash img {
 
 #ttt-user-editor input {
   width:30em;
+  max-width:75vw;
 }
 
 #ttt-navbar-wrapper #ttt-user-editor input.missing {

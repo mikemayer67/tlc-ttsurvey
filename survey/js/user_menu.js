@@ -7,6 +7,8 @@ let menu_timer = null;
 
 export default function init()
 {
+  const canHover = !window.matchMedia('(any-hover: none)').matches;
+  
   const self = {
     is_preview,
   };
@@ -23,12 +25,16 @@ export default function init()
   const menu = $('<div>').setId('ttt-user-menu').append(profile,passwd,logout);
   menu.insertAfter(ce.navbar);
 
-  trigger.on('click', function(e) { menu.toggleClass('locked') } );
+  trigger.on('click', function(e) { 
+    menu.toggleClass('locked') 
+  });
 
-  trigger.on('pointerenter', start_menu_hover);
-  trigger.on('pointerleave', end_menu_hover);
-  menu.on(   'pointerenter', start_menu_hover);
-  menu.on(   'pointerleave', end_menu_hover);
+  if(canHover) {
+    trigger.on('pointerenter', start_menu_hover);
+    trigger.on('pointerleave', end_menu_hover);
+    menu.on(   'pointerenter', start_menu_hover);
+    menu.on(   'pointerleave', end_menu_hover);
+  }
 
   profile.on('click', () => self.show_profile_editor() );
   passwd.on( 'click', () => self.show_password_editor() );
@@ -39,7 +45,6 @@ export default function init()
 
   const ro = new ResizeObserver( entries => { 
     for( let entry of entries ) {
-      console.log("resize triggered " + entry.contentRect.height);
       self.menu.css('top',(5+entry.contentRect.bottom));
     }
   });

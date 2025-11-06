@@ -19,7 +19,6 @@ class MarkdownParser {
   private $purifier;
 
   private function __clone() {}
-  private function __wakeup() {}
 
   private function __construct() 
   {

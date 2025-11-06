@@ -93,7 +93,7 @@ function sendmail($email,$subject,$text,$html=null)
   {
     $smtp_logging = ob_get_contents();
     if($smtp_logging) { 
-      log_dev("SMTP uogging: $smtp_logging");
+      log_dev("SMTP logging: $smtp_logging");
     }
     ob_end_clean();
   }
@@ -105,45 +105,33 @@ function sendmail($email,$subject,$text,$html=null)
 
 function sendmail_profile($email,$userid,$changes)
 {
-  $html  = "<div style='font-weight:bolder;'>";
-  $html .= "A change has been made to the profile associated with userid: $userid";
-  $html .= "</div>";
-  $html .= "<div style='margin-left:1em;'>";
+  $message = [];
 
-  $text  = "A change has been made to the profile associated with userid: $userid";
-  $text .= "";
+  $message[] = [
+    'type'=>'header', 
+    'text'=>"A change has been made to the profile associated with userid: $userid",
+  ];
 
   foreach($changes as $k=>$v) {
     if(is_string($k)) {
-      [$old,$new] = $v;
-      if($old !== $new) {
-        $html .= "<ul>";
-        $html .= "<li>Old $k: $old</li>";
-        $html .= "<li>New $k: $new</li>";
-        $html .= "</ul>";
-        $text .= "  Old $k: $old";
-        $text .= "  New $k: $new";
+      if($v[0] !== $v[1]) {
+        $message[] = [ 'type'=>'change', 'key'=>$k, 'old'=>$v[0], 'new'=>$v[1] ];
       }
     } else {
-      $html .= "<ul>";
-      $html .= "<li>Old $v: (undisclosed)</li>";
-      $html .= "<li>New $v: (undisclosed)</li>";
-      $html .= "</ul>";
-      $text .= "  Old $v: (undisclosed)";
-      $text .= "  New $v: (undisclosed)";
+        $message[] = [ 'type'=>'change', 'key'=>$v ];
     }
   }
 
-  $html .= "</ul>";
-  $html .= "</div>";
-  $html .= "<br>";
-  $html .= "<div>If you did not make this change, please contact one of the following:</div>";
-  $html .= "<div style='margin-left:1em;'>";
-  $html .= html_contacts(); 
+  $message[] = [
+    'type'=>'footer',
+    'lines'=>[
+      'If you did not make this change, please contact one of the following:',
+      '<<contacts>>',
+    ],
+  ];
 
-  $text .= "";
-  $text .= "If you did not make this change, please contact one of the following:";
-  $text .= text_contacts();
+  $text = render_text_message($message);
+  $html = render_html_message($message);
 
   return sendmail($email, "Profile Update", $text, $html);
 }
@@ -156,93 +144,264 @@ function sendmail_recovery($email,$tokens,&$error=null)
 {
   $error = '';
 
-  $ntokens = count($tokens);
+  $url = full_app_uri("p=pwreset");
+  $timeout = pwreset_timeout();
 
-  $html  = "<div style='margin-left:1em;'>";
-  $html .= "<p>Here is the login recovery information you requested:</p>";
-
-  $text = "Here is the login recovery information you requested:\n";
-
-  $s = '';
-  $ntokens = count($tokens);
-  if($ntokens > 1) {
-    $s = 's';
-    $html .= "<p>There are $ntokens participants using this email address</p>";
-    $text .= "\nThere are $ntokens participants using this email address\n";
-  }
-
-  $html .= "</div>\n";
-  $html .= "<div style='margin-top:1em; margin-left:2em;'>\n";
-
+  $users = [];
   foreach($tokens as $userid=>$token)
   {
     if($user = User::lookup($userid)) {
       $fullname = $user->fullname();
       $userid   = $user->userid();
       $token    = $token;
-
-      $html .= "<div style='margin:15px 0;'>";
-      $html .= "<div><b>$fullname</b></div>";
-      $html .= "<div style='margin-left:8px;'>Userid: <b>$userid</b></div>";
-      $html .= "<div style='margin-left:8px;'>Token: <b>$token</b></div>";
-      $html .= "</div>";
-
-      $text .= "\n";
-      $text .= "   $fullname:\n";
-      $text .= "      Userid: $userid\n";
-      $text .= "       Token: $token\n";
+      $users[]  = [$token,$fullname,$userid];
     }
   }
 
-  $url = full_app_uri("p=pwreset");
-  $timeout = pwreset_timeout();
+  $nusers = count($users);
+  $s      = $nusers > 1 ? 's' : '';
 
-  $html .= "</div>";
-  $html .= "<div style='margin:20px 1em;'>";
-  $html .= "<div>The reset token$s will expire in $timeout minutes.</div>";
-  $html .= "<div>The reset token$s will expire after the first recovery attempt.</div>";
-  $html .= "<div style='margin-top:1em;'>";
-  $html .= "If you've closed the password reset window, click <a href='$url'>here to continue</a> with login recovery.";
-  $html .= "</div>";
-  $html .= "</div>";
-  $html .= html_contacts();
+  if($nusers === 0 ) {
+    $error = 'No user information found for any of the recovery tokens';
+    return false;
+  }
 
-  $text .= "\n";
-  $text .= "The reset token$s will expire in $timeout minutes\n";
-  $text .= "The reset token$s will expire after the first recovery attempt.\n";
-  $text .= "\n";
-  $text .= "If you've closed the password reset window, you can get back to it at $url\n";
-  $text .= text_contacts();
+  $message = [];
 
-  return sendmail($email, "Login Recovery", $text, $html);
+  $message[] = [
+    'type'=>'header',
+    'text'=>'Here is the login recovery information you requested:',
+  ];
+
+  if($nusers > 1) {
+    $message[] = [
+      'type' => 'text',
+      'text' => "There are $nusers userids associated with this email address",
+    ];
+  }
+  $message[] = ['type'=>'users','users'=>$users];
+
+  $message[] = [
+    'type'=>'footer',
+    'lines'=>[
+      "The reset token$s will expire in $timeout minutes.",
+      "The reset token$s will expire after the first recovery attempt.",
+      '<<br>>',
+      "If you've closed the password reset window, you can get back to it at [[$url]]",
+      '<<contacts>>',
+    ],
+  ];
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, "Profile Update", $text, $html);
 }
 
-function html_contacts()
+//------------------------------------------------
+// Confirmation of submitted responses
+//------------------------------------------------
+
+function sendmail_confirmation($email,$summary,&$error=null)
 {
-  $rval = "<div style='margin:0;font-style:italic'>";
-  if($general = admin_contacts()) { 
-    $rval .= "<div>For general help with the survey, contact $general</div>";
-  }
-  if($content = admin_contacts('content')) {
-    $rval .= "<div>To report an issue with the survey content, contact: $content</div>";
-  }
-  if($tech = admin_contacts('tech')) {
-    $rval .= "<div>To report an issue with the survey functionality, contact: $tech</div>";
+  $error = '';
+
+  $message = [];
+
+  $message[] = [
+    'type'=>'header',
+    'text'=>'Your submitted survey respsonses have been',
+  ];
+
+  $url = full_app_uri();
+  $message[] = [
+    'type'=>'footer',
+    'lines'=>[
+      "If you would like to review or make changes, you can go back to the survey at [[$url]]",
+      '<<contacts>>',
+    ],
+  ];
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, 'Survey Responses Received', $text, $html);
+}
+
+
+//------------------------------------------------------------------------------
+// Email rendering engines
+//------------------------------------------------------------------------------
+
+function render_text_message($message)
+{
+  $rval = '';
+  foreach($message as $e) {
+    switch($e['type']) {
+    case 'header':
+      $text = parse_text_string($e['text']);
+      $rval .= "$text\n\n";
+      break;
+    case 'text':
+      $text = parse_text_string($e['text']);
+      $rval .= "$text\n";
+      break;
+    case 'change':
+      $key = $e['key'];
+      $old = $e['old'] ?? '(undisclosed)';
+      $new = $e['new'] ?? '(undisclosed)';
+      $rval .= "  Old $key: $old\n  New $key: $new\n\n";
+      break;
+    case 'users':
+      foreach ($e['users'] as [$token,$fullname,$userid]) {
+        $rval .= "\n";
+        $rval .= "   $fullname:\n";
+        $rval .= "      Userid: $userid\n";
+        $rval .= "       Token: $token\n";
+      }
+      break;
+    case 'footer':
+      $rval .= "\n";
+      foreach($e['lines'] as $line)
+      {
+        if($line==='<<contacts>>') {
+          $rval .= "\n";
+          if($contacts = admin_contacts()) { 
+            $rval .= "    For general help with the survey, contact:\n";
+            $rval .= render_text_contacts($contacts);
+            $rval .= "\n";
+          }
+          if($contacts = admin_contacts('content')) {
+            $rval .= "    To report an issue with the survey content, contact:\n";
+            $rval .= render_text_contacts($contacts);
+            $rval .= "\n";
+          }
+          if($contacts = admin_contacts('tech')) {
+            $rval .= "    To report an issue with the survey functionality, contact:\n";
+            $rval .= render_text_contacts($contacts);
+            $rval .= "\n";
+          }
+        } 
+        else {
+          $line = parse_text_string($line);
+          $rval .= "$line\n";
+        }
+      }
+      break;
+    }
   }
   return $rval;
 }
 
-function text_contacts()
+function render_html_message($message)
 {
-  $rval = "\n";
-  if($general = admin_contacts()) { 
-    $rval .= "    For general help with the survey, contact $general\n";
+  $rval = "<div style='margin-left:1em;'>\n";
+  foreach($message as $e) {
+    switch($e['type']) {
+    case 'header':
+      $text = parse_html_string($e['text']);
+      $rval .= "<p style='font-weight:bolder; margin:1em 0;'>$text</p>\n";
+      break;
+    case 'text':
+      $text = parse_html_string($e['text']);
+      $rval .= "<p>$text</p>\n";
+      break;
+    case 'change':
+      $key = $e['key'];
+      $old = $e['old'] ?? '(undisclosed)';
+      $new = $e['new'] ?? '(undisclosed)';
+      $rval .= "<ul><li>Old $key: $old</li><li>New $key: $new</li></ul>\n";
+      break;
+    case 'users':
+      foreach ($e['users'] as [$token,$fullname,$userid]) {
+        $rval .= "<div style='margin:1em 0;'>\n";
+        $rval .= "<div><b>$fullname</b></div>\n";
+        $rval .= "<div style='margin-left:0.5em;'>Userid: <b>$userid</b></div>\n";
+        $rval .= "<div style='margin-left:0.5em;'>Token: <b>$token</b></div>\n";
+        $rval .= "</div>\n";
+      }
+      break;
+    case 'footer':
+      $rval .= '<br>';
+      foreach($e['lines'] as $line)
+      {
+        if($line==='<<contacts>>') {
+          $rval .= "<div style='margin:1em;font-style:italic'>\n";
+          if($contacts = admin_contacts()) { 
+            $contacts  = render_html_contacts($contacts);
+            $rval .= "<div>For general help with the survey, contact $contacts</div>\n";
+          }
+          if($contacts = admin_contacts('content')) {
+            $contacts = render_html_contacts($contacts);
+            $rval .= "<div>To report an issue with the survey content, contact: $contacts</div>\n";
+          }
+          if($contacts = admin_contacts('tech')) {
+            $contacts = render_html_contacts($contacts);
+            $rval .= "<div>To report an issue with the survey functionality, contact: $contacts</div>\n";
+          }
+          $rval .= "</div>\n";
+        } 
+        else {
+          $line = parse_html_string($line);
+          $rval .= "<div>$line</div>\n";
+        }
+      }
+      break;
+    }
   }
-  if($content = admin_contacts('content')) {
-    $rval .= "    To report an issue with the survey content, contact: $content\n";
-  }
-  if($tech = admin_contacts('tech')) {
-    $rval .= "    To report an issue with the survey functionality, contact: $tech<\n";
+  $rval .= "</div>\n";
+  return $rval;
+}
+
+function parse_text_string($text)
+{
+  $text = str_replace('<<br>>',"",$text);
+  $text = preg_replace('/\[\[(.*?)\]\]/','$1',$text);
+  return $text;
+}
+
+function parse_html_string($text)
+{
+  $text = str_replace('<<br>>',"<div style='margin-top:1em;'></div>",$text);
+  $text = preg_replace('/\[\[(.*?)\]\]/','<a href="$1">$1</a>',$text);
+  return $text;
+}
+
+function render_text_contacts($contacts)
+{
+  $rval = '';
+  foreach($contacts as $contact) {
+    $name  = $contact['name']  ?? null;
+    $email = $contact['email'] ?? null;
+    if($email) { $rval .= "       $name ($email)\n"; } 
+    else       { $rval .= "       $name\n";          }
   }
   return $rval;
 }
+
+function render_html_contacts($contacts)
+{
+  $links = [];
+
+  foreach($contacts as $contact) {
+    $name  = $contact['name']  ?? null;
+    $email = $contact['email'] ?? null;
+
+    if($email) {
+      $subject = "Help needed with ".app_name();
+      $links[] = "<a href='mailto:$name<$email>?subject=$subject'>$name</a>";
+    } else {
+      $links[] = $name;
+    }
+  }
+
+  $nlinks = count($links);
+  if($nlinks === 0) { return ''; }
+  if($nlinks === 1) { return $links[0]; }
+  if($nlinks === 2) { return implode(' or ',$links); }
+
+  $last = array_pop($links);
+  return implode(', ',$links) . ", or $last";
+}
+
+

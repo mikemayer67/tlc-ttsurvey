@@ -22,7 +22,7 @@ $userid = active_userid();
 
 start_preview_page($survey_title,$userid,$preview_js);
 
-render_survey($userid,$content,['is_preview'=>true,'preview_js'=>$preview_js]);
+render_survey('preview',$content);
 
 $user_menu = js_uri('user_menu','survey');
 echo "<script>const ttt_preview = true;</script>";

@@ -71,15 +71,6 @@ export default function undo_manager(ce)
     return _undo_stack.at(-1);
   }
 
-  function isHead(a) {
-    // TODO... replace all use of this method with the head method
-    return (
-      (_undo_stack.length>0) 
-      && (_redo_stack.length==0) 
-      && (a === _undo_stack.at(-1))
-    );
-  }
-
   function revert() {
     // Note that this returns true if the undo stack is empty
     if( _undo_stack.length > MAX_REVERT_DEPTH ) { return false; }
@@ -122,16 +113,10 @@ export default function undo_manager(ce)
   });
 
   return {
-    add(a) { add(a,false); },
-    add_and_exec(a) { add(a,true); },
-    pop: pop,
-    redo: redo,
-    undo: undo,
-    revert: revert,
-    empty: empty,
-    hasUndo() { return _undo_stack.length > 0; },
-    hasRedo() { return _redo_stack.length > 0; },
-    isHead: isHead,
-    head: head,
+    add(a)          { add(a,false); },
+    add_and_exec(a) { add(a,true);  },
+    hasUndo()       { return _undo_stack.length > 0; },
+    hasRedo()       { return _redo_stack.length > 0; },
+    pop, redo, undo, revert, empty, head,
   };
 }

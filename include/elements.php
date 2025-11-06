@@ -55,7 +55,6 @@ function add_hidden_submit($name,$value)
 
 function start_login_page()
 {
-  log_dev("start_login_page()");
   $context = 'login';
   start_header();
   add_js_resources($context);
@@ -69,7 +68,6 @@ function start_login_page()
 
 function start_admin_page($cur_tab=null)
 {
-  log_dev("start_admin_page()");
   $context = 'admin';
 
   start_header();
@@ -91,9 +89,8 @@ function start_admin_page($cur_tab=null)
   start_body();
 }
 
-function start_survey_page($title,$userid)
+function start_survey_page($title,$userid,$status)
 {
-  log_dev("start_survey_page()");
   $context = 'survey';
 
   start_header($title);
@@ -103,7 +100,7 @@ function start_survey_page($title,$userid)
 
   end_header();
 
-  add_navbar($context, $userid, $title, '[status]');
+  add_navbar($context, $userid, $title, $status);
   add_js_recommended();
   add_status_bar();
 
@@ -112,7 +109,6 @@ function start_survey_page($title,$userid)
 
 function start_preview_page($title,$userid,$enable_js=true)
 {
-  log_dev("start_preview_page()");
   $context = 'survey';
 
   start_header($title);
@@ -133,7 +129,6 @@ function start_preview_page($title,$userid,$enable_js=true)
 
 function start_nosurvey_page()
 {
-  log_dev("start_nosurvey_page()");
   $context = 'survey';
 
   start_header();
@@ -153,8 +148,6 @@ function start_nosurvey_page()
 
 function start_fault_page($context)
 {
-  log_dev("start_fault_page($context)");
-
   start_header();
 
   add_css_resources($context);
@@ -169,6 +162,7 @@ function start_fault_page($context)
 function end_page()
 {
   // close the body and html elements
+  echo "<div class='spacer' style='width:0; min-width:0;'></div>";
   echo "</div>\n";  // #ttt-body
 
   echo "<!-- Footer -->";
@@ -247,6 +241,7 @@ function start_body()
 {
   // starts the ttt body
   echo "<div id='ttt-body'>";
+  echo "<div class='spacer' style='width:0; min-width:0;'></div>";
 }
 
 function add_navbar($context,$userid=null,$title=null,$status='')
@@ -261,13 +256,13 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   echo "<div id='ttt-navbar'>";
 
   // title box
-  echo "<span class='ttt-title-box'>";
+  echo "<div class='ttt-title-box'>";
   if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
   echo "<span class='ttt-title'>$title</span>";
-  echo "</span>";
+  echo "</div>";
 
   // status
-  echo "<span class='status'>$status</span>";
+  echo "<div class='status'>$status</div>";
 
   // User Info
   echo "<span class='username'>";
@@ -290,17 +285,6 @@ function add_navbar($context,$userid=null,$title=null,$status='')
 
 function add_menu_trigger($context,$user) 
 {
-  // No-Javascript user menu
-
-  // @@@ TODO: Modify this to take place of javascript user menu
-  //   Will include profile/password items in survey context
-  //----------
-  //  $logout_uri = app_uri('logout');
-  //  echo "<noscript>";
-  //  echo "<a id='ttt-logout' href='$logout_uri'>logout</a>";
-  //  echo "</noscript>";
-  //----------
-
   $menu_icon = img_uri('icons8/menu.png');
   echo "<noscript>";
   echo "<div class='menu-trigger'>";
@@ -364,12 +348,15 @@ function add_js_required()
 
 function add_js_recommended($wrapper="noscript")
 {
+  $dismiss_icon = img_uri('icons8/dismiss.png');
   echo "<!-- Javascript suggestion -->";
+  echo "<input id='nojs-toggle' type='checkbox' checked></input>";
   echo "<$wrapper>";
   echo "<div class='noscript'>";
   echo "  <div>Consider enabling JavaScript for a smoother interaction with the survey</div>";
-  echo "  <div>Less likely to lose your progress by leaving this page.</div>";
-  echo "  <div>Easier to update your name or email</div>";
+  echo "  <div>Incremental saves without submitting an incomplete form</div>";
+  echo "  <div>Easier to update your profile info</div>";
+  echo "  <label for='nojs-toggle'><img class='dismiss' src='$dismiss_icon' alt='dismiss'></img></label>";
   echo "</div>";
   echo "</$wrapper>";
 }

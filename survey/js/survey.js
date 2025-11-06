@@ -47,6 +47,31 @@ function setup_hints()
   }
 }
 
+function enable_radio_button_deselect()
+{
+  const radio_buttons = $('#ttt-body form input[type=radio]');
+
+  radio_buttons.each(function() {
+    $(this).data('is-checked',$(this).is(':checked'));
+  });
+
+  radio_buttons.on('click', function(e) {
+    const rb = $(this);
+    const is_checked  = rb.is(':checked');
+    const was_checked = rb.data('is-checked');
+    if( is_checked && was_checked ) {
+      rb.data('is-checked',false);
+      rb.prop('checked',false);
+    } else if(is_checked) {
+      rb.data('is-checked',true);
+      radio_buttons.filter('input[type=radio]').not(rb).data('is-checked',false);
+    } else {
+      rb.data('is-checked',false);
+    }
+    handle_input_change();
+  });
+}
+
 //
 // User Menu Hooks
 //
@@ -59,19 +84,213 @@ function logout_user(e)
 }
 
 //
+// Caching of initial responses
+//
+
+function cache_input_values()
+{
+  ce.checkable.each( function() {
+    const input = $(this);
+    input.data('cached',input.is(':checked'));
+  });
+  ce.inputs.each( function() {
+    const input = $(this);
+    input.data('cached',input.val());
+  });
+}
+
+function restore_cached_values()
+{
+  ce.checkable.each( function() {
+    const input = $(this);
+    input.prop('checked', input.data('cached'));
+  });
+  ce.inputs.each( function() {
+    const input = $(this);
+    input.val(input.data('cached'));
+  });
+  ce.dirty = false;
+  update_submit_buttons();
+}
+
+function has_changes()
+{
+  ce.dirty = false;
+  ce.checkable.each( function() {
+    const input   = $(this);
+    const cached  = input.data('cached');
+    const current = input.is(':checked');
+    if( current !== cached ) {
+      ce.dirty = true;
+      return false;
+    }
+  });
+  if(ce.dirty) { return true; }
+  ce.inputs.each( function() {
+    const input   = $(this);
+    const cached  = input.data('cached');
+    const current = input.val();
+    if( current !== cached ) {
+      ce.dirty = true;
+      return false;
+    }
+  });
+  return ce.dirty;
+}
+
+function handle_cancel(e)
+{
+  e.preventDefault();
+  restore_cached_values();
+}
+
+function handle_save()
+{
+  // Cache the scroll position before submitting the form for saving a draft
+  // Do NOT call preventDefault as this would block the actual form submission
+  cache_scroll_position();
+}
+
+//
+// Change tracking
+//
+
+function handle_input_change(e)
+{
+  const dirty = has_changes();
+  update_submit_buttons();
+}
+
+function update_submit_buttons()
+{
+  // If currently showing the latest submitted responses:
+  //   the submit, save, and cancel buttons should be disabled if there are no changes.
+  // If currently showing a working draft:
+  //   the submit button should always be enabled
+  //   the save and cancel buttons should be disabled if there are no changes.
+  ce.save.prop(  'disabled',!ce.dirty);
+  ce.cancel.prop('disabled',!ce.dirty);
+  if(ttt_user_responses.state === 'submitted') {
+    ce.submit.prop('disabled',!ce.dirty);
+  } else {
+    ce.submit.prop('disabled',false);
+  }
+}
+
+//
+// Form state (detail toggling + vertical scroll)
+//
+
+const cache_key = 'tlc-tt-survey-ui-state';
+
+function setup_toggle_cache(e)
+{
+  // create a set of the open details sections
+  let open_details = new Set();
+  let scroll_pos   = 0;
+
+  // check if there is an existing cache in memory and if it applies
+  //   is so, use this to update the open_details set
+  let cache = localStorage.getItem(cache_key);
+  if(cache) {
+    cache = JSON.parse(cache);
+
+    const nonce = ce.form.find('input[name=prior-nonce]').val();
+
+    if(nonce === cache.nonce) { 
+      open_details = new Set(cache.open_details || []);
+      scroll_pos = cache.scroll_pos || 0; 
+
+      ce.details.each(function() {
+        const section = $(this).data('section');
+        $(this).prop( 'open', open_details.has(section) );
+      });
+    }
+
+    if(scroll_pos > 0) {   
+      Promise.resolve().then(() => window.scrollTo(0, scroll_pos));
+    }
+  }
+
+  // start a new cache and it it local storage
+  cache = { nonce:ce.nonce, open_details: [...open_details], scroll_pos };
+  localStorage.setItem(cache_key, JSON.stringify(cache));
+}
+
+function update_toggle_cache(e)
+{
+  let cache = localStorage.getItem(cache_key);
+  if(!cache) { return; }
+
+  cache = JSON.parse(cache);
+  if(cache.nonce !== ce.nonce) { return; }
+
+  const section = $(this).data('section');
+  const is_open = $(this).prop('open');
+
+  const open_details = new Set(cache.open_details || []);
+  if(is_open) { open_details.add(section);    }
+  else        { open_details.delete(section); }
+
+  cache.open_details = [...open_details];
+
+  localStorage.setItem(cache_key, JSON.stringify(cache));
+}
+
+function cache_scroll_position() 
+{
+  let cache = localStorage.getItem(cache_key);
+  if(!cache) { return; }
+
+  cache = JSON.parse(cache);
+  if(cache.nonce !== ce.nonce) { return; }
+
+  cache.scroll_pos = window.scrollY ?? window.pageYOffset ?? 0;
+  localStorage.setItem(cache_key, JSON.stringify(cache));
+}
+
+//
 // Ready / Setup
 //
 
 $(document).ready( function() {
-  ce.navbar = $('#ttt-navbar');
-  ce.submit = $('#ttt-body form input.submit');
-  ce.revert = $('#ttt-body form input.revert');
-  ce.status = $('#ttt-status');
+  ce.navbar  = $('#ttt-navbar');
+  ce.status  = $('#ttt-status');
+  ce.form    = $('#ttt-body form');
+  ce.nonce   = ce.form.find('input[name=nonce]').val();
+  ce.details = ce.form.find('details');
+  ce.submit  = ce.form.find('button.submit');
+  ce.save    = ce.form.find('button.save');
+  ce.delete  = ce.form.find('button.delete');
+  ce.cancel  = ce.form.find('button.cancel');
+
+  ce.checkable = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
+  ce.inputs    = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
+
+  // add a hidden input to let PHP know that we have javascript enabled on the browswer
+  $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);
 
   setup_hints();
 
   ce.confirm_logout = false;
 
-  ce.revert.removeClass('hidden');
   ce.status.on('click',hide_status);
+
+  if(ce.submit.length) {
+    // the following only apply if there is a submit button bar
+    setup_toggle_cache();
+    ce.details.on('toggle',update_toggle_cache);
+
+    ce.cancel.on('click',handle_cancel);
+    ce.save.on('click',handle_save);
+
+    enable_radio_button_deselect();
+
+    ce.dirty = false;
+    update_submit_buttons();
+    ce.checkable.on('change',handle_input_change);
+    ce.inputs.on(   'input', handle_input_change);
+
+    cache_input_values();
+  }
 });

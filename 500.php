@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { define('APP_DIR',dirname(__file__)); }
 require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/elements.php'));
 
-define('RENDERING_500_PHP',true);
+define('RENDERING_ERR_PHP',true);
 
 $contact = admin_contact();
 if(isset($errid)) {

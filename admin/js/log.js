@@ -117,6 +117,8 @@
       });
     });
 
+    ce.log_level.on('change',refresh_display);
+
     refresh_display();
 
     ce.form.on('submit',handle_submit);

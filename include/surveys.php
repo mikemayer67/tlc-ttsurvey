@@ -356,50 +356,6 @@ class Surveys
     return realpath($pdf_path) ?: null;
   }
 
-
-  static function update($id,$rev,$name,$pdf_action,$new_pdf_file,$new_content,&$error=null)
-  {
-    internal_error("This should not have been commented out");
-//    // TODO: Revision tracking
-//  
-//    $error = '';
-//    $errid = bin2hex(random_bytes(3));
-//
-//    // We want the update to be all or nothing, so wrap it in a MySQL transaction
-//    //   so that we can do a rollback if something goes wrong
-//    MySQLBeginTransaction();
-//
-//    $has_change = false;
-//    try {
-//      self::_update_timestamp($id);
-//
-//      if( self::_update_name($id,$name) )                                { $has_change = true; }
-//      if( self::_update_options($id,$rev, $new_content['options']) )     { $has_change = true; }
-//      if( self::_update_sections($id,$rev, $new_content['sections']) )   { $has_change = true; }
-//      if( self::_update_questions($id,$rev, $new_content['questions']) ) { $has_change = true; }
-//      self::_update_pdf($id,$rev,$pdf_action,$new_pdf_file);
-//  
-//    }
-//    catch(FailedToUpdate $e)
-//    {
-//      MySQLRollback();
-//      $error = "Failed to update survey. Please report error $errid to a tech admin";
-//      return false;
-//    }
-//  
-//    if($has_change) { 
-//      // Strip all future survey revision data as this may now be compromised
-//      MySQLExecute("delete from tlc_tt_question_options where survey_id=$id and survey_rev>$rev");
-//      MySQLExecute("delete from tlc_tt_survey_questions where survey_id=$id and survey_rev>$rev");
-//      MySQLExecute("delete from tlc_tt_survey_sections  where survey_id=$id and survey_rev>$rev");
-//      MySQLExecute("delete from tlc_tt_survey_options   where survey_id=$id and survey_rev>$rev");
-//    }
-//    else { 
-//      MySQLRollback(); 
-//    }
-//  
-//    return true;
-  }
 };
 
 function active_survey_id()    { return Surveys::active_id();    }
