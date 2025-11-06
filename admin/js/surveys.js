@@ -105,7 +105,6 @@ $(document).ready(
   // common form elements
   ce.form    = $('#admin-surveys');
   ce.ajaxuri = $('#admin-surveys input[name=ajaxuri]').val();
-  ce.pdfuri  = $('#admin-surveys input[name=pdfuri]').val();
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 

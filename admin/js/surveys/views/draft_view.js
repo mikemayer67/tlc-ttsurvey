@@ -2,9 +2,6 @@ export default function init(ce)
 {
   const _info_edit    = $('#info-edit');
   const _survey_name  = $('#survey-name');
-  const _survey_pdf   = $('#survey-pdf');
-  const _pdf_action   = $('#existing-pdf-action');
-  const _clear_pdf    = $('#clear-pdf');
 
   async function block_survey_select()
   {
@@ -64,30 +61,10 @@ export default function init(ce)
   function update_info()
   {
     _info_edit.show();
-
-    _survey_pdf.val('');
-    _pdf_action.hide();
-    _clear_pdf.hide();
-
-    if(ce.cur_survey.has_pdf) {
-      _pdf_action.val('keep').show();
-      _survey_pdf.hide();
-      _info_edit.find('.pdf-file td.label').html('Existing PDF');
-    } else {
-      _pdf_action.hide();
-      _survey_pdf.show();
-      _info_edit.find('.pdf-file td.label').html('Downloadable PDF');
-    }
   }
 
   // Input Validation
   
-  function handle_pdf_action(action)
-  {
-    hide_status();
-    validate_all();
-  }
-
   function validate_input(sender,event)
   {
     hide_status();
@@ -97,7 +74,6 @@ export default function init(ce)
   function validate_all()
   {
     ce.metadata.validate_survey_name();
-    validate_pdf_action();
     update_submit_revert();
   }
 
@@ -131,27 +107,6 @@ export default function init(ce)
   $(document).on('SurveyWasReordered',update_submit_revert);
   $(document).on('SurveyWasModified',update_submit_revert);
 
-  function validate_pdf_action()
-  {
-    if(ce.cur_survey.has_pdf) {
-      const action = _pdf_action.val();
-
-      var ok = true;
-      if( action === "replace" ) {
-        if( !_survey_pdf.val() ) { ok = false; }
-      } else {
-        _survey_pdf.val('');
-      }
-
-      if(ok) { _survey_pdf.removeClass('invalid-value'); }
-      else   { _survey_pdf.addClass('invalid-value');    }
-    } 
-    else {
-      if(_survey_pdf.val()) { _clear_pdf.show(); }
-      else                  { _clear_pdf.hide(); }
-    }
-  }
-
 
   function current_values()
   {
@@ -160,7 +115,6 @@ export default function init(ce)
       const e = $(this);
       rval[ e.attr('name') ] = e.val();
     });
-    rval['pdf_action'] = _pdf_action.val();
     return rval;
   }
 
@@ -194,8 +148,6 @@ export default function init(ce)
     for( let key in _last_saved ) {
       ce.form.find(`[name="${key}"]`).val(_last_saved[key]);
     }
-    if(_last_saved.pdf_action === 'replace') { _survey_pdf.show(); } 
-    else                                     { _survey_pdf.hide(); }
 
     const content = ce.survey_data.content( ce.cur_survey.id );
     ce.controller.update_content(content);
@@ -221,23 +173,6 @@ export default function init(ce)
     formData.append('name',survey_name);
     formData.append('content',json_content);
 
-    if(ce.cur_survey.has_pdf) {
-      switch(_pdf_action.val()) {
-        case 'drop':
-          formData.append('pdf_action','drop');
-          break;
-        case 'replace':
-          formData.append('pdf_action','replace');
-          formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
-          break;
-      }
-    } else {
-      if(_survey_pdf.val()) {
-        formData.append('pdf_action','add');
-        formData.append('new_survey_pdf',_survey_pdf[0].files[0]);
-      }
-    }
-
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
@@ -252,7 +187,6 @@ export default function init(ce)
         _last_saved.survey_name = '';
 
         ce.cur_survey.title = survey_name;
-        ce.cur_survey.has_pdf = data.has_pdf;
         ce.survey_data.content(ce.cur_survey.id,data.content);
         _survey_name.val('');
 
@@ -335,7 +269,6 @@ export default function init(ce)
     block_survey_select: block_survey_select,
     select_survey: select_survey,
     update_info: update_info,
-    handle_pdf_action:handle_pdf_action,
     has_changes: has_changes,
     validate_input:validate_input,
     handle_revert:handle_revert,

@@ -47,7 +47,6 @@ echo "<form id='admin-surveys' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
 add_hidden_input('preview-nonce',gen_nonce('preview'));
 add_hidden_input('ajaxuri',app_uri());
-add_hidden_input('pdfuri',full_app_uri("admin&ttt=$nonce&pdf="));
 add_hidden_submit('action','surveys');
 
 
@@ -78,10 +77,6 @@ echo <<<HTML
   <label class='info-label created'>Created:<span class='date'>???</span></label>
   <label class='info-label opened'>Opened:<span class='date'>???</span></label>
   <label class='info-label closed'>Closed:<span class='date'>???</span></label>
-  <span class='pdf-link'>
-    <span class='no-link'>No PDF</span>
-    <a class='pdf-download' download>Download PDF</a>
-  </span>
 </div>
 
 <!--New Survey Table-->
@@ -97,19 +92,6 @@ echo <<<HTML
     <td><select id='survey-clone-from'>
       <option class='none' status='none' value='none' selected>--None--</option>
     </select></td>
-  </tr><tr class='pdf-file'>
-    <td class='label'>Downloadable PDF:</td>
-    <td>
-      <div class='pdf-box'>
-        <select id='existing-pdf-action' name='pdf_action'>
-          <option value='keep'>Keep it</option>
-          <option value='drop'>Drop it</option>
-          <option value='replace'>Replace it</option>
-        </select>
-        <button id='clear-pdf'>-</button>
-        <input id='survey-pdf' type='file' class='watch' name='survey_pdf' accept='.pdf'>
-      </div>
-    </td>
   </tr>
 </table>
 

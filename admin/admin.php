@@ -61,13 +61,6 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
   die();
 }
 
-//  If a request to download a pdf file and the 'content' role
-//    is enabled, handle the pdf download request and be done.
-if(key_exists('pdf',$_REQUEST) && in_array('content',$active_roles)) {
-  require(app_file('admin/pdf.php'));
-  die();
-}
-
 // If we got here, then there is at least one enabled role, we can
 //   proceed with populating the admin dashboard.
 //

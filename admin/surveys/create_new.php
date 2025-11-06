@@ -9,7 +9,7 @@ require_once(app_file('include/surveys.php'));
 
 class FailedToCreate extends \Exception {}
 
-function create_new_survey($name,$parent_id,$pdf_file,&$error=null) 
+function create_new_survey($name,$parent_id,&$error=null) 
 {
   $error = '';
   $survey_id = null;
@@ -48,15 +48,6 @@ function create_new_survey($name,$parent_id,$pdf_file,&$error=null)
       clone_survey_options($survey_id,$parent_id,$parent_rev);
       clone_survey_sections($survey_id,$parent_id,$parent_rev);
       clone_survey_questions($survey_id,$parent_id,$parent_rev);
-    }
-
-    // we don't want to store the updloaded pdf file  until after we've updated the 
-    //   database entries so that we don't need to revert this if there is a failure
-    if($pdf_file) {
-      $tgt_file = Surveys::pdf_path($survey_id);
-      if(!move_uploaded_file($pdf_file,$tgt_file)) {
-        throw new FailedToCreate("Failed to move upload PDF file");
-      }
     }
 
     MySQLCommit();

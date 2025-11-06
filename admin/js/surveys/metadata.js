@@ -12,9 +12,6 @@ export default function init(ce)
 
   const _survey_name  = $('#survey-name');
   const _survey_clone = $('#survey-clone');
-  const _survey_pdf   = $('#survey-pdf');
-  const _pdf_action   = $('#existing-pdf-action');
-  const _clear_pdf    = $('#clear-pdf');
 
   function update_info()
   {
@@ -47,15 +44,6 @@ export default function init(ce)
       item.hide();
     }
   
-    item = _info_bar.find('.pdf-link');
-    if(ce.cur_survey.has_pdf) {
-      item.find('.no-link').hide();
-      item.find('a').attr('href',ce.pdfuri+ce.cur_survey.id).show();
-    } else {
-      item.find('.no-link').show();
-      item.find('a').hide();
-    }
-  
     // The following are dependent on the survey status.  As each status controller
     //   should only need to know about the fields that it cares about and not those
     //   that it does not care about,  We reset and hide the entire info edit box here
@@ -63,40 +51,9 @@ export default function init(ce)
   
     _info_edit.hide();
     _info_edit.find('tr.clone-from').hide();
-    _pdf_action.hide();
-    _clear_pdf.hide();
-    _survey_pdf.val('');
   
     ce.dispatch('update_info');
   }
-
-  // event handlers
-
-  function handle_survey_pdf()
-  {
-    if(!ce.cur_survey.has_pdf) {
-      if(_survey_pdf.val()) { _clear_pdf.show(); }
-      else                  { _clear_pdf.hide(); }
-    }
-  }
-
-  function clear_survey_pdf()
-  {
-    _survey_pdf.val('');
-    _clear_pdf.hide();
-  }
-
-  function handle_pdf_action()
-  {
-    const action = _pdf_action.val();
-    if(action === 'replace') { _survey_pdf.show(); }
-    else                     { _survey_pdf.hide(); }
-    ce.dispatch('handle_pdf_action',action)
-  }
-
-  _survey_pdf.on('change',handle_survey_pdf);
-  _clear_pdf.on('click',clear_survey_pdf);
-  _pdf_action.on('change',handle_pdf_action);
 
   // validation methods
 

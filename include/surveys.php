@@ -32,10 +32,6 @@ class Surveys
   {
     $info = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=?",'i',$id);
 
-    if(self::existing_pdf_file($id)) {
-      $info['has_pdf'] = true;
-    }
-
     // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
     // PHP is not using the survey_id key, but retaining it just in case this ever changes
     $info['id'] = $info['survey_id'];
@@ -65,10 +61,6 @@ class Surveys
     foreach($closed as $survey) {
       $survey['status'] = 'closed';
       $surveys[] = $survey;
-    }
-
-    foreach( $surveys as &$survey ) {
-      $survey['has_pdf'] = (null !== self::existing_pdf_file($survey['survey_id']));
     }
 
     return $surveys;
@@ -337,25 +329,6 @@ class Surveys
     ];
   }
 
-  static function expected_pdf_path($survey_id)
-  {
-    // as $survey_id is tainted, we want to make sure that it is actually 
-    //   an integar so as to be sure the pdf_path is valid for our app
-    if( ! ctype_digit((string) $survey_id) ) {
-      http_response_code(405);
-      error_log("Non integer survey_id ($survey_id)");
-      die();
-    }
-      
-    return app_file("pdf/survey_$survey_id.pdf");
-  }
-
-  static function existing_pdf_file($survey_id)
-  {
-    $pdf_path = self::expected_pdf_path($survey_id);
-    return realpath($pdf_path) ?: null;
-  }
-
 };
 
 function active_survey_id()    { return Surveys::active_id();    }
@@ -373,7 +346,3 @@ function survey_content($survey_id, $survey_rev=NULL)
   return Surveys::content($survey_id,$survey_rev); 
 }
 
-function survey_pdf_file($survey_id) 
-{ 
-  return Surveys::existing_pdf_file($survey_id);
-}
