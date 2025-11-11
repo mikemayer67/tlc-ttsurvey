@@ -13,6 +13,12 @@ export default function init(ce)
 
     ce.controller.disable_edits();
     ce.controller.update_content(content);
+
+    ce.submit.hide();
+    ce.revert.hide();
+    ce.preview.hide();
+    ce.preview_js.hide();
+    ce.printable.css('margin-right','auto').show();
   }
 
   return {

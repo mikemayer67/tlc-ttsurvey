@@ -112,7 +112,8 @@ $(document).ready(
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
   ce.preview    = $('#survey-preview');
-  ce.preview_js = $('#preview-js');
+  ce.preview_js = $('#preview-js').parent();
+  ce.printable  = $('#gen-printable');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);

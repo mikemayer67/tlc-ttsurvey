@@ -33,9 +33,13 @@ export default function init(ce)
     ce.form.find('input.watch').on('input',ce.handle_input).on('change',ce.handle_change);
     ce.form.find('select.watch').on('change',ce.handle_change);
 
-    ce.submit_bar.show();
     ce.submit.val('Save Changes').prop('disabled',true);
     ce.revert.val('Revert').prop('disabled',true).css('opacity',0);
+    ce.submit.show();
+    ce.revert.show();
+    ce.preview.show();
+    ce.preview_js.show();
+    ce.printable.css('margin-right','0.5em').show();
 
     // change the ContentDataLoaded handler
     $(document)

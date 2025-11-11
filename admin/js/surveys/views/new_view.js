@@ -58,10 +58,13 @@ export default function init(ce)
     _survey_name.on('input',ce.handle_input);
     _survey_name.on('change',ce.handle_change);
 
-    ce.submit_bar.show();
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel').prop('disabled',!_prior_id).css('opacity',_prior_id?1:0.25);
-    ce.preview.prop('disabled');
+    ce.submit.show();
+    ce.preview.hide();
+    ce.preview_js.hide();
+    ce.printable.hide();
+
     update_submit();
   }
 

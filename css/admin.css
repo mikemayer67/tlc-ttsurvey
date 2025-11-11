@@ -231,7 +231,8 @@ div.noscript div {
   visibility:hidden;
 }
 
-#ttt-body div.body form div.submit-bar input.preview {
+#ttt-body div.body form div.submit-bar input.preview,
+#ttt-body div.body form div.submit-bar input.printable {
   background:#048;
   color:white;
   margin-right:0.5em;

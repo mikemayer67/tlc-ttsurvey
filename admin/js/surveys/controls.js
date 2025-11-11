@@ -79,7 +79,6 @@ export default function init(ce)
 
     // perform common config... status views can override these later
     ce.controller.show_content();
-    ce.submit_bar.hide();
     ce.form.find('input.watch').off('input').off('change');
     ce.form.find('select.watch').off('change');
 
