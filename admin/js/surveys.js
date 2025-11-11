@@ -62,6 +62,16 @@ function handle_preview(e)
   ce.dispatch('handle_preview');
 }
 
+function handle_printable(e)
+{
+  e.preventDefault();
+  // not really an ajax call, but channels through the same mechanism
+  const url = new URL(ce.ajaxuri, window.location.href);
+  url.searchParams.set('printable', ce.cur_survey.id);
+  url.searchParams.set('ttt',ce.nonce);
+  window.open(url.toString(), '_blank');
+}
+
 
 // Survey status dependencies
 
@@ -128,6 +138,7 @@ $(document).ready(
   ce.form.on('submit', handle_submit);
   ce.revert.on('click',handle_revert);
   ce.preview.on('click',handle_preview);
+  ce.printable.on('click',handle_printable);
 
   // Load additional modules
 
