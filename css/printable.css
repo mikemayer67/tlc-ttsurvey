@@ -1,0 +1,54 @@
+:root {
+  --serif-font:'Noto Serif Display', Serif;
+  --sans-serif-font: 'Quicksand', Sans-serif;
+  --monospace-font: 'Courier New', Monospace;
+}
+
+@page {
+  size: 8.5in 11in;
+  margin: 0;
+}
+
+body {
+  width: 8.5in;
+  margin:0;
+  font-family:var(--sans-serif-font);
+  line-height:1.4;
+}
+
+#print-warning {
+    display: block; /* default for screen */
+    background:darkred;
+    font-size:small;
+    font-weight:bold;
+    color:white;
+    padding:2px 0;
+}
+
+@media print {
+    #print-warning {
+        display: none; /* hide in print */
+    }
+}
+
+#content {
+  margin:0.4in;
+}
+
+#ttt-header {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  column-gap:10px;
+  border-bottom:solid black 1px;
+  padding-bottom:2px;
+}
+
+img.ttt-logo {
+  height:0.3in;
+}
+
+span.ttt-title {
+  font-family:var(--serif-font);
+  font-size:18pt;
+}
