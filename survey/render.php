@@ -7,13 +7,6 @@ log_dev("-------------- Start of Render --------------");
 
 handle_warnings();
 
-require_once(app_file('vendor/autoload.php'));
-use League\CommonMark\CommonMarkConverter;
-use HTMLPurifier;
-use HTMLPurifier_Config;
-use HTMLPurifier_Context;
-use HTMLPurifier_ErrorCollector;
-
 require_once(app_file('include/logger.php'));
 require_once(app_file('survey/markdown.php'));
 
@@ -235,11 +228,6 @@ class RenderEngine
     case 'select_multi':                                  
       $this->add_select($question,$content['options'],true, $responses); 
       break;
-
-    default:
-      echo "<h2>$type</h2>";
-      echo "<pre>".print_r($question,true),"</pre>";
-      break;
     }
   }
 
@@ -326,7 +314,6 @@ class RenderEngine
     $label  = $question['wording'];
     $intro  = $question['intro'] ?? '';
     $popup  = $question['popup'] ?? '';
-    $indent = ''; // for styling the input box
 
     $response = $responses[$id]['free_text'] ?? '';
 

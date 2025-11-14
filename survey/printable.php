@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/elements.php'));
+require_once(app_file('survey/print_render.php'));
 
 log_dev("-------------- Start of Preview --------------");
 
@@ -14,8 +15,9 @@ validate_and_retain_get_nonce('admin-surveys');
 $survey_id=$_GET['printable'];
 
 $page_title = 'Printable Survey';
-$info = survey_info($survey_id);
-$title = $info['title'];
+$info    = survey_info($survey_id);
+$title   = $info['title'];
+$content = survey_content($survey_id);
 
 // Add html header
 start_header($title);
@@ -39,6 +41,10 @@ echo "<div id='ttt-header'>";
 if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri'>"; }
 echo "<span class='ttt-title'>$title</span>";
 echo "</div>";
+
+
+// Render conttent
+render_printable($content);
 
 echo "</div>"; // content
 echo "</body>";

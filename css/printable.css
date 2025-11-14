@@ -1,7 +1,23 @@
+/* Because this css is formatting printing on 8.5x11 paper, it is useful to think 
+ * of spacing in terms of inches rather than pts, pixels, or any relative sizes
+ * To help with this, here is a quick cheat sheet:
+ *
+ * 96px = 1"
+ * 48px = 1/2"
+ * 24px = 1/4"    72px = 3/4"
+ * 12px = 1/8"    36px = 3/8"   60px = 5/8"   84px = 7/8"
+ *  6px = 1/16"   18px = 3/16"  30px = 5/16"  42px = 7/16"
+ *
+ *  9.6px = 0.1"  19.2px = 0.2"  28.8px = 0.3"  38.4px = 0.4"  48px = 0.5"
+ * 57.6px = 0.6"  67.2px = 0.7"  76.8px = 0.8"  86.4px = 0.9"  96px = 1.0"
+ *
+ */
+
 :root {
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
   --monospace-font: 'Courier New', Monospace;
+  --indent:18px;
 }
 
 @page {
@@ -32,7 +48,7 @@ body {
 }
 
 #content {
-  margin:0.4in;
+  margin:0.4in;  /* based on safe-margins for most printers */
 }
 
 #ttt-header {
@@ -45,10 +61,169 @@ body {
 }
 
 img.ttt-logo {
-  height:0.3in;
+  height:29px;
 }
 
 span.ttt-title {
   font-family:var(--serif-font);
   font-size:18pt;
 }
+
+/* Section */
+
+div.section.label {
+  font-family:var(--serif-font);
+  font-size:16pt;
+  padding:48px 0 12px 0;
+  border-bottom: solid 1px #888;
+}
+
+div.section.feedback {
+  margin-top:24px;
+}
+
+/* Common */
+
+div.markdown p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+div.question-box {
+  margin:18px 0 0 var(--indent);
+  border: solid gray 1px;
+}
+
+div.question-box .intro {
+  margin-bottom:8px;
+}
+
+div.question-box .qualifier {
+  margin-top:8px;
+}
+
+
+/* FreeText */
+
+div.question-box .freetext .input
+{
+  margin-top:8px;
+}
+
+div.question-box .freetext .input.indent
+{
+  margin-left:var(--indent);
+}
+
+div.question-box .freetext .input .label
+{
+  font-weight:bold;
+}
+div.question-box .freetext .input .textarea {
+  height:0.75in;
+}
+
+/* Bool */
+
+div.question-box .bool .wrapper.indent,
+div.question-box .bool .qualifier
+{
+  margin-left:var(--indent);
+}
+
+div.question-box .bool .wrapper.indent {
+  margin-left:var(--indent);
+}
+
+div.question-box .bool .wording {
+  font-weight:bold;
+}
+
+div.question-box .bool .wrapper {
+  display:flex;
+  column-gap:5px;
+  align-items:center;
+  width:fit-content;
+}
+
+div.question-box .bool .wrapper.left {
+  flex-direction:row;
+}
+
+div.question-box .bool .wrapper.right {
+  flex-direction:row-reverse;
+}
+
+/* Select */
+
+div.question-box .select .wording.indent {
+  margin-left:var(--indent);
+}
+
+div.question-box .select .wording {
+  font-weight:bold;
+}
+
+div.question-box .wrapper.row .option
+{
+  display:flex;
+  flex-direction:row-reverse;
+  column-gap:5px;
+  align-items:center;
+  width:fit-content;
+}
+
+div.question-box div.options-box
+{
+  display:flex;
+  flex-direction:row;
+  align-items:start;
+  column-gap:18px;
+}
+
+div.question-box div.options-box .wording {
+  flex: 0 0 auto; /* grow shrink basis */
+}
+
+div.question-box div.options-box .wording.other {
+  height:calc(2px + 0.25in);  /* border + hieght of other box */
+}
+
+div.question-box div.options-box .wrapper.row {
+  flex: 1 1 auto; /* grow shrink basis */
+  display:flex;
+  flex-wrap:wrap;
+  column-gap:12px;
+  min-width:0;
+}
+
+div.question-box div.options-box .other.textarea {
+  height:0.25in;
+  width:1.5in;
+}
+
+div.question-box .select .qualifier {
+  margin-left:var(--indent);
+}
+
+/* Faux Input Elements */
+
+div.textarea {
+  height:0.5in;
+  border: solid black 1px;
+}
+
+div.checkbox {
+  width:12px;
+  height:12px;
+  border: solid black 1px;
+  border-radius:2px;
+}
+
+div.radio {
+  width:12px;
+  height:12px;
+  border: solid black 1px;
+  border-radius:6px;
+}
+
