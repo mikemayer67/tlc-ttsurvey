@@ -94,6 +94,11 @@ div.question-box {
   border: solid gray 1px;
 }
 
+div.question-box div:first-child {
+  margin-top:0;
+}
+
+
 div.question-box .intro {
   margin-bottom:8px;
 }
@@ -102,6 +107,9 @@ div.question-box .qualifier {
   margin-top:8px;
 }
 
+div.info {
+  margin-top:18px;
+}
 
 /* FreeText */
 
@@ -125,12 +133,6 @@ div.question-box .freetext .input .textarea {
 
 /* Bool */
 
-div.question-box .bool .wrapper.indent,
-div.question-box .bool .qualifier
-{
-  margin-left:var(--indent);
-}
-
 div.question-box .bool .wrapper.indent {
   margin-left:var(--indent);
 }
@@ -153,6 +155,12 @@ div.question-box .bool .wrapper.left {
 div.question-box .bool .wrapper.right {
   flex-direction:row-reverse;
 }
+
+div.question-box .bool .qualifier
+{
+  margin-left:calc(2 * var(--indent));
+}
+
 
 /* Select */
 
@@ -189,7 +197,8 @@ div.question-box div.options-box .wording.other {
   height:calc(2px + 0.25in);  /* border + hieght of other box */
 }
 
-div.question-box div.options-box .wrapper.row {
+div.question-box div.options-box .wrapper.row,
+div.question-box div.select.grid .wrapper.row {
   flex: 1 1 auto; /* grow shrink basis */
   display:flex;
   flex-wrap:wrap;
@@ -197,13 +206,66 @@ div.question-box div.options-box .wrapper.row {
   min-width:0;
 }
 
+div.question-box div.options-box .wrapper.lcol,
+div.question-box div.select.grid .wrapper.lcol {
+  width:fit-content;
+}
+
+div.question-box div.options-box .wrapper.lcol .option,
+div.question-box div.select.grid .wrapper.lcol .option {
+  display:flex;
+  flex-direction:row-reverse;
+  column-gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+}
+
+div.question-box div.options-box .wrapper.rcol {
+  width:fit-content;
+}
+
+div.question-box div.options-box .wrapper.rcol .option,
+div.question-box div.select.grid .wrapper.rcol .option {
+  display:flex;
+  flex-direction:row;
+  column-gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+}
+
 div.question-box div.options-box .other.textarea {
   height:0.25in;
   width:1.5in;
 }
 
+div.question-box div.options-box .other.textarea.hidden {
+  visibility:hidden;
+}
+
 div.question-box .select .qualifier {
-  margin-left:var(--indent);
+  margin-left:calc(2 * var(--indent));
+}
+
+div.question-box .select.grid {
+  display:grid;
+  grid-template-columns: max-content max-content 1fr;
+}
+
+div.question-box .select.grid .wording {
+  justify-self: end;
+  text-align: right;
+  grid-column: 1/2;
+}
+
+div.question-box .select.grid .intro {
+  justify-self: end;
+  text-align: right;
+  grid-column: 1/2;
+  font-style:italic;
+}
+
+div.question-box .select.grid .qualifier {
+  grid-column: 2 / 4;
 }
 
 /* Faux Input Elements */

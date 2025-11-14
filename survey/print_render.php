@@ -314,14 +314,16 @@ class PrintRenderEngine
       echo "<div class='option'>";
       echo "<div class='option-str'>$option_str</div>";
       echo "<div class='$type'></div>";
+      if($other && $layout==='rcol') { echo "<div class='other textarea hidden'></div>"; }
       echo "</div>";
     }
     if($other) {
       $other_label = $question['other'] ?? 'Other';
       echo "<div class='option'>";
-      echo "<div class='textarea other'></div>";
+      if($layout!=='rcol') { echo "<div class='other textarea'></div>"; }
       echo "<div class='other label'>$other_label</div>";
       echo "<div class='$type'></div>";
+      if($layout==='rcol') { echo "<div class='other textarea'></div>"; }
       echo "</div>";
     }
     echo "</div>"; // option-wrapper
