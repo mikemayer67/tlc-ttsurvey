@@ -314,7 +314,7 @@ class PrintRenderEngine
       echo "<div class='option'>";
       echo "<div class='option-str'>$option_str</div>";
       echo "<div class='$type'></div>";
-      if($other && $layout==='rcol') { echo "<div class='other textarea hidden'></div>"; }
+      if($other && $layout==='rcol' && !$in_grid) { echo "<div class='other textarea hidden'></div>"; }
       echo "</div>";
     }
     if($other) {
@@ -323,10 +323,11 @@ class PrintRenderEngine
       if($layout!=='rcol') { echo "<div class='other textarea'></div>"; }
       echo "<div class='other label'>$other_label</div>";
       echo "<div class='$type'></div>";
-      if($layout==='rcol') { echo "<div class='other textarea'></div>"; }
+      if($layout==='rcol' && !$in_grid) { echo "<div class='other textarea'></div>"; }
       echo "</div>";
     }
     echo "</div>"; // option-wrapper
+    if($other && $layout==='rcol' && $in_grid) { echo "<div class='other textarea'></div>"; }
 
     if(!$in_grid) { echo "</div>"; } // options
 

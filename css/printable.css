@@ -29,7 +29,8 @@ body {
   width: 8.5in;
   margin:0;
   font-family:var(--sans-serif-font);
-  line-height:1.4;
+  font-size:12pt;
+  line-height:1.2;
 }
 
 #print-warning {
@@ -91,7 +92,6 @@ div.markdown p {
 
 div.question-box {
   margin:18px 0 0 var(--indent);
-  border: solid gray 1px;
 }
 
 div.question-box div:first-child {
@@ -235,6 +235,15 @@ div.question-box div.select.grid .wrapper.rcol .option {
 
 div.question-box div.options-box .other.textarea {
   height:0.25in;
+  width:2.5in;
+
+  border:none;
+  border-bottom: solid black 1px;
+  margin-bottom: 3px;
+  width:2.5in;
+}
+
+div.question-box div.options-box .row .other.textarea {
   width:1.5in;
 }
 
@@ -249,7 +258,22 @@ div.question-box .select .qualifier {
 div.question-box .select.grid {
   display:grid;
   grid-template-columns: max-content max-content 1fr;
+  column-gap:8px;
 }
+
+div.question-box .select.grid > div {
+  margin-top:5px;
+}
+
+div.question-box .select.grid .other.textarea {
+  height:0.25in;
+  width:2.5in;
+  align-self:end;
+  border:none;
+  border-bottom: solid black 1px;
+  margin-bottom: 3px;
+}
+
 
 div.question-box .select.grid .wording {
   justify-self: end;
