@@ -23,6 +23,7 @@ $content = survey_content($survey_id);
 start_header($title);
 $uri = css_uri('printable');
 echo "<link rel='stylesheet' type='text/css' href='$uri'>";
+add_js_resources('printable',js_uri('printable','survey'));
 end_header();
 
 // Add print size note
@@ -37,7 +38,7 @@ echo "<div id='content'>";
 
 $logo_file = app_logo();
 $logo_uri  = $logo_file ? img_uri($logo_file) : '';
-echo "<div id='ttt-header'>";
+echo "<div class='ttt-header'>";
 if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri'>"; }
 echo "<span class='ttt-title'>$title</span>";
 echo "</div>";

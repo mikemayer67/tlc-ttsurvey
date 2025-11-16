@@ -14,6 +14,10 @@
  */
 
 :root {
+  --page-width:8.5in;
+  --page-height:11in;
+  --page-margin:0.4in;  /* based on safe-margins for most printers */
+
   --serif-font:'Noto Serif Display', Serif;
   --sans-serif-font: 'Quicksand', Sans-serif;
   --monospace-font: 'Courier New', Monospace;
@@ -21,15 +25,15 @@
 }
 
 @page {
-  size: 8.5in 11in;
+  size: var(--page-width) var(--page-height); 
   margin: 0;
 }
 
 body {
-  width: 8.5in;
+  width: var(--page-width);
   margin:0;
   font-family:var(--sans-serif-font);
-  font-size:12pt;
+  font-size:10pt;
   line-height:1.2;
 }
 
@@ -49,16 +53,29 @@ body {
 }
 
 #content {
-  margin:0.4in;  /* based on safe-margins for most printers */
+  margin:var(--page-margin);
 }
 
-#ttt-header {
+div.ttt-header {
   display:flex;
   justify-content:center;
   align-items:center;
   column-gap:10px;
   border-bottom:solid black 1px;
   padding-bottom:2px;
+}
+
+div.page-number {
+  position: fixed;
+  bottom: 0.25in;
+  left: 4in;
+  font-size: 10pt;
+  font-family: var(--sans-serif-font);
+}
+
+div.page-break {
+  break-before:always;
+  page-break-before:always;
 }
 
 img.ttt-logo {
@@ -83,6 +100,14 @@ div.section.feedback {
   margin-top:24px;
 }
 
+div.section {
+  break-inside:avoid;
+  page-break-inside:avoid;
+
+  break-before:avoid;
+  page-break-before:avoid;
+}
+
 /* Common */
 
 div.markdown p {
@@ -92,6 +117,12 @@ div.markdown p {
 
 div.question-box {
   margin:18px 0 0 var(--indent);
+
+  break-inside: avoid;
+  page-break-inside: avoid;
+
+  break-before: avoid;
+  page-break-before: avoid;
 }
 
 div.question-box div:first-child {
