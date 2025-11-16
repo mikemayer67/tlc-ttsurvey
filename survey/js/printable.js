@@ -40,14 +40,8 @@ function paginate()
   });
 
   // prepare to locate page breaks
-  const page_height = 96 * parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--page-height')
-  );
-  const page_margin = 96 * parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--page-margin')
-  );
-
-  const printable_height  = page_height - 2 * page_margin;
+  //   - reserve  bottom 1/4" for page number
+  const printable_height  = ce.print_height - 24;
   const max_section_start = 0.65 * printable_height;        // 65% is arbirary, adjust if desired
 
   const header_bottom = header_metrics.height + header_metrics.marginTop;
@@ -59,7 +53,12 @@ function paginate()
   var new_top      = min_first_top;
   var new_bottom   = null;
 
-  const break_before = [];
+  // collect blocks into pages
+
+  const pages = [];
+  var   page  = [ ce.header ];
+  var   pageno = 1;
+
   block_metrics.forEach( function(m,i) {
     new_top    = Math.max( new_top, prior_bottom + m.marginTop );
     new_bottom = new_top + m.height;
@@ -71,33 +70,65 @@ function paginate()
     );
 
     if( needs_break ) {
-      break_before.push(m.el);
+      pages.push(page);
+      page = [ ce.header.clone(), $(m.el) ];
+
       new_top = Math.max(min_first_top, header_bottom + m.marginTop);
       prior_bottom = new_top + m.height;
     }
     else {
+      page.push($(m.el));
       prior_bottom = new_bottom;
     }
 
     new_top = prior_bottom + m.marginBottom;
   });
 
-  // insert clone of breaking header element before the page break elements
+  pages.push(page); /* everything still accumulating */
 
-  break_before.forEach( (el,pi) => {
-    const hc = ce.header.clone().addClass('page-break');
-    const pn = $('<div class="page-number">').text('Page ' + (2+pi));
-    hc.insertBefore(el);
-    pn.insertAfter(hc);
+  // insert clone of breaking header element before the page break elements
+  
+  const num_pages = pages.length;
+
+  pages.forEach( (page,pi) => {
+    const page_div = $('<div>').addClass('page');
+    page.forEach( (block) => { page_div.append(block) } );
+    if( pi == 0 ) {
+      // first page should be marked as such to avoid page break before
+      page_div.addClass('first');
+    }
+    else {
+      // all but first page should get a page number added
+      const pn = $('<div class="page-number">').text('page ' + (pi+1) + ' of ' + num_pages);
+      page_div.append(pn);
+    }
+    ce.content.append(page_div)
   });
 }
 
+function root_dimension(key) {
+  // convert from inches to pixels...
+  return 96 * parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--' + key)
+  );
+}
 
 $(document).ready( function() {
 
   ce.content = $('#content');
   ce.header  = $('div.ttt-header');
   ce.divs    = ce.content.children().not(ce.header);
+
+  ce.page_height = root_dimension('page-height');
+  ce.page_width  = root_dimension('page-width');
+
+  ce.print_height = root_dimension('print-height');
+  ce.print_width  = root_dimension('print-width');
+
+  ce.margin_top     = root_dimension('print-margin-top');
+  ce.margin_left    = root_dimension('print-margin-left');
+  ce.margin_right   = root_dimension('print-margin-right');
+  ce.margin_bottom  = root_dimension('print-margin-bottom');
 
   paginate();
 });
