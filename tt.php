@@ -42,6 +42,12 @@ try
     die();
   }
 
+  // If a printable survey was requested, jump to the printable page
+  if(key_exists('printable',$_REQUEST)) {
+    require(app_file('survey/printable.php'));
+    die();
+  }
+
   // If access to the admin tools have been requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));

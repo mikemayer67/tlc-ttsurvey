@@ -146,20 +146,6 @@
   padding: .25em;
 }
 
-#ttt-body div.body form table#info-edit div.pdf-box {
-  display:flex;
-  align-items:center;
-}
-
-#ttt-body div.body form table#info-edit div.pdf-box button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.5em;
-  height: 1em;
-  width: 1em;
-}
-
 #ttt-body div.body form table#info-edit td.input-box {
   position:relative;
 }
@@ -202,25 +188,6 @@
 
 #ttt-body div.body form .info-bar .date {
   margin-left:0.5em;
-}
-
-#ttt-body div.body form .info-bar span.pdf-link {
-  margin-left:auto;
-  font-size:90%;
-}
-
-#ttt-body div.body form .info-bar a.pdf-download {
-  background:inherit;
-  margin-left:auto;
-  color:#008;
-  font-size:90%;
-  font-weight:700;
-  text-decoration:none;
-}
-
-#ttt-body div.body form .info-bar a.pdf-download:hover {
-  color:#00c;
-  text-shadow:1px 1px 5px #888;
 }
 
 /***************************************

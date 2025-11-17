@@ -62,6 +62,16 @@ function handle_preview(e)
   ce.dispatch('handle_preview');
 }
 
+function handle_printable(e)
+{
+  e.preventDefault();
+  // not really an ajax call, but channels through the same mechanism
+  const url = new URL(ce.ajaxuri, window.location.href);
+  url.searchParams.set('printable', ce.cur_survey.id);
+  url.searchParams.set('ttt',ce.nonce);
+  window.open(url.toString(), '_blank');
+}
+
 
 // Survey status dependencies
 
@@ -105,7 +115,6 @@ $(document).ready(
   // common form elements
   ce.form    = $('#admin-surveys');
   ce.ajaxuri = $('#admin-surveys input[name=ajaxuri]').val();
-  ce.pdfuri  = $('#admin-surveys input[name=pdfuri]').val();
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 
@@ -113,7 +122,8 @@ $(document).ready(
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
   ce.preview    = $('#survey-preview');
-  ce.preview_js = $('#preview-js');
+  ce.preview_js = $('#preview-js').parent();
+  ce.printable  = $('#gen-printable');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -128,6 +138,7 @@ $(document).ready(
   ce.form.on('submit', handle_submit);
   ce.revert.on('click',handle_revert);
   ce.preview.on('click',handle_preview);
+  ce.printable.on('click',handle_printable);
 
   // Load additional modules
 

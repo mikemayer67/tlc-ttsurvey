@@ -16,8 +16,6 @@ use Exception;
 $survey_id  = $_POST['id'] ?? null;
 $survey_rev = $_POST['revision'] ?? null;
 $title      = $_POST['name'] ?? null;
-$pdf_action = $_POST['pdf_action'] ?? null;
-$new_pdf    = $_FILES['new_survey_pdf']['tmp_name'] ?? null;
 $content    = json_decode($_POST['content'],true);
 
 try {
@@ -28,18 +26,14 @@ try {
 
   $details = [];
   if($title)      { $details['title']      = $title;      }
-  if($pdf_action) { $details['pdf_action'] = $pdf_action; }
-  if($new_pdf)    { $details['new_pdf']    = $new_pdf;    }
 
   update_survey($survey_id,$survey_rev,$content,$details);
 
-  $pdf_file = survey_pdf_file($survey_id);
   $next_ids = next_survey_ids($survey_id);
   $revised_content = survey_content($survey_id);
 
   $rval = array(
     'success'=>true,
-    'has_pdf'=>($pdf_file !== null),
     'content'=>$revised_content,
     'next_ids' => $next_ids,
   );

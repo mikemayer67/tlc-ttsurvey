@@ -30,6 +30,7 @@ strong, b { font-weight:bold; }
 #ttt-body form#survey {
   max-width:1024px;
   width:100%;
+  margin-bottom:40px;
 }
 
 .section div.question-box

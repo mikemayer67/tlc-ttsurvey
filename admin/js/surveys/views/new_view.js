@@ -3,9 +3,6 @@ export default function init(ce)
   const _info_edit    = $('#info-edit');
   const _survey_name  = $('#survey-name');
   const _survey_clone = $('#survey-clone-from');
-  const _survey_pdf   = $('#survey-pdf');
-  const _pdf_action   = $('#existing-pdf-action');
-  const _clear_pdf    = $('#clear-pdf');
 
   let _prior_id = null;
 
@@ -57,19 +54,17 @@ export default function init(ce)
     _survey_clone.prop('disabled',cloneable.length===0);
     _survey_clone.closest('tr').toggleClass('disabled',cloneable.length===0);
 
-    _info_edit.find('.pdf-file td.label').html('Downloadable PDF');
-    _survey_pdf.val('').show();
-    _pdf_action.hide();
-    _clear_pdf.hide();
-
     // The only new survey field that needs validation is the survey name
     _survey_name.on('input',ce.handle_input);
     _survey_name.on('change',ce.handle_change);
 
-    ce.submit_bar.show();
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel').prop('disabled',!_prior_id).css('opacity',_prior_id?1:0.25);
-    ce.preview.prop('disabled');
+    ce.submit.show();
+    ce.preview.hide();
+    ce.preview_js.hide();
+    ce.printable.hide();
+
     update_submit();
   }
 
@@ -81,7 +76,6 @@ export default function init(ce)
     formData.append('name',_survey_name.val().trim());
     const clone = _survey_clone.val();
     if(!isNaN(clone)) { formData.append('clone',clone); }
-    formData.append('survey_pdf',_survey_pdf[0].files[0]);
 
     $.ajax({
       type: 'POST',

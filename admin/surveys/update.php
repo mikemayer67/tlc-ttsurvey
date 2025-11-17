@@ -75,9 +75,6 @@ function update_survey($survey_id, $survey_rev, $content, $details)
     update_survey_options   ($survey_id,$survey_rev,$content);
     update_survey_content   ($survey_id,$survey_rev,$content);
 
-    // save updating the pdf until last as this cannot be rolled back as easily as a MySQL transaction
-    update_survey_pdf       ($survey_id,$survey_rev,$details);
-
     // final step is to commit the transaction
     //   if there was an exception the transaction will be rolled back in the catch block
     MySQLCommit(); 
@@ -105,37 +102,6 @@ function update_survey_revision($survey_id,$survey_rev,$details)
   if( MySQLExecute($update) === false ) {
     throw new FailedToUpdate("Failed to update title for survey $survey_id rev $survey_rev"); 
   }
-}
-
-function update_survey_pdf($survey_id,$survey_rev,$details)
-{
-  todo("test update_survey_pdf when browser UX is suffiently mature to upload pdfs");
-
-  $action = $details['pdf_action'] ?? null;
-  if(!$action) { return; }
-
-  $pdf_path = Surveys::expected_pdf_path($survey_id);
-
-  if($action === 'drop' || $action === 'replace') {
-    if(file_exists($pdf_path)) {
-      if(!unlink($pdf_path)) {
-        throw new FailedToUpdate("Failed to drop existing PDF file: $pdf_path");
-      }
-    }
-  }
-
-  if($action === 'add' || $action === 'replace') {
-    $new_pdf = $details['new_pdf'] ?? null;
-
-    if(!$new_pdf) {
-      throw new FailedToUpdate("Failed to update new PDF file, no file specified");
-    }
-    if(!move_uploaded_file($new_pdf,$pdf_path)) {
-      throw new FailedToUpdate("Failed to upload new PDF file: $new_pedf to: $pdf_path");
-    }
-  }
-
-  return true;
 }
 
 function update_survey_options($survey_id,$survey_rev,$content)

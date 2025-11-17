@@ -16,11 +16,8 @@ if(!$name) {
   die();
 }
 
-$clone   = $_POST['clone'] ?? null;
-$tmp_pdf = $_FILES['survey_pdf']['tmp_name'] ?? null;
-
+$clone = $_POST['clone'] ?? null;
 $error = null;
-$new_id = create_new_survey($name,$clone,$tmp_pdf,$error);
 
 if($new_id) {
   $info = survey_info($new_id);
