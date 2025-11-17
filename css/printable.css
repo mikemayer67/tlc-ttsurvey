@@ -61,10 +61,11 @@ body {
 }
 
 #content {
-  width: var(--print-width);
-  margin-top: var(--print-margin-top);
-  margin-left: var(--print-margin-left);
-  margin-right: var(--print-margin-right);
+  width: var(--page-width);
+  padding-top: var(--print-margin-top);
+  padding-left: var(--print-margin-left);
+  padding-right: var(--print-margin-right);
+  box-sizing: border-box;
 }
 
 div.page {
@@ -77,8 +78,6 @@ div.page {
 
   break-inside:avoid;
   page-break-inside:avoid;
-
-  border: solid 1px red;
 }
 
 div.page.first {

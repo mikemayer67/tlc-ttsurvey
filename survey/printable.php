@@ -9,7 +9,6 @@ require_once(app_file('survey/print_render.php'));
 
 log_dev("-------------- Start of Preview --------------");
 
-log_dev("NONCES: ".print_r($_SESSION['nonce'],true));
 validate_and_retain_get_nonce('admin-surveys');
 
 $survey_id=$_GET['printable'];
