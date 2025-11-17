@@ -298,7 +298,7 @@ div.question-box .select .qualifier {
 
 div.question-box .select.grid {
   display:grid;
-  grid-template-columns: max-content max-content 1fr;
+  grid-template-columns: minmax(min-content,40%) minmax(min-content,50%) 1fr;
   column-gap:8px;
 }
 
