@@ -550,7 +550,7 @@ END IF;
 --
 IF current_version < 4 THEN
   CREATE OR REPLACE VIEW tlc_tt_view_last_user_survey AS
-  SELECT u.userid, s.str as last_survey
+  SELECT u.userid, r.survey_id, s.str as survey_name
     FROM tlc_tt_user_status AS u
     JOIN ( SELECT userid, MAX(submitted) AS max_submitted  FROM tlc_tt_user_status GROUP BY userid) AS uf
         ON u.userid = uf.userid AND u.submitted = uf.max_submitted

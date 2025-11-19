@@ -1,0 +1,79 @@
+#ttt-body div.body #participants {
+  border-collapse:collapse;
+  background:white;
+  border:solid black 1px;
+  min-width:100%;
+}
+
+
+#ttt-body div.body #participants thead tr {
+  border-bottom:1px solid black;
+}
+
+#ttt-body div.body #participants th {
+  padding:3px 5px 0;
+  vertical-align:bottom;
+  text-align:left;
+}
+
+#ttt-body div.body #participants td {
+  padding:3px 5px 0;
+}
+
+#ttt-body div.body #participants th.active-survey {
+  border-bottom:1px solid gray;
+  text-align:center;
+}
+
+#ttt-body div.body #participants th.inactive {
+  font-weight:normal;
+  color:gray;
+}
+
+#ttt-body div.body #participants th.select {
+  font-weight:normal;
+  text-align:center;
+}
+#ttt-body div.body #participants td.select {
+  text-align:center;
+}
+
+#ttt-body div.body #participants th.draft,
+#ttt-body div.body #participants th.submitted,
+#ttt-body div.body #participants th.last-survey {
+  text-align:center;
+}
+
+#ttt-body div.body #participants th.active-survey,
+#ttt-body div.body #participants th.draft,
+#ttt-body div.body #participants th.last-survey,
+#ttt-body div.body #participants td.draft,
+#ttt-body div.body #participants td.last-survey {
+  padding-left:15px;
+}
+
+#ttt-body div.body #participants button.pwreset {
+  background: none;
+  border: none;
+  color: #0645AD;       /* standard link blue */
+  padding: 0;
+  font: inherit;        /* match surrounding text */
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#ttt-body div.body #participants button.pwreset:hover {
+  color: #0b0080;       /* darker on hover */
+  text-decoration: underline;
+}
+
+#ttt-body div.body #participants button.pwreset:focus {
+  outline: 1px dotted;
+  outline-offset: 2px;
+}
+
+#ttt-body div.body #participants th[data-sort]:hover {
+    text-shadow: 1px 1px 2px #888, 0 0 1px #ccc;
+    cursor: pointer;            /* indicate it's clickable */
+}
+
