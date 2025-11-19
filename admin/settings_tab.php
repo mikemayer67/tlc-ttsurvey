@@ -84,10 +84,6 @@ add_input_section('Password Reset',[
   ], [
     'pwreset_length',
     'info' => 'Number of characters in a passsword reset token (4-20)',
-  ], [
-    'reset_password',
-    'info' => 'Default password when admin initiates password reset',
-    'optional'=>true,
   ],
 ]);
 
