@@ -302,11 +302,18 @@ class User {
     return password_verify($password,$this->_password);
   }
 
-  public function get_password_reset_token()
+  public function get_password_reset_token($from_wordlist=false)
   {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_tt_reset_tokens where userid=?",'s',$this->_userid);
-    $token = gen_token(pwreset_length());
+    if($from_wordlist) {
+      require_once(app_file('include/token_words.php'));
+      $adj  = $adj4_txt[array_rand($adj4_txt)];
+      $noun = $noun6_txt[array_rand($noun6_txt)];
+      $token = strtoupper($adj . $noun);
+    } else {
+      $token = gen_token(pwreset_length());
+    } 
     $expires = time() + 60*pwreset_timeout();
     $expires = gmdate('Y-m-d H:i:s', $expires);
     $r = MySQLExecute("insert into tlc_tt_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);

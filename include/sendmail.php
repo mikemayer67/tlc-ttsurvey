@@ -210,7 +210,7 @@ function sendmail_confirmation($email,$summary,&$error=null)
 
   $message[] = [
     'type'=>'header',
-    'text'=>'Your submitted survey respsonses have been',
+    'text'=>'Your submitted survey respsonses have been received.',
   ];
 
   $url = full_app_uri();

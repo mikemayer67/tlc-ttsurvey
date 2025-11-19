@@ -71,6 +71,7 @@ $tabs = [
   'settings' => [],
   'roles' => ['admin'],
   'surveys' => ['admin','content'],
+  'participants' => ['admin'],
   'log' => ['admin','tech'],
 ];
 
