@@ -85,7 +85,6 @@ add_input_section('Password Reset',[
     'pwreset_length',
     'info' => 'Number of characters in a passsword reset token (4-20)',
   ],
-
 ]);
 
 add_input_section('Email Server',[

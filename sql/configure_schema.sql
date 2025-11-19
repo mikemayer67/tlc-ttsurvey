@@ -545,6 +545,26 @@ IF current_version < 3 THEN
   INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Adds Response Tables");
 END IF;
 
+--
+-- VERSION 4 --
+--
+IF current_version < 4 THEN
+  CREATE OR REPLACE VIEW tlc_tt_view_last_user_survey AS
+  SELECT u.userid, r.survey_id, s.str as survey_name
+    FROM tlc_tt_user_status AS u
+    JOIN ( SELECT userid, MAX(submitted) AS max_submitted  FROM tlc_tt_user_status GROUP BY userid) AS uf
+        ON u.userid = uf.userid AND u.submitted = uf.max_submitted
+    JOIN ( SELECT survey_id, MAX(survey_rev) AS cur_rev FROM tlc_tt_survey_revisions GROUP BY survey_id) AS rf
+        ON u.survey_id = rf.survey_id
+    JOIN tlc_tt_survey_revisions AS r
+        ON r.survey_id = rf.survey_id AND r.survey_rev = rf.cur_rev
+    JOIN tlc_tt_strings AS s ON s.string_id = r.title_sid;
+
+-- Add version 4 to the history and increment current version
+  SET current_version = 4;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Adds Admin Views");
+END IF;
+
 
 -- The following is a template for new versions
 --   Copy it and place above this line and remove all leading '-- '

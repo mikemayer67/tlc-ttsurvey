@@ -3,6 +3,15 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+function timestamp_string($timestamp, $format='g:ia  M j, Y')
+{
+  // using DateTimeImmutable so that add/sub return new objects rather than mutating the DateTime
+  $tz  = new \DateTimeZone(date_default_timezone_get());
+  $ts  = (new \DateTimeImmutable('@'.$timestamp))->setTimezone($tz);
+
+  return $ts->format($format);
+}
+
 function recent_timestamp_string($timestamp) 
 {
   $now   = time();
