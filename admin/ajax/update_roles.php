@@ -18,7 +18,7 @@ $response = array('success'=>true);
 
 foreach( $roles['drop']??null as $drop ) {
   $role = $drop[0];
-  $userid = $drop[1];
+  $userid = strtolower($drop[1]);
   if($role === 'primary') {
     Settings::clear('primary_admin');
   } else {
@@ -28,7 +28,7 @@ foreach( $roles['drop']??null as $drop ) {
 
 foreach( $roles['add']??null as $add ) {
   $role = $add[0];
-  $userid = $add[1];
+  $userid = strtolower($add[1]);
   if($role === 'primary') {
     Settings::set('primary_admin',$userid);
   } else {

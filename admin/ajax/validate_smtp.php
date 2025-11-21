@@ -56,6 +56,8 @@ try
 
   if(!$test_email) {
     if($userid = $_POST['primary_admin'] ?? null) {
+      $userid = strtolower($userid);
+
       $user = USER::lookup($userid);
       if(!$user) { throw new SMTPError("Invalid primary admin userid"); }
       if($email = $user->email()) {

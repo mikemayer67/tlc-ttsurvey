@@ -64,6 +64,7 @@ function handle_login_with_token($resume)
 {
   // extract the userid and token from the resume input
   list($userid,$token) = explode(':',$resume);
+  $userid = strtolower($userid);
 
   // try to resume with provided userid/token
   //   if not, raise an exception
@@ -76,11 +77,11 @@ function handle_login_with_token($resume)
 
 function handle_login_with_password()
 {
-  $userid   = $_POST['userid']   ?? null;
-  $password = $_POST['password'] ?? null;
+  $userid   = strtlower($_POST['userid'] ?? '');
+  $password = $_POST['password'] ?? '';
 
-  if(!$userid)   { internal_error("Missing userid in login request"); }
-  if(!$password) { internal_error("Missing password in login request"); }
+  if($userid==='')   { internal_error("Missing userid in login request"); }
+  if($password==='') { internal_error("Missing password in login request"); }
 
   // validate input userid and passoword
 

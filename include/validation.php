@@ -15,6 +15,10 @@ function adjust_user_input($key,$value)
 
   switch($key)
   {
+  case 'userid':
+    $value = strtolower($value);
+    break;
+
   case 'fullname':
     $value = preg_replace('/\'+/',"'",$value);  // condense multiple apostrophes
     $value = preg_replace('/-+/',"-",$value);   // condense multiple hyphens

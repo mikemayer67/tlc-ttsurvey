@@ -19,6 +19,7 @@ function handle_login_form()
   // handle resume button
   if( $resume = $_POST['resume'] ?? null ) {
     list($userid,$token) = explode(':',$resume);
+    $userid = strtolower($userid);
     handle_login_with_token($userid,$token);
   }
 
@@ -39,6 +40,8 @@ function handle_login_form()
 
 function handdle_login_with_token($userid,$token)
 {
+  $userid = strtolower($userid);
+
   if( !resume_survey_as($userid,$token) ) {
     // failed to log in
     //   forget bad token, set status, and return to continue loading login page
@@ -55,12 +58,12 @@ function handdle_login_with_token($userid,$token)
 
 function handle_login_with_password()
 {
-  $userid   = $_POST['userid']   ?? null;
-  $password = $_POST['password'] ?? null;
+  $userid   = strtolower($_POST['userid'] ?? '');
+  $password = $_POST['password'] ?? '';
   $remember = $_POST['remember'] ?? 0;
 
-  if(!$userid)   { internal_error("Missing userid in login request"); }
-  if(!$password) { internal_error("Missing password in login request"); }
+  if($userid==='')   { internal_error("Missing userid in login request"); }
+  if($password==='') { internal_error("Missing password in login request"); }
 
   $user = User::from_userid($userid);
   if(!$user) {

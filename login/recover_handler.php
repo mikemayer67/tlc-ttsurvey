@@ -55,13 +55,13 @@ function handle_recover_form()
 
 function handle_recover_userid_password()
 {
-  $userid    = $_POST['userid'] ?? null;
-  $email     = $_POST['email']  ?? null;
+  $userid = strtolower($_POST['userid'] ?? '');
+  $email  = strtolowe= $_POST['email']  ?? null;
 
   $users = array();
 
   // if userid is provided, use that for password recovery (ignore email)
-  if($userid) {
+  if($userid!=='') {
     $user = User::from_userid($userid);
     if(!$user) {
       log_warning("Invalid userid specified for recovery attempt ($userid)");

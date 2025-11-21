@@ -31,7 +31,7 @@ if( $session_token !== $active_token ) {
   die();
 }
 
-$userid = $_POST['userid'];
+$userid = strtolower($_POST['userid']);
 
 if($userid !== $session_userid) {
   log_warning("Invalid userid in ajax validation: session=$session_userid, ajax=$userid");

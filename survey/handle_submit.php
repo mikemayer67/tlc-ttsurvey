@@ -22,10 +22,11 @@ if($action === 'cancel')
 
 validate_nonce('survey-form');
 
-$active_userid    = active_userid() ?? null;
-$userid = $_POST['userid'] ?? null;
-if(is_null($active_userid))    { validation_error("Attempt to submit responses without being logged in"); }
-if(is_null($userid)) { validation_error("Attempt to submit responses without a userid"); }
+$active_userid = active_userid() ?? '';
+if($active_userid === '') { validation_error("Attempt to submit responses without being logged in"); }
+
+$userid = $_POST['userid'] ?? '';
+if($userid === '') { validation_error("Attempt to submit responses without a userid"); }
 
 if($active_userid !== $userid) { 
   validation_error("Attempt to submit responses as $userid when active user is $active_userid");
