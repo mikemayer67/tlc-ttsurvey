@@ -1,6 +1,8 @@
 *~
 .*.swp
 
+.htaccess*
+
 admin/settings.json
 pdf/survey*pdf
 sql/dump*sql
