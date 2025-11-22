@@ -206,6 +206,20 @@ div.ttt-splash img {
   align-items: center;
 }
 
+
+#ttt-navbar span.admin-link {
+  margin: 0 5px;
+}
+#ttt-navbar span.admin-link a {
+  display:flex;
+  align-content:center;
+}
+#ttt-navbar img.admin-link {
+  width:15px;
+  height:15px;
+  vertical-align:middle;
+}
+
 #ttt-navbar .menu-trigger {
   margin-left:0.5em;
   margin-right:0;

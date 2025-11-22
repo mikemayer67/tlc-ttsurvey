@@ -8,6 +8,7 @@ require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('include/roles.php'));
 require_once(app_file('login/elements.php'));
 
 function safe_html(string $string): string {
@@ -265,12 +266,25 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   echo "<div class='status'>$status</div>";
 
   // User Info
+  $user = null;
   echo "<span class='username'>";
-  $user = User::from_userid($userid) ?? null;
-  if($user) {
-    $username = $user->fullname();
-    echo "<span>$username</span>";
-    add_menu_trigger($context,$user);
+  if($userid) {
+    $user = User::from_userid($userid) ?? null;
+    if($user) {
+      $roles = user_roles($userid);
+      if($roles) {
+        $admin_icon = img_uri('icons8/settings.png'); 
+        $admin_uri = app_uri('admin');
+        echo "<span class='admin-link'>";
+        echo "<a href='$admin_uri' target='_blank'>";
+        echo "<img class='admin-link' src='$admin_icon'>";
+        echo "</a>";
+        echo "</span>";
+      }
+      $username = $user->fullname();
+      echo "<span>$username</span>";
+      add_menu_trigger($context,$user);
+    }
   }
   echo "</span>";
 

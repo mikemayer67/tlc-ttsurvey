@@ -186,11 +186,11 @@ const cache_key = 'tlc-tt-survey-ui-state';
 function setup_toggle_cache(e)
 {
   // create a set of the open details sections
-  let open_details = new Set();
+  let open_section = undefined;
   let scroll_pos   = 0;
 
   // check if there is an existing cache in memory and if it applies
-  //   is so, use this to update the open_details set
+  //   is so, use this to update the open_details and scroll position
   let cache = localStorage.getItem(cache_key);
   if(cache) {
     cache = JSON.parse(cache);
@@ -198,12 +198,12 @@ function setup_toggle_cache(e)
     const nonce = ce.form.find('input[name=prior-nonce]').val();
 
     if(nonce === cache.nonce) { 
-      open_details = new Set(cache.open_details || []);
-      scroll_pos = cache.scroll_pos || 0; 
+      open_section = cache.open_details || undefined;
+      scroll_pos   = cache.scroll_pos   || 0; 
 
       ce.details.each(function() {
         const section = $(this).data('section');
-        $(this).prop( 'open', open_details.has(section) );
+        $(this).prop( 'open', section === open_section );
       });
     }
 
@@ -213,26 +213,28 @@ function setup_toggle_cache(e)
   }
 
   // start a new cache and it it local storage
-  cache = { nonce:ce.nonce, open_details: [...open_details], scroll_pos };
+  cache = { nonce:ce.nonce, open_details:open_section, scroll_pos };
   localStorage.setItem(cache_key, JSON.stringify(cache));
 }
 
 function update_toggle_cache(e)
 {
+  const section = $(this).data('section');
+  const is_open = $(this).prop('open');
+
+  if(is_open) {
+    ce.details.each(function() {
+      if( $(this).data('section') !== section ) { $(this).prop('open',false); }
+    })
+  }
+
   let cache = localStorage.getItem(cache_key);
   if(!cache) { return; }
 
   cache = JSON.parse(cache);
   if(cache.nonce !== ce.nonce) { return; }
 
-  const section = $(this).data('section');
-  const is_open = $(this).prop('open');
-
-  const open_details = new Set(cache.open_details || []);
-  if(is_open) { open_details.add(section);    }
-  else        { open_details.delete(section); }
-
-  cache.open_details = [...open_details];
+  cache.open_details = section;
 
   localStorage.setItem(cache_key, JSON.stringify(cache));
 }
