@@ -55,6 +55,10 @@ function get_user_responses($userid,$survey_id,$draft=null)
   $responses = array();
   foreach( $rows as $row ) {
     $qid = $row['question_id'];
+
+    $selected = $row['selected'];
+    $row['selected'] = $selected !== null ? [$selected] : [];
+    
     $responses[$qid] = $row;
   }
 
@@ -72,10 +76,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
     if(!array_key_exists($qid,$responses)) {
       internal_error("There should be no response options for non-existent question $qid");
     }
-    if(!array_key_exists('options',$responses[$qid])) {
-      $responses[$qid]['options'] = array();
-    }
-    $responses[$qid]['options'][] = $row['option_id'];
+    $responses[$qid]['selected'][] = $row['option_id'];
   }
 
   $query = <<<SQL

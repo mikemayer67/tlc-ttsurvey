@@ -77,7 +77,7 @@ function handle_login_with_token($resume)
 
 function handle_login_with_password()
 {
-  $userid   = strtlower($_POST['userid'] ?? '');
+  $userid   = strtolower($_POST['userid'] ?? '');
   $password = $_POST['password'] ?? '';
 
   if($userid==='')   { internal_error("Missing userid in login request"); }
