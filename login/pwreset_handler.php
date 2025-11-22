@@ -53,15 +53,16 @@ function handle_pwreset_form()
 
 function handle_password_reset()
 {
-  $userid    = $_POST['userid']           ?? null;
-  $token     = $_POST['token']            ?? null;
-  $password  = $_POST['password']         ?? null;
-  $pwconfirm = $_POST['password-confirm'] ?? null;
+  $userid = strtolower($_POST['userid'] ?? '');
 
-  if(!$userid)    { internal_error("Missing userid in register request"); }
-  if(!$token)     { internal_error("Missing token in register request"); }
-  if(!$password)  { internal_error("Missing password in register request"); }
-  if(!$pwconfirm) { internal_error("Missing password-confirm in register request"); }
+  $token     = $_POST['token']            ?? '';
+  $password  = $_POST['password']         ?? '';
+  $pwconfirm = $_POST['password-confirm'] ?? '';
+
+  if($userid==='')    { internal_error("Missing userid in register request"); }
+  if($token==='')     { internal_error("Missing token in register request"); }
+  if($password==='')  { internal_error("Missing password in register request"); }
+  if($pwconfirm==='') { internal_error("Missing password-confirm in register request"); }
 
   $userid   = adjust_user_input('userid',   $userid);
   $token    = adjust_user_input('token',    $token);

@@ -13,7 +13,7 @@ validate_ajax_nonce('survey-form');
 
 start_ob_logging();
 
-$userid = $_POST['userid'];
+$userid = strtolower($_POST['userid']);
 $name   = $_POST['name'];
 $email  = $_POST['email'];
 

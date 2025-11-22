@@ -13,7 +13,7 @@ validate_ajax_nonce('survey-form');
 
 start_ob_logging();
 
-$userid = $_POST['userid'];
+$userid = strtolower($_POST['userid']);
 $old_pw = $_POST['old_pw'];
 $new_pw = $_POST['new_pw'];
 

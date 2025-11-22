@@ -431,11 +431,9 @@ class RenderEngine
     }
 
     $response = $responses[$id] ?? null;
+    $selected    = $response['selected'] ?? [];
     $other_value = $response['other'] ?? '';
-    $other_selected = ($response['selected'] ?? null);
-    $other_checked = (isset($other_selected) && ($other_selected == 0)) ? 'checked' : '';
-    $qualified = $response['qualifier'] ?? '';
-    $selected  = $response['options'] ?? [];
+    $qualified   = $response['qualifier'] ?? '';
 
     if($in_grid) {
       $this->open_grid();
@@ -469,8 +467,9 @@ class RenderEngine
       $input_name = $multi ? $input_id : $name;
       $value      = $multi ? 1 : 0;
       $other_id = "$name-other";
+      $checked = in_array(0,$selected) ? 'checked' : '';
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' class='has-other' name='$input_name' value='$value' $other_checked>";
+      echo "<input id='$input_id' type='$type' class='has-other' name='$input_name' value='$value' $checked>";
       echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'>$other_value</textarea>";
       echo "</div>";
     }

@@ -31,8 +31,8 @@ try {
   $active_userid = active_userid() ?? null;
   if(!$active_userid) { fail_vlidation('no active userid'); }
 
-  $userid = $_POST['userid'] ?? null;
-  if(!$userid) { throw new ValidationError('no userid in POST'); }
+  $userid = strtolower($_POST['userid'] ?? '');
+  if($userid === '') { throw new ValidationError('no userid in POST'); }
 
   $user = User::from_userid($userid);
   if(!$user) { throw new ValidationError("invalid userid ($userid)"); }

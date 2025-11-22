@@ -102,7 +102,7 @@ class LoginCookies
   public function active_userid() { return $this->_active_userid; }
   public function active_token()  { return $this->_active_token;  }
 
-  public function set_active_userid($userid,$token)
+  public function set_active_userid($userid,$token) // @@@USERiD
   {
     $this->_active_userid = $userid;
     $_SESSION['active-userid'] = $userid;
@@ -160,6 +160,8 @@ function start_survey_as($user)  // note that $user is a User instance
 
 function resume_survey_as($userid,$user_token)
 {
+  $userid = strtolower($userid);
+
   if( !validate_user_access_token($userid,$user_token) ) { return false; }
   $session_token = gen_token();
   return LoginCookies::instance()->set_active_userid( $userid, $session_token );
@@ -173,11 +175,15 @@ function regen_active_token()
 
 function remember_user_token($userid,$token)
 {
+  $userid = strtolower($userid);
+
   return LoginCookies::instance()->cache_token( $userid, $token );
 }
 
 function forget_user_token($userid)
 {
+  $userid = strtolower($userid);
+
   return LoginCookies::instance()->clear_token($userid);
 }
 

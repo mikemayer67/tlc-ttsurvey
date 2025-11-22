@@ -91,7 +91,7 @@ if($submitted && !$draft && !$reopen_submitted)
   case 'sendemail':
     if( 
       $userid &&
-      (($_POST['userid'] ?? null) === $userid) &&
+      (strtolower($_POST['userid'] ?? '') === $userid) &&
       ($user = User::from_userid($userid)) &&
       ($email = $user->email())
     ) {

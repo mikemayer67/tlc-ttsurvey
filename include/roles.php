@@ -12,6 +12,8 @@ function survey_roles()
 
 function add_user_role($userid,$role)
 {
+  $userid = strtolower($userid);
+
   $query = "insert into tlc_tt_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
   return MySQLExecute($query,'ss',$userid,$userid);
 }
@@ -51,11 +53,11 @@ function user_roles($userid)
   return $rval;
 }
 
-function verify_role($userid,$role)
-{
-  if($role === 'admin' && $userid === primary_admin()) { return true; }
-  return in_array($userid, lookup_userids_by_role($role));
-}
+//function verify_role($userid,$role)
+//{
+//  if($role === 'admin' && $userid === primary_admin()) { return true; }
+//  return in_array($userid, lookup_userids_by_role($role));
+//}
 
 function admin_contacts($role='admin')
 {

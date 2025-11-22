@@ -68,7 +68,8 @@ class User {
     //   BEFORE calling this constructor.  The constructor assumes
     //   it to be valid and complete.
 
-    $this->_userid   = $user_data['userid'];
+    $this->_userid   = strtolower($user_data['userid']);
+
     $this->_fullname = $user_data['fullname'];
     $this->_email    = $user_data['email'] ?? null;
     $this->_token    = $user_data['token'];
@@ -107,7 +108,8 @@ class User {
 
     $users = array();
     foreach($result as $user_data) {
-      $userid = $user_data['userid'];
+      $userid = strtolower($user_data['userid']);
+
       $cur_user = self::$_users[$userid] ?? null;
       if($cur_user) {
         $users[] = $cur_user;
@@ -449,10 +451,13 @@ class User {
 
 function create_new_user($userid,$fullname,$password,$email=null)
 {
+  $userid = strtolower($userid);
+
   // inputs should be validated before calling this function... but as
   //   we're about to add this to the database, we'll validate them
   //   one last time.  If there is an issue, then there is an internal
   //   error in the app... so die
+
   $error = '';
   if(!adjust_and_validate_user_input('userid',$userid,$error)) {
     internal_error("Error while creating new user: userid $error");
@@ -493,6 +498,8 @@ function create_new_user($userid,$fullname,$password,$email=null)
 
 function validate_user_password($userid,$password)
 {
+  $userid = strtolower($userid);
+
   $user = User::from_userid($userid);
   if(!$user) {
     log_info("Failed to validate password for $userid (invalid userid)");
@@ -507,6 +514,8 @@ function validate_user_password($userid,$password)
 
 function validate_user_access_token($userid,$token)
 {
+  $userid = strtolower($userid);
+
   $user = User::from_userid($userid);
   if(!$user) { return false; }
   return $user->validate_access_token($token);

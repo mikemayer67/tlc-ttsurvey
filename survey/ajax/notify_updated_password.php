@@ -9,7 +9,7 @@ require(app_file('survey/ajax/validate.php'));
 require_once(app_file('include/sendmail.php'));
 
 start_ob_logging();
-$userid = $_POST['userid'];
+$userid = strtolower($_POST['userid']);
 $email  = $_POST['email'];
 sendmail_profile($email,$userid,['password']);
 end_ob_logging();

@@ -56,17 +56,18 @@ function handle_register_form()
 
 function handle_register_new_user()
 {
-  $userid    = $_POST['userid']           ?? null;
-  $password  = $_POST['password']         ?? null;
-  $pwconfirm = $_POST['password-confirm'] ?? null;
-  $fullname  = $_POST['fullname']         ?? null;
+  $userid    = strtolower($_POST['userid'] ?? '');
+
+  $password  = $_POST['password']         ?? '';
+  $pwconfirm = $_POST['password-confirm'] ?? '';
+  $fullname  = $_POST['fullname']         ?? '';
   $email     = $_POST['email']            ?? null;
   $remember  = $_POST['remember']         ?? 0;
 
-  if(!$userid)    { internal_error("Missing userid in register request"); }
-  if(!$password)  { internal_error("Missing password in register request"); }
-  if(!$pwconfirm) { internal_error("Missing password-confirm in register request"); }
-  if(!$fullname)  { internal_error("Missing fullname in register request"); }
+  if($userid==='')    { internal_error("Missing userid in register request"); }
+  if($password==='')  { internal_error("Missing password in register request"); }
+  if($pwconfirm==='') { internal_error("Missing password-confirm in register request"); }
+  if($fullname==='')  { internal_error("Missing fullname in register request"); }
 
 
   $error = '';

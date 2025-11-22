@@ -9,7 +9,8 @@ require_once(app_file('include/sendmail.php'));
 
 start_ob_logging();
 
-$userid    = $_POST['userid'];
+$userid = strtolower($_POST['userid']);
+
 $old_name  = $_POST['old_name'];
 $new_name  = $_POST['new_name'];
 $old_email = $_POST['old_email'] ?: '';
