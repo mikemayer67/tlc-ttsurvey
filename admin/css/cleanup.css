@@ -1,0 +1,13 @@
+#ttt-body div.body #admin-cleanup {
+  padding:1em;
+}
+
+#ttt-body div.body #admin-cleanup div.section-header {
+  font-weight:bold;
+  font-size:1.1em;
+}
+
+#ttt-body div.body #admin-cleanup ul {
+  list-style:none;
+  margin:5px 0;
+}

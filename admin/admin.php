@@ -72,6 +72,7 @@ $tabs = [
   'roles' => ['admin'],
   'surveys' => ['admin','content'],
   'participants' => ['admin'],
+  'cleanup' => [],
   'log' => ['admin','tech'],
 ];
 

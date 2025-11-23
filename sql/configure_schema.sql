@@ -562,7 +562,7 @@ IF current_version < 4 THEN
     JOIN tlc_tt_strings AS s ON s.string_id = r.title_sid;
 
   CREATE OR REPLACE VIEW tlc_tt_view_unused_strings AS
-  SELECT * FROM tlc_tt_strings WHERE string_id NOT IN 
+  SELECT string_id,str FROM tlc_tt_strings WHERE string_id NOT IN 
   (       SELECT title_sid     FROM tlc_tt_survey_revisions WHERE title_sid     IS NOT NULL
     UNION SELECT text_sid      FROM tlc_tt_survey_options   WHERE text_sid      IS NOT NULL
     UNION SELECT name_sid      FROM tlc_tt_survey_sections  WHERE name_sid      IS NOT NULL
@@ -576,9 +576,13 @@ IF current_version < 4 THEN
   ) ORDER BY string_id ;
 
   CREATE OR REPLACE VIEW tlc_tt_view_unused_options AS
-  SELECT * FROM tlc_tt_survey_options WHERE option_id NOT IN 
-  ( SELECT option_id FROM tlc_tt_question_options WHERE option_id IS NOT NULL)
-  ORDER BY option_id;
+  SELECT so.survey_id,so.survey_rev,so.option_id
+    FROM tlc_tt_survey_options so
+    LEFT JOIN tlc_tt_question_options qo
+          ON qo.survey_id  = so.survey_id
+         AND qo.survey_rev = so.survey_rev
+         AND qo.option_id  = so.option_id
+   WHERE qo.survey_id IS NULL;
 
 -- Add version 4 to the history and increment current version
   SET current_version = 4;
