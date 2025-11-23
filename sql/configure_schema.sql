@@ -425,7 +425,7 @@ IF current_version < 3 THEN
     survey_id   smallint    UNSIGNED NOT NULL,
     question_id smallint    UNSIGNED NOT NULL,
     draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
-    selected    smallint    UNSIGNED DEFAULT NULL COMMENT '1/0 or option_id based on question type',
+    selected    smallint    UNSIGNED DEFAULT NULL COMMENT '1/0 or select id based on question type',
     free_text   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
     qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
     other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
@@ -549,6 +549,7 @@ END IF;
 -- VERSION 4 --
 --
 IF current_version < 4 THEN
+
   CREATE OR REPLACE VIEW tlc_tt_view_last_user_survey AS
   SELECT u.userid, r.survey_id, s.str as survey_name
     FROM tlc_tt_user_status AS u
@@ -559,6 +560,29 @@ IF current_version < 4 THEN
     JOIN tlc_tt_survey_revisions AS r
         ON r.survey_id = rf.survey_id AND r.survey_rev = rf.cur_rev
     JOIN tlc_tt_strings AS s ON s.string_id = r.title_sid;
+
+  CREATE OR REPLACE VIEW tlc_tt_view_unused_strings AS
+  SELECT string_id,str FROM tlc_tt_strings WHERE string_id NOT IN 
+  (       SELECT title_sid     FROM tlc_tt_survey_revisions WHERE title_sid     IS NOT NULL
+    UNION SELECT text_sid      FROM tlc_tt_survey_options   WHERE text_sid      IS NOT NULL
+    UNION SELECT name_sid      FROM tlc_tt_survey_sections  WHERE name_sid      IS NOT NULL
+    UNION SELECT intro_sid     FROM tlc_tt_survey_sections  WHERE intro_sid     IS NOT NULL
+    UNION SELECT feedback_sid  FROM tlc_tt_survey_sections  WHERE feedback_sid  IS NOT NULL
+    UNION SELECT wording_sid   FROM tlc_tt_survey_questions WHERE wording_sid   IS NOT NULL
+    UNION SELECT other_sid     FROM tlc_tt_survey_questions WHERE other_sid     IS NOT NULL
+    UNION SELECT qualifier_sid FROM tlc_tt_survey_questions WHERE qualifier_sid IS NOT NULL
+    UNION SELECT intro_sid     FROM tlc_tt_survey_questions WHERE intro_sid     IS NOT NULL
+    UNION SELECT info_sid      FROM tlc_tt_survey_questions WHERE info_sid      IS NOT NULL
+  ) ORDER BY string_id ;
+
+  CREATE OR REPLACE VIEW tlc_tt_view_unused_options AS
+  SELECT so.survey_id,so.survey_rev,so.option_id
+    FROM tlc_tt_survey_options so
+    LEFT JOIN tlc_tt_question_options qo
+          ON qo.survey_id  = so.survey_id
+         AND qo.survey_rev = so.survey_rev
+         AND qo.option_id  = so.option_id
+   WHERE qo.survey_id IS NULL;
 
 -- Add version 4 to the history and increment current version
   SET current_version = 4;
