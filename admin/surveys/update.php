@@ -19,13 +19,13 @@ function update_survey_state($survey_id, $new_state, &$message=null)
   }
   switch($new_state) {
   case 'draft':
-    $update = "UPDATE tlc_tt_survey_status SET active=NULL, closed=NULL WHERE survey_id=?";
+    $update = "UPDATE tlc_tt_surveys SET active=NULL, closed=NULL WHERE survey_id=?";
     break;
   case 'active':
-    $update = "UPDATE tlc_tt_survey_status SET active=CURRENT_TIMESTAMP, closed=NULL WHERE survey_id=?";
+    $update = "UPDATE tlc_tt_surveys SET active=CURRENT_TIMESTAMP, closed=NULL WHERE survey_id=?";
     break;
   case 'closed':
-    $update = "UPDATE tlc_tt_survey_status SET closed=CURRENT_TIMESTAMP WHERE survey_id=?";
+    $update = "UPDATE tlc_tt_surveys SET closed=CURRENT_TIMESTAMP WHERE survey_id=?";
     break;
   default:
     throw new FailedToUpdate("Invalid survey state ($new_state)");
@@ -45,35 +45,37 @@ function get_survey_state($survey_id)
       (CASE WHEN closed IS NOT NULL THEN 'closed'
             WHEN active IS NOT NULL THEN 'active'
                                     ELSE 'draft' END) as state
-    FROM tlc_tt_survey_status
+    FROM tlc_tt_surveys
     WHERE survey_id=?
   SQL;
   return MySQLSelectValue($query,'i',$survey_id);
 }
 
-function update_survey($survey_id, $survey_rev, $content, $details)
+function update_survey($survey_id, $content, $title)
 {
   // We want the update to be all or nothing, so wrap it in a MySQL transaction
   //   so that we can do a rollback if something goes wrong
   MySQLBeginTransaction();
 
   try {
-    // begin by purging all data for current survey_id and rev
-    //   should only need to remove the survey id/rev from the survey revision table
-    //   the foreign keys should cascade the deleted to all of the other tables
+    // begin by purging all data for current survey_id
+    //   if we (temporarily) delete the entry from the surveys table, the foreign
+    //   keys should cascade the deletion to all of the other tables.
     //
-    // but first, retrieve the current title, if needed
-    $details['title_sid'] = MySQLSelectValue(
-      "select title_sid from tlc_tt_survey_revisions where survey_id=$survey_id and survey_rev=$survey_rev"
-    );
+    // but first, retrieve the current data
+    
+    $details = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=$survey_id");
+    if($title) {
+      $details['title_sid'] = strings_find_or_create($title);
+    }
 
-    MySQLExecute("delete from tlc_tt_survey_revisions where survey_id=$survey_id and survey_rev>=$survey_rev");
+    MySQLExecute("delete from tlc_tt_surveys where survey_id=$survey_id");
 
     // now we can start repopulating the current revision
 
-    update_survey_revision  ($survey_id,$survey_rev,$details);
-    update_survey_options   ($survey_id,$survey_rev,$content);
-    update_survey_content   ($survey_id,$survey_rev,$content);
+    update_survey_details($survey_id,$details);
+    update_survey_options($survey_id,$content);
+    update_survey_content($survey_id,$content);
 
     // final step is to commit the transaction
     //   if there was an exception the transaction will be rolled back in the catch block
@@ -86,31 +88,35 @@ function update_survey($survey_id, $survey_rev, $content, $details)
   }
 }
 
-function update_survey_revision($survey_id,$survey_rev,$details)
+function update_survey_details($survey_id,$details)
 {
-  $title_sid = strings_find_or_create($details['title'] ?? null) ??  $details['title_sid'] ??  null;
-  if(!$title_sid) {
-    throw new FailedtoUpdate("Cannot resolve survey title for survey $survey_id rev $survey_rev");
-  }
+  $parent_id = $details['parent_id'];
+  $title_sid = $details['title_sid'];
+  $created   = $details['created'];
+  // modified gets set via the default
+  $active    = $details['active'];
+  $closed    = $details['closed'];
 
   $update = <<<SQL
-    INSERT into tlc_tt_survey_revisions 
-           (survey_id,survey_rev,title_sid)
-    VALUES ($survey_id, $survey_rev,$title_sid)
+    INSERT into tlc_tt_surveys
+           (survey_id,parent_id,title_sid,created,active,closed)
+    VALUES ($survey_id,?,?,?,?,?)
   SQL;
 
-  if( MySQLExecute($update) === false ) {
-    throw new FailedToUpdate("Failed to update title for survey $survey_id rev $survey_rev"); 
+  $rc = MySQLExecute($update,'iisss', $parent_id, $title_sid, $created, $active, $closed);
+
+  if( $rc === false ) {
+    throw new FailedToUpdate("Failed to update title for survey $survey_id"); 
   }
 }
 
-function update_survey_options($survey_id,$survey_rev,$content)
+function update_survey_options($survey_id,$content)
 {
   $options = $content['options'];
 
   $insert = <<<SQL
-    INSERT into tlc_tt_survey_options (survey_id, survey_rev, option_id, text_sid) 
-    VALUES ($survey_id,$survey_rev,?,?)
+    INSERT into tlc_tt_survey_options (survey_id, option_id, text_sid) 
+    VALUES ($survey_id,?,?)
     ON DUPLICATE KEY UPDATE text_sid = values(text_sid)
   SQL;
 
@@ -123,7 +129,7 @@ function update_survey_options($survey_id,$survey_rev,$content)
   }
 }
 
-function update_survey_content($survey_id,$survey_rev,$content)
+function update_survey_content($survey_id,$content)
 {
 
   // conolidate questions into the correponding sections
@@ -131,8 +137,8 @@ function update_survey_content($survey_id,$survey_rev,$content)
 
   $insert = <<<SQL
     INSERT into tlc_tt_survey_sections
-           (survey_id, survey_rev, sequence, name_sid, collapsible, intro_sid, feedback_sid)
-    VALUES ($survey_id, $survey_rev,?,?,?,?,?)
+           (survey_id, sequence, name_sid, collapsible, intro_sid, feedback_sid)
+    VALUES ($survey_id,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -151,23 +157,23 @@ function update_survey_content($survey_id,$survey_rev,$content)
     }
 
     if(array_key_exists('questions',$section)) {
-      update_survey_questions($survey_id,$survey_rev,$sequence,$section['questions']);
+      update_survey_questions($survey_id,$sequence,$section['questions']);
     }
 
     $sequence += 1;
   }
 }
 
-function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
+function update_survey_questions($survey_id,$section_seq,$questions)
 {
   usort($questions, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
   $insert = <<<SQL
     INSERT into tlc_tt_survey_questions
-           (question_id, survey_id, survey_rev,
+           (question_id, survey_id,
             wording_sid,question_type,question_flags,
             other_sid,qualifier_sid,intro_sid,info_sid)
-    VALUES (?,$survey_id,$survey_rev,?,?,?,?,?,?,?)
+    VALUES (?,$survey_id,?,?,?,?,?,?,?)
   SQL;
 
   $sequence = 1;
@@ -203,22 +209,22 @@ function update_survey_questions($survey_id,$survey_rev,$section_seq,$questions)
       throw new FailedToUpdate("Failed to update survey question $question_id");
     }
 
-    update_question_map($survey_id,$survey_rev,$question_id,$section_seq,$sequence);
+    update_question_map($survey_id,$question_id,$section_seq,$sequence);
 
     if(array_key_exists('options',$question)) {
-      update_question_options($survey_id,$survey_rev,$question_id,$question['options']);
+      update_question_options($survey_id,$question_id,$question['options']);
     }
 
     $sequence += 1;
   }
 }
 
-function update_question_map($survey_id,$survey_rev,$question_id,$section_seq,$question_seq)
+function update_question_map($survey_id,$question_id,$section_seq,$question_seq)
 {
   $insert = <<<SQL
     INSERT into tlc_tt_question_map
-           (survey_id,survey_rev,section_seq,question_seq,question_id)
-    VALUES ($survey_id,$survey_rev,$section_seq,$question_seq,$question_id)
+           (survey_id,section_seq,question_seq,question_id)
+    VALUES ($survey_id,$section_seq,$question_seq,$question_id)
   SQL;
 
   $rc = MySQLExecute($insert);
@@ -228,12 +234,12 @@ function update_question_map($survey_id,$survey_rev,$question_id,$section_seq,$q
   }
 }
 
-function update_question_options($survey_id,$survey_rev,$question_id,$options)
+function update_question_options($survey_id,$question_id,$options)
 {
   $insert = <<<SQL
     INSERT into tlc_tt_question_options
-           (survey_id,survey_rev,question_id,sequence,option_id)
-    VALUES ($survey_id,$survey_rev,$question_id,?,?)
+           (survey_id,question_id,sequence,option_id)
+    VALUES ($survey_id,$question_id,?,?)
   SQL;
 
   $sequence = 1;

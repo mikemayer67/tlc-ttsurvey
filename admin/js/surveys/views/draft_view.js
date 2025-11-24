@@ -173,7 +173,6 @@ export default function init(ce)
     formData.append('nonce',ce.nonce);
     formData.append('ajax','admin/update_survey');
     formData.append('id',ce.cur_survey.id);
-    formData.append('revision',ce.cur_survey.survey_rev);
     formData.append('name',survey_name);
     formData.append('content',json_content);
 

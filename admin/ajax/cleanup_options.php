@@ -11,16 +11,16 @@ validate_ajax_nonce('admin-cleanup');
 
 start_ob_logging();
 
-$rows = MySQLSelectArrays('select survey_id, survey_rev, option_id from tlc_tt_view_unused_options');
+$rows = MySQLSelectArrays('select survey_id, option_id from tlc_tt_view_unused_options');
 
 log_dev("Rows: ".print_r($rows,true));
 
 $nrows = count($rows);
 if( $nrows > 0 )
 {
-  $query = 'delete from tlc_tt_survey_options where survey_id=? and survey_rev=? and option_id=?';
-  foreach($rows as [$sid,$srev,$oid]) {
-    $rc = MySQLExecute($query,'iii',$sid,$srev,$oid);
+  $query = 'delete from tlc_tt_survey_options where survey_id=? and option_id=?';
+  foreach($rows as [$sid,$oid]) {
+    $rc = MySQLExecute($query,'ii',$sid,$oid);
   }
   $rval = array('success'=>true, 'count'=>$nrows);
 }

@@ -17,37 +17,24 @@ function create_new_survey($name,$parent_id,&$error=null)
   try {
     MySQLBeginTransaction();
 
-    $max_id = MySQLSelectValue("select max(survey_id) from tlc_tt_survey_revisions");
+    $max_id = MySQLSelectValue("select max(survey_id) from tlc_tt_surveys");
     $survey_id = $max_id ? 1 + $max_id : 1;
 
     $title_sid = strings_find_or_create($name);
     
     $rc = MySQLExecute(
-      "insert into tlc_tt_survey_status (survey_id,parent_id) values (?,?)",
-      'ii', $survey_id, $parent_id
+      "insert into tlc_tt_surveys (survey_id,parent_id,title_sid) values (?,?,?)",
+      'iii', $survey_id, $parent_id, $title_sid
     );
     if(!$rc) { 
       throw new FailedToCreate('Failed to create a new survey status entry in the database');
     }
 
-    $rc = MySQLExecute(
-      "insert into tlc_tt_survey_revisions (survey_id,survey_rev,title_sid) values (?,1,?)",
-      'ii', $survey_id, $title_sid
-    );
-    if(!$rc) { 
-      throw new FailedToCreate('Failed to create a new survey entry in the database');
-    }
-
     if($parent_id) 
     {
-      $parent_rev = MySQLSelectValue("select survey_rev from tlc_tt_surveys where survey_id=$parent_id");
-      if(!$parent_id) {
-        throw new FailedToCreate("Failed to find survey_rev for parent survey $parent_id");
-      }
-
-      clone_survey_options($survey_id,$parent_id,$parent_rev);
-      clone_survey_sections($survey_id,$parent_id,$parent_rev);
-      clone_survey_questions($survey_id,$parent_id,$parent_rev);
+      clone_survey_options($survey_id,$parent_id);
+      clone_survey_sections($survey_id,$parent_id);
+      clone_survey_questions($survey_id,$parent_id);
     }
 
     MySQLCommit();
@@ -62,13 +49,13 @@ function create_new_survey($name,$parent_id,&$error=null)
   return $survey_id;
 }
 
-function clone_survey_options($child_id,$parent_id,$parent_rev)
+function clone_survey_options($child_id,$parent_id)
 {
   $query = <<<SQL
     INSERT into tlc_tt_survey_options
-    SELECT $child_id, 1, option_id, text_sid
+    SELECT $child_id, option_id, text_sid
       FROM tlc_tt_survey_options
-     WHERE survey_id=$parent_id and survey_rev=$parent_rev
+     WHERE survey_id=$parent_id
   SQL;
 
   if(!MySQLExecute($query)) {
@@ -76,13 +63,13 @@ function clone_survey_options($child_id,$parent_id,$parent_rev)
   }
 }
 
-function clone_survey_sections($child_id,$parent_id,$parent_rev)
+function clone_survey_sections($child_id,$parent_id)
 {
   $query = <<<SQL
     INSERT into tlc_tt_survey_sections
-    SELECT $child_id, 1, sequence, name_sid, collapsible, intro_sid, feedback_sid
+    SELECT $child_id, sequence, name_sid, collapsible, intro_sid, feedback_sid
       FROM tlc_tt_survey_sections
-     WHERE survey_id=$parent_id and survey_rev=$parent_rev
+     WHERE survey_id=$parent_id
   SQL;
 
   if(!MySQLExecute($query)) {
@@ -91,15 +78,15 @@ function clone_survey_sections($child_id,$parent_id,$parent_rev)
 }
 
 
-function clone_survey_questions($child_id,$parent_id,$parent_rev)
+function clone_survey_questions($child_id,$parent_id)
 {
   $query = <<<SQL
     INSERT into tlc_tt_survey_questions
-    SELECT question_id, $child_id, 1, 
+    SELECT question_id, $child_id, 
            wording_sid, question_type, question_flags,
            other_sid, qualifier_sid, intro_sid, info_sid
       FROM tlc_tt_survey_questions
-     WHERE survey_id=$parent_id and survey_rev=$parent_rev
+     WHERE survey_id=$parent_id
   SQL;
 
   if(!MySQLExecute($query)) {
@@ -108,9 +95,9 @@ function clone_survey_questions($child_id,$parent_id,$parent_rev)
 
   $query = <<<SQL
     INSERT into tlc_tt_question_map
-    SELECT $child_id, 1, section_seq, question_seq, question_id
+    SELECT $child_id, section_seq, question_seq, question_id
       FROM tlc_tt_question_map
-     WHERE survey_id=$parent_id and survey_rev=$parent_rev
+     WHERE survey_id=$parent_id
   SQL;
 
   if(!MySQLExecute($query)) {
@@ -119,9 +106,9 @@ function clone_survey_questions($child_id,$parent_id,$parent_rev)
 
   $query = <<<SQL
     INSERT into tlc_tt_question_options
-    SELECT $child_id, 1, question_id, sequence, option_id
+    SELECT $child_id, question_id, sequence, option_id
       FROM tlc_tt_question_options
-     WHERE survey_id=$parent_id and survey_rev=$parent_rev
+     WHERE survey_id=$parent_id
   SQL;
 
   if(!MySQLExecute($query)) {
