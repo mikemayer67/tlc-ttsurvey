@@ -12,9 +12,8 @@ start_ob_logging();
 
 use Exception;
 
-// using javascript keys id and revision rather than PHP keys survey_id and survey_rev
+// using javascript key id rather than PHP key survey_id
 $survey_id  = $_POST['id'] ?? null;
-$survey_rev = $_POST['revision'] ?? null;
 $title      = $_POST['name'] ?? null;
 $content    = json_decode($_POST['content'],true);
 
@@ -22,12 +21,8 @@ try {
   $error = null;
 
   if(!$survey_id)  { throw new Exception('Missing survey_id in request'); }
-  if(!$survey_rev) { throw new Exception('Missing revision in request');  }
 
-  $details = [];
-  if($title)      { $details['title']      = $title;      }
-
-  update_survey($survey_id,$survey_rev,$content,$details);
+  update_survey($survey_id,$content,$title);
 
   $next_ids = next_survey_ids($survey_id);
   $revised_content = survey_content($survey_id);

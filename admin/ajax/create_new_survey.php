@@ -17,7 +17,9 @@ if(!$name) {
 }
 
 $clone = $_POST['clone'] ?? null;
+
 $error = null;
+$new_id = create_new_survey($name,$clone,$error);
 
 if($new_id) {
   $info = survey_info($new_id);

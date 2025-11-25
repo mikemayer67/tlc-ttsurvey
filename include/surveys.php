@@ -30,7 +30,7 @@ class Surveys
 
   static function info($id)
   {
-    $info = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=?",'i',$id);
+    $info = MySQLSelectRow("select * from tlc_tt_view_surveys where survey_id=?",'i',$id);
 
     // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
     // PHP is not using the survey_id key, but retaining it just in case this ever changes
@@ -66,46 +66,34 @@ class Surveys
     return $surveys;
   }
 
-  static function content($survey_id, $survey_rev=NULL)
+  static function content($survey_id)
   {
-    // current survey revision
-  
-    if(is_null($survey_rev)) {
-      $survey_rev = MySQLSelectValue('select survey_rev from tlc_tt_surveys where survey_id=(?)', 'i', $survey_id);
-      if(!$survey_rev) { internal_error("Cannot find revision for survey_id=$survey_id"); }
-    }
-  
     $rval = [
-      'rev' => $survey_rev,
-      'options' => self::_options($survey_id,$survey_rev),
-      'sections' => self::_sections($survey_id,$survey_rev),
-      'questions' => self::_questions($survey_id,$survey_rev),
+      'options' => self::_options($survey_id),
+      'sections' => self::_sections($survey_id),
+      'questions' => self::_questions($survey_id),
       'next_ids'  => self::next_ids($survey_id),
     ];
   
     return $rval;
   }
 
-  static function _options($survey_id,$survey_rev)
+  static function _options($survey_id)
   {
-    // survey_rev is per (survey id, option id)
-  
     $query = <<<SQL
       SELECT so.option_id, text.str as text
         FROM tlc_tt_survey_options so
        INNER JOIN tlc_tt_strings text ON text.string_id = so.text_sid
-       WHERE so.survey_id=(?) and so.survey_rev=(?)
+       WHERE so.survey_id=(?)
        ORDER BY so.option_id;
     SQL;
-    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+    $rows = MySQLSelectRows($query, 'i', $survey_id);
   
     return $rows ? array_column($rows,'text','option_id') : [];
   }
 
-  static function _sections($survey_id,$survey_rev)
+  static function _sections($survey_id)
   {
-    //   survey_rev is per survey_id
-  
     $query = <<<SQL
       SELECT s.sequence      as sequence,
              name.str        as name,
@@ -116,15 +104,15 @@ class Surveys
       INNER JOIN tlc_tt_strings name     ON name.string_id     = s.name_sid
        LEFT JOIN tlc_tt_strings intro    ON intro.string_id    = s.intro_sid
        LEFT JOIN tlc_tt_strings feedback ON feedback.string_id = s.feedback_sid
-      WHERE s.survey_id=(?) AND s.survey_rev=(?)
+      WHERE s.survey_id=(?)
       ORDER BY s.sequence;
     SQL;
-    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+    $rows = MySQLSelectRows($query, 'i', $survey_id);
   
     return $rows ? array_column($rows,null,'sequence') : [];
   }
 
-  static function _questions($survey_id,$survey_rev)
+  static function _questions($survey_id)
   {
     $query = <<<SQL
       SELECT q.question_id    as question_id,
@@ -138,17 +126,16 @@ class Surveys
              intro.str        as intro,
              info.str         as info
         FROM tlc_tt_survey_questions q
-       INNER JOIN tlc_tt_question_map m      
-          ON m.survey_id=q.survey_id AND m.survey_rev=q.survey_rev AND m.question_id=q.question_id
+       INNER JOIN tlc_tt_question_map m      ON m.survey_id=q.survey_id AND m.question_id=q.question_id
         LEFT JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
         LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
         LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
         LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
         LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
-       WHERE q.survey_id=(?) and q.survey_rev=(?)
+       WHERE q.survey_id=(?)
        ORDER BY section, sequence;
     SQL;
-    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+    $rows = MySQLSelectRows($query, 'i', $survey_id);
   
     if(!$rows) { return array(); }
   
@@ -189,31 +176,23 @@ class Surveys
       $questions[$id] = $q;
     }
   
-    self::_add_question_options($questions,$survey_id,$survey_rev);
-    self::_add_archived_questions($survey_id,$survey_rev,$questions);
+    self::_add_question_options($questions,$survey_id);
+    self::_add_archived_questions($survey_id,$questions);
 
     return $questions;
   }
   
-  static function _ancestors($survey_id,$survey_rev)
+  static function _ancestors($survey_id)
   {
-    while($survey_rev > 1) {
-      $survey_rev -= 1;
-      yield[$survey_id,$survey_rev];
-    }
-    $survey_id = MySQLSelectValue("SELECT parent_id from tlc_tt_survey_status where survey_id=$survey_id");
+    $query = "SELECT parent_id from tlc_tt_surveys where survey_id=?";
+    $survey_id = MySQLSelectValue($query,'i',$survey_id);
     while($survey_id) {
-      [$parent_id,$survey_rev] = 
-        MySQLSelectArray("SELECT parent_id,survey_rev from tlc_tt_surveys where survey_id=$survey_id");
-      while($survey_rev) {
-        yield [$survey_id,$survey_rev];
-        $survey_rev -= 1;
-      }
-      $survey_id = $parent_id;
+      yield $survey_id;
+      $survey_id = MySQLSelectValue($query,'i',$survey_id);
     }
   }
 
-  static function _add_archived_questions($survey_id, $survey_rev, &$questions)
+  static function _add_archived_questions($survey_id, &$questions)
   {
     $exclude = array_keys($questions);
 
@@ -226,23 +205,20 @@ class Surveys
     ];
 
     # loop over current survey + up the parent tree
-    foreach(self::_ancestors($survey_id,$survey_rev) as [$sid,$rev])
+    foreach(self::_ancestors($survey_id) as $sid)
     {
       $exclude_clause = $exclude ? ' and question_id not in ('.implode(',',$exclude).')' : "";
 
       $query = <<<SQL
-        SELECT question_id,max(survey_rev) as max_rev
+        SELECT question_id
           FROM tlc_tt_question_map
-         WHERE survey_id=? AND survey_rev<=? $exclude_clause
-         GROUP BY question_id
+         WHERE survey_id=? $exclude_clause
       SQL;
-      $rows = MySQLSelectArrays($query,'ii',$sid,$rev);
+      $qids = MySQLSelectValues($query,'i',$sid);
 
-      if($rows) {
+      if($qids) {
         # any found, extract their question info
-        $in_clause = ' (q.question_id,q.survey_rev) in (';
-        $in_clause .= implode(',', array_map(fn($r) => "($r[0],$r[1])", $rows));
-        $in_clause .= ')';
+        $in_clause = ' q.question_id in (' . implode(',', $qids) . ')';
 
         $query = <<<SQL
           SELECT q.question_id    as question_id,
@@ -288,23 +264,23 @@ class Surveys
           $exclude[] = $qid;
         }
 
-        self::_add_question_options($new_questions,$sid,$rev);
+        self::_add_question_options($new_questions,$sid);
 
         $questions += $new_questions;
       }
     }
   }
 
-  static function _add_question_options(&$questions,$survey_id,$survey_rev)
+  static function _add_question_options(&$questions,$survey_id)
   {
     $query = <<<SQL
       SELECT question_id, option_id
       FROM   tlc_tt_question_options qo 
-      WHERE survey_id=? and survey_rev=?
+      WHERE survey_id=?
       ORDER BY question_id, sequence
     SQL;
 
-    $rows = MySQLSelectRows($query, 'ii', $survey_id, $survey_rev);
+    $rows = MySQLSelectRows($query, 'i', $survey_id);
     if(!$rows) { return; }
 
     foreach ($rows as $row) {
@@ -336,13 +312,7 @@ function active_survey_title() { return Surveys::active_title(); }
 function survey_info($id)      { return Surveys::info($id);      }
 function all_surveys()         { return Surveys::get_all();      }
 
-function next_survey_ids($survey_id)
-{ 
-  return Surveys::next_ids($survey_id);
-}
+function next_survey_ids($survey_id) { return Surveys::next_ids($survey_id); }
 
-function survey_content($survey_id, $survey_rev=NULL) 
-{ 
-  return Surveys::content($survey_id,$survey_rev); 
-}
+function survey_content($survey_id)  { return Surveys::content($survey_id);  }
 

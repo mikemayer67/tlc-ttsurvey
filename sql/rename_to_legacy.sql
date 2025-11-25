@@ -1,0 +1,41 @@
+rename table
+  tlc_tt_anonids to old_tt_anonids,
+  tlc_tt_question_map to old_tt_question_map,
+  tlc_tt_question_options to old_tt_question_options,
+  tlc_tt_reset_tokens to old_tt_reset_tokens,
+  tlc_tt_response_options to old_tt_response_options,
+  tlc_tt_responses to old_tt_responses,
+  tlc_tt_roles to old_tt_roles,
+  tlc_tt_section_feedback to old_tt_section_feedback,
+  tlc_tt_settings to old_tt_settings,
+  tlc_tt_strings to old_tt_strings,
+  tlc_tt_survey_options to old_tt_survey_options,
+  tlc_tt_survey_questions to old_tt_survey_questions,
+  tlc_tt_survey_revisions to old_tt_survey_revisions,
+  tlc_tt_survey_sections to old_tt_survey_sections,
+  tlc_tt_survey_status to old_tt_survey_status,
+  tlc_tt_userids to old_tt_userids,
+  tlc_tt_user_status to old_tt_user_status,
+  tlc_tt_version_history to old_tt_version_history
+;
+
+rename table
+  tlc_tt_active_roles to old_tt_active_roles,
+  tlc_tt_active_surveys to old_tt_active_surveys,
+  tlc_tt_closed_surveys to old_tt_closed_surveys,
+  tlc_tt_draft_surveys to old_tt_draft_surveys,
+  tlc_tt_surveys to old_tt_surveys,
+  tlc_tt_user_reset_tokens to old_tt_user_reset_tokens,
+  tlc_tt_view_last_user_survey to old_tt_view_last_user_survey,
+  tlc_tt_view_question_options to old_tt_view_question_options,
+  tlc_tt_view_response_options to old_tt_view_response_options,
+  tlc_tt_view_responses_bool to old_tt_view_responses_bool,
+  tlc_tt_view_responses_freetext to old_tt_view_responses_freetext,
+  tlc_tt_view_responses_select_multi to old_tt_view_responses_select_multi,
+  tlc_tt_view_responses_select_one to old_tt_view_responses_select_one,
+  tlc_tt_view_survey_options to old_tt_view_survey_options,
+  tlc_tt_view_survey_questions to old_tt_view_survey_questions,
+  tlc_tt_view_survey_sections to old_tt_view_survey_sections,
+  tlc_tt_view_unused_options to old_tt_view_unused_options,
+  tlc_tt_view_unused_strings to old_tt_view_unused_strings
+;
