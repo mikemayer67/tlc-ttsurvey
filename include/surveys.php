@@ -30,7 +30,7 @@ class Surveys
 
   static function info($id)
   {
-    $info = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=?",'i',$id);
+    $info = MySQLSelectRow("select * from tlc_tt_view_surveys where survey_id=?",'i',$id);
 
     // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
     // PHP is not using the survey_id key, but retaining it just in case this ever changes
@@ -184,7 +184,7 @@ class Surveys
   
   static function _ancestors($survey_id)
   {
-    $query = "SELECT parent_id from tlc_tt_surveys where survey_id=?"
+    $query = "SELECT parent_id from tlc_tt_surveys where survey_id=?";
     $survey_id = MySQLSelectValue($query,'i',$survey_id);
     while($survey_id) {
       yield $survey_id;
@@ -216,7 +216,7 @@ class Surveys
       SQL;
       $qids = MySQLSelectValues($query,'i',$sid);
 
-      if($rows) {
+      if($qids) {
         # any found, extract their question info
         $in_clause = ' q.question_id in (' . implode(',', $qids) . ')';
 

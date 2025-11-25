@@ -270,17 +270,21 @@ IF current_version < 1 THEN
                 ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
+  CREATE OR REPLACE VIEW tlc_tt_view_surveys
+    AS SELECT s.survey_id, s.parent_id, t.str as title, s.created, s.modified, s.active, s.closed
+       FROM tlc_tt_surveys s
+       LEFT JOIN tlc_tt_strings t ON t.string_id=s.title_sid;
 
   CREATE OR REPLACE VIEW tlc_tt_draft_surveys
-    AS SELECT * from tlc_tt_surveys
+    AS SELECT * from tlc_tt_view_surveys
         WHERE active IS NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_active_surveys
-    AS SELECT * from tlc_tt_surveys
+    AS SELECT * from tlc_tt_view_surveys
         WHERE active IS NOT NULL AND closed IS NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_closed_surveys
-    AS SELECT * from tlc_tt_surveys
+    AS SELECT * from tlc_tt_view_surveys
         WHERE closed IS NOT NULL;
 
   CREATE OR REPLACE VIEW tlc_tt_user_reset_tokens
@@ -414,7 +418,10 @@ IF current_version < 1 THEN
   CREATE OR REPLACE VIEW tlc_tt_view_last_user_survey AS
   SELECT u.userid, su.survey_id, s.str as survey_name
     FROM tlc_tt_user_status AS u
-    JOIN ( SELECT userid, MAX(submitted) AS max_submitted  FROM tlc_tt_user_status GROUP BY userid) AS uf
+    JOIN ( SELECT userid, MAX(submitted) AS max_submitted  
+           FROM tlc_tt_user_status 
+           WHERE survey_id NOT IN (SELECT survey_id FROM tlc_tt_active_surveys) 
+           GROUP BY userid) AS uf
         ON u.userid = uf.userid AND u.submitted = uf.max_submitted
     JOIN ( SELECT survey_id,title_sid FROM tlc_tt_surveys ) AS su ON u.survey_id = su.survey_id
     JOIN tlc_tt_strings AS s ON s.string_id = su.title_sid;
