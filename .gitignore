@@ -4,14 +4,16 @@
 .htaccess*
 
 admin/settings.json
-pdf/survey*pdf
-sql/dump*sql
+
 tlc-ttsurvey.ini
 tlc-ttsurvey.log
 error_log
-vendor
 
-ref
-xref
+sql/*.sql
+!sql/configure_schema.sql
+!sql/backup_data.sql
+!sql/restore_data.sql
+
+vendor
 
 
