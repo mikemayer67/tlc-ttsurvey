@@ -2,6 +2,7 @@
 
   let ce = {};
   let saved_roles = {};
+  let saved_summary_flags = 0;
 
   function handle_roles_submit(event)
   {
@@ -32,9 +33,10 @@
     //
 
     var cur_roles = current_roles();
+    var summary_flags = current_summary_flags();
     var changes   = role_changes(cur_roles);
 
-    var data = {...changes, 'ajax':'admin/update_roles', 'nonce':ce.nonce};
+    var data = {...changes, summary_flags, 'ajax':'admin/update_roles', 'nonce':ce.nonce};
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
@@ -46,6 +48,7 @@
         ce.nonce = data.nonce;
         ce.hidden['nonce'].attr('value',data.nonce);
         saved_roles = cur_roles;
+        saved_summary_flags = summary_flags;
         show_status('info','Changes Saved');
       } else {
         if( 'bad_nonce' in data) {
@@ -141,6 +144,9 @@
     var changes = role_changes(current_roles());
     if( 'add' in changes ) { return true; }
     if( 'drop' in changes ) { return true; }
+
+    if( current_summary_flags() !== saved_summary_flags ) { return true; }
+
     return false;
   }
 
@@ -167,20 +173,38 @@
       primary: [ce.form.find('#primary-admin-select').val()],
     }
 
+    // admin roles
     ce.form.find('li.user').not('.new').each( function() {
       var userid = $(this).attr('userid');
       var role   = $(this).attr('role');
-      if(role in roles) {
-        roles[role].push(userid);
-      } else {
-        roles[role] = [userid];
+      if(role in roles) { roles[role].push(userid); } 
+      else              { roles[role] = [userid]; }
+    });
+    // summary access
+    ce.summary_access_inputs.each( function() {
+      var userid = $(this).attr('userid');
+      const role='summary';
+      if( $(this).prop('checked') ) {
+        if(role in roles) { roles[role].push(userid); } 
+        else              { roles[role] = [userid]; }
       }
     });
     return roles;
   }
 
+  function current_summary_flags()
+  {
+    let rval = 0;
+    ce.summary_flags.each( function() {
+      if( $(this).prop('checked') ) { rval += Number($(this).val()); }
+    });
+    return rval;
+  }
+
   function revert_values()
   {
+    // admin roles
+
     ce.form.find('#primary-admin-select').val(saved_roles['primary'][0]);
 
     ce.form.find('li.user').not('.new').each( function() {
@@ -194,12 +218,23 @@
     Object.entries(ce.add_selects).forEach( ([role,select]) => {
       select.find('option').not('[value=""]').each ( function() {
         var userid = $(this).val();
-        if((role in saved_roles) && saved_roles[role].includes(userid)) {
+        if(saved_roles[role]?.includes(userid)) {
           add_role(role,userid);
         }
       });
       select.val("");
       ce.add_buttons[role].prop('disabled',true).css('visibility','hidden');
+    });
+
+    // summary access
+    ce.summary_access_inputs.each( function() {
+      var userid = $(this).attr('userid');
+      $(this).prop('checked',saved_roles['summary']?.includes(userid));
+    });
+
+    ce.summary_flags.each( function() {
+      const bit = Number($(this).val());
+      $(this).prop('checked', (bit & saved_summary_flags));
     });
 
     update_submit();
@@ -226,8 +261,12 @@
     ce.form.find('li.new.user select').each(
       function() { ce.add_selects[$(this).attr('name')] = $(this) }
     );
+    
+    ce.summary_access_inputs = ce.form.find('input.summary.access');
+    ce.summary_flags         = ce.form.find('input.summary.flag');
 
-    saved_roles = current_roles();
+    saved_roles              = current_roles();
+    saved_summary_flags      = current_summary_flags();
 
     ce.form.on('submit',handle_roles_submit);
 
@@ -236,6 +275,8 @@
     }
 
     $('#primary-admin-select').on('change',update_submit);
+    const inputs = ce.form.find('input[type=checkbox]');
+    inputs.on('change',update_submit);
 
     has_change_cb = has_changes;
 

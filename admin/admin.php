@@ -31,10 +31,10 @@ $userid = active_userid();
 
 $active_roles = [];
 if($admin_id) {
-  $active_roles = ['admin','content','tech'];
+  $active_roles = ['admin','content','tech','summary'];
 } else if($userid) {
   if($userid===primary_admin()) {
-    $active_roles = ['admin','content','tech'];
+    $active_roles = ['admin','content','tech','summary'];
   } else {
     $active_roles = user_roles($userid);
   }

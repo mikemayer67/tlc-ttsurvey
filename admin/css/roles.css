@@ -2,6 +2,21 @@
   padding:0;
   margin:0;
 }
+
+#ttt-body form div.column-wrapper {
+  display:flex;
+  flex-direction:row;
+  column-gap:8px;
+  align-items:stretch;
+}
+
+#ttt-body form div.column-wrapper div.roles {
+  background:#f4f4f4;
+  border:solid #aaa 1px;
+  padding:1em;
+  flex:1 1 auto;
+}
+
 #ttt-body form ul ul {
   margin-left:1em;
 }
@@ -36,6 +51,34 @@
 
 #ttt-body form li.new.user {
   margin-top:0.5em;
+}
+
+#ttt-body form li.public-summary label {
+  vertical-align:middle;
+}
+
+#ttt-body form div.summary.roles li input {
+  vertical-align:middle;
+  margin-right:0.2em;
+  width: 1.1em;
+  height: 1.1em;
+}
+
+#ttt-body form div.summary.roles li.participant-list-header {
+  padding-top:1em;
+  font-weight:bold;
+}
+
+#ttt-body form div.summary.roles div.participant-list {
+  background: white;
+  border: solid gray 1px;
+  width:100%;
+  min-height:5em;
+  max-height:500px;
+  padding:0.5em;
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
 }
 
 #ttt-body form button.remove,

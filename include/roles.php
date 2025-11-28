@@ -40,9 +40,14 @@ function tech_admins()    { return lookup_userids_by_role('tech'); }
 
 function user_roles($userid)
 {
-  if( $userid === primary_admin() ) { return ['admin', 'content', 'tech']; }
+  if( $userid === primary_admin() ) { return ['admin', 'content', 'tech', 'summary']; }
+  return assigned_roles($userid);
+}
+
+function assigned_roles($userid)
+{
   $roles =  MySQLSelectRow(
-    'select admin,content,tech from tlc_tt_roles where userid=?','s',$userid
+    'select admin,content,tech,summary from tlc_tt_roles where userid=?','s',$userid
   );
   $rval = [];
   if($roles) { 
@@ -50,7 +55,17 @@ function user_roles($userid)
       if($roles[$role]) { $rval[] = $role; }
     }
   }
+  if($userid === primary_admin()) { $rval[] = 'primary-admin'; }
   return $rval;
+}
+
+function has_summary_access($userid)
+{
+  if($userid===primary_admin()) { return true; }
+
+  $roles = user_roles($userid);
+  return in_array('admin',$roles);
+  return in_array('summary',$roles);
 }
 
 //function verify_role($userid,$role)
@@ -63,7 +78,7 @@ function admin_contacts($role='admin')
 {
   if($role == 'admin') {
     $contacts = array();
-    if($primary = primary_admin()) { $conacts[] = $primary; }
+    if($primary = primary_admin()) { $contacts[] = $primary; }
     foreach(survey_admins('admin') as $userid) {
       if(!in_array($userid,$contacts)) { $contacts[] = $userid; }
     }
