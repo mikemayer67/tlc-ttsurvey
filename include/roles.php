@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/db.php'));
+require_once(app_file('include/settings.php'));
 
 function survey_roles()
 {
@@ -64,8 +65,11 @@ function has_summary_access($userid)
   if($userid===primary_admin()) { return true; }
 
   $roles = user_roles($userid);
-  return in_array('admin',$roles);
-  return in_array('summary',$roles);
+  if(in_array('admin',$roles))   { return true; }
+  if(in_array('summary',$roles)) { return true; }
+
+  $summary_flags = (int)get_setting('summary_flags');
+  return ($summary_flags & 1);
 }
 
 //function verify_role($userid,$role)

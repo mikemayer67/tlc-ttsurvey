@@ -48,9 +48,15 @@ try
     die();
   }
 
-  // If access to the admin tools have been requested, jump to the dashboard
+  // If access to the admin tools was requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
+    die();
+  } 
+  
+  // If access to the survey summary was requested, jump to the summary page
+  if(key_exists('summary',$_REQUEST)) {
+    require(app_file('summary/summary.php'));
     die();
   } 
   

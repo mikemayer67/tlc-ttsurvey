@@ -275,9 +275,20 @@ function add_navbar($context,$userid=null,$title=null,$status='')
       if($roles) {
         $admin_icon = img_uri('icons8/settings.png'); 
         $admin_uri = app_uri('admin');
-        echo "<span class='admin-link'>";
+        echo "<span class='admin link'>";
         echo "<a href='$admin_uri' target='_blank'>";
-        echo "<img class='admin-link' src='$admin_icon'>";
+        echo "<img class='admin link' src='$admin_icon' alt='Dashboard'>";
+        echo "<span class='link-tip'>Admin Dashboard</span>";
+        echo "</a>";
+        echo "</span>";
+      }
+      if(has_summary_access($userid)) {
+        $summary_icon = img_uri('icons8/summary.png'); 
+        $summary_uri = app_uri('summary');
+        echo "<span class='summary link'>";
+        echo "<a href='$summary_uri' target='_blank'>";
+        echo "<img class='summary link' src='$summary_icon' alt='Summary'>";
+        echo "<span class='link-tip'>Survey Summary</span>";
         echo "</a>";
         echo "</span>";
       }
