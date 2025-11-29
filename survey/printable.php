@@ -15,6 +15,8 @@ $survey_id=$_GET['printable'];
 
 $page_title = 'Printable Survey';
 $info    = survey_info($survey_id);
+if(!$info) { app_die(); }
+
 $title   = $info['title'];
 $content = survey_content($survey_id);
 

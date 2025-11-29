@@ -8,6 +8,7 @@ require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('include/elements.php'));
 
 $admin_id = $_SESSION['admin-id'] ?? null;
 $userid = active_userid();
@@ -21,6 +22,9 @@ $survey_id = $_REQUEST['summary'];
 $active_id = active_survey_id();
 if(!$survey_id) { $survey_id = $active_id; }
 
+$info = survey_info($survey_id);
+if(!$info) { api_die(); }
+
 $summary_flags = (int)get_setting('summary_flags');
 if($summary_flags & 2) { // requires submit
   if(!$is_admin) {
@@ -32,11 +36,13 @@ if($summary_flags & 2) { // requires submit
   }
 }
 
-echo "Welcome to the Summary $survey_id";
+$title = $info['title'];
+
+start_summary_page($title,$userid);
 
 if(!$has_access) { 
   echo "<br>You must submit your survey responses to unlock access to the summary";
 }
 
-
+end_page();
 die();

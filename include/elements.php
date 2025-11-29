@@ -128,6 +128,21 @@ function start_preview_page($title,$userid,$enable_js=true)
   start_body();
 }
 
+function start_summary_page($title,$userid=null)
+{
+  $context = 'summary';
+
+  $title = "$title - Response Summary";
+
+  start_header($title);
+  add_css_resources($context);
+  end_header();
+
+  add_navbar($context,$userid,$title,'status');
+
+  start_body();
+}
+
 function start_nosurvey_page()
 {
   $context = 'survey';
@@ -257,7 +272,7 @@ function add_navbar($context,$userid=null,$title=null,$status='')
   echo "<div id='ttt-navbar'>";
 
   // title box
-  echo "<div class='ttt-title-box'>";
+  echo "<div class='left-box'>";
   if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
   echo "<span class='ttt-title'>$title</span>";
   echo "</div>";
@@ -267,8 +282,8 @@ function add_navbar($context,$userid=null,$title=null,$status='')
 
   // User Info
   $user = null;
-  echo "<span class='username'>";
-  if($userid) {
+  echo "<div class='right-box'>";
+  if($userid && $context==='survey') {
     $user = User::from_userid($userid) ?? null;
     if($user) {
       $roles = user_roles($userid);
@@ -297,11 +312,11 @@ function add_navbar($context,$userid=null,$title=null,$status='')
       add_menu_trigger($context,$user);
     }
   }
-  echo "</span>";
+  echo "</div>"; // right-box
 
   echo "</div>"; // navbar
 
-  if($user) {
+  if($user && $context==='survey') {
     add_nojs_user_menu($context);
   }
 

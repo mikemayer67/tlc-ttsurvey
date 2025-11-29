@@ -146,7 +146,7 @@ div.ttt-splash img {
   background:var(--navbar-color);
 }
 
-#ttt-navbar .ttt-title-box {
+#ttt-navbar .left-box {
   display: flex;
   flex-flow: row nowrap;
   flex: 0 0 auto;
@@ -198,7 +198,7 @@ div.ttt-splash img {
   justify-self: left;
 }
 
-#ttt-navbar .username {
+#ttt-navbar .right-box {
   font-family: var(--serif-font);
   margin-left:auto;
   padding:0 1em;
@@ -273,7 +273,7 @@ div.ttt-splash img {
   #ttt-navbar .ttt-title {
     font-size: x-large;
   }
-  #ttt-navbar .username {
+  #ttt-navbar .right-box {
     font-size: large;
   }
   #ttt-navbar img.menu-trigger {
