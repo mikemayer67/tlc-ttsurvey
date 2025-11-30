@@ -124,6 +124,14 @@ strong, b { font-weight:bold; }
 
 details.section summary {
   font-size:175%;
+  cursor:pointer;
+}
+
+details.section summary:hover {
+  text-shadow:
+      2px 2px 3px rgba(0,0,0,0.4),
+      4px 4px 6px rgba(0,0,0,0.2);
+  color:#55d;
 }
 
 details.section:not(:first-of-type) {
