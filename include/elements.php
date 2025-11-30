@@ -9,7 +9,6 @@ require_once(app_file('include/status.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
-require_once(app_file('login/elements.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -33,15 +32,6 @@ function add_img_tag($img,$class='',$alt='') {
   echo img_tag($img,$class,$alt); 
 }
 
-function link_tag($href,$body,$class='')
-{
-  if($class) { $class = "$class='$class'"; }
-  return "<a href='$href' $class>$body</a>";
-}
-function add_link_tag($href,$class='',$alt='') {
-  echo link_tag($href,$class,$alt); 
-}
-
 function add_hidden_input($name,$value)
 {
   echo "<input type='hidden' name='$name' value='$value'>";
@@ -52,135 +42,30 @@ function add_hidden_submit($name,$value)
   echo "<input type='submit' class='hidden' name='$name' value='$value'>";
 }
 
-// Common page setup function for different contexts
-
-function start_login_page()
-{
-  $context = 'login';
-  start_header();
-  add_js_resources($context);
-  add_css_resources($context);
-  end_header();
-  add_navbar($context);
-  add_js_recommended();
-  add_status_bar();
-  start_body();
-}
-
-function start_admin_page($cur_tab=null)
-{
-  $context = 'admin';
-
-  start_header();
-
-  add_js_resources($context);
-  if($cur_tab) { // admin tab page
-    add_css_resources($context, css_uri($cur_tab,'admin') );
-  } else { // admin login page
-    add_css_resources($context, css_uri('login'), css_uri('login','admin') );
-  }
-
-  end_header();
-
-  add_navbar($context);
-  add_js_required();
-  add_admin_lock();
-  add_status_bar();
-
-  start_body();
-}
-
-function start_survey_page($title,$userid,$status)
-{
-  $context = 'survey';
-
-  start_header($title);
-
-  add_js_resources($context, js_uri('jquery_helpers'));
-  add_css_resources($context);
-
-  end_header();
-
-  add_navbar($context, $userid, $title, $status);
-  add_js_recommended();
-  add_status_bar();
-
-  start_body();
-}
-
-function start_preview_page($title,$userid,$enable_js=true)
-{
-  $context = 'survey';
-
-  start_header($title);
-
-  if($enable_js) { 
-    add_js_resources($context, js_uri('jquery_helpers')); 
-  }
-  add_css_resources($context);
-
-  end_header();
-
-  add_navbar($context, $userid, $title, 'Preview');
-  add_js_recommended($enable_js ? 'noscript' : 'div');
-  add_status_bar();
-
-  start_body();
-}
-
-function start_summary_page($title,$userid=null)
-{
-  $context = 'summary';
-
-  $title = "$title - Response Summary";
-
-  start_header($title);
-  add_css_resources($context);
-  end_header();
-
-  add_navbar($context,$userid,$title,'status');
-
-  start_body();
-}
-
-function start_nosurvey_page()
-{
-  $context = 'survey';
-
-  start_header();
-
-  add_js_resources($context, js_uri('jquery_helpers'));
-  add_css_resources($context);
-
-  end_header();
-
-  $userid = active_userid() ?? null;
-  add_navbar($context,$userid);
-  add_js_recommended();
-
-  start_body();
-}
-
+// Common start/end page functions
+//   Note that most start_xxx_page functions are found in xxx/elements.php files
+//   The notable exception is start_fault_page as there is not really an appropriate
+//   xxx/elements.php for it
 
 function start_fault_page($context)
 {
   start_header();
-
+  add_tab_name('ttt_survey');
   add_css_resources($context);
   end_header();
+
   add_navbar($context); 
 
   start_body();
 }
 
-// The end_page function simply closes the ttt-boday <div>, <body>, and <html>
-//   - it also adds a footer that acknowleges the use of icons from icons8.com.
 function end_page()
 {
   // close the body and html elements
   echo "<div class='spacer' style='width:0; min-width:0;'></div>";
   echo "</div>\n";  // #ttt-body
 
+  // Add a footer that acknowledges the use of icons from icons8.com
   echo "<!-- Footer -->";
   echo "<div id='ttt-footer'>";
   echo "  <span class='ttt-ack'>";
@@ -193,7 +78,7 @@ function end_page()
   echo "</html>\n";
 }
 
-function start_header($title = null)
+function start_header($title=null)
 {
   $base  = base_uri();
   $title = $title ?? active_survey_title() ?? app_name();
@@ -246,6 +131,11 @@ function add_css_resources($context, ...$extra_css)
   }
 }
 
+function add_tab_name($tab_name)
+{
+  echo "<script>window.name='$tab_name';</script>";
+}
+
 function end_header()
 {
   // ends the HTML header
@@ -260,70 +150,103 @@ function start_body()
   echo "<div class='spacer' style='width:0; min-width:0;'></div>";
 }
 
-function add_navbar($context,$userid=null,$title=null,$status='')
+function add_navbar($context,$kwargs=[])
 {
-  $title = $title ?? active_survey_title() ?? app_name();
-  $logo_file = app_logo();
-  $logo_uri  = $logo_file ? img_uri($logo_file) : '';
+  $userid = $kwargs['userid'] ?? null;
 
   echo "<!-- Navbar -->";
   // include both a wrapper and the navbar itself for purpose of css layout of the user menu
   echo "<div id='ttt-navbar-wrapper'>";
   echo "<div id='ttt-navbar'>";
 
-  // title box
-  echo "<div class='left-box'>";
-  if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
-  echo "<span class='ttt-title'>$title</span>";
+  // left (title) box
+  echo "<div class='left-box title-box'>";
+  $rc_left = call_context_function('add_navbar_left',$context,$kwargs);
   echo "</div>";
 
-  // status
-  echo "<div class='status'>$status</div>";
+  // center (status) box
+  echo "<div class='center-box status'>";
+  $rc_center = call_context_function('add_navbar_center',$context,$kwargs);
+  echo "</div>";
 
-  // User Info
+  // right (username) box
   $user = null;
-  echo "<div class='right-box'>";
-  if($userid && $context==='survey') {
-    $user = User::from_userid($userid) ?? null;
-    if($user) {
-      $roles = user_roles($userid);
-      if($roles) {
-        $admin_icon = img_uri('icons8/settings.png'); 
-        $admin_uri = app_uri('admin');
-        echo "<span class='admin link'>";
-        echo "<a href='$admin_uri' target='_blank'>";
-        echo "<img class='admin link' src='$admin_icon' alt='Dashboard'>";
-        echo "<span class='link-tip'>Admin Dashboard</span>";
-        echo "</a>";
-        echo "</span>";
-      }
-      if(has_summary_access($userid)) {
-        $summary_icon = img_uri('icons8/summary.png'); 
-        $summary_uri = app_uri('summary');
-        echo "<span class='summary link'>";
-        echo "<a href='$summary_uri' target='_blank'>";
-        echo "<img class='summary link' src='$summary_icon' alt='Summary'>";
-        echo "<span class='link-tip'>Survey Summary</span>";
-        echo "</a>";
-        echo "</span>";
-      }
-      $username = $user->fullname();
-      echo "<span>$username</span>";
-      add_menu_trigger($context,$user);
-    }
-  }
+  echo "<div class='right-box username'>";
+  $rc_right = call_context_function('add_navbar_right',$context,$kwargs);
   echo "</div>"; // right-box
 
   echo "</div>"; // navbar
 
-  if($user && $context==='survey') {
-    add_nojs_user_menu($context);
-  }
+  if($rc_right['user_menu'] ?? false) { add_nojs_user_menu(); }
 
   echo "</div>"; // wrapper
 }
 
-function add_menu_trigger($context,$user) 
+function add_navbar_left($kwargs)
+{
+  $logo_file = app_logo();
+  $logo_uri  = $logo_file ? img_uri($logo_file) : '';
+
+  $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
+
+  if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
+  echo "<span class='ttt-title'>$title</span>";
+}
+
+function add_navbar_center($kwargs)
+{
+  echo $kwargs['status'] ?? '';
+}
+
+function add_navbar_right($kwargs) 
+{
+}
+
+function add_user_menu($userid)
+{
+  $user = User::from_userid($userid) ?? null;
+  if(!$user) { return false; }
+
+  $roles = user_roles($userid);
+  if($roles) {
+    $admin_icon = img_uri('icons8/settings.png'); 
+    $admin_uri = app_uri('admin');
+    echo "<span class='admin link'>"; echo "<a data-href='$admin_uri'>";
+    echo "<img class='admin link' src='$admin_icon' alt='Dashboard'>";
+    echo "<span class='link-tip'>Admin Dashboard</span>";
+    echo "</a>";
+    echo "</span>";
+
+    // The following is a little bit hackish, but it gets the job done.
+    //   This modifies the admin dashboard link to only function when JS is enabled
+    //   and to provide a hint in the tooltip that JS is required when disabled.
+    echo "<noscript><style>";
+    echo "img.admin.link { pointer-events:none; opacity:0.3; cursor:default }\n";
+    echo "span.admin.link .link-tip::after {";
+    echo "  content:'\A(requires Javascript)';";
+    echo "  font-size: 0.8em; color:darkred; margin-left:0.2em;";
+    echo "  display:block;";
+    echo "}\n";
+    echo "</style></noscript>";
+  }
+  if(has_summary_access($userid)) {
+    $summary_icon = img_uri('icons8/summary.png'); 
+    $summary_uri = app_uri('summary');
+    echo "<span class='summary link'>";
+    echo "<a href='$summary_uri' target='ttt_summary'>";
+    echo "<img class='summary link' src='$summary_icon' alt='Summary' target='ttt_summary'>";
+    echo "<span class='link-tip'>Survey Summary</span>";
+    echo "</a>";
+    echo "</span>";
+  }
+  $username = $user->fullname();
+  echo "<span>$username</span>";
+  add_menu_trigger($user);
+
+  return true;
+}
+
+function add_menu_trigger($user) 
 {
   $menu_icon = img_uri('icons8/menu.png');
   echo "<noscript>";
@@ -360,7 +283,7 @@ function add_menu_trigger($context,$user)
   echo "</script>";
 }
 
-function add_nojs_user_menu($context)
+function add_nojs_user_menu()
 {
   $logout_uri = app_uri("logout");
   $nonce = gen_nonce('update-page');
@@ -380,7 +303,7 @@ function add_js_required()
 {
   echo "<!-- Javascript required -->";
   echo "<noscript>";
-  echo "<div class='noscript'>";
+  echo "<div class='noscript card'>";
   echo "<div class='ttt-card'>Javascript is required for the Admin Dashboard</div>";
   echo "</div>";
   echo "</noscript>";
@@ -422,3 +345,87 @@ function add_status_bar()
   }
 }
 
+// The following is mostly needed in login/elements, but it is aslo needed here for the no-js user menu
+
+function login_info_lines($key) 
+{
+  switch($key) {
+  case 'userid':
+    return [
+      "Used to log into the survey",
+      "must be 8-16 characters",
+      "must start with a letter",
+      "must contain only letters and numbers",
+    ];
+    break;
+
+  case 'new-password':
+  case 'password':
+    return [
+      "Used to log into the survey",
+      "must be 8-128 characters",
+      "must contain at least one letter",
+      "may contain: !@%^*-_=~,.",
+      "may contain spaces",
+    ];
+    break;
+
+  case 'fullname':
+    return [
+      "How your name will appear on the survey summary report",
+      "must contain a valid full name",
+      "may contain apostrophes",
+      "may contain hyphens",
+      "Extra whitespace will be removed",
+    ];
+    break;
+
+  case 'email':
+    return [
+      "The email address is optional. It will only be used in conjunction with this survey."
+     ." It will be used to send you:",
+      "confirmation of your registration",
+      "notifcations on your survey state",
+      "login help (on request)",
+    ];
+    break;
+
+  case 'remember':
+    return [
+      "Sets a cookie on your browser to allow you to resume the survey without a password",
+    ];
+    break;
+
+  case 'recover-userid':
+    return [
+      "If the profile for this userid has an associated email address, instructions"
+      ." for resetting your password will be sent to that address:",
+      "If a userid is provided here, the email address below will be ignored",
+    ];
+    break;
+
+  case 'recover-email':
+    return [
+      "If a user pofile associated with this email address exists, the userid and instructions"
+     ." for resetting your password will be sent to this address.",
+      "If a userid is provided above, the email address here will be ignored",
+    ];
+    break;
+  }
+  return [];
+}
+
+function login_info_string($key) 
+{
+  $lines = login_info_lines($key);
+  return implode("\n    ",$lines);
+}
+
+function login_info_html($key)
+{
+  $lines  = login_info_lines($key);
+  $header = htmlspecialchars( array_shift($lines) ?? '' );
+  $lines  = array_map( fn($line) => htmlspecialchars($line),          $lines);
+  $lines  = array_map( fn($line) => "<p class='info-list'>$line</p>", $lines);
+  return $header . implode("",$lines);
+}

@@ -5,10 +5,10 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/users.php'));
 require_once(app_file('include/status.php'));
-require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/timestamps.php'));
+require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/render.php'));
 
 // Verify that there is an active survey
@@ -19,9 +19,13 @@ if(!$active_id) {
   die();
 }
 
-$title     = active_survey_title();
-$content   = survey_content($active_id);
 $userid    = active_userid() ?? null;
+$content   = survey_content($active_id);
+
+$navbar_args = [
+  'title'  => active_survey_title(),
+  'userid' => $userid,
+];
 
 $status = '';
 $data   = [];
@@ -42,46 +46,30 @@ if($submitted && $draft)
   $state   = 'draft_updates';
   $render_args['responses'] = $draft['responses'];
   $render_args['feedback']  = $draft['feedback'];
-  $ts1     = recent_timestamp_string($submitted['timestamp'] );
-  $ts2     = recent_timestamp_string($draft['timestamp']);
-  $status  = "<div class='survey-status'>";
-  $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts1</div>";
-  $status .= "<div class='key'>Last Saved Draft</div><div class='timestamp'>$ts2</div>";
-  $status .= "</div>";
+  $navbar_args['submitted'] = $submitted['timestamp'];
+  $navbar_args['draft']     = $draft['timestamp'];
 }
 elseif($submitted)
 {
   $state     = 'submitted';
   $render_args['responses'] = $submitted['responses'];
   $render_args['feedback']  = $submitted['feedback'];
-  if($reopen_submitted) {
-    $ts      = recent_timestamp_string($submitted['timestamp'] );
-    $status  = "<div class='survey-status'>";
-    $status .= "<div class='key'>Last Submitted</div><div class='timestamp'>$ts</div>";
-    $status .= "</div>";
-  } else {
-    $status = '';
-  }
-
+  $navbar_args['submitted'] = $submitted['timestamp'];
+  $navbar_args['reopen']    = $reopen_submitted;
 }
 elseif($draft) {
   $state   = 'draft';
   $render_args['responses'] = $draft['responses'];
   $render_args['feedback']  = $draft['feedback'];
-  $ts      = recent_timestamp_string($draft['timestamp']);
-  $status  = "<div class='survey-status'>";
-  $status .= "<div class='key'>Submitted</div><div class='timestamp'></div>";
-  $status .= "<div class='key'>Last Saved Draft</div><div class='timestamp'>$ts</div>";
-  $status .= "</div>";
+  $navbar_args['draft']     = $draft['timestamp'];
 }
 else {
   $state  = 'new';
-  $status = "Welcome";
 }
 
 $responses['state'] = $state;
 
-start_survey_page($title,$userid,$status);
+start_survey_page($navbar_args);
 
 if($submitted && !$draft && !$reopen_submitted)
 {

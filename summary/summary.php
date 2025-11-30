@@ -8,7 +8,7 @@ require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/responses.php'));
-require_once(app_file('include/elements.php'));
+require_once(app_file('summary/elements.php'));
 
 $admin_id = $_SESSION['admin-id'] ?? null;
 $userid = active_userid();
@@ -38,11 +38,15 @@ if($summary_flags & 2) { // requires submit
 
 $title = $info['title'];
 
-start_summary_page($title,$userid);
+start_summary_page([
+  'title' => $info['title'],
+  'userid' => $userid,
+]);
 
 if(!$has_access) { 
   echo "<br>You must submit your survey responses to unlock access to the summary";
 }
+
 
 end_page();
 die();

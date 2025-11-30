@@ -6,10 +6,9 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 // don't drop the nonce as this may be required multiple times from same user menu
 validate_and_retain_get_nonce('update-page');
 
-require_once(app_file('include/elements.php'));
-require_once(app_file('login/elements.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/redirect.php'));
+require_once(app_file('login/elements.php'));
 
 $redirect_data = get_redirect_data();
 

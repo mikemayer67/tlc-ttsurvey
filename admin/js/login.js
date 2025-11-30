@@ -7,7 +7,9 @@
     var sender = event.originalEvent.submitter;
 
     if(ce.cancel.is(sender)) {
-      window.location = ce.form.find('input[name=cancel]').val();
+      const admin = ce.form.find('input[name=admin]').val();
+      const target = admin ? 'ttt_admin' : 'ttt_survey';
+      window.open( ce.form.find('input[name=cancel]').val(), target);
     }
     else if(ce.submit.is(sender)) {
       $.ajax( {
@@ -23,7 +25,7 @@
       })
       .done( function(data,status,jqXHR) {
         if(data.success) {
-          window.location = ce.ajaxuri + '?admin';
+          window.open( ce.ajaxuri + '?admin', 'ttt_admin');
         } else {
           show_status('error',data.error);
         }

@@ -201,7 +201,7 @@ export default function init(ce)
       else {
         if( 'bad_nonce' in data ) {
           alert("Somthing got out of sync.  Reloading page.");
-          location.reload();
+          window.location.reload();
         } else {
           alert("handle bad input notices");
         }
@@ -215,7 +215,7 @@ export default function init(ce)
   }
 
   let _previewWindow = null;
-  const _previewTabName = 'tt-survey-preview-tab';
+  const _previewTabName = 'ttt_preview';
 
   function handle_preview()
   {

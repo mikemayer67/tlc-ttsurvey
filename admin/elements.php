@@ -5,6 +5,31 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/elements.php'));
 
+
+function start_admin_page($cur_tab=null)
+{
+  $context = 'admin';
+
+  add_tab_name('ttt_admin');
+  start_header();
+
+  add_js_resources($context);
+  if($cur_tab) { // admin tab page
+    add_css_resources($context, css_uri($cur_tab,'admin') );
+  } else { // admin login page
+    add_css_resources($context, css_uri('login'), css_uri('login','admin') );
+  }
+
+  end_header();
+
+  add_navbar($context);
+  add_js_required();
+  add_admin_lock();
+  add_status_bar();
+
+  start_body();
+}
+
 function add_input_section($label,$fields)
 {
   echo "<div class='section-header'><div>$label</div></div>";

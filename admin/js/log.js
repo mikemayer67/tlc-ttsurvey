@@ -97,7 +97,7 @@
     update_log_settings();
 
     ce.newtab.on('click',function() {
-      var w = window.open("","_blank");
+      var w = window.open('','ttt_admin');
 
       $.ajax( {
         type: 'POST',

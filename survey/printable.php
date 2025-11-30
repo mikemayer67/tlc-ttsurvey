@@ -22,6 +22,7 @@ $content = survey_content($survey_id);
 
 // Add html header
 start_header($title);
+add_tab_name('ttt_printable');
 $uri = css_uri('printable');
 echo "<link rel='stylesheet' type='text/css' href='$uri'>";
 add_js_resources('printable',js_uri('printable','survey'));
