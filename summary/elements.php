@@ -22,3 +22,8 @@ function add_navbar_center_summary($kwargs)
 {
   echo '<b>Summary of Responses</b>';
 }
+
+function add_navbar_right_summary($kwargs)
+{
+  add_return_to_survey();
+}

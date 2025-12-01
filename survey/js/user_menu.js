@@ -7,6 +7,8 @@ let menu_timer = null;
 
 export default function init()
 {
+  let hasEnterEvent = false;
+
   const canHover = !window.matchMedia('(any-hover: none)').matches;
 
   const self = {
@@ -52,6 +54,11 @@ export default function init()
 
   function start_menu_hover(e)
   {
+    if(!hasEnterEvent) { 
+      hasEnterEvent = true;
+      return; 
+    }
+
     if( menu_timer) {
       clearTimeout(menu_timer);
       menu_timer = null;

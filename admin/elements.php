@@ -30,6 +30,11 @@ function start_admin_page($cur_tab=null)
   start_body();
 }
 
+function add_navbar_right_admin($kwarg)
+{
+  add_return_to_survey();
+}
+
 function add_input_section($label,$fields)
 {
   echo "<div class='section-header'><div>$label</div></div>";

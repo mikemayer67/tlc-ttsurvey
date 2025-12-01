@@ -1,7 +1,9 @@
 var ce = {};
 
 function handle_exit_summary(e) {
-  alert("go home");
+  url = new URL(window.location.href);
+  url.search='';
+  window.open(url,'ttt_survey');
 }
 
 $(document).ready( function() {

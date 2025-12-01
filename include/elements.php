@@ -202,6 +202,18 @@ function add_navbar_right($kwargs)
 {
 }
 
+function add_return_to_survey()
+{
+  $survey_icon = img_uri('icons8/survey.png'); 
+  $survey_uri = app_uri();
+  echo "<span class='survey link'>";
+  echo "<a href='$survey_uri' target='ttt_survey'>";
+  echo "<img class='survey link' src='$survey_icon' alt='survey' target='ttt_survey'>";
+  echo "<span class='link-tip'>Return to Survey</span>";
+  echo "</a>";
+  echo "</span>";
+}
+
 function add_user_menu($userid)
 {
   $user = User::from_userid($userid) ?? null;
