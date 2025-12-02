@@ -1,3 +1,33 @@
+#ttt-body {
+  margin: 1em clamp(3px,1vw,2em) 0;
+}
+
 #ttt-footer {
   height:2em;
 }
+
+#ttt-body div.notebook .tab-cb {
+  display:none;
+}
+
+#ttt-body div.notebook .tabs {
+  border-bottom:solid black 1px;
+  display:flex;
+  flex-wrap:wrap;
+}
+
+#ttt-body div.notebook label.tab {
+  font-weight:bold;
+  font-size:1.2em;
+  padding:0.5em 1em;
+  border: solid gray 1px;
+  border-top-left-radius:12px;
+  border-top-right-radius:12px;
+  margin:1px 1px -1px;
+  background:#ddd;
+}
+
+#ttt-body div.notebook .panel {
+  display:none;
+}
+

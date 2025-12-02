@@ -38,15 +38,48 @@ if($summary_flags & 2) { // requires submit
 
 $title = $info['title'];
 
+$content = survey_content($survey_id);
+$sections = $content['sections'];
+$tab_ids = array_map( function($section) { return $section['sequence']; }, $sections );
+
 start_summary_page([
   'title' => $info['title'],
   'userid' => $userid,
+  'tab_ids' => $tab_ids,
 ]);
 
 if(!$has_access) { 
   echo "<br>You must submit your survey responses to unlock access to the summary";
+  end_page();
+  die();
 }
 
+echo "<div class='notebook'>";
+$first = true;
+foreach($sections as $section) {
+  $seq  = $section['sequence'];
+  $checked = $first ? 'checked' : '';
+  $first = false;
+  echo "<input id='tab-cb-$seq' class='tab-cb' type='radio' name='tab-cb' $checked>";
+}
+
+echo "<div class='tabs'>";
+foreach($sections as $section) {
+  $name = $section['name'];
+  $seq  = $section['sequence'];
+  echo "<label for='tab-cb-$seq' class='tab tab-$seq'>$name</label>";
+}
+echo "</div>";
+
+foreach($sections as $section) {
+  $name = $section['name'];
+  $seq  = $section['sequence'];
+  echo "<div id='panel-$seq' class='panel panel-$seq'>";
+  echo "<h1>$name panel</h1>";
+  echo "</div>";
+}
+
+echo "</div>"; // div.notebook
 
 end_page();
 die();
