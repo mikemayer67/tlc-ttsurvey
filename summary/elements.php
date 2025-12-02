@@ -48,3 +48,33 @@ function add_notebook_css($tab_ids)
   
   echo "</style>";
 }
+
+function add_section_panel($section,$responses)
+{
+  $name     = $section['name'];
+  $seq      = $section['sequence'];
+
+  echo "<div id='panel-$seq' class='panel panel-$seq'>";
+  echo "<h2>$seq. $name</h2>";
+
+  $feedback = $section['feedback'] ?? null;
+  if($feedback) {
+    echo "<div class='feedback'>";
+    echo "<div class='label'>$feedback</div>";
+    $feedback_responses = $responses['sections'][$seq] ?? [];
+    if($feedback_responses) {
+      echo "<table class='section-feedback'>";
+      foreach($feedback_responses as $userid=>$response) {
+        echo "<tr><td class='username'>$userid</td><td class='response'>$response</td></tr>";
+      }
+      echo "</table>";
+    } else {
+      echo "<div class='no-feedback'>No responses</div>";
+    }
+    echo "</div>";
+  }
+
+  echo "</div>";
+}
+
+

@@ -38,7 +38,8 @@ if($summary_flags & 2) { // requires submit
 
 $title = $info['title'];
 
-$content = survey_content($survey_id);
+$content   = survey_content($survey_id);
+$responses = get_all_responses($survey_id);
 $sections = $content['sections'];
 $tab_ids = array_map( function($section) { return $section['sequence']; }, $sections );
 
@@ -72,11 +73,7 @@ foreach($sections as $section) {
 echo "</div>";
 
 foreach($sections as $section) {
-  $name = $section['name'];
-  $seq  = $section['sequence'];
-  echo "<div id='panel-$seq' class='panel panel-$seq'>";
-  echo "<h1>$name panel</h1>";
-  echo "</div>";
+  add_section_panel($section,$responses);
 }
 
 echo "</div>"; // div.notebook
