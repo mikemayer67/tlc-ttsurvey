@@ -63,19 +63,29 @@ function update_survey($survey_id, $content, $title)
     //   keys should cascade the deletion to all of the other tables.
     //
     // but first, retrieve the current data
+    //  - survey content is retrieved below
+    //  - user response data is cached in database
     
     $details = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=$survey_id");
     if($title) {
       $details['title_sid'] = strings_find_or_create($title);
     }
 
+    cache_user_responses($survey_id);
+
+    // We can now safely delete the entry from the survey table
+
     MySQLExecute("delete from tlc_tt_surveys where survey_id=$survey_id");
 
-    // now we can start repopulating the current revision
+    // and start repopulating the current revision
 
     update_survey_details($survey_id,$details);
     update_survey_options($survey_id,$content);
     update_survey_content($survey_id,$content);
+
+    // and reload the user responses
+    
+    restore_user_responses($survey_id);
 
     // final step is to commit the transaction
     //   if there was an exception the transaction will be rolled back in the catch block
@@ -86,6 +96,76 @@ function update_survey($survey_id, $content, $title)
     MySQLRollback();
     throw $e;
   }
+}
+
+function cache_user_responses($survey_id)
+{
+  log_dev("Backup responses before temporary drop of survey data");
+
+  $tables = ['user_status','responses','response_options','section_feedback'];
+  foreach($tables as $table) {
+    $table = 'tlc_tt_' . $table;
+    $cache = $table . "_cache";
+
+    $query = "drop table if exists $cache";
+    MySQLExecute($query);
+    log_dev($query);
+
+    $query = "create table $cache as select * from $table where survey_id=$survey_id";
+    $rc = MySQLExecute($query);
+    log_dev("$rc: $query");
+    if($rc === false) { throw new Exception("Failed to cache $table"); }
+  }
+}
+
+function restore_user_responses($survey_id)
+{
+  log_dev("Restore responses after temporary drop of survey data");
+
+  $table = 'tlc_tt_user_status';
+  $cache = $table . '_cache';
+  $query = "insert into $table select * from $cache where survey_id=$survey_id";
+  $rc = MySQLExecute($query);
+  log_dev("$rc: $query");
+  if($rc === false) { throw new Exception("Failed to restore user status"); }
+
+  $query = <<<SQL
+    INSERT INTO tlc_tt_responses
+           (  userid,   survey_id,   question_id,   draft,   selected,   free_text,   qualifier,   other )
+    SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.selected, c.free_text, c.qualifier, c.other
+      FROM tlc_tt_responses_cache c
+      JOIN tlc_tt_survey_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
+     WHERE c.survey_id=$survey_id;
+  SQL;
+  $rc = MySQLExecute($query);
+  log_dev("$rc: $query");
+  if($rc === false) { throw new Exception("Failed to restore user responses"); }
+
+  $query = <<<SQL
+    INSERT INTO tlc_tt_response_options
+           (  userid,   survey_id,   question_id,   draft,   option_id )
+    SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.option_id
+      FROM tlc_tt_response_options_cache c
+      JOIN tlc_tt_question_options q 
+        ON q.survey_id=c.survey_id AND q.question_id=c.question_id AND q.option_id=c.option_id
+     WHERE c.survey_id=$survey_id;
+  SQL;
+  $rc = MySQLExecute($query);
+  log_dev("$rc: $query");
+  if($rc === false) { throw new Exception("Failed to restore user response options"); }
+
+  $query = <<<SQL
+    INSERT INTO tlc_tt_section_feedback
+           (  userid,   survey_id,   sequence,   draft,   feedback )
+    SELECT  c.userid, c.survey_id, c.sequence, c.draft, c.feedback
+      FROM tlc_tt_section_feedback_cache c
+      JOIN tlc_tt_survey_sections s
+        ON s.survey_id=c.survey_id AND s.sequence=c.sequence
+     WHERE c.survey_id=$survey_id;
+  SQL;
+  $rc = MySQLExecute($query);
+  log_dev("$rc: $query");
+  if($rc === false) { throw new Exception("Failed to restore section feedback"); }
 }
 
 function update_survey_details($survey_id,$details)
