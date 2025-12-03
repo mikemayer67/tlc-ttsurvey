@@ -206,20 +206,6 @@ function add_login_submit($label,$action,$cancel=False)
   }
 }
 
-function add_login_links($links)
-{
-  $form_uri = app_uri();
-
-  echo "<div class='links-bar'>";
-  foreach($links as $link)
-  {
-    [$label,$page,$side] = $link;
-    $page_uri = "$form_uri?p=$page";
-    echo "<div class='$side $page'><a href='$page_uri'>$label</a></div>";
-  }
-  echo "</div>";
-}
-
 function add_login_instructions($instructions)
 {
   echo "<div>";
