@@ -52,7 +52,7 @@ export default function init(ce,controller)
 
   // update repopulates the tree based on new survey content
   //   the current tree content is cleared out (via reset)
-  //   an question sorter is attached to each ul.questions
+  //   a question sorter is attached to each ul.questions
   self.update = function(content)
   {
     self.reset();
