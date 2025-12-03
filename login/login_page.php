@@ -38,7 +38,7 @@ add_login_submit("Log in","login");
 echo "<div class='resume-label'>Or First Time Login:</div>";
 
 $form_uri = app_uri();
-echo "<div class='register'><a href='$form_uri?p=register'>Create Survey Login</a></div>";
+echo "<div class='register'><a href='$form_uri?p=register'>Register for the Survey</a></div>";
 
 echo "<div class='recover'><a href='$form_uri?p=recover'>forgot login info</a></div>";
 
