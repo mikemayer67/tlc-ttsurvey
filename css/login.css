@@ -74,7 +74,7 @@
 }
 #ttt-login .resume-label {
   font-weight:bold;
-  margin: 0.5em auto 0 0;
+  margin: 1em auto 0 0;
 }
 #ttt-login button.resume {
   margin-bottom:2px;
@@ -200,8 +200,8 @@
 /* Submit and other buttons */
 
 #ttt-login .submit-bar {
-  margin-top:10px;
-  width: 100%;
+  margin:10px 1em 0;
+  width: calc(100% - 2em);
   overflow:hidden;
   display:flex;
   flex-direction: row-reverse;
@@ -233,22 +233,40 @@
 }
 
 #ttt-login .links-bar {
-  padding 0 1em;
   margin-top: 0.5em;
   margin-bottom: 0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  row-gap:0.5em;
 }
-#ttt-login .links-bar:after,
-#ttt-login .links-bar:before {
-  content:"";
-  display:table;
-  clear:both;
+
+#ttt-login div.register a {
+  margin: 0.5em 1em;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  background-color:var(--submit-background);
+  height:35px;
+  border-radius:5px;
+  font-weight:bold;
+  text-decoration:none;
 }
-#ttt-login .links-bar .left {
-  float:left;
+
+#ttt-login div.register a:hover {
+  background-color:var(--submit-hover-bg);
 }
-#ttt-login .links-bar .right {
-  float:right;
+
+#ttt-login div.recover {
+  margin-top:1em;
+  font-size:1em;
+  width:100%;
+  display:flex;
+  flex-direction:row-reverse;
 }
+
 
 /* This was needed before updating .htaccess to enforce https
 #ttt-login .safari {

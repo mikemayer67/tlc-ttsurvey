@@ -56,7 +56,7 @@ function handle_recover_form()
 function handle_recover_userid_password()
 {
   $userid = strtolower($_POST['userid'] ?? '');
-  $email  = strtolowe= $_POST['email']  ?? null;
+  $email  = strtolower($_POST['email']  ?? '');
 
   $users = array();
 
