@@ -118,21 +118,15 @@ export default function init(ce)
       next_ids: _content?.next_ids ?? {},
     };
 
-    let new_sid = 0;
-    structure.forEach( (s) => {
-      new_sid += 1;
-      const old_sid      = s.section_id;
-      const question_ids = s.question_ids;
-      const new_s = deepCopy( _content.sections[old_sid] );
-      new_s.sequence = new_sid;
-      rval.sections[new_sid] = new_s;
+    structure.forEach( (s,s_idx) => {
+      const sid            = s.section_id;
+      const new_s          = deepCopy( _content.sections[sid] );
+      new_s.sequence       = s_idx+1;
+      rval.sections[s_idx] = new_s;
 
-      let seq = 0;
-      question_ids.forEach( (qid) => {
-        seq += 1;
-        const new_q = deepCopy( _content.questions[qid] );
-        new_q.section = new_sid;
-        new_q.sequence = seq;
+      s.question_ids.forEach( (qid,q_idx) => {
+        const new_q         = deepCopy( _content.questions[qid] );
+        new_q.sequence      = q_idx+1;
         rval.questions[qid] = new_q;
       });
     });
