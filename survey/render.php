@@ -57,7 +57,9 @@ class RenderEngine
       add_hidden_input('survey_id',$survey_id);
     }
 
-    foreach($content['sections'] as $section) {
+    $sections = $content['sections'];
+    usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+    foreach($sections as $section) {
       $this->add_section($section,$content,$responses,$feedback);
     }
 
