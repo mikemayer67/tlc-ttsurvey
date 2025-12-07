@@ -5,7 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 
-log_dev("cleanup options");
+log_dev("__Option Cleanup__");
 
 validate_ajax_nonce('admin-cleanup');
 
@@ -23,15 +23,15 @@ if( $nrows > 0 )
     $rc = MySQLExecute($query,'ii',$sid,$oid);
   }
   $rval = array('success'=>true, 'count'=>$nrows);
+  log_dev("  $nrow unused options removed");
 }
 else
 {
   $rval = array('success'=>true, 'count'=>0);
+  log_dev("  No unused options found");
 }
 
 end_ob_logging();
-
-log_dev("rval: ".print_r($rval,true));
 
 echo json_encode($rval);
 die();

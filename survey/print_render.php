@@ -59,7 +59,7 @@ class PrintRenderEngine
     {
       echo "<div class='section feedback'>";
       echo "<div class='label'>$feedback_label</div>";
-      echo "<textarea class='section feedback'></textarea>";
+      echo "<div class='textarea'></div>";
       echo "</div>";
     }
   }

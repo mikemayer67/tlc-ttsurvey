@@ -124,6 +124,14 @@ div.section.feedback {
   margin-top:24px;
 }
 
+div.section.feedback .label {
+  font-weight:bold;
+}
+
+div.section.feedback .textarea {
+  height:0.75in;
+}
+
 /* Common */
 
 div.markdown p {
