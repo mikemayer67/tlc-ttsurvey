@@ -115,12 +115,14 @@ IF current_version < 1 THEN
 
   CREATE TABLE tlc_tt_survey_sections (
     survey_id    smallint UNSIGNED NOT NULL,
+    section_id   smallint UNSIGNED NOT NULL,
     sequence     smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
     name_sid     smallint UNSIGNED              COMMENT '(StringID) Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
     collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
     intro_sid    smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Section intro that will appear in the survey form',
     feedback_sid smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Text used to prompt for feedback. No feedback allowed if NULL',
-    PRIMARY KEY (survey_id,sequence),
+    PRIMARY KEY (survey_id,section_id),
+    UNIQUE  KEY (survey_id,sequence),
     FOREIGN KEY (name_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (intro_sid)    REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
     FOREIGN KEY (feedback_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
@@ -161,12 +163,12 @@ IF current_version < 1 THEN
 
   CREATE TABLE tlc_tt_question_map (
     survey_id     smallint UNSIGNED NOT NULL,
-    section_seq   smallint UNSIGNED NOT NULL,
+    section_id    smallint UNSIGNED NOT NULL,
     question_seq  smallint UNSIGNED NOT NULL,
     question_id   smallint UNSIGNED NOT NULL,
     PRIMARY KEY (survey_id,section_seq,question_seq),
     UNIQUE KEY  (survey_id,question_id),
-    FOREIGN KEY (survey_id,section_seq) REFERENCES tlc_tt_survey_sections (survey_id,sequence)
+    FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tt_survey_sections (survey_id,section_id)
                 ON UPDATE RESTRICT ON DELETE CASCADE,
     FOREIGN KEY (question_id,survey_id) REFERENCES tlc_tt_survey_questions (question_id,survey_id) 
                 ON UPDATE RESTRICT ON DELETE CASCADE
@@ -248,12 +250,12 @@ IF current_version < 1 THEN
   CREATE TABLE tlc_tt_section_feedback (
     userid      varchar(24)          NOT NULL,
     survey_id   smallint    UNSIGNED NOT NULL,
-    sequence    smallint    UNSIGNED NOT NULL,
+    section_id  smallint    UNSIGNED NOT NULL,
     draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
     feedback    text                 DEFAULT NULL,
     PRIMARY KEY (userid,survey_id,sequence,draft),
     FOREIGN KEY (userid,survey_id) REFERENCES tlc_tt_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-    FOREIGN KEY (survey_id,sequence) REFERENCES tlc_tt_survey_sections(survey_id,sequence) ON UPDATE RESTRICT ON DELETE CASCADE
+    FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tt_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
   CREATE TABLE tlc_tt_response_options (
