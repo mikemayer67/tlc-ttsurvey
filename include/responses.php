@@ -80,7 +80,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
   }
 
   $query = <<<SQL
-    SELECT sequence, feedback
+    SELECT section_id, feedback
       FROM tlc_tt_section_feedback
      WHERE userid=(?)
        AND survey_id=(?)
@@ -91,7 +91,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
 
   $feedback = array();
   foreach($rows as $row) {
-    $feedback[$row['sequence']] = $row['feedback'];
+    $feedback[$row['section_id']] = $row['feedback'];
   }
 
   return [
@@ -438,7 +438,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Section feedback
     elseif(preg_match('/^section-feedback-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_section_feedback (userid,survey_id,sequence,draft,feedback)
+         INSERT into tlc_tt_section_feedback (userid,survey_id,section_id,draft,feedback)
          VALUES     (?,?,?,$draft,?);
       SQL;
       if(!_update_user_response($query,'siis', $userid, $survey_id, $m[1],$v)) { return false; }

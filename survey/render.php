@@ -57,7 +57,9 @@ class RenderEngine
       add_hidden_input('survey_id',$survey_id);
     }
 
-    foreach($content['sections'] as $section) {
+    $sections = $content['sections'];
+    usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+    foreach($sections as $section) {
       $this->add_section($section,$content,$responses,$feedback);
     }
 
@@ -118,12 +120,12 @@ class RenderEngine
 
   private function add_section($section,$content,$responses,$feedback)
   {
-    $sequence    = $section['sequence'];
+    $sid         = $section['section_id'];
     $name        = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
     $intro       = $section['intro'] ?? '';
 
-    $index = "data-section=$sequence";
+    $index = "data-section=$sid";
 
     if($this->in_box) { echo "</div>"; }
 
@@ -144,15 +146,15 @@ class RenderEngine
       echo "</div>";
     }
 
-    $this->add_questions($sequence,$content,$responses);
+    $this->add_questions($sid,$content,$responses);
 
     $feedback_label = $section['feedback'] ?? false;
     if( $feedback_label )
     {
       echo "<div class='section feedback' $index>";
       echo "<div class='label'>$feedback_label</div>";
-      echo "<textarea class='section feedback' name='section-feedback-$sequence' placeholder='[optional]'>";
-      echo $feedback[$sequence] ?? '';
+      echo "<textarea class='section feedback' name='section-feedback-$sid' placeholder='[optional]'>";
+      echo $feedback[$sid] ?? '';
       echo "</textarea>";
       echo "</div>";
     }
@@ -168,8 +170,7 @@ class RenderEngine
     $questions = array_values(array_filter(
       $content['questions'],
       fn($q) => (
-        array_key_exists('sequence', $q) &&
-        ($q['section'] ?? null) === $section
+        array_key_exists('sequence', $q) && ($q['section'] ?? null) === $section
       )
     ));
 

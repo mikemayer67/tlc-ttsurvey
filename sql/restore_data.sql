@@ -1,0 +1,34 @@
+
+delete from tlc_tt_section_feedback;
+delete from tlc_tt_response_options;
+delete from tlc_tt_responses;
+delete from tlc_tt_question_options;
+delete from tlc_tt_question_map;
+delete from tlc_tt_survey_questions;
+delete from tlc_tt_survey_options;
+delete from tlc_tt_survey_sections;
+delete from tlc_tt_surveys;
+delete from tlc_tt_anonids;
+delete from tlc_tt_roles;
+delete from tlc_tt_user_status;
+delete from tlc_tt_userids;
+delete from tlc_tt_version_history;
+delete from tlc_tt_settings;
+delete from tlc_tt_strings;
+
+insert into tlc_tt_strings  (string_id,str)   select string_id,str  from bkp_strings;
+insert into tlc_tt_settings         select * from bkp_settings;
+insert into tlc_tt_version_history  select * from bkp_version_history;
+insert into tlc_tt_userids          select * from bkp_userids;
+insert into tlc_tt_roles            select * from bkp_roles;
+insert into tlc_tt_anonids          select * from bkp_anonids;
+insert into tlc_tt_surveys          select * from bkp_surveys;
+insert into tlc_tt_survey_sections  select * from bkp_survey_sections;
+insert into tlc_tt_survey_options   select * from bkp_survey_options;
+insert into tlc_tt_survey_questions select * from bkp_survey_questions;
+insert into tlc_tt_question_map     select * from bkp_question_map;
+insert into tlc_tt_question_options select * from bkp_question_options;
+insert into tlc_tt_user_status      select * from bkp_user_status;
+insert into tlc_tt_responses        select * from bkp_responses;
+insert into tlc_tt_response_options select * from bkp_response_options;
+insert into tlc_tt_section_feedback select * from bkp_section_feedback;

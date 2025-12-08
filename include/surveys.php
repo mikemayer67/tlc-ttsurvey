@@ -75,7 +75,7 @@ class Surveys
       'questions' => self::_questions($survey_id),
       'next_ids'  => self::next_ids($survey_id),
     ];
-  
+
     return $rval;
   }
 
@@ -96,7 +96,8 @@ class Surveys
   static function _sections($survey_id)
   {
     $query = <<<SQL
-      SELECT s.sequence      as sequence,
+      SELECT s.section_id    as section_id,
+             s.sequence      as sequence,
              name.str        as name,
              s.collapsible   as collapsible,
              intro.str       as intro,
@@ -110,14 +111,14 @@ class Surveys
     SQL;
     $rows = MySQLSelectRows($query, 'i', $survey_id);
   
-    return $rows ? array_column($rows,null,'sequence') : [];
+    return $rows ? array_column($rows,null,'section_id') : [];
   }
 
   static function _questions($survey_id)
   {
     $query = <<<SQL
       SELECT q.question_id    as question_id,
-             m.section_seq    as section,
+             m.section_id     as section,
              m.question_seq   as sequence,
              wording.str      as wording,
              q.question_type  as question_type,
@@ -134,7 +135,7 @@ class Surveys
         LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
         LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
        WHERE q.survey_id=(?)
-       ORDER BY section, sequence;
+       ORDER BY section_id, sequence;
     SQL;
     $rows = MySQLSelectRows($query, 'i', $survey_id);
   

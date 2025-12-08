@@ -34,10 +34,12 @@ add_login_checkbox("remember", array(
 
 add_login_submit("Log in","login");
 
-add_login_links([
-  ['forgot login info', 'recover', 'left'],
-  ['register', 'register', 'right'],
-]);
+echo "<div class='resume-label'>Or First Time Login:</div>";
+
+$form_uri = app_uri();
+echo "<div class='register'><a href='$form_uri?p=register'>Register for the Survey</a></div>";
+
+echo "<div class='recover'><a href='$form_uri?p=recover'>forgot login info</a></div>";
 
 close_login_form();
 

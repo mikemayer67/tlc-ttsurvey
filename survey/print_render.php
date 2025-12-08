@@ -26,7 +26,9 @@ class PrintRenderEngine
     $this->in_grid      = false;
     $this->follows_info = false;
 
-    foreach($content['sections'] as $section) {
+    $sections = $content['sections'];
+    usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+    foreach($sections as $section) {
       $this->add_section($section,$content);
     }
   }
@@ -57,7 +59,7 @@ class PrintRenderEngine
     {
       echo "<div class='section feedback'>";
       echo "<div class='label'>$feedback_label</div>";
-      echo "<textarea class='section feedback'></textarea>";
+      echo "<div class='textarea'></div>";
       echo "</div>";
     }
   }
