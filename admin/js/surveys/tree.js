@@ -61,11 +61,9 @@ export default function init(ce,controller)
     if(!content.sections)  { return; }
     if(!content.questions) { return; }
 
-    Object.keys(content.sections)
-    .map(Number)
-    .sort((a,b) => a-b)
-    .forEach( sid => { // section id
-      const section = content.sections[sid];
+    Object.entries(content.sections)
+    .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
+    .forEach( ([sid,section]) => {
       const [li,ul] = create_section_li(sid,section.name);
       li.appendTo(_tree);
 

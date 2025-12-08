@@ -114,7 +114,7 @@ function cache_user_responses($survey_id)
     $query = "create table $cache as select * from $table where survey_id=$survey_id";
     $rc = MySQLExecute($query);
     log_dev("$rc: $query");
-    if($rc === false) { throw new Exception("Failed to cache $table"); }
+    if($rc === false) { throw new \Exception("Failed to cache $table"); }
   }
 }
 
@@ -127,7 +127,7 @@ function restore_user_responses($survey_id)
   $query = "insert into $table select * from $cache where survey_id=$survey_id";
   $rc = MySQLExecute($query);
   log_dev("$rc: $query");
-  if($rc === false) { throw new Exception("Failed to restore user status"); }
+  if($rc === false) { throw new \Exception("Failed to restore user status"); }
 
   $query = <<<SQL
     INSERT INTO tlc_tt_responses
@@ -139,7 +139,7 @@ function restore_user_responses($survey_id)
   SQL;
   $rc = MySQLExecute($query);
   log_dev("$rc: $query");
-  if($rc === false) { throw new Exception("Failed to restore user responses"); }
+  if($rc === false) { throw new \Exception("Failed to restore user responses"); }
 
   $query = <<<SQL
     INSERT INTO tlc_tt_response_options
@@ -152,20 +152,20 @@ function restore_user_responses($survey_id)
   SQL;
   $rc = MySQLExecute($query);
   log_dev("$rc: $query");
-  if($rc === false) { throw new Exception("Failed to restore user response options"); }
+  if($rc === false) { throw new \Exception("Failed to restore user response options"); }
 
   $query = <<<SQL
     INSERT INTO tlc_tt_section_feedback
-           (  userid,   survey_id,   sequence,   draft,   feedback )
-    SELECT  c.userid, c.survey_id, c.sequence, c.draft, c.feedback
+           (  userid,   survey_id,   section_id,   draft,   feedback )
+    SELECT  c.userid, c.survey_id, c.section_id, c.draft, c.feedback
       FROM tlc_tt_section_feedback_cache c
       JOIN tlc_tt_survey_sections s
-        ON s.survey_id=c.survey_id AND s.sequence=c.sequence
+        ON s.survey_id=c.survey_id AND s.section_id=c.section_id
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
   log_dev("$rc: $query");
-  if($rc === false) { throw new Exception("Failed to restore section feedback"); }
+  if($rc === false) { throw new \Exception("Failed to restore section feedback"); }
 }
 
 function update_survey_details($survey_id,$details)
@@ -211,40 +211,37 @@ function update_survey_options($survey_id,$content)
 
 function update_survey_content($survey_id,$content)
 {
-
   // conolidate questions into the correponding sections
   $sections = consolidate_survey_content($content);
 
   $insert = <<<SQL
     INSERT into tlc_tt_survey_sections
-           (survey_id, sequence, name_sid, collapsible, intro_sid, feedback_sid)
-    VALUES ($survey_id,?,?,?,?,?)
+           (survey_id, section_id, sequence, name_sid, collapsible, intro_sid, feedback_sid)
+    VALUES ($survey_id,?,?,?,?,?,?)
   SQL;
 
-  $sequence = 1;
   foreach( $sections as $section ) {
+    $section_id = $section['section_id'];
     $rc = MySQLExecute(
-      $insert, 'iiiii',
-      $sequence,
+      $insert, 'iiiiii',
+      $section_id,
+      $section['sequence'],
       strings_find_or_create($section['name']),
       ($section['collapsible'] ?? null) ? 1 : 0,
       strings_find_or_create($section['intro']),
       strings_find_or_create($section['feedback'])
     );
     if($rc === false) {
-      $sequence = $section['sequence'];
-      throw new FailedToUpdate("Failed to update survey sections ($sequence)");
+      throw new FailedToUpdate("Failed to update survey sections ($section_id)");
     }
 
     if(array_key_exists('questions',$section)) {
-      update_survey_questions($survey_id,$sequence,$section['questions']);
+      update_survey_questions($survey_id,$section_id,$section['questions']);
     }
-
-    $sequence += 1;
   }
 }
 
-function update_survey_questions($survey_id,$section_seq,$questions)
+function update_survey_questions($survey_id,$section_id,$questions)
 {
   usort($questions, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
@@ -289,7 +286,7 @@ function update_survey_questions($survey_id,$section_seq,$questions)
       throw new FailedToUpdate("Failed to update survey question $question_id");
     }
 
-    update_question_map($survey_id,$question_id,$section_seq,$sequence);
+    update_question_map($survey_id,$question_id,$section_id,$sequence);
 
     if(array_key_exists('options',$question)) {
       update_question_options($survey_id,$question_id,$question['options']);
@@ -299,12 +296,12 @@ function update_survey_questions($survey_id,$section_seq,$questions)
   }
 }
 
-function update_question_map($survey_id,$question_id,$section_seq,$question_seq)
+function update_question_map($survey_id,$question_id,$section_id,$question_seq)
 {
   $insert = <<<SQL
     INSERT into tlc_tt_question_map
-           (survey_id,section_seq,question_seq,question_id)
-    VALUES ($survey_id,$section_seq,$question_seq,$question_id)
+           (survey_id,section_id,question_seq,question_id)
+    VALUES ($survey_id,$section_id,$question_seq,$question_id)
   SQL;
 
   $rc = MySQLExecute($insert);
@@ -335,21 +332,21 @@ function update_question_options($survey_id,$question_id,$options)
 function consolidate_survey_content($content)
 {
   $sections = [];
-  foreach($content['sections'] as $id=>$section) {
-    $section['sequence'] = $id;
-    $sections[$id] = $section;
+  foreach($content['sections'] as $section) {
+    $sid = $section['section_id'];
+    $sections[$sid] = $section;
   }
 
   foreach($content['questions'] as $question) {
-    $section_id = $question['section'];
-    if(isset($sections[$section_id])) {
-      $sections[$section_id]['questions'][] = $question;
+    $sid = $question['section'];
+    if(isset($sections[$sid])) {
+      $sections[$sid]['questions'][] = $question;
     }
   }
 
-  foreach(array_keys($sections) as $section_id) {
-    if(isset($sections[$section_id]['questions'])) {
-      usort($sections[$section_id]['questions'], fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+  foreach(array_keys($sections) as $sid) {
+    if(isset($sections[$sid]['questions'])) {
+      usort($sections[$sid]['questions'], fn($a,$b) => $a['sequence'] <=> $b['sequence']);
     }
   }
 

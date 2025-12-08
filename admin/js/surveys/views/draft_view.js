@@ -269,13 +269,8 @@ export default function init(ce)
 
   return {
     state:'draft',
-    block_survey_select: block_survey_select,
-    select_survey: select_survey,
-    update_info: update_info,
-    has_changes: has_changes,
-    validate_input:validate_input,
-    handle_revert:handle_revert,
-    handle_submit:handle_submit,
-    handle_preview:handle_preview,
+    block_survey_select, select_survey,
+    update_info, has_changes, validate_input,
+    handle_revert, handle_submit, handle_preview,
   };
 };
