@@ -78,10 +78,7 @@ class SectionPanel
   public function add()
   {
     $sid  = $this->sid;
-    $name = $this->section['name'];
-
     echo "<div id='panel-$sid' class='panel panel-$sid'>";
-    echo "<h2>$sid. $name</h2>";
 
     $this->indent = false;
     foreach($this->questions as $question) {

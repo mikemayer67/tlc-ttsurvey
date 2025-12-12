@@ -182,10 +182,10 @@ class RenderEngine
     # determine which questions can be put into a grid
     $prev = $questions[0];
     $prev['grid'] = false;
-    $prev_can_grid = str_starts_with($prev['type'],"SELECT") && ($prev['grouped']==='YES');
+    $prev_can_grid = str_starts_with($prev['type']??'',"SELECT") && ($prev['grouped']==='YES');
     for($i=1; $i<count($questions); ++$i) {
       $cur = $questions[$i];
-      $cur_can_grid = str_starts_with($cur['type'],"SELECT") && ($cur['grouped']==='YES');
+      $cur_can_grid = str_starts_with($cur['type']??'',"SELECT") && ($cur['grouped']==='YES');
       if( $prev_can_grid && $cur_can_grid ) {
         $questions[$i-1]['grid'] = true;
         $questions[$i]['grid'] = true;

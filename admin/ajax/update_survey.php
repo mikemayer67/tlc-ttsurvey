@@ -17,6 +17,8 @@ $survey_id  = $_POST['id'] ?? null;
 $title      = $_POST['name'] ?? null;
 $content    = json_decode($_POST['content'],true);
 
+log_dev("CONTENT: ".print_r($content,true));
+
 try {
   $error = null;
 

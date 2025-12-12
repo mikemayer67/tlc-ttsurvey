@@ -48,7 +48,15 @@ $title = $info['title'];
 
 $content   = survey_content($survey_id);
 $responses = get_all_responses($survey_id);
-$sections = $content['sections'];
+$sections = [];
+foreach($content['questions'] as $question) {
+  $sid = $question['section'] ?? null;
+  if($sid && !array_key_exists($sid,$sections)) {
+    $section = $content['sections'][$sid];
+    if($section) { $sections[$sid] = $section; }
+  }
+}
+$sections = array_values($sections);
 usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
 $tab_ids = array_map( function($section) { return $section['section_id']; }, $sections );
