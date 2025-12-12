@@ -24,6 +24,7 @@ function adjust_lists(e)
 function adjust_list(l)
 {
   const container_width = l.getBoundingClientRect().width;
+  if(container_width <= 0) return;
 
   const items = $(l).children();
   const widths = items.map( (i,item) => $(item).data('natural-width') );

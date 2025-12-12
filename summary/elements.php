@@ -195,7 +195,7 @@ class SectionPanel
 
     if($qualifiers) {
       echo "<div class='qualifiers'>";
-      echo "<table class='bool qualifiers'>";
+      echo "<table class='qualifiers'>";
       foreach($qualifiers as $name=>$qual) {
         echo "<tr><td class='name'>$name:</td><td class='qual'>$qual</td></tr>";
       }
@@ -259,7 +259,7 @@ class SectionPanel
         echo "</div>";
         if($qualifiers) {
           echo "<div class='qualifiers'>";
-          echo "<table class='bool qualifiers'>";
+          echo "<table class='qualifiers'>";
           foreach($qualifiers as $name=>$qual) {
             echo "<tr><td class='name'>$name:</td><td class='qual'>$qual</td></tr>";
           }
@@ -272,14 +272,64 @@ class SectionPanel
       }
       echo "</div>";
     }
-
   }
 
   private function add_select_multi_responses($question,$responses)
   {
-    echo "<pre>";
-    print_r($responses);
-    echo "</pre>";
+    $qid = $question['id'];
+    $options = $this->questions[$qid]['options'];
+    $other   = $this->questions[$qid]['other'];
+
+    if($other) { $options[] = 0; }
+
+    foreach($options as $oid) {
+      $option = $oid > 0 ? $this->options[$oid] : 'Other';
+      if($oid > 0) {
+        $users = array_filter($responses, fn($a) => in_array($oid,$a['options']) );
+      } else {
+        $users = array_filter($responses, fn($a) => $a['selected'] === $oid );
+      }
+      echo "<div class='option' data-id='$oid'>";
+      echo "<div class='option-label'>$option</div>";
+      if($users) {
+        $extra = $oid>0 ? 'resizable-list' : 'table';
+        echo "<div class='select one responses $extra'>";
+        foreach($users as $uid=>$response) {
+          $name = User::from_userid($uid)->fullname();
+          $qual = $response['qualifier']??null;
+          $mark = $qual ? 'qual' : '';
+          echo "<div class='name $mark'>$name</div>";
+          if($oid == 0) {
+            echo "<div class='other'>".$response['other']."</div>";
+          }
+        }
+        echo "</div>";
+      }
+      else {
+        echo "<div class='none'>(nobody)</div>";
+      }
+      echo "</div>";
+    }
+
+    $qualifiers = [];
+    foreach($responses as $uid=>$response) {
+      $qual = $response['qualifier'] ?? null;
+      if($qual) {
+        $name = User::from_userid($uid)->fullname();
+        $qualifiers[$name] = $qual;
+      }
+    }
+    if($qualifiers) {
+      $prompt = $question['qualifier'];
+      echo "<div class='qualifiers'>";
+//      echo "<div class='option-label'>$prompt</div>";
+      echo "<table class='qualifiers'>";
+      foreach($qualifiers as $name=>$qual) {
+        echo "<tr><td class='name'>$name:</td><td class='qual'>$qual</td></tr>";
+      }
+      echo "</table>";
+      echo "</div>";
+    }
   }
 }
 
