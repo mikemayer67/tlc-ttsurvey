@@ -50,10 +50,12 @@ $content   = survey_content($survey_id);
 $responses = get_all_responses($survey_id);
 $sections = [];
 foreach($content['questions'] as $question) {
-  $sid = $question['section'] ?? null;
-  if($sid && !array_key_exists($sid,$sections)) {
-    $section = $content['sections'][$sid];
-    if($section) { $sections[$sid] = $section; }
+  if(strtolower($question['type']??'') !=='info') {
+    $sid = $question['section'] ?? null;
+    if($sid && !array_key_exists($sid,$sections)) {
+      $section = $content['sections'][$sid];
+      if($section) { $sections[$sid] = $section; }
+    }
   }
 }
 $sections = array_values($sections);

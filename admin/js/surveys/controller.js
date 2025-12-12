@@ -127,6 +127,7 @@ export default function init(ce)
       s.question_ids.forEach( (qid,q_idx) => {
         const new_q         = deepCopy( _content.questions[qid] );
         new_q.sequence      = q_idx+1;
+        new_q.section       = sid;
         rval.questions[qid] = new_q;
       });
     });
