@@ -183,7 +183,13 @@ export default function init(ce)
   self.add_new_section = function(where)
   {
     const new_section_id = _next_section_id++;
-    const new_section = { name:"", intro:"", collapsible:1, feedback:false };
+    const new_section = { 
+      section_id:new_section_id,
+      name:"", 
+      intro:"", 
+      collapsible:1, 
+      feedback:false,
+    };
     const cur_highlight = _tree.cache_selection();
 
     _content.sections[ new_section_id ] = new_section;
