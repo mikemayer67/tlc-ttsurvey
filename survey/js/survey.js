@@ -20,7 +20,6 @@ function show_status(level,msg)
   ce.status.removeClass().addClass(level).html(msg);
 }
 
-
 function setup_hints()
 {
   ce.hint_toggles = $('label.hint-toggle');
@@ -73,14 +72,23 @@ function enable_radio_button_deselect()
 }
 
 //
-// User Menu Hooks
+// Navbar and User Menu Hooks
 //
+
+function handle_admin_link(e)
+{
+  e.preventDefault();
+  const href = $(this).data('href');
+  const win = window.open(href,'ttt_admin');
+  if(win) { win.focus(); }
+}
 
 function logout_user(e)
 {
-  const url = new URL(location.href);
+  const url = new URL(window.location.href);
+  url.search='';
   url.searchParams.set('logout',1);
-  location.replace(url.toString());
+  window.open(url.toString,'ttt_survey');
 }
 
 //
@@ -175,6 +183,7 @@ function update_submit_buttons()
   } else {
     ce.submit.prop('disabled',false);
   }
+  ce.confirm_logout = ce.dirty;
 }
 
 //
@@ -277,6 +286,8 @@ $(document).ready( function() {
   ce.confirm_logout = false;
 
   ce.status.on('click',hide_status);
+
+  ce.navbar.find('.admin.link a').on('click',handle_admin_link);
 
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar

@@ -1,4 +1,4 @@
-import profile_editor     from './profile_editor.js';
+import profile_editor  from './profile_editor.js';
 import password_editor from './password_editor.js';
 
 const is_preview = (typeof ttt_preview === 'undefined' ? false : ttt_preview);
@@ -7,8 +7,10 @@ let menu_timer = null;
 
 export default function init()
 {
+  let hasEnterEvent = false;
+
   const canHover = !window.matchMedia('(any-hover: none)').matches;
-  
+
   const self = {
     is_preview,
   };
@@ -17,7 +19,7 @@ export default function init()
     $('<img>').addClass('menu-trigger').attr('src',ttt_menu_icon).attr('alt','User Menu'),
   );
 
-  ce.navbar.find('.username').append(trigger);
+  ce.navbar.find('.right-box').append(trigger);
 
   const profile = $('<button>').setType('button').append('edit profile');
   const passwd = $('<button>').setType('button').append('change password');
@@ -52,6 +54,11 @@ export default function init()
 
   function start_menu_hover(e)
   {
+    if(!hasEnterEvent) { 
+      hasEnterEvent = true;
+      return; 
+    }
+
     if( menu_timer) {
       clearTimeout(menu_timer);
       menu_timer = null;
@@ -92,14 +99,15 @@ export default function init()
     }
   } else {
     self.logout = function(e) {
-      if( self.confirm_logout ) {
+      if( ce.confirm_logout ) {
         if (!confirm( "You have unsaved changes.  Logging out now will lose those changes.")) { 
           return;
         }
       }
-      const url = new URL(location.href);
+      const url = new URL(window.location.href);
+      url.search = '';
       url.searchParams.set('logout',1);
-      location.replace(url.toString());
+      window.open(url.toString(),'ttt_survey');
     }
     self.show_profile_editor = function(e) {
       hide_user_menu();

@@ -17,7 +17,9 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 start_fault_page('500');
 
 echo "<div class='ttt-splash'>";
-add_link_tag(app_uri(),img_tag('500.png','','Something went terribly wrong'));
+echo "<a href='".app_uri()."' target='ttt_survey>";
+echo img_tag('500.png','','Something went terribly wrong');
+echo "</a>";
 
 echo "<div class='ttt-caption'>";
 echo "Please contact $contact and let them know something is amiss.";

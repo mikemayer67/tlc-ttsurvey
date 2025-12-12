@@ -7,10 +7,9 @@ log_dev("-------------- Start of Preview --------------");
 
 validate_and_retain_nonce('preview');
 
-require_once(app_file('include/elements.php'));
 require_once(app_file('include/login.php'));
+require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/render.php'));
-
 
 $page_title = 'Survey Preview';
 

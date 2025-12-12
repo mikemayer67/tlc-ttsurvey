@@ -5,6 +5,36 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/elements.php'));
 
+
+function start_admin_page($cur_tab=null)
+{
+  $context = 'admin';
+
+  add_tab_name('ttt_admin');
+  start_header();
+
+  add_js_resources($context);
+  if($cur_tab) { // admin tab page
+    add_css_resources($context, css_uri($cur_tab,'admin') );
+  } else { // admin login page
+    add_css_resources($context, css_uri('login'), css_uri('login','admin') );
+  }
+
+  end_header();
+
+  add_navbar($context);
+  add_js_required();
+  add_admin_lock();
+  add_status_bar();
+
+  start_body();
+}
+
+function add_navbar_right_admin($kwarg)
+{
+  add_return_to_survey();
+}
+
 function add_input_section($label,$fields)
 {
   echo "<div class='section-header'><div>$label</div></div>";
@@ -89,10 +119,10 @@ function add_input_field($field)
   }
 }
 
-function add_admin_select($key,$users,$current)
+function add_admin_select($key,$users,$current,$info=null)
 {
   echo "<ul>";
-  add_admin_info_text($key);
+  if($info) { add_admin_info_text($key,$info); }
   foreach($current as $userid) {
     $name = $users[$userid];
     echo "<li class='user' userid='$userid' role='$key'>";
@@ -112,38 +142,7 @@ function add_admin_select($key,$users,$current)
   echo "</select></li></ul>";
 }
 
-function add_admin_info_text($key)
+function add_admin_info_text($key,$info)
 {
-  $info = admin_info_text($key);
-  if($info) {
-    echo "<li class='info $key'>$info</li>";
-  }
-}
-
-function admin_info_text($key)
-{
-  $rval = "";
-  switch($key) {
-  case 'primary-admin':
-    $rval = <<<INFO
-      Can modify the survey app settings, edit user roles, plus anything any survey admin can do.
-    INFO;
-    break;
-  case 'admin':
-    $rval = <<<INFO
-      Can create, monitor, and change status of surveys, assign editor roles, plus anything an editor can do.
-    INFO;
-    break;
-  case 'content':
-    $rval = <<<INFO
-      Can modify the structure and content of surveys that are in draft status.
-    INFO;
-    break;
-  case 'tech':
-    $rval = <<<INFO
-      These are the folks to contact if something is not working correctly.
-    INFO;
-    break;
-  };
-  return $rval;
+  echo "<li class='info $key'>$info</li>";
 }

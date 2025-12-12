@@ -14,7 +14,10 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 start_fault_page('405');
 
 echo "<div class='ttt-splash'>";
-add_link_tag(app_uri(),img_tag('405.png','','Click here to return to the survey'));
+echo "<a href='".app_uri()."' target='ttt_survey>";
+echo img_tag('405.png','','Click here to return to the survey');
+echo "</a>";
+
 echo "</div>";
 
 end_page();

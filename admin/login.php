@@ -16,11 +16,12 @@ $form_uri = app_uri('admin');
 $cancel_uri = $admin_login_requested ? app_uri('admin') : app_uri();
 
 echo "<div id='ttt-login'>";
-echo "<form id='admin-login' method='post' action='$form_uri'>";
+echo "<form id='admin-login' method='post' action='$form_uri' target='ttt_admin'>";
 add_hidden_input('nonce',gen_nonce('admin-login'));
 add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('cancel',$cancel_uri);
 add_hidden_submit('action','submit');
+add_hidden_input('admin',$admin_login_requested);
 
 echo "<header>Admin Login</header>";
 

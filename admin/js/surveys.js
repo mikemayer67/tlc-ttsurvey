@@ -69,7 +69,7 @@ function handle_printable(e)
   const url = new URL(ce.ajaxuri, window.location.href);
   url.searchParams.set('printable', ce.cur_survey.id);
   url.searchParams.set('ttt',ce.nonce);
-  window.open(url.toString(), '_blank');
+  window.open(url.toString(), 'ttt_printable');
 }
 
 

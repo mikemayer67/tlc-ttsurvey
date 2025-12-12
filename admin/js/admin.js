@@ -50,7 +50,7 @@ function handle_tab_change(event)
     });
     tsm.find('button.confirm').off('click').on('click',function() { 
       tsm.hide();
-      window.location = new_tab_uri;
+      window.location.replace(new_tab_uri);
     }).html("Switch Tabs");
     tsm.show();
   }
@@ -65,15 +65,16 @@ function handle_exit_admin(event)
     });
     tsm.find('button.confirm').on('click',function() { 
       tsm.hide();
-      window.location = ace.ajaxuri;
+      window.open(ace.ajaxuri,'ttt_survey');
     });
     tsm.show();
   } else {
-    window.location = ace.ajaxuri;
+    window.open(ace.ajaxuri,'ttt_survey');
   }
 }
 
 function handle_admin_login() {
+  console.log(ace.ajaxuri);
   window.location = ace.ajaxuri + '?admin=login';
 }
 
@@ -200,6 +201,7 @@ function hold_lock()
 
 $(document).ready(
   function($) {
+
   $('#ttt-body').show();
 
   ace.status = $('#ttt-status');
@@ -212,7 +214,7 @@ $(document).ready(
     function() { ace.tabs[$(this).attr('value')] = $(this) }
   );
 
-  $('.ttt-title-box *').on('click', handle_exit_admin);
+  $('.left-box *').on('click', handle_exit_admin);
   $('#admin-tabs a.admin.login').on('click',handle_admin_login);
   $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
   $('#admin-tabs a.user.logout').on('click',handle_user_logout);

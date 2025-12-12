@@ -15,11 +15,14 @@ $survey_id=$_GET['printable'];
 
 $page_title = 'Printable Survey';
 $info    = survey_info($survey_id);
+if(!$info) { app_die(); }
+
 $title   = $info['title'];
 $content = survey_content($survey_id);
 
 // Add html header
 start_header($title);
+add_tab_name('ttt_printable');
 $uri = css_uri('printable');
 echo "<link rel='stylesheet' type='text/css' href='$uri'>";
 add_js_resources('printable',js_uri('printable','survey'));

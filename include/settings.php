@@ -17,6 +17,7 @@ class Settings {
     'log_level'       => 2,
     'smtp_auth'       => 1,  // 0=SMTPS, 1=STARTTLS
     'smtp_debug'      => 0,  // 0=None, 1=Server->Client, 2=Server<->Client, 3=extra
+    'summary_flags'   => 0,
   ];
 
   static private $values = array();

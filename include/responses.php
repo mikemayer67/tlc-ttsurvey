@@ -101,6 +101,56 @@ function get_user_responses($userid,$survey_id,$draft=null)
   ];
 }
 
+function get_all_responses($survey_id)
+{
+  $query = <<<SQL
+    SELECT question_id, userid, selected, free_text, qualifier, other
+      FROM tlc_tt_responses
+     WHERE draft=0 and survey_id=?;
+  SQL;
+
+  $rows = MySQLSelectRows($query,'i', $survey_id);
+
+  $questions = [];
+  foreach($rows as $row) {
+    $qid    = $row['question_id'];
+    $userid = $row['userid'];
+    $questions[$qid][$userid] = $row;
+  }
+
+  $query = <<<SQL
+    SELECT ro.question_id, ro. userid,ro.option_id
+      FROM tlc_tt_response_options ro
+      LEFT JOIN tlc_tt_survey_options so on so.survey_id=ro.survey_id and so.option_id=ro.option_id
+      WHERE ro.draft=0 and ro.survey_id=?;
+  SQL;
+
+  $rows = MySQLSelectRows($query,'i', $survey_id);
+  foreach($rows as $row) {
+    $qid    = $row['question_id'];
+    $userid = $row['userid'];
+    $oid    = $row['option_id'];
+    $questions[$qid][$userid]['options'][] = $oid;
+  }
+
+  $query = <<<SQL
+    SELECT section_id, userid, feedback
+      FROM tlc_tt_section_feedback
+     WHERE draft=0 and survey_id=?;
+  SQL;
+
+  $rows = MySQLSelectRows($query,'i', $survey_id);
+
+  $sections = [];
+  foreach($rows as $row) {
+    $sid    = $row['section_id'];
+    $userid = $row['userid'];
+    $sections[$sid][$userid] = $row['feedback'];
+  }
+
+  return ['questions'=>$questions, 'sections'=>$sections];
+}
+
 
 function withdraw_user_responses($userid,$survey_id)
 {

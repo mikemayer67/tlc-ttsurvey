@@ -28,6 +28,15 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
+  // Handle logout and forget token requests
+  //   Allow from get or post queries
+  if(key_exists('logout',$_REQUEST)) {
+    require_once(app_file('include/login.php'));
+    logout_active_user();
+    header('Location: '.app_uri());
+    die();
+  }
+
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
     list($scope,$action) = explode('/',$_POST['ajax']);
@@ -48,9 +57,15 @@ try
     die();
   }
 
-  // If access to the admin tools have been requested, jump to the dashboard
+  // If access to the admin tools was requested, jump to the dashboard
   if(key_exists('admin',$_REQUEST)) {
     require(app_file('admin/admin.php'));
+    die();
+  } 
+  
+  // If access to the survey summary was requested, jump to the summary page
+  if(key_exists('summary',$_REQUEST)) {
+    require(app_file('summary/summary.php'));
     die();
   } 
   
@@ -69,14 +84,6 @@ try
     $page = safe_app_file("login/{$redirect_page}_page.php");
     if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
     require($page);
-    die();
-  }
-
-  // Handle logout and forget token requests
-  //   Allow from get or post queries
-  if(key_exists('logout',$_REQUEST)) {
-    logout_active_user();
-    header('Location: '.app_uri());
     die();
   }
 

@@ -213,6 +213,7 @@ IF current_version < 1 THEN
     admin     tinyint     UNSIGNED NOT NULL DEFAULT 0,
     content   tinyint     UNSIGNED NOT NULL DEFAULT 0,
     tech      tinyint     UNSIGNED NOT NULL DEFAULT 0,
+    summary   tinyint     UNSIGNED NOT NULL DEFAULT 0,
     FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
   );
 
@@ -295,10 +296,10 @@ IF current_version < 1 THEN
         WHERE u.userid = t.userid;
         
   CREATE OR REPLACE VIEW tlc_tt_active_roles
-    AS SELECT r.userid, u.fullname, r.admin, r.content, r.tech
+    AS SELECT r.userid, u.fullname, r.admin, r.content, r.tech, r.summary
          FROM tlc_tt_roles r
          LEFT JOIN tlc_tt_userids u ON u.userid=r.userid
-        WHERE r.content=1 OR r.admin=1 OR r.tech=1;
+        WHERE r.content=1 OR r.admin=1 OR r.tech=1 OR r.summary=1;
 
   CREATE OR REPLACE VIEW tlc_tt_view_survey_sections AS
   SELECT s.survey_id, s.sequence,

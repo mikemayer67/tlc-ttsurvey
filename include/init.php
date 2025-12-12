@@ -102,6 +102,15 @@ function is_safari() {
     && !preg_match('/Chrome|CriOS|Chromium|Edg/i', $ua);
 }
 
+function call_context_function($base_name,$context,...$args)
+{
+  $base_name = 'tlc\\tts\\' . $base_name;
+  $context_name = implode('_',[$base_name,$context]);
+  $function_name = function_exists($context_name) ? $context_name : $base_name;
+
+  return $function_name(...$args);
+}
+
 function validate_entry_uri()
 {
   // Validate the request URI matches our API
