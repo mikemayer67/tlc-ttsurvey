@@ -15,6 +15,8 @@ $userid = active_userid();
 
 $is_admin = $admin_id || in_array($userid, survey_admins());
 
+// determine if the current user has access to see summaries in general
+//   If not, boot them out now
 $has_access = $is_admin || has_summary_access($userid);
 if(!$has_access) { api_die(); }
 
@@ -25,6 +27,12 @@ if(!$survey_id) { $survey_id = $active_id; }
 $info = survey_info($survey_id);
 if(!$info) { api_die(); }
 
+// determine if the current user has access to this particular summary
+// - If they are an admin, then yes
+// - If there is no requirement to have submitted your survey first, then yes
+// - If the request was for a past (closed) survey, then yes
+// - If they have sumbitted their survey, then yes
+// - Otherwise, no
 $summary_flags = (int)get_setting('summary_flags');
 if($summary_flags & 2) { // requires submit
   if(!$is_admin) {
@@ -41,7 +49,9 @@ $title = $info['title'];
 $content   = survey_content($survey_id);
 $responses = get_all_responses($survey_id);
 $sections = $content['sections'];
-$tab_ids = array_map( function($section) { return $section['sequence']; }, $sections );
+usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+
+$tab_ids = array_map( function($section) { return $section['section_id']; }, $sections );
 
 start_summary_page([
   'title' => $info['title'],
@@ -58,22 +68,22 @@ if(!$has_access) {
 echo "<div class='notebook'>";
 $first = true;
 foreach($sections as $section) {
-  $seq  = $section['sequence'];
+  $sid  = $section['section_id'];
   $checked = $first ? 'checked' : '';
   $first = false;
-  echo "<input id='tab-cb-$seq' class='tab-cb' type='radio' name='tab-cb' $checked>";
+  echo "<input id='tab-cb-$sid' class='tab-cb' type='radio' name='tab-cb' $checked>";
 }
 
 echo "<div class='tabs'>";
 foreach($sections as $section) {
+  $sid  = $section['section_id'];
   $name = $section['name'];
-  $seq  = $section['sequence'];
-  echo "<label for='tab-cb-$seq' class='tab tab-$seq'>$name</label>";
+  echo "<label for='tab-cb-$sid' class='tab tab-$sid'>$name</label>";
 }
 echo "</div>";
 
-foreach($sections as $section) {
-  add_section_panel($section,$responses);
+foreach($tab_ids as $sid) {
+  add_section_panel($sid,$content,$responses);
 }
 
 echo "</div>"; // div.notebook

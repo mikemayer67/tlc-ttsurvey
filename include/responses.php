@@ -119,9 +119,9 @@ function get_all_responses($survey_id)
   }
 
   $query = <<<SQL
-    SELECT ro.question_id, ro. userid,ro.option_id,s.str as option_text
+    SELECT ro.question_id, ro. userid,ro.option_id
       FROM tlc_tt_response_options ro
-      LEFT JOIN tlc_tt_strings s on s.string_id=ro.option_id
+      LEFT JOIN tlc_tt_survey_options so on so.survey_id=ro.survey_id and so.option_id=ro.option_id
       WHERE ro.draft=0 and ro.survey_id=?;
   SQL;
 
@@ -130,12 +130,11 @@ function get_all_responses($survey_id)
     $qid    = $row['question_id'];
     $userid = $row['userid'];
     $oid    = $row['option_id'];
-    $otxt   = $row['option_text'];
-    $questions[$qid][$userid]['options'][$oid] = $otxt;
+    $questions[$qid][$userid]['options'][] = $oid;
   }
 
   $query = <<<SQL
-    SELECT sequence, userid, feedback
+    SELECT section_id, userid, feedback
       FROM tlc_tt_section_feedback
      WHERE draft=0 and survey_id=?;
   SQL;
@@ -144,9 +143,9 @@ function get_all_responses($survey_id)
 
   $sections = [];
   foreach($rows as $row) {
-    $seq    = $row['sequence'];
+    $sid    = $row['section_id'];
     $userid = $row['userid'];
-    $sections[$seq][$userid] = $row['feedback'];
+    $sections[$sid][$userid] = $row['feedback'];
   }
 
   return ['questions'=>$questions, 'sections'=>$sections];

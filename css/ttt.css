@@ -247,6 +247,12 @@ div.ttt-splash img {
   z-index: 100;
 }
 
+#ttt-navbar .admin.link a:hover,
+#ttt-navbar .admin.link a img:hover
+{
+  cursor:pointer
+}
+
 #ttt-navbar .survey.link span.link-tip {
   left:revert;
   right:-1em;
