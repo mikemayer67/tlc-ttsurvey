@@ -24,9 +24,6 @@ $survey_id = $_REQUEST['summary'];
 $active_id = active_survey_id();
 if(!$survey_id) { $survey_id = $active_id; }
 
-$info = survey_info($survey_id);
-if(!$info) { api_die(); }
-
 // determine if the current user has access to this particular summary
 // - If they are an admin, then yes
 // - If there is no requirement to have submitted your survey first, then yes
@@ -36,15 +33,13 @@ if(!$info) { api_die(); }
 $summary_flags = (int)get_setting('summary_flags');
 if($summary_flags & 2) { // requires submit
   if(!$is_admin) {
-    if($survey_id === $active_id) {
+    if($survey_id && ($survey_id === $active_id)) {
       $responses = get_user_responses( $userid,$survey_id);
       $submitted = $responses['submitted'] ?? [];
       if(!$submitted) { $has_access = false; }
     }
   }
 }
-
-$title = $info['title'];
 
 $content   = survey_content($survey_id);
 $responses = get_all_responses($survey_id);
@@ -63,11 +58,20 @@ usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
 $tab_ids = array_map( function($section) { return $section['section_id']; }, $sections );
 
+$info = survey_info($survey_id);
+$title = $info['title']??null;
+
 start_summary_page([
-  'title' => $info['title'],
+  'title' => $title,
   'userid' => $userid,
   'tab_ids' => $tab_ids,
 ]);
+
+if(!$info) {
+  echo "<br>There are currently no active survey";
+  end_page();
+  die();
+}
 
 if(!$has_access) { 
   echo "<br>You must submit your survey responses to unlock access to the summary";

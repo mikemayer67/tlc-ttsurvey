@@ -156,6 +156,7 @@ function warning_handler($errno,$errstr,$errfile,$errline)
 function handle_warnings() 
 {
   set_error_handler('tlc\tts\warning_handler',E_WARNING|E_NOTICE);
+  set_error_handler('tlc\tts\warning_handler',E_DEPRECATED|E_USER_DEPRECATED);
 }
 
 function start_ob_logging()

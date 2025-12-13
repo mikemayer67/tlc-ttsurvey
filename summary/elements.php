@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/elements.php'));
+require_once(app_file('summary/markdown.php'));
 
 function start_summary_page($kwargs)
 {
@@ -21,7 +22,9 @@ function start_summary_page($kwargs)
 
 function add_navbar_center_summary($kwargs)
 {
-  echo '<b>Summary of Responses</b>';
+  if( $kwargs['title']??null ) {
+    echo '<b>Summary of Responses</b>';
+  }
 }
 
 function add_navbar_right_summary($kwargs)
@@ -137,7 +140,7 @@ class SectionPanel
     if(!$this->grouped) { return; }
     $this->indent = true;
 
-    $info_text = $question['info'];
+    $info_text = strip_markdown($question['info']);
     echo "<div class='info text question'>";
     echo "<div class='label'>$info_text</div>";
     echo "</div>";

@@ -25,7 +25,6 @@ function start_survey_page($kwargs)
 
 function add_navbar_center_survey($kwargs)
 {
-  log_dev("add_navbar_center_survey: ".print_r($kwargs,true));
   $submitted = $kwargs['submitted'] ?? null;
   $draft     = $kwargs['draft']     ?? null;
 
