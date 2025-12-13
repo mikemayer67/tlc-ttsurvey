@@ -22,6 +22,7 @@ class MarkdownParser {
 
   private function __construct() 
   {
+    // block the deprecation warnings from showing up in the browser
     ob_start();
 
     // --- Setup CommonMarkConverter once ---
