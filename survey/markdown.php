@@ -73,7 +73,7 @@ class MarkdownParser {
     ob_start();
 
     // --- Convert Markdown to HTML ---
-    $raw_html = $this->converter->convertToHtml($markdown);
+    $raw_html = $this->converter->convert($markdown)->getContent();
 
     // --- Set target to _blank for all <a> tags ---
     $doc = new \DOMDocument();
