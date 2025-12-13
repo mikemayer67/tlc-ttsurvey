@@ -285,7 +285,7 @@ class SectionPanel
     foreach($options as $oid) {
       $option = $oid > 0 ? $this->options[$oid] : 'Other';
       if($oid > 0) {
-        $users = array_filter($responses, fn($a) => in_array($oid,$a['options']) );
+        $users = array_filter($responses, fn($a) => in_array($oid,$a['options']??[]) );
       } else {
         $users = array_filter($responses, fn($a) => $a['selected'] === $oid );
       }
