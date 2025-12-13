@@ -8,6 +8,8 @@ body {
 
 :root {
   --navbar-color:white;
+  --navbar-height:3em;
+  --footer-height:2em;
   --font-red:darkred;
   --empty-field-color:#ffffcc;
   --invalid-value-bg:#ffcccc;
@@ -128,6 +130,7 @@ div.ttt-splash img {
   position: sticky;
   top: 0;
   width:100%;
+  height:var(--navbar-height);
   z-index:10;
 }
 
@@ -526,7 +529,7 @@ div.ttt-splash img {
 #ttt-footer {
   margin-top:auto;
   width:100%;
-  height:70px;
+  height:var(--footer-height);
   background-color:inherit;
 }
 #ttt-footer * {

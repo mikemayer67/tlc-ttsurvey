@@ -1,10 +1,14 @@
 #ttt-body {
   margin: 1em clamp(3px,1vw,2em) 0;
+  height:calc(100vh - var(--navbar-height) - var(--footer-height) - 15px);
 }
 
-#ttt-footer {
-  height:2em;
+#ttt-body div.notebook {
+  display:flex;
+  flex-direction:column;
+  height:100%;
 }
+
 
 #ttt-body div.notebook .tab-cb {
   display:none;
@@ -14,6 +18,7 @@
   border-bottom:solid black 1px;
   display:flex;
   flex-wrap:wrap;
+  flex: 0 0 auto;
 }
 
 #ttt-body div.notebook label.tab {
@@ -34,6 +39,8 @@
 
 #ttt-body div.notebook .panel {
   display:none;
+  flex: 1 1 auto;
+  overflow-y:auto;
 }
 
 #ttt-body div.info.text div.label {
