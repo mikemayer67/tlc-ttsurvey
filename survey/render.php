@@ -352,9 +352,9 @@ class RenderEngine
   {
     $id        = $question['id'];
     $wording   = $question['wording'];
-    $intro     = $question['intro'] ?? '';
+    $intro     = trim($question['intro'] ?? '');
     $layout    = strtolower($question['layout'] ?? 'left');
-    $qualifier = $question['qualifier'] ?? '';
+    $qualifier = trim($question['qualifier'] ?? '');
     $popup     = $question['popup'] ?? '';
 
     $selected  = $responses[$id]['selected'] ?? '';
@@ -405,9 +405,9 @@ class RenderEngine
   {
     $id        = $question['id'];
     $wording   = $question['wording'];
-    $intro     = $question['intro'] ?? '';
+    $intro     = trim($question['intro'] ?? '');
     $layout    = strtolower($question['layout'] ?? 'row');
-    $qualifier = $question['qualifier'] ?? '';
+    $qualifier = trim($question['qualifier'] ?? '');
     $popup     = $question['popup'] ?? '';
     $options   = $question['options'] ?? [];
 
@@ -446,6 +446,7 @@ class RenderEngine
     }
 
     if($intro) {
+      $intro = MarkdownParser::parse($intro);
       echo "<div class='intro'>$intro</div>";
     }
 

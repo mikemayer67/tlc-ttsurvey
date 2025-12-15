@@ -35,17 +35,17 @@ $fontVars          = new FontVariables();
 $defaultFontConfig = $fontVars->getDefaults();
 $fontData          = $defaultFontConfig['fontdata'];
 
-$fontData['noto_serif_display'] = [
+$fontData['ttt_serif'] = [
   'R'  => 'noto_serif_display/NotoSerifDisplay-Regular.ttf',
   'I'  => 'noto_serif_display/NotoSerifDisplay-Italic.ttf',
   'B'  => 'noto_serif_display/NotoSerifDisplay-Bold.ttf',
   'BI' => 'noto_serif_display/NotoSerifDisplay-BoldItalic.ttf',
 ];
-$fontData['quicksand'] = [
+$fontData['ttt_sans_serif'] = [
   'R'  => 'quicksand/Quicksand-Regular.ttf',
   'B'  => 'quicksand/Quicksand-Bold.ttf',
 ];
-$fontData['courier_prime'] = [
+$fontData['ttt_fixed_width'] = [
   'R'  => 'courier_prime/CourierPrime-Regular.ttf',
   'I'  => 'courier_prime/CourierPrime-Italic.ttf',
   'B'  => 'courier_prime/CourierPrime-Bold.ttf',
@@ -53,18 +53,19 @@ $fontData['courier_prime'] = [
 ];
 
 $mpdf = new Mpdf([
-    'mode'          => 'utf-8',
-    'format'        => 'Letter',
-    'margin_header' => 5,
-    'margin_top'    => 25,
-    'margin_bottom' => 20,
-    'margin_footer' => 5,
-    'margin_right'  => 10,
-    'margin_left'   => 10,
-    'fontDir'       => $fontDir,
-    'fontdata'      => $fontData,
-    'default_font'  => 'noto_serif_display',
-    'tempDir'       => app_file('__cache'),
+    'mode'              => 'utf-8',
+    'format'            => 'Letter',
+    'margin_header'     => 5,
+    'margin_top'        => 22,
+    'margin_bottom'     => 20,
+    'margin_footer'     => 5,
+    'margin_right'      => 10,
+    'margin_left'       => 10,
+    'fontDir'           => $fontDir,
+    'fontdata'          => $fontData,
+    'default_font'      => 'ttt_sans_serif',
+    'default_font_size' => 10,
+    'tempDir'           => app_file('vendor/__cache'),
 ]);
 
 $css = file_get_contents(app_file('css/printable.css'));
@@ -87,10 +88,19 @@ $mpdf->SetHTMLFooter($html,'2-');
 ob_start();
 render_printable($mpdf,$content);
 $html = ob_get_clean();
+
+// For debugging html that would otherwise go to mPDF for rendering.
+if (!empty($_GET['debug_html'])) {
+    header('Content-Type: text/html; charset=utf-8');
+    echo "<!DOCTYPE html><html><head><style>$css</style></head><body>$html</body></html>";
+    die();
+}
+
 $mpdf->WriteHTML($html, \Mpdf\HTMLParserMode::HTML_BODY);
 
 // Output PDF inline to the tab opened by JS
-$mpdf->Output("survey_{$surveyId}.pdf", \Mpdf\Output\Destination::INLINE);
+//echo $html;
+$mpdf->Output("survey_{$survey_id}.pdf", \Mpdf\Output\Destination::INLINE);
 
 die();
 

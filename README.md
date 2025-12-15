@@ -14,6 +14,11 @@ this projects.  I will accept pull requests that add features or increase genera
 in it usage.  I will not accept pull requests that add specificity to any partiular
 user of the app (including changes specific to Trinity).
 
+## Requirements
+
+This project requires PHP ≥8.1.
+PHP 7 reached end-of-life in 2022 and is no longer supported.
+
 ## Uage Overview
 
 (still to come)
