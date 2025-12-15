@@ -85,6 +85,7 @@ class LoginCookies
       }
     }
     $tokens = json_encode($this->_access_tokens);
+    log_dev("Update tokens cookie: $tokens");
     $this->_set_cookie(ACCESS_TOKENS_COOKIE, $tokens, time() + 86400*365);
   }
 
@@ -131,11 +132,9 @@ class LoginCookies
     if($token) { $this->_access_tokens[$userid] = $token; } 
     else       { unset($this->_access_tokens[$userid]);   }
 
-    return $this->_set_cookie( 
-      ACCESS_TOKENS_COOKIE, 
-      json_encode($this->_access_tokens), 
-      time() + 86400*365,
-    );
+    $tokens = json_encode($this->_access_tokens);
+    log_dev("Update tokens cookie: $tokens");
+    return $this->_set_cookie( ACCESS_TOKENS_COOKIE, $tokens, time() + 86400*365 );
   }
 
   public function clear_token($userid)  { return $this->cache_token($userid,null); }

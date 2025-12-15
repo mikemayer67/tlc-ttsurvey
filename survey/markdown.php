@@ -15,13 +15,16 @@ handle_warnings();
 class MarkdownParser {
   private static $instance = null;
 
+  private $wrap = true;
   private $converter;
   private $purifier;
 
   private function __clone() {}
 
-  private function __construct() 
+  private function __construct($wrap = true) 
   {
+    $this->wrap = $wrap;
+
     // block the deprecation warnings from showing up in the browser
     ob_start();
 
@@ -88,14 +91,18 @@ class MarkdownParser {
 
     $ob_string = ob_get_clean();
 
-    return "<div class='markdown'>$clean_html</div>";
+    if($this->wrap) { 
+      $clean_html = "<div class='markdown'>$clean_html</div>";
+    }
+
     // --- Return the converted/sanitized markdown -> HTML ---
+    return $clean_html;
   }
 
-  public static function parse(string $markdown): string
+  public static function parse(string $markdown, $wrap=true): string
   {
     if(self::$instance === null) {
-      self::$instance = new MarkdownParser();
+      self::$instance = new MarkdownParser($wrap);
     }
     return self::$instance->_parse($markdown);
   }
