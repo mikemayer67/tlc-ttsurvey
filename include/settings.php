@@ -14,6 +14,7 @@ class Settings {
     'admin_name'      => 'the survey admin',
     'pwreset_timeout' => 15,
     'pwreset_length'  => 10,
+    'reminder_freq'   => 24, // hours
     'log_level'       => 2,
     'smtp_auth'       => 1,  // 0=SMTPS, 1=STARTTLS
     'smtp_debug'      => 0,  // 0=None, 1=Server->Client, 2=Server<->Client, 3=extra
@@ -154,20 +155,21 @@ function admin_contact() {
 }
 
 // Password reset settings
-function pwreset_timeout()       { return get_setting('pwreset_timeout'); } // minutes
-function pwreset_length()        { return min(20,max(4, get_setting('pwreset_length'))); }
+function pwreset_timeout()  { return get_setting('pwreset_timeout'); } // minutes
+function pwreset_length()   { return min(20,max(4, get_setting('pwreset_length'))); }
+function reminder_freq()    { return get_setting('reminder_freq'); } // hours
 
 // Logging settings
-function log_level()       { return get_setting('log_level', 2);  }
+function log_level()        { return get_setting('log_level', 2);  }
 
 // SMTP settings
-function smtp_host()              { return get_setting('smtp_host'); }
-function smtp_auth()              { return get_setting('smtp_auth'); }
-function smtp_username()          { return get_setting('smtp_username'); }
-function smtp_password()          { return get_setting('smtp_password'); }
-function smtp_reply_email()       { return get_setting('smtp_reply_email'); }
-function smtp_reply_name()        { return get_setting('smtp_reply_name'); }
-function smtp_debug()             { return get_setting('smtp_debug'); }
+function smtp_host()        { return get_setting('smtp_host'); }
+function smtp_auth()        { return get_setting('smtp_auth'); }
+function smtp_username()    { return get_setting('smtp_username'); }
+function smtp_password()    { return get_setting('smtp_password'); }
+function smtp_reply_email() { return get_setting('smtp_reply_email'); }
+function smtp_reply_name()  { return get_setting('smtp_reply_name'); }
+function smtp_debug()       { return get_setting('smtp_debug'); }
 
 function smtp_port() { 
   $port = get_setting('smtp_port');

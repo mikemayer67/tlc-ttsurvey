@@ -202,15 +202,23 @@ function sendmail_recovery($email,$tokens,&$error=null)
 // Confirmation of submitted responses
 //------------------------------------------------
 
-function sendmail_confirmation($email,$summary,&$error=null)
+function sendmail_confirmation($email,$userid,$summary,&$error=null)
 {
   $error = '';
+
+  $user = User::from_userid($userid);
+  if(!$user) {
+    $error = 'No user information found for userid $userid';
+    return false;
+  }
+
+  $name = $user->fullname();
 
   $message = [];
 
   $message[] = [
     'type'=>'header',
-    'text'=>'Your submitted survey respsonses have been received.',
+    'text'=>"Survey responses have been received for $name.",
   ];
 
   $url = full_app_uri();
@@ -228,6 +236,120 @@ function sendmail_confirmation($email,$summary,&$error=null)
   return sendmail($email, 'Survey Responses Received', $text, $html);
 }
 
+//------------------------------------------------
+// Reminder of unstarted survey
+//------------------------------------------------
+
+function sendmail_no_response($email,$userid,$name)
+{
+  $message = [];
+
+  $message[] = [
+    'type' => 'text',
+    'text' => "It appears the survey for $name has not been started",
+  ];
+
+  $message[] = [
+    'type' => 'options',
+    'options' => [
+      'Be sure to hit the "Submit Responses" when you are done to actually submit your responses.',
+      'If your are not ready to submit your responses, you can hit the "Save Draft" to come back to it later.',
+    ],
+  ];
+
+  $url = full_app_uri();
+  $message[] = [
+    'type' => 'footer',
+    'lines' => [
+      "You can return to the survey at [[$url]]",
+      "The userid for $name is $userid",
+      '<<contacts>>',
+    ],
+  ];
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, 'Survey Reminder', $text, $html);
+}
+
+//------------------------------------------------
+// Reminder of saved draft without submitted responses
+//------------------------------------------------
+
+function sendmail_draft_only($email,$userid,$name)
+{
+  $message = [];
+
+  $message[] = [
+    'type' => 'text',
+    'text' => "It appears that $name has unsubmitted draft responses to the survey.",
+  ];
+
+  $message[] = [
+    'type' => 'options',
+    'options' => [
+      'You can continue to make edits to your draft and update it using the "Save Draft" button.',
+      'Once you are happy with your responses, be sure to hit the "Submit Responses" button.',
+    ],
+  ];
+
+  $url = full_app_uri();
+  $message[] = [
+    'type' => 'footer',
+    'lines' => [
+      "You can return to the survey at [[$url]]",
+      "The userid for $name is $userid",
+      '<<contacts>>',
+    ],
+  ];
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, 'Survey Reminder - unsubmitted draft', $text, $html);
+}
+
+//------------------------------------------------
+// Reminder of saved draft and submitted responses
+//------------------------------------------------
+
+function sendmail_unsubmitted_updates($email,$userid,$name)
+{
+  $message = [];
+
+  $message[] = [
+    'type' => 'text',
+    'text' => "It appears that $name has unsubmitted updates to the survey responses.",
+  ];
+  $message[] = [
+    'type' => 'options',
+    'options' => [
+      'You can continue to make edits to your draft and update it using the "Save Draft" button.',
+      'When you are happy with your updated responses, be sure to hit the "Submit Responses" button.',
+    ],
+  ];
+  $message[] = [
+    'type' => 'text',
+    'text' => 'If you decide you are happy with your previoulsy submitted respones, you can hit the "Delete Draft" button to stop receiving these reminder emails.',
+  ];
+
+
+  $url = full_app_uri();
+  $message[] = [
+    'type' => 'footer',
+    'lines' => [
+      "You can return to the survey at [[$url]]",
+      "The userid for $name is $userid",
+      '<<contacts>>',
+    ],
+  ];
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, 'Survey Reminder - unsubmitted updates', $text, $html);
+}
 
 //------------------------------------------------------------------------------
 // Email rendering engines
@@ -251,6 +373,12 @@ function render_text_message($message)
       $old = $e['old'] ?? '(undisclosed)';
       $new = $e['new'] ?? '(undisclosed)';
       $rval .= "  Old $key: $old\n  New $key: $new\n\n";
+      break;
+    case 'options':
+      foreach($e['options'] as $option) {
+        $rval . "  - $option\n";
+      }
+      $rval .= "\n";
       break;
     case 'users':
       foreach ($e['users'] as [$token,$fullname,$userid]) {
@@ -311,6 +439,13 @@ function render_html_message($message)
       $old = $e['old'] ?? '(undisclosed)';
       $new = $e['new'] ?? '(undisclosed)';
       $rval .= "<ul><li>Old $key: $old</li><li>New $key: $new</li></ul>\n";
+      break;
+    case 'options':
+      $rval .= "<ul>";
+      foreach($e['options'] as $option) {
+        $rval .= "<li>$option</li>";
+      }
+      $rval .= "</ul>";
       break;
     case 'users':
       foreach ($e['users'] as [$token,$fullname,$userid]) {
