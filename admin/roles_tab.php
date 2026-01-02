@@ -115,10 +115,7 @@ echo "    </ul>";
 echo "  </ul>";
 echo "</div>";
 
-
 echo "</div>";
-
- 
 
 echo "<div class='submit-bar'>";
 echo "<input id='changes-submit' class='submit' type='submit' value='Save Changes'>";

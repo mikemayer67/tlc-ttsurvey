@@ -20,9 +20,9 @@ function debug_html($msg,$nl=false)
 }
 
 
-function render_printable($mpdf,$content)
+function render_printable($tcpdf,$content)
 {
-  $re = new PrintRenderEngine($mpdf);
+  $re = new PrintRenderEngine($tcpdf);
   $re->render($content);
 }
 
@@ -46,7 +46,7 @@ function render_footer()
 
 class PrintRenderEngine 
 {
-  // Creating a PDF using the mPDF package means that we want to layout the html
+  // Creating a PDF using the tcpdf package means that we want to layout the html
   //  content using tables.  To facility keeping content together to the best extent
   //  possible, all tables are given the attribute page-break-inside:avoid. There are
   //  three top level table types:
@@ -83,7 +83,7 @@ class PrintRenderEngine
   //   is encountered.  The info box itself will have an indent level of 0, but all
   //   subsequent content will have an indent level of 1.
 
-  private $mpdf = null;
+  private $tcpdf = null;
 
   private $first_page   = null; // used to determine page breaks
   private $box_indent   = null; // indent level of question box within a section
@@ -92,9 +92,9 @@ class PrintRenderEngine
   private $select_label_style = 'normal';
   private $select_label_size  = 10;
 
-  public function __construct($mpdf) 
+  public function __construct($tcpdf) 
   {
-    $this->mpdf = $mpdf;
+    $this->tcpdf = $tcpdf;
   }
 
   public function render($content)
@@ -481,7 +481,7 @@ class PrintRenderEngine
         }
         $grid['questions'][] = $question;
         $grid['w'] = max( $grid['w'],
-          $this->mpdf->GetStringWidth(
+          $this->tcpdf->GetStringWidth(
             $wording, 
             $this->select_label_font,
             $this->select_label_style,

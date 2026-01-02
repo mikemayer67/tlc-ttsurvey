@@ -11,7 +11,7 @@ validate_ajax_nonce('admin-participants');
 
 start_ob_logging();
 
-$userid = strtolower($_POST['userid'];
+$userid = strtolower($_POST['userid']);
 
 $user = User::from_userid($userid);
 if($user) {
