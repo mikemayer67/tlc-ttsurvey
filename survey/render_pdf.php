@@ -53,6 +53,8 @@ class SurveyPDF extends TCPDF
     
     public function Header(): void
     {
+        $page = $this->getPage();
+
         $logo = app_logo();
         $logo_file = app_file("img/$logo");
         $logo_size = getimagesize($logo_file);
@@ -70,6 +72,14 @@ class SurveyPDF extends TCPDF
         $this->setCellPaddings($icon_width + K_EIGHTH_INCH/2, bottom:$extra_height/2);
         $this->Cell(0, $icon_height + 2*$icon_margin, $this->title, border:'B', align:'L');
         $this->Ln(5);
+
+        if ($page === 1) {
+            $this->setCellPaddings(0, 0, 0, 0);
+            $this->SetFont(K_SANS_SERIF_FONT,'I',7);
+            $this->SetY(PDF_MARGIN_HEADER + $icon_height + 2 * $icon_margin);
+            $this->SetX(6.5 * K_INCH);
+            $this->Cell(0, 0, '(your name)');
+        }
 
         $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $icon_margin, $icon_width, $icon_height);
     }
