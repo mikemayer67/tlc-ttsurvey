@@ -55,6 +55,22 @@ function base_uri() { return str_ends_with(APP_URI,"/") ? APP_URI : APP_URI.'/';
 function app_file($path)   { return APP_DIR . "/$path"; }
 function app_uri($q=null)  { return ($q ? "tt.php?$q" : "tt.php"); }
 
+function app_repo() {
+  static $repo_url = null;
+  if(is_null($repo_url)) {
+    $git_config_file = app_file('.git/config');
+    if (is_readable($git_config_file)) {
+      $git_config = parse_ini_file($git_config_file);
+      $repo_url = $git_config['url'] ?? null;
+      if ($repo_url) {
+        $repo_url = str_replace('git@github.com:', 'https://github.com/', $repo_url);
+        $repo_url = str_replace('.git', '', $repo_url);
+      }
+    }
+  }
+  return $repo_url;
+}
+
 function safe_app_file($path) { 
   // should be used instead of app_file whenever $path is tainted
   $file = realpath(app_file($path));

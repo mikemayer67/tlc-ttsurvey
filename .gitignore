@@ -14,6 +14,7 @@ sql/*.sql
 !sql/backup_data.sql
 !sql/restore_data.sql
 
+.vscode/*
 vendor
 
 
