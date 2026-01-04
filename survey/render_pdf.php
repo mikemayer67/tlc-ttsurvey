@@ -78,7 +78,7 @@ class SurveyPDF extends TCPDF
             $this->SetFont(K_SANS_SERIF_FONT,'I',7);
             $this->SetY(PDF_MARGIN_HEADER + $icon_height + 2 * $icon_margin);
             $this->SetX(6.5 * K_INCH);
-            $this->Cell(0, 0, '(your name)');
+            $this->Cell(0, 0, '(participant name)');
         }
 
         $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $icon_margin, $icon_width, $icon_height);
@@ -95,7 +95,9 @@ class SurveyPDF extends TCPDF
         $page = $this->getPage();
         $version = (new DateTime($this->modified))->format('Y.m.d');
 
+        $this->SetFont(K_SANS_SERIF_FONT,size:6);
         $this->Cell($cell_width, $line_height, "version: $version", 0, 0, 'L');
+        $this->SetFont(K_SANS_SERIF_FONT,size:8);
         $this->Cell($cell_width, $line_height, "Page $page of {$this->page_count}", 0, 0, 'R');
     }
 

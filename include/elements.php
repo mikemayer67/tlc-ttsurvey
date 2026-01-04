@@ -83,9 +83,10 @@ function start_header($title=null)
   $base  = base_uri();
   $title = $title ?? active_survey_title() ?? app_name();
 
-  $google_fonts = "https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap";
+  $google_fonts = "https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Quicksand:wght@300..700&display=swap";
 
   echo "<!DOCTYPE html><html><head>";
+  
   echo "<meta charset='UTF-8'>";
   echo "<meta name='viewport' content='width=device-width, initial-scale=1'>";
   echo "<base href='$base'>";

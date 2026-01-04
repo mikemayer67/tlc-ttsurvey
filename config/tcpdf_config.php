@@ -54,7 +54,7 @@ if(!defined('K_TCPDF_EXTERNAL_CONFIG')) {
   define('PDF_FONT_NAME_MAIN', 'quicksand'); // sans-serif font used in online survey
   define('K_MONOSPACE_FONT','courier');
   define('K_SERIF_FONT','notoserifdisplay');
-  define('K_SANS_SERIF_FONT','quicksand');
+  define('K_SANS_SERIF_FONT','plusjakartasans');
 
   define('K_PATH_IMAGES', app_file('img/'));
 }

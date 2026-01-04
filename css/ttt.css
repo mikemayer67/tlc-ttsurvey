@@ -14,8 +14,8 @@ body {
   --empty-field-color:#ffffcc;
   --invalid-value-bg:#ffcccc;
   --serif-font:'Noto Serif Display', Serif;
-  --sans-serif-font: 'Quicksand', Sans-serif;
-  --monospace-font: 'Courier New', Monospace;
+  --sans-serif-font: 'Plus Jakarta Sans','Quicksand', Sans-serif;
+  --monospace-font: 'Courier Prime','Courier New', Monospace;
 }
 
 html,body {
