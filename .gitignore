@@ -1,6 +1,8 @@
 *~
 .*.swp
 
+*_hold.php
+
 .htaccess*
 
 admin/settings.json
