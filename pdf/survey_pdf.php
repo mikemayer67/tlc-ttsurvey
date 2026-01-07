@@ -4,7 +4,8 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/login.php'));
-require_once(app_file('config/tcpdf_config.php'));
+require_once(app_file('pdf/tcpdf_config.php'));
+require_once(app_file('pdf/pdf_box.php'));
 require_once(app_file('vendor/autoload.php'));
 
 use TCPDF;
@@ -133,24 +134,104 @@ class SurveyPDF extends TCPDF
     {
         $this->title = $info['title'];
         $this->modified = $info['modified'];
-        // for now, just dump some junk... we'll fill this in shortly
 
-        $lorem = <<<TEXT
-Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
-TEXT;
+        $content_root = new SurveyRootBox($this,$content);
+        $content_root->render();
+    }
+}
 
-        $this->page_count = 5;
-        for($i=0; $i<$this->page_count; ++$i)
-        {
-            $this->AddPage();
 
-            for($j=0; $j<1+$i; ++$j) {
-                $this->MultiCell(0, 6, $lorem, 1, 'L', false, 1);
-                $this->Ln(K_QUARTER_INCH);
-            }
+/**
+ * Responsible for parsing the survey content into top PDFBoxes
+ * - Section boxes: adds a new section (which starts a new page)
+ * - Question boxes: adds a single question
+ * - Group boxes: adds a box containing multiple questions
+ */
+class SurveyRootBox extends PDFRootBox
+{
+    /**
+     * Constructs all of the top level child boxes for the survey form
+     * @param SurveyPDF $tcpdf 
+     * @param array $content survey content structure
+     * @return void 
+     */
+    public function __construct(SurveyPDF $tcpdf, array $content)
+    {
+        parent::__construct($tcpdf);
+
+        // Sort the sections by sequence
+        $sections = $content['sections'];
+        usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+
+        foreach($sections as $section) {
+            $section_box = new SectionBox($tcpdf, $section);
         }
     }
 
+    /**
+     * Adds a single section to the survey form
+     * @param array $section 
+     * @param array $content 
+     * @return void 
+     */
+    protected function add_section(array $section, array $content)
+    {
+        $box = new SectionBox($this->_tcpdf, $section);
+        $this->addChild($box);
+    }
+}
+
+/**
+ * Responsible for rendering a section header box
+ */
+class SectionBox extends PDFBox
+{
+    private ?TextBox $name_box = null;
+    private ?TextBox $intro_box = null;
+
+    /**
+     * @param SurveyPDF $tcpdf 
+     * @param array $section 
+     * @return void 
+     */
+    public function __construct(SurveyPDF $tcpdf, array $section)
+    {
+        parent::__construct($tcpdf);
+
+        $name        = $section['name'];
+        $collapsible = $section['collapsible'] ?? true;
+        $intro       = $section['intro'] ?? '';
+
+        if($collapsible) {
+            $name_box = new TextBox($tcpdf, $name);
+        }
+        if($intro) {
+            $intro_box = new TextBox($tcpdf, $intro);
+        }
+    }
+
+    /**
+     * Overrides the default startsNewPage method.
+     *   Each section header starts a new page.
+     * @return bool 
+     */
+    public function startsNewPage() : bool { return true; }
+
+    protected function render() : bool {
+        // @@@TODO Flesh this out
+        return true;
+    }
+}
+
+class TextBox extends PDFBox
+{
+    public function __construct(TCPDF $tcpdf,string $text)
+    {
+        return parent::__construct($tcpdf);
+    }
+
+    protected function render() : bool {
+        // @@@TODO Flesh this out
+        return true;
+    }
 }
