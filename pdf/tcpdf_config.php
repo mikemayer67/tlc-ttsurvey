@@ -55,6 +55,7 @@ if(!defined('K_TCPDF_EXTERNAL_CONFIG')) {
   define('K_MONOSPACE_FONT','courier');
   define('K_SERIF_FONT','notoserifdisplay');
   define('K_SANS_SERIF_FONT','plusjakartasans');
+  define('K_DEFAULT_FONT_SIZE', 12);
 
   define('K_PATH_IMAGES', app_file('img/'));
 }

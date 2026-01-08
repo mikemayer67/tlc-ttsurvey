@@ -215,11 +215,13 @@ function validate_app_logo($logo,&$error=null) {
   $error = '';
   _fix_validate_value($logo);
   if($logo==='') { return true; }
-  $imgfile = safe_app_file("img/$logo");
-  if( !getimagesize($imgfile) ) {
+  $imgfile = realpath(app_file("img/$logo"));
+  if($imgfile && getImagesize($imgfile)) { 
+    return true; 
+  } else {
     $error = "not found on server";
+    return false;
   }
-  return strlen($error) == 0;
 }
 
 function validate_admin_name($name, &$error = null): bool {

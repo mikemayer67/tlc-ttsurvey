@@ -71,7 +71,7 @@ class MarkdownParser {
     $ob_string = ob_get_clean();
   }
 
-  private function _parse(string $markdown): string 
+  private function _parse(string $markdown, bool $override_wrap=false): string 
   {
     ob_start();
 
@@ -95,7 +95,7 @@ class MarkdownParser {
 
     $ob_string = ob_get_clean();
 
-    if($this->wrap) { 
+    if($this->wrap && !$override_wrap) { 
       $clean_html = "<div class='markdown'>$clean_html</div>";
     }
 
@@ -111,3 +111,21 @@ class MarkdownParser {
     return self::$instance->_parse($markdown);
   }
 }
+
+function possibleMarkdown(string $text): bool {
+    $patterns = [
+        '/^\s{0,3}#{1,6}\s+/',         // headers
+        '/(\*{1,2}|_{1,2})\S.*?\1/',   // bold/italic
+        '/\[[^\]]+\]\([^)]+\)/',       // links
+        '/(`{1,3})(.*?)\1/',           // code
+        '/^(\*|\-|\+)\s+\S+/m',        // unordered list
+        '/^\d+\.\s+\S+/m',             // ordered list
+        '/^>\s+.+/m',                   // blockquote
+    ];
+
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $text)) return true;
+    }
+    return false;
+}
+

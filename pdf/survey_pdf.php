@@ -5,7 +5,9 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/login.php'));
 require_once(app_file('pdf/tcpdf_config.php'));
+require_once(app_file('pdf/tcpdf_utils.php'));
 require_once(app_file('pdf/pdf_box.php'));
+require_once(app_file('survey/markdown.php'));
 require_once(app_file('vendor/autoload.php'));
 
 use TCPDF;
@@ -56,18 +58,21 @@ class SurveyPDF extends TCPDF
     {
         $page = $this->getPage();
 
+        $icon_height = 3 * K_EIGHTH_INCH;
+        $icon_width  = 0;
         $logo = app_logo();
-        $logo_file = app_file("img/$logo");
-        $logo_size = getimagesize($logo_file);
-        $logo_width = $logo_size[0];
-        $logo_height = $logo_size[1];
+        if($logo) {
+            $logo_file = app_file("img/$logo");
+            $logo_size = getimagesize($logo_file);
+            $logo_width = $logo_size[0];
+            $logo_height = $logo_size[1];
 
-        $icon_height = 3*K_EIGHTH_INCH;
-        $icon_width = $icon_height * $logo_width / $logo_height;
-        $icon_margin = 1; // mm
+            $icon_width = $icon_height * $logo_width / $logo_height;
+            $icon_margin = 1; // mm
+        }
 
-        $this->SetFont(K_SERIF_FONT, size:20);
-        $title_height = $this->getLineHeight();
+        $this->SetFont(K_SERIF_FONT, size: 20);
+        $title_height = tcpdf_line_height($this);
         $extra_height = $icon_height - $title_height;
 
         $this->setCellPaddings($icon_width + K_EIGHTH_INCH/2, bottom:$extra_height/2);
@@ -82,13 +87,15 @@ class SurveyPDF extends TCPDF
             $this->Cell(0, 0, '(participant name)');
         }
 
-        $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $icon_margin, $icon_width, $icon_height);
+        if($icon_width>0) {
+            $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $icon_margin, $icon_width, $icon_height);
+        }
     }
     
     public function Footer(): void
     {
         $this->SetFont(K_SANS_SERIF_FONT,size:8);
-        $line_height = $this->getLineHeight();
+        $line_height = tcpdf_line_height($this);
         $this->SetY(- PDF_MARGIN_FOOTER - $line_height);
 
         $cell_width = ($this->getPageWidth() - ($this->lMargin + $this->rMargin)) / 2;
@@ -100,17 +107,6 @@ class SurveyPDF extends TCPDF
         $this->Cell($cell_width, $line_height, "version: $version", 0, 0, 'L');
         $this->SetFont(K_SANS_SERIF_FONT,size:8);
         $this->Cell($cell_width, $line_height, "Page $page of {$this->page_count}", 0, 0, 'R');
-    }
-
-    // Add some convenience functions that are "missing" from TCPDF (IMNSHO)
-
-    /**
-     * Computes current line height accounting for font size and cell height ratio
-     * @return float line height in native unit (mm)
-     */
-    private function getLineHeight() : float
-    {
-        return $this->getFontSize() * $this->getCellHeightRatio();
     }
 
     // Define the methods for precomputing all of the survey elements that will need 
@@ -164,30 +160,21 @@ class SurveyRootBox extends PDFRootBox
         usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
         foreach($sections as $section) {
-            $section_box = new SectionBox($tcpdf, $section);
+            $section_box = new SurveySectionBox($tcpdf, $section);
+            $this->addChild($section_box);
         }
-    }
-
-    /**
-     * Adds a single section to the survey form
-     * @param array $section 
-     * @param array $content 
-     * @return void 
-     */
-    protected function add_section(array $section, array $content)
-    {
-        $box = new SectionBox($this->_tcpdf, $section);
-        $this->addChild($box);
     }
 }
 
 /**
  * Responsible for rendering a section header box
  */
-class SectionBox extends PDFBox
+class SurveySectionBox extends PDFBox
 {
-    private ?TextBox $name_box = null;
-    private ?TextBox $intro_box = null;
+    private ?PDFBox $_name_box = null;
+    private ?PDFBox $_intro_box = null;
+
+    private float $_gap = 1; // mm
 
     /**
      * @param SurveyPDF $tcpdf 
@@ -202,33 +189,35 @@ class SectionBox extends PDFBox
         $collapsible = $section['collapsible'] ?? true;
         $intro       = $section['intro'] ?? '';
 
+        $page_width = $tcpdf->getPageWidth();
+        $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
+
+        $this->_margin[0] = 0.5*K_INCH;
+        $this->_margin[2] = 0.25*K_INCH;
+
+        $this->_width = $box_width;
+        $this->_height = $collapsible && $intro ? $this->_gap : 0;
+
         if($collapsible) {
-            $name_box = new TextBox($tcpdf, $name);
+            $this->_name_box = new PDFTextBox($tcpdf,$box_width,$name,K_SERIF_FONT,size:16);
+            $this->_height += $this->_name_box->getHeight();
         }
         if($intro) {
-            $intro_box = new TextBox($tcpdf, $intro);
+            if(possibleMarkdown($intro)) {
+                $this->_intro_box = new PDFMarkdownBox($tcpdf,$box_width, $intro);
+            } else {
+                $this->_intro_box = new PDFTextBox($tcpdf, $box_width, $intro, multi: true);
+            }
+            $this->_height += $this->_intro_box->getHeight();
         }
     }
 
     /**
-     * Overrides the default startsNewPage method.
-     *   Each section header starts a new page.
-     * @return bool 
+     * Overrides the maxPagePos method.
+     *   Section boxes should start in the two 2/3 of the page.
+     * @return float 
      */
-    public function startsNewPage() : bool { return true; }
-
-    protected function render() : bool {
-        // @@@TODO Flesh this out
-        return true;
-    }
-}
-
-class TextBox extends PDFBox
-{
-    public function __construct(TCPDF $tcpdf,string $text)
-    {
-        return parent::__construct($tcpdf);
-    }
+    public function maxPagePos() :float { return 0.67; }
 
     protected function render() : bool {
         // @@@TODO Flesh this out
