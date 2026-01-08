@@ -132,7 +132,8 @@ class SurveyPDF extends TCPDF
         $this->modified = $info['modified'];
 
         $content_root = new SurveyRootBox($this,$content);
-        $content_root->render();
+        $content_root->computeLayout($this);
+        $content_root->render($this);
     }
 }
 
@@ -159,9 +160,11 @@ class SurveyRootBox extends PDFRootBox
         $sections = $content['sections'];
         usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
+        $indent = 0;
         foreach($sections as $section) {
             $section_box = new SurveySectionBox($tcpdf, $section);
             $this->addChild($section_box);
+            if($section_box->incrementIndent()) { $indent += 1; }
         }
     }
 }
@@ -192,21 +195,31 @@ class SurveySectionBox extends PDFBox
         $page_width = $tcpdf->getPageWidth();
         $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
 
-        $this->_margin[0] = 0.5*K_INCH;
-        $this->_margin[2] = 0.25*K_INCH;
+        $this->_top_pad    = 0.50*K_INCH;
+        $this->_bottom_pad = 0.25*K_INCH;
 
         $this->_width = $box_width;
-        $this->_height = $collapsible && $intro ? $this->_gap : 0;
+        $this->_height = 0;
+
+        if($collapsible || $intro) {
+            $this->_bottom_pad = 0.25 * K_INCH;
+        } else {
+            $this->_top_pad = 0;
+            $this->_bottom_pad = 0;
+        }
 
         if($collapsible) {
             $this->_name_box = new PDFTextBox($tcpdf,$box_width,$name,K_SERIF_FONT,size:16);
             $this->_height += $this->_name_box->getHeight();
         }
+        if($collapsible && $intro) {
+            $this->_height += $this->_gap;
+        }
         if($intro) {
             if(possibleMarkdown($intro)) {
-                $this->_intro_box = new PDFMarkdownBox($tcpdf,$box_width, $intro);
+                $this->_intro_box = new PDFMarkdownBox($tcpdf,$box_width, $intro, size:9);
             } else {
-                $this->_intro_box = new PDFTextBox($tcpdf, $box_width, $intro, multi: true);
+                $this->_intro_box = new PDFTextBox($tcpdf, $box_width, $intro, style: 'I', size:9, multi: true);
             }
             $this->_height += $this->_intro_box->getHeight();
         }
@@ -219,8 +232,47 @@ class SurveySectionBox extends PDFBox
      */
     public function maxPagePos() :float { return 0.67; }
 
-    protected function render() : bool {
-        // @@@TODO Flesh this out
+    /**
+     * Section boxes always reset the indent to 0
+     * @return bool 
+     */
+    public function resetIndent(): bool { return true; }
+
+    /**
+     * Section boxes increase the indent for subsequent boxes if it contains an intro box
+     * @return float amount by which to incrment the indent
+     */
+    public function incrementIndent(): float
+    {
+        return $this->_intro_box ? K_QUARTER_INCH : 0;
+    }
+
+    /**
+     * Renders the content of a SurveySection box
+     * @param TCPDF $tcpdf 
+     * @return bool 
+     */
+    protected function render(TCPDF $tcpdf) : bool {
+        $x = $this->_x;
+        $y = $this->_y;
+
+        if ($this->_name_box) {
+            $this->_name_box->setPosition($this->_page, $x, $y);
+            if(!$this->_name_box->render($tcpdf)) { return false; }
+
+            $y += $this->_name_box->getHeight();
+            $tcpdf->setLineWidth(0.2);
+            $x1 = PDF_MARGIN_LEFT;
+            $x2 = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+            $tcpdf->Line($x1,$y,$x2,$y);
+            if($this->_intro_box) { $y += $this->_gap; }
+        }
+
+        if($this->_intro_box) {
+            $this->_intro_box->setPosition($this->_page, $x, $y);
+            if(!$this->_intro_box->render($tcpdf)) { return false; }
+        }
+
         return true;
     }
 }
