@@ -87,6 +87,13 @@ add_input_section('Password Reset',[
   ],
 ]);
 
+add_input_section('Email Reminders',[
+  [
+    'reminder_freq',
+    'info' => 'How long to wait before resending a particuarl reminder (hours)',
+  ],
+]);
+
 add_input_section('Email Server',[
   [
     'smtp_host',

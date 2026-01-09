@@ -144,7 +144,7 @@ function send_confirmation_email($userid,$survey_id,$email,$content,$submitted)
 {
   todo("Add summary info to confirmation email");
   $error = '';
-  sendmail_confirmation($email,'',$error);
+  sendmail_confirmation($email,$userid,'',$error);
   if(empty($error)) {
     confirmation_email_sent($userid,$survey_id,$email);
     $_SESSION['queued-confirmation-email'] = false;

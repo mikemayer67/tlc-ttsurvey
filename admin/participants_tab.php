@@ -41,6 +41,26 @@ $last_survey = [];
 $rows = MySQLSelectArrays('SELECT userid,survey_id,survey_name from tlc_tt_view_last_user_survey','');
 foreach($rows as $row) { $last_survey[$row[0]] = ['id'=>$row[1], 'name'=>$row[2]]; }
 
+echo "<div class='resizable boxed'>";
+
+echo "<div class='actions'>";
+echo "  <div class='select'>";
+echo "    <label for='action-select'>Select:</label>";
+echo "    <select id='action-select'>";
+echo "      <option class='placeholder' disabled selected value=''>...</option>";
+echo "      <option value='all'>All</option>";
+echo "      <option value='none'>None</option>";
+echo "      <option disabled value=''>-</option>";
+echo "      <option value='no-response'>Not started</option>";
+echo "      <option value='draft-only'>Unsubmitted Draft</option>";
+echo "      <option value='unsbumitted-updates'>Unsaved Edits</option>";
+echo "    </select>";
+echo "  </div>";
+echo "  <div class='reminders'>";
+echo "    <button id='send-reminders'>Send Reminder Emails</button>";
+echo "  </div>";
+echo "</div>";
+
 echo "<table id='participants'>";
 echo "  <thead><tr>";
 echo "    <th rowspan='2' class='select'>(select)</th>";
@@ -88,6 +108,7 @@ foreach(User::all_users() as $user) {
 
 echo "  </tbody>";
 echo "</table>";
+echo "</div>";
 
 
 echo "</form>";
