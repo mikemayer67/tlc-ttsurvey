@@ -173,6 +173,17 @@ div.noscript div {
   background:inherit;
 }
 
+#ttt-body div.boxed {
+  background:white;
+  border:solid 1px black;
+  padding:0 0 8px;
+}
+
+#ttt-body div.resizable {
+  resize:vertical;
+  overflow:auto;
+}
+
 #ttt-body div.body form div.section-header {
   margin:1em 0 0.5em 0;
   font-size:1.2em;

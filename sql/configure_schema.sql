@@ -457,6 +457,26 @@ IF current_version < 1 THEN
 END IF;
 
 
+--
+-- VERSION 2 --
+--
+IF current_version < 2 THEN
+-- This version adds the table(s) necessasry to track sent reminder emails
+
+  CREATE TABLE tlc_tt_reminder_emails (
+    userid    varchar(24) NOT NULL,
+    subject   varchar(32) NOT NULL,
+    last_sent datetime    NOT NULL,
+    email     varchar(45) NOT NULL,
+    PRIMARY KEY (userid),
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+-- Add version 2 to the history and increment current version
+  SET current_version = 2;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,'Add email reminder tracking');
+END IF;
+
 -- The following is a template for new versions
 --   Copy it and place above this line and remove all leading '-- '
 --   Replace all '#' with the next version number
