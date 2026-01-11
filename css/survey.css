@@ -465,8 +465,9 @@ details.section summary span {
     text-align:right;
   }
   #survey .select.grid .intro {
-    justify-self:end;
-    text-align:right;
+    justify-self:start;
+    text-align:left;
+    grid-column: 1 / 3;
   }
   #survey .select.grid .qualifier {
     grid-column: 2 / 3;
