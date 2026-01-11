@@ -477,6 +477,40 @@ IF current_version < 2 THEN
   INSERT INTO tlc_tt_version_history (version,description) values (current_version,'Add email reminder tracking');
 END IF;
 
+--
+-- VERSION 3 --
+--
+IF current_version < 3 THEN
+-- Change the interpretation of question flag bitfield 0x10 from BOXED to NEW
+
+  CREATE OR REPLACE VIEW tlc_tt_view_survey_questions AS
+  SELECT q.question_id, q.survey_id, 
+    q.wording_sid,     wording.str     AS wording_str,
+    q.question_type, 
+    CASE WHEN (q.question_flags & 0x01) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
+    CASE WHEN (q.question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
+    CASE WHEN (q.question_flags & 0x08) > 0 THEN 'YES' 
+         WHEN (q.question_flags & 0x10) > 0 THEN 'NEW' 
+         ELSE 'NO'
+         END AS grouped,
+    CASE WHEN q.question_type not like 'SELECT%' THEN NULL
+         WHEN (q.question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
+    q.other_sid,       other.str       AS other_str,
+    q.qualifier_sid,   qualifier.str   AS qualifier_str,
+    q.intro_sid,       intro.str       AS intro_str,
+    q.info_sid,        info.str        AS info_str
+  FROM tlc_tt_survey_questions q
+  LEFT JOIN tlc_tt_strings wording     ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tt_strings other       ON q.other_sid = other.string_id
+  LEFT JOIN tlc_tt_strings qualifier   ON q.qualifier_sid = qualifier.string_id
+  LEFT JOIN tlc_tt_strings intro       ON q.intro_sid = intro.string_id
+  LEFT JOIN tlc_tt_strings info        ON q.info_sid = info.string_id;
+
+-- Add version 3 to the history and increment current version
+  SET current_version = 3;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,"Changed qustion flag 0x10 from BOXED to NEW");
+END IF;
+
 -- The following is a template for new versions
 --   Copy it and place above this line and remove all leading '-- '
 --   Replace all '#' with the next version number

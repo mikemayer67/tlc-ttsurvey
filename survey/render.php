@@ -242,7 +242,7 @@ class RenderEngine
       case "YES":   
         $need_open = true;
         break;
-      case "BOXED": 
+      case "NEW": 
         $need_close = true;
         $need_open  = true; 
         break;
