@@ -22,6 +22,9 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 
+require_once(app_file('include/db.php'));
+verify_required_db_version(3);
+
 session_start();
 
 try

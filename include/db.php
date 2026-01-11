@@ -169,3 +169,18 @@ function MySQLSelectValues($query,$types=null,...$params)
   return $values;
 }
 
+/**
+ * Verifies that the min requred tlc_tt versioning has been implemented.
+ *   If not, invoke internal_error to make it immediately obvious that 
+ *   something went wrong with the upgrade.
+ * @param int $required 
+ * @return void 
+ */
+function verify_required_db_version(int $required) : void
+{
+  $cur_version = MySQLSelectValue("select max(version) from tlc_tt_version_history");
+  if($cur_version < $required) { 
+    internal_error("Need to upgrade tlc_tt database version to at least $required");
+  }
+}
+
