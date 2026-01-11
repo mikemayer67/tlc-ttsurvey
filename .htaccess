@@ -56,7 +56,7 @@ RewriteRule ^ - [L]
 # ---------------------------------------------------------
 # 2. Serve static assets directly (images, CSS, JS)
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js)$ [NC]
+RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js|ico)$ [NC]
 RewriteRule ^ - [L]
 
 # ---------------------------------------------------------

@@ -12,9 +12,9 @@ class BadInput      extends \Exception {}
 class MissingInput  extends \Exception {}
 class SMTPError     extends \Exception {}
 
-function api_die() 
+function api_die($msg='') 
 {
-  error_log("API Error: ".print_r($_SERVER,true));
+  error_log("API Error[$msg]: ".print_r($_SERVER,true));
   http_response_code(405);
   require(APP_DIR."/405.php");
   die; 
@@ -133,14 +133,20 @@ function validate_entry_uri()
   // http[s]://(host[/dir])/[tt|tt.php][?query]
   $request_uri = $_SERVER['REQUEST_URI'];
   // Needs to start with the URI for our app
-  if(!str_starts_with($request_uri,APP_URI)) { api_die(); }
+  if(!str_starts_with($request_uri,APP_URI)) 
+  { 
+    api_die("Bad URI: '$request_uri'"); 
+  }
   // Good... now strip that off the request (along with the / that follows)
   $request_uri = substr($request_uri,1+strlen(APP_URI));
   // Strip off any query string
   $pos = strpos($request_uri,"?");
   if($pos !== false ) { $request_uri = substr($request_uri,0,$pos); }
   // All we should be left with is tt.php, 405.php, 500.php, tt or nothing
-  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php","preview/"]) ) { api_die(); }
+  if(!in_array($request_uri,["", "tt","tt.php","405.php","500.php","admin/","admin.php","preview/"]) ) 
+  { 
+    api_die("Invalid resource: '$request_uri'"); 
+  }
   // We're good!
 }
 validate_entry_uri();
@@ -175,7 +181,7 @@ function validate_nonce($key,$src='POST',$invalidate=true)
   $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
   if($actual !== $expected) {
     log_warning("Invalid nonce: ($key:$actual/$expected)",2);
-    api_die();
+    api_die("Invalid nonce: key=$key");
   }
   if($invalidate) { $_SESSION['nonce'][$key] = null; }
 }
