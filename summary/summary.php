@@ -18,7 +18,7 @@ $is_admin = $admin_id || in_array($userid, survey_admins());
 // determine if the current user has access to see summaries in general
 //   If not, boot them out now
 $has_access = $is_admin || has_summary_access($userid);
-if(!$has_access) { api_die(); }
+if(!$has_access) { api_die("Blocked access to Admin Dashboard (".($usrid??'').")"); }
 
 $survey_id = $_REQUEST['summary'];
 $active_id = active_survey_id();
