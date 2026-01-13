@@ -153,8 +153,6 @@ class SurveyPDF extends TCPDF
  */
 class SurveyRootBox extends PDFRootBox
 {
-  private $_indent = 0;
-
   /**
    * Constructs all of the top level child boxes for the survey form
    * @param SurveyPDF $tcpdf 
@@ -182,13 +180,8 @@ class SurveyRootBox extends PDFRootBox
    */
   private function add_section(SurveyPDF $tcpdf, array $section, array $content)
   {
-    $this->_indent = 0;
     $box = new SurveySectionBox($tcpdf, $section);
     $this->addChild($box);
-
-    if ($box->incrementIndent()) {
-      $this->_indent += 1;
-    };
 
     $this->add_questions($tcpdf, $section['section_id'], $content);
   }
@@ -239,8 +232,8 @@ class SurveyRootBox extends PDFRootBox
 
     // add question boxes to the survey
     foreach($question_boxes as $questions) {
-      $box = new SurveyQuestionBox($tcpdf, $questions);
-      $this->addChild($box);
+      $box = new SurveyQuestionBox($tcpdf, $questions, $content);
+      $this->addChild($box
     }
   }
 }
@@ -271,14 +264,12 @@ class SurveySectionBox extends PDFBox
     $page_width = $tcpdf->getPageWidth();
     $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
 
-    $this->_top_pad    = 0.50 * K_INCH;
-    $this->_bottom_pad = 0.25 * K_INCH;
-
     $this->_width = $box_width;
     $this->_height = 0;
 
     if ($collapsible || $intro) {
-      $this->_bottom_pad = 0.25 * K_INCH;
+      $this->_top_pad    = 0.25 * K_INCH;
+      $this->_bottom_pad = 0.125 * K_INCH;
     } else {
       $this->_top_pad = 0;
       $this->_bottom_pad = 0;
@@ -376,7 +367,7 @@ class SurveyQuestionBox extends PDFBox
    * @param array $questions 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, array $questions)
+  public function __construct(SurveyPDF $tcpdf, array $questions, array $content)
   {
     $page_width = $tcpdf->getPageWidth();
     $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
@@ -387,10 +378,17 @@ class SurveyQuestionBox extends PDFBox
     foreach($questions as $question) {
       $type = $question['type'];
 
-      $stub = new PDFTextBox($tcpdf, $box_width, $type);
-      $this->_height += $stub->getHeight();
-      $this->_width = max($this->_width, $stub->getWidth());
-      $this->_child_boxes[] = $stub;
+      switch($type) {
+        case 'INFO':
+        $box = new SurveyInfoBox
+        break;
+        default:
+          $stub = new PDFTextBox($tcpdf, $box_width, $type);
+          $this->_height += $stub->getHeight();
+          $this->_width = max($this->_width, $stub->getWidth());
+          $this->_child_boxes[] = $stub;
+          break;
+      }
     }
   }
 
@@ -413,4 +411,19 @@ class SurveyQuestionBox extends PDFBox
 
     return true;
   }
+}
+
+class SurveyInfoBox extends PDFBox
+{
+  /**
+   * @param TCPDF $tcpdf 
+   * @param array $question 
+   * @return void 
+   */
+  public function __construct(TCPDF $tcpdf, array $question)
+  {
+
+  }
+
+
 }

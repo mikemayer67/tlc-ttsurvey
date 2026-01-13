@@ -209,13 +209,11 @@ abstract class PDFRootBox extends PDFBox
       $max_y = PDF_MARGIN_TOP + $content_height * $box->maxPagePos();
 
       $cur_y += $box->yOffset($prior);
+      $prior = $box;
 
       if (($cur_y > $max_y) || ($cur_y + $box->getHeight() > $content_bottom)) {
         $page += 1;
-        $prior = null;
         $cur_y = $content_top;
-      } else {
-        $prior = $box;
       }
 
       $box->setPosition($page, $content_left + $indent, $cur_y);
@@ -298,8 +296,9 @@ class PDFTextBox extends PDFBox
       $this->_multi = $num_lines > 1;
       $this->_height = $num_lines * tcpdf_line_height($tcpdf);
     } else {
+      $padding = $tcpdf->getCellPaddings();
       $this->_text = tcpdf_truncate_text($tcpdf, $text, $w);
-      $this->_width = $tcpdf->GetStringWidth($this->_text);
+      $this->_width = $tcpdf->GetStringWidth($this->_text) + $padding['L'] + $padding['R'];
       $this->_height = tcpdf_line_height($tcpdf);
     }
   }
