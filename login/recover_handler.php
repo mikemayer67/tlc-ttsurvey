@@ -29,7 +29,7 @@ function handle_recover_form()
     switch( $action = $_POST['action'] ) 
     {
     case 'cancel':
-      clear_redirect_data();
+      clear_redirect();
       break;
     case 'recover':
       handle_recover_userid_password();
@@ -44,11 +44,12 @@ function handle_recover_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    add_redirect_data('userid',   $_POST['userid']   ?? null);
-    add_redirect_data('email',    $_POST['email']    ?? null);
-    set_redirect_page('recover');
+    start_redirect('recover')
+      ->add('userid', $_POST['userid'] ?? null )
+      ->add('email',  $_POST['email']  ?? null )
+    ;
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 }
@@ -100,8 +101,9 @@ function handle_recover_userid_password()
   if(sendmail_recovery($email,$tokens,$error))
   {
     set_info_status("Login recovery instructions sent to $email");
-    add_redirect_data('userid',   $_POST['userid']   ?? null);
-    set_redirect_page('pwreset');
+    start_redirect('pwreset')
+      ->add('userid', $_POST['userid'] ?? null)
+    ;
   } else {
     global $SendmailLogToken;
     $admin = admin_name();
@@ -109,7 +111,7 @@ function handle_recover_userid_password()
       "Failed to send email with recovery instructions to $email.".
       "<div class='note'>Please let $admin know and mention error #$SendmailLogToken</div>"
     );
-    set_redirect_page('recover');
+    start_redirect('recover');
   }
 
 }

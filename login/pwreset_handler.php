@@ -29,7 +29,7 @@ function handle_pwreset_form()
     switch($action)
     {
     case 'cancel':
-      clear_redirect_data();
+      clear_redirect();
       break;
     case 'pwreset':
       handle_password_reset();
@@ -93,6 +93,6 @@ function handle_password_reset()
 
 handle_pwreset_form();
 
-clear_redirect_data();
+clear_redirect();
 header("Location: ".app_uri());
 die();

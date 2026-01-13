@@ -22,8 +22,9 @@ function handle_updateprof_form()
   if(!$action) { internal_error("Missing action in update request");   }
 
   if($action === 'cancel') { 
-    add_redirect_data('message',"Update Profile Cancelled");
-    set_redirect_page('close');
+    start_redirect('close')
+      ->add('message',"Update Profile Cancelled")
+    ;
     return;
   }
 
@@ -82,15 +83,17 @@ function handle_updateprof_form()
   }
 
   // success
-  add_redirect_data('message',"User Profile Updated");
-  add_redirect_data('email',$user->email() ?? '');
-  set_redirect_page('close');
+  start_redirect('close')
+    ->add('message',"User Profile Updated")
+    ->add('email',$user->email() ?? '')
+  ;
 }
 
 function handle_error($msg)
 {
-  add_redirect_data('status',[$msg,'error']);
-  set_redirect_page('updateprof');
+  start_redirect('updateprof')
+    ->add('status',[$msg,'error'])
+  ;
   $nonce = get_nonce('update-page');
   $app_uri = app_uri("ttt=$nonce");
   header("Location: $app_uri");

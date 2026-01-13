@@ -28,7 +28,7 @@ function handle_register_form()
     switch( $action = $_POST['action'] )
     {
     case 'cancel':
-      clear_redirect_data();
+      clear_redirect();
       break;
     case 'register':
       handle_register_new_user();
@@ -43,13 +43,14 @@ function handle_register_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    add_redirect_data('userid',   $_POST['userid']   ?? null);
-    add_redirect_data('fullname', $_POST['fullname'] ?? null);
-    add_redirect_data('email',    $_POST['email']    ?? null);
-    add_redirect_data('remember', $_POST['remember'] ?? null);
-    set_redirect_page('register');
+    start_redirect('register')
+      ->add('userid',   $_POST['userid']   ?? null)
+      ->add('fullname', $_POST['fullname'] ?? null)
+      ->add('email',    $_POST['email']    ?? null)
+      ->add('remember', $_POST['remember'] ?? null)
+    ;
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 }
@@ -98,7 +99,7 @@ function handle_register_new_user()
   if(!$user) {
     $token = gen_token(6);
     log_error("[$token] Failed to create user ($userid, $fullname, password, $email)");
-    throw BadInput("Failed to create user [error #$token]");
+    throw new BadInput("Failed to create user [error #$token]");
   }
 
   // user created
