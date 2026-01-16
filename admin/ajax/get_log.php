@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/ajax.php'));
 
 validate_ajax_nonce('admin-log');
 
@@ -52,5 +53,8 @@ if($lines) {
 
 end_ob_logging();
 
-echo json_encode($rval);
+// Not using AjaxResponse as js is expecting an indexed array
+//   not an associative array
+send_ajax_response($log);
+
 die();

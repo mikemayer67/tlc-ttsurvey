@@ -87,11 +87,14 @@ export default function init(ce)
 
     })
     .done( function(data,start,jqHXR) {
-      if(data.success) { ce.controls.add_new_survey(data.survey); }
-      else             { alert('Failed to create new survey: '+error);   }
+      if(data.success) {
+        ce.controls.add_new_survey(data.survey);
+      } else {
+        alert('Failed to create new survey: ' + error);
+      }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      internal_error(jqXHR);
+      ajax_error_hander(jqXHR,'create new survey');
     });
   }
 

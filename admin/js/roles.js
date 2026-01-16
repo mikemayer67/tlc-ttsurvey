@@ -51,17 +51,12 @@
         saved_summary_flags = summary_flags;
         show_status('info','Changes Saved');
       } else {
-        if( 'bad_nonce' in data) {
-          alert("Somthing got out of sync.  Reloading page.");
-          location.reload();
-        } else {
-          show_status('warning',data.error);
-        }
+        show_status('warning', data.error);
       }
       update_submit();
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'update roles')
     });
   }
 

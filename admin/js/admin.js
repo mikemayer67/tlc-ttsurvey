@@ -20,6 +20,21 @@ function internal_error(jqXHR)
        );
 }
 
+function ajax_error_hander(jqXHR,activity)
+{
+  if (jqXHR.status == 401) {
+    window.location.href = ce.ajaxuri;
+  } else if (jqXHR.status == 403) {
+    alert("Form timed out... reloading the admin dashboard");
+    location.reload();
+  } else if (jqXHR.status == 405) {
+    const reason = jqXHR.responseJSON?.reason || 'invalid request';
+    alert('Failed to ' + activity + ': ' + reason);
+  } else { 
+    internal_error(jqXHR);
+  }
+}
+
 function hide_status()
 {
   ace.status.removeClass().addClass('none');
@@ -89,7 +104,7 @@ function handle_admin_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    internal_error(jqXHR);
+    ajax_error_hander(jqXHR,'log out admin');
   });
 }
 
@@ -104,7 +119,7 @@ function handle_user_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    internal_error(jqXHR);
+    ajax_error_hander(jqXHR,'log out admin');
   });
 }
 

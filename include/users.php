@@ -159,7 +159,7 @@ class User {
   public function set_fullname_and_notify($fullname,&$error=0)
   {
     $old_fullname = $this->_fullname;
-    $rval = $this>set_fullname($fullname,$error);
+    $rval = $this->set_fullname($fullname,$error);
 
     if($rval) { 
       if($email = $this->email()) {

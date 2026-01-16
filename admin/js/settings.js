@@ -42,21 +42,15 @@
         show_status('info','Changes Saved');
       } 
       else {
-        if( 'bad_nonce' in data ) {
-          alert("Somthing got out of sync.  Reloading page.");
-          location.reload();
-        } else {
-          for( const [key,error] of Object.entries(data) ) {
-            if( key in ce.inputs     ) { ce.inputs[key].addClass('invalid-value'); }
-            if( key in ce.error_divs ) { ce.error_divs[key].show().html(error);    }
-          }
-          update_submit();
+        for (const [key, error] of Object.entries(data)) {
+          if (key in ce.inputs) { ce.inputs[key].addClass('invalid-value'); }
+          if (key in ce.error_divs) { ce.error_divs[key].show().html(error); }
         }
       }
       update_submit();
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'update settings')
     } )
     ;
   }

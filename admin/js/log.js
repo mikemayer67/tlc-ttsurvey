@@ -28,7 +28,7 @@
       ce.log_display.scrollTop(ce.log_display[0].scrollHeight);
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'get log entries');
     });
 
     resume_refresh();

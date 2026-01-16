@@ -21,7 +21,7 @@ if(key_exists('forget',$_GET))
 // In addition to the main login page, there are a handful of supplemental login pages.  
 // These can be specified via:
 //   - the URI query parameter 'p'  (e.g. http://mysite.com/tt.php?p=recover)
-//   - the session data (e.g. $_SESSION['redirect-page'] = 'recover')
+//   - the session redirect data (e.g. $_SESSION[REDIRECT_KEY]['page'] = 'recover')
 // These SHOULD be mutually exclusive, but if there is conflict, the session data takes precedence
 
 $page = get_redirect_page();

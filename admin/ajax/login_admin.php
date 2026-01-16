@@ -8,6 +8,7 @@ require_once(app_file('include/validation.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
+require_once(app_file('include/ajax.php'));
 
 validate_ajax_nonce('admin-login');
 
@@ -22,31 +23,30 @@ $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
 $admin_username = $config['admin_username'] ?? null;
 $admin_password = $config['admin_password'] ?? null;
 
+$response = new AjaxResponse();
+
 if( ($userid===$admin_username) && ($password === $admin_password) ) 
 {
   log_info("Admin login as $userid");
   $_SESSION['admin-id'] = $userid;
-  $rval = ['success'=>true];
 }
 else if(validate_user_password($userid,$password)) 
 {
   $roles = user_roles($userid);
-  if( count($roles) > 0 ) {
+  if($roles) {
     logout_active_user();
     $user = User::from_userid($userid);
     start_survey_as($user);
-    
-    $rval = ['success'=>true];
   } else {
-    $rval = ['success'=>false, 'error'=>"$userid has no admin roles"];
+    $response->fail("$userid has no admin roles");
   }
 }
 else
 {
-  $rval = ['success'=>false, 'error'=>'Invalid userid/password'];
+  $response->fail('Invalid userid/password');
 }
 
 end_ob_logging();
 
-echo json_encode($rval);
+$response->send();
 die();

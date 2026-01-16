@@ -5,16 +5,16 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('admin/surveys/create_new.php'));
+require_once(app_file('include/ajax.php'));
 
 validate_ajax_nonce('admin-surveys');
 
-start_ob_logging();
-
 $name = $_POST['name'] ?? null;
-if(!$name) {
-  echo json_encode( array( 'success'=>false, 'name'=>'mising' ) );
-  die();
-}
+if(!$name) { send_ajax_bad_request('missing name'); }
+
+$response = new AjaxResponse();
+
+start_ob_logging();
 
 $clone = $_POST['clone'] ?? null;
 
@@ -23,12 +23,12 @@ $new_id = create_new_survey($name,$clone,$error);
 
 if($new_id) {
   $info = survey_info($new_id);
-  $rval = array('success'=>true, 'survey'=>$info);
+  $response->add('survey',$info);
 } else {
-  $rval = array('success'=>false, 'error'=>$error);
+  $response->fail($error);
 }
 
 end_ob_logging();
 
-echo json_encode($rval);
+$response->send();
 die();

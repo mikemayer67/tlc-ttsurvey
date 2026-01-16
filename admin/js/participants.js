@@ -62,7 +62,7 @@
         alert(message);
       })
       .fail( function(jqXHR,textStatus,errorThrown) {
-        internal_error(jqXHR);
+        ajax_error_hander(jqXHR,'send reminder eamils');
       });
     }
   }
@@ -135,19 +135,23 @@
       data: data,
     } )
     .done( function(data,status,jqXHR) {
-      let message = (
-        "PASSWORD RESET INFO\n" +
-        "  URL: " + data.url + "\n" +
-        "  userid: " + userid + "\n" +
-        "  token: " + data.token
-      );
-      if(data.email) {
-        message = message + "\n\nRecovery Email sent to: " + data.email;
+      if(data.success) {
+        let message = (
+          "PASSWORD RESET INFO\n" +
+          "  URL: " + data.url + "\n" +
+          "  userid: " + userid + "\n" +
+          "  token: " + data.token
+        );
+        if (data.email) {
+          message = message + "\n\nRecovery Email sent to: " + data.email;
+        }
+        alert(message);
+      } else {
+        internal_error(jqXHR); 
       }
-      alert(message);
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'get password reset token');
     } )
   }
 

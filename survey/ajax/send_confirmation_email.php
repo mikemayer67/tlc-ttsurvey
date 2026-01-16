@@ -6,71 +6,47 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/ajax.php'));
 
-class ValidationError extends \Exception {}
-class FailedToSend    extends \Exception {}
+require_once(app_file('survey/submitted.php'));  // for send_confirmation_email
 
-function fail_to_send($reason)
-{
-  $response = ['success'=>false, 'reason'=>$reason];
-  echo json_encode($response);
-  die();
-}
+start_ob_logging();
 
-$response = ['success'=>true];
+// Validate the request before doing anything else
 
-try {
-  start_ob_logging();
+$active_id = active_survey_id();
+if(!$active_id) { send_ajax_bad_request('no active survey'); }
 
-  // Validate the request before doing anything else
-  //   log the validation failure and return http code 405
+$active_userid = active_userid() ?? null;
+if(!$active_userid) { send_ajax_unauthorized('no active userid'); }
 
-  $active_id = active_survey_id();
-  if(!$active_id) { throw new ValidationError('no active survey'); }
+$userid = strtolower($_POST['userid'] ?? '');
+if($userid === '') { send_ajax_bad_request('no userid in POST'); }
 
-  $active_userid = active_userid() ?? null;
-  if(!$active_userid) { fail_vlidation('no active userid'); }
+$user = User::from_userid($userid);
+if(!$user) { send_ajax_bad_request("invalid userid ($userid)"); }
 
-  $userid = strtolower($_POST['userid'] ?? '');
-  if($userid === '') { throw new ValidationError('no userid in POST'); }
+if($userid !== $active_userid) { send_ajax_bad_request('$userid is not the active userid'); }
 
-  $user = User::from_userid($userid);
-  if(!$user) { throw new ValidationError("invalid userid ($userid)"); }
+$email = $user->email();
+if(!$email) { send_ajax_failure('no email address in your profile'); }
 
-  if($userid !== $active_userid) { throw new ValidationError('$userid is not the active userid'); }
+$content   = survey_content($active_id);
+if(!$content) { send_ajax_bad_request("No content data found for survey $active_id"); }
 
-  $email = $user->email();
-  if(!$email) { throw new FailedToSend('no email address in your profile'); }
+require_once(app_file('include/responses.php'));
 
-  $content   = survey_content($active_id);
-  if(!$content) { throw new ValidationError("No content data found for survey $active_id"); }
+$submitted = get_user_responses($userid,$active_id,0);
+if(!$submitted) { send_ajax_failure("No submitted responses found for $userid"); }
 
-  require_once(app_file('include/responses.php'));
+$response = new AjaxResponse();
+$response->add('email',$email);
 
-  $submitted = get_user_responses($userid,$active_id,0);
-  if(!$submitted) { throw new ValidationError("No submitted responses found for $userid"); }
+$success = send_confirmation_email($userid,$active_id,$email,$content,$submitted);
+if(!$success) { $response->fail(); }
 
-  $response['email'] = $email;
+end_ob_logging();
 
-  require_once(app_file('survey/submitted.php'));
+$response->send();
 
-  // Passed validation
-  //   Time to draft the email
-
-  send_confirmation_email($userid,$active_id,$email,$content,$submitted);
-}
-catch(ValidationError $e) {
-  log_warn("Failed to validate: $failure");
-  http_response_code(405);
-  die();
-}
-catch(FailedToSend $e) {
-  $response['success'] = false;
-  $response['reason'] = $e->getMessage();
-}
-finally {
-  end_ob_logging();
-}
-
-echo json_encode($response);
 die();

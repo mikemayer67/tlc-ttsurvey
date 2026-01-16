@@ -5,45 +5,31 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('admin/surveys/update.php'));
+require_once(app_file('include/ajax.php'));
 
 validate_ajax_nonce('admin-surveys');
 
 start_ob_logging();
 
-use Exception;
+$response = new AjaxResponse();
 
 $survey_id  = $_POST['survey_id'] ?? null;
 $new_state  = $_POST['new_state'] ?? null;
 
-try {
-  $error = null;
+if (!$survey_id) { send_ajax_bad_request('missing survey_id'); }
+if (!$new_state) { send_ajax_bad_request('missing new_state'); }
 
-  if(!$survey_id) { throw new Exception('Missing survey_id in request'); }
-  if(!$new_state) { throw new Exception('Missing new_state in request');  }
+$message = '';
+$success = update_survey_state($survey_id, $new_state, $message);
+log_info($message);
 
-  $message = '';
-  $success = update_survey_state($survey_id,$new_state,$message);
-
-  log_info($message);
-
-  $rval = array(
-    'success'=>$success,
-    'message'=>$message,
-  );
-}
-catch(Exception $e)
-{
-  $errid = bin2hex(random_bytes(3));
-  $error = $e->getMessage();
-  log_error("[$errid]: $error",0);
-  http_response_code(400);
-  $rval = array(
-    'success'=>false, 
-    'error'=>"Failed to update survey state.  Please report error $errid to a tech admin",
-  );
+if ($success) {
+  $response->add('message', $message);
+} else {
+  $response->fail($message);
 }
 
 end_ob_logging();
 
-echo json_encode($rval);
+$response->send();
 die();

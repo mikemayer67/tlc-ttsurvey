@@ -16,10 +16,16 @@ const ACTIVE_USER_COOKIE = 'ttt-active-user';
 const ACTIVE_TOKEN_COOKIE = 'ttt-active-token';
 const ACCESS_TOKENS_COOKIE = 'ttt-access-tokens';
 
+$config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+$secure_cookies = (
+  ($config['cookies_require_https'] ?? true) ||
+  (($_SERVER['HTTPS'] ?? 'off') !== 'off')
+);
+
 define('SECURE_COOKIE_OPTIONS', [
   'path'     => '/',
   'domain'   => '',
-  'secure'   => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+  'secure'   => $secure_cookies,
   'httponly' => true,
   'samesite' => 'Lax',
 ]);
@@ -38,7 +44,7 @@ define('SECURE_COOKIE_OPTIONS', [
  *   - these will be passed back in the ajax response
  *   - the javascript that invoked ajax must set the cookies on the browser
  *
- * AJAX SUPPORT IS CURRENTLY COMMENTED OUT... IT'S being used and would require
+ * AJAX SUPPORT IS CURRENTLY COMMENTED OUT... Its use would require
  *   dropping the httponly security guards on the access cookies.  I'm leaving
  *   it here in case I find an actual need for it. I'd rather have to uncomment
  *   some code than reimplement this rather hackish ajax workaround.

@@ -213,7 +213,6 @@ function sendmail_confirmation($email,$userid,$summary,&$error=null)
   }
 
   $name = $user->fullname();
-
   $message = [];
 
   $message[] = [
