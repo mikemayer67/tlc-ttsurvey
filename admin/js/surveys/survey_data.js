@@ -74,7 +74,7 @@ export default function init(ce)
         _surveys[id].content = content;
         $(document).trigger('ContentDataLoaded',[id,data.content]);
       } else {
-        alert("Data got out of sync with database: " + data.error);
+        alert(data.reason);
         location.reload();
       }
     })
@@ -170,7 +170,7 @@ export default function init(ce)
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      internal_error(jqXHR);
+      ajax_error_hander(jqXHR,'update survey state')
     }) ;
   }
 

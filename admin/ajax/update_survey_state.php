@@ -11,8 +11,6 @@ validate_ajax_nonce('admin-surveys');
 
 start_ob_logging();
 
-$response = new AjaxResponse();
-
 $survey_id  = $_POST['survey_id'] ?? null;
 $new_state  = $_POST['new_state'] ?? null;
 
@@ -23,13 +21,12 @@ $message = '';
 $success = update_survey_state($survey_id, $new_state, $message);
 log_info($message);
 
-if ($success) {
-  $response->add('message', $message);
-} else {
-  $response->fail($message);
-}
+if(!$success) { send_ajax_failure($message); }
 
 end_ob_logging();
 
+$response = new AjaxResponse();
+$response->add('message', $message);
 $response->send();
+
 die();

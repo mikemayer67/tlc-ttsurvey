@@ -147,6 +147,7 @@
         }
         alert(message);
       } else {
+        // should never get here...
         internal_error(jqXHR); 
       }
     } )

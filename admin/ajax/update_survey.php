@@ -20,13 +20,13 @@ if(!$survey_id)  { send_ajax_bad_request('Missing survey_id in request'); }
 
 update_survey($survey_id,$content,$title);
 
-$next_ids = next_survey_ids($survey_id);
+$next_ids        = next_survey_ids($survey_id);
 $revised_content = survey_content($survey_id);
 
 end_ob_logging();
 
 $response = new AjaxResponse();
-$response->add('content',$revised_content);
+$response->add('content', $revised_content);
 $response->add('next_ids',$next_ids);
 $response->send();
 

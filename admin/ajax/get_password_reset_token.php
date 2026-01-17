@@ -12,25 +12,23 @@ validate_ajax_nonce('admin-participants');
 
 start_ob_logging();
 
-$userid = strtolower($_POST['userid']);
-
-// assume failure unless token was actually generated and sent
-$response = new AjaxResponse(false);
+$userid = strtolower($_POST['userid'] ?? '');
+if(!$usrid) { send_ajax_bad_request('missing userid'); }
 
 $user = User::from_userid($userid);
-if($user) {
-  $token = $user->get_password_reset_token(true);
-  if($token) {
-    $email = $user->email();
+if(!$user) { send_ajax_bad_request("invalid userid: $usered"); }
 
-    if($email) { sendmail_recovery($email,[$userid=>$token]); }
+$token = $user->get_password_reset_token(true);
+if(!$token) { send_ajax_internal_error('failed to create new token');}
 
-    $response->succeed();
-    $response->add('token',$token);
-    $response->add('email',$email);
-    $response->add('url',full_app_uri("p=pwreset"));
-  }
-}
+$email = $user->email();
+
+if($email) { sendmail_recovery($email,[$userid=>$token]); }
+
+$respone = new AjaxResponse();
+$response->add('token',$token);
+$response->add('email',$email);
+$response->add('url',full_app_uri("p=pwreset"));
 
 end_ob_logging();
 

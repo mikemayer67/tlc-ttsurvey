@@ -12,23 +12,20 @@ validate_ajax_nonce('admin-surveys');
 $name = $_POST['name'] ?? null;
 if(!$name) { send_ajax_bad_request('missing name'); }
 
-$response = new AjaxResponse();
-
 start_ob_logging();
 
 $clone = $_POST['clone'] ?? null;
 
-$error = null;
+$error = '';
 $new_id = create_new_survey($name,$clone,$error);
+if(!$new_id) { send_ajax_failure($error); }
 
-if($new_id) {
-  $info = survey_info($new_id);
-  $response->add('survey',$info);
-} else {
-  $response->fail($error);
-}
+$info = survey_info($new_id);
 
 end_ob_logging();
 
+$response = new AjaxResponse();
+$response->add('survey', $info);
 $response->send();
+
 die();

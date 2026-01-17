@@ -17,15 +17,13 @@ handle_warnings();
 // get required settings
 
 $smtp_host = $_POST['smtp_host'] ?? null;
-if(!$smtp_host) { send_ajax_bad_request('Missing smtp_host'); }
+if(!$smtp_host) { send_ajax_failure('Missing smtp_host'); }
 
 $smtp_username = $_POST['smtp_username'] ?? null;
-if(!$smtp_username) { send_ajax_bad_request('Missing smtp_username'); }
+if(!$smtp_username) { send_ajax_failure('Missing smtp_username'); }
 
 $smtp_password = $_POST['smtp_password'] ?? null;
-if(!$smtp_password) { send_ajax_bad_request('Missing smtp_password'); }
-
-$response = new AjaxResponse();
+if(!$smtp_password) { send_ajax_failure('Missing smtp_password'); }
 
 // get optional settings
 
@@ -39,7 +37,7 @@ if(!$smtp_port) {
 
 if($smtp_reply_email = $_POST['smtp_reply_email'] ?? null) {
   if(!filter_var($smtp_reply_email,FILTER_VALIDATE_EMAIL)) {
-    send_ajax_bad_request('Invalid SMTP reply email address');
+    send_ajax_failure('Invalid SMTP reply email address');
   }
 }
 
@@ -49,7 +47,7 @@ $smtp_reply_name = $_POST['smtp_reply_name'] ?? null;
 
 if($test_email = $_POST['admin_email'] ?? null) {
   if(!filter_var($test_email,FILTER_VALIDATE_EMAIL)) {
-    send_ajax_bad_request("Invalid admin email address");
+    send_ajax_failure("Invalid admin email address");
   }
 }
 
@@ -110,11 +108,11 @@ try {
 } 
 catch(Exception $e) {
   log_warning("SMTP failed: ". $e->getMessage());
-  $response->fail($e->getMessage());
+  send_ajax_failure($e->getMessage());
 }
-
 log_info("SMTP logging:\n".ob_get_contents());
 ob_end_clean();
 
+$response = new AjaxResponse();
 $response->send();
 die();

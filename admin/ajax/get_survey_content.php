@@ -17,12 +17,12 @@ $id = $_POST['survey_id'];
 $response = new AjaxResponse(false);
 
 $content = survey_content($id);
-if($content) { 
-  $response->succeed();
-  $response->add('content',$content);
-}
+if(!$content) { send_ajax_failure("No survey content found for id=$id"); }
 
 end_ob_logging();
 
+$response = new AjaxResponse();
+$response->add('content',$content);
 $response->send();
+
 die();

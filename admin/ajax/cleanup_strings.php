@@ -18,7 +18,6 @@ if($rows)
 {
   $unused_ids = implode(',', array_map('intval',$rows));
   $rc = MySQLExecute("delete from tlc_tt_strings where string_id in ($unused_ids)");
-  $response->add('count',$nrows);
 }
 
 end_ob_logging();

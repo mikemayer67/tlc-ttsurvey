@@ -86,7 +86,7 @@
       update_submit();
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'validate settings')
     } )
     ;
   }
@@ -115,7 +115,7 @@
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_hander(jqXHR,'validate SMTP')
     } )
     ;
   }
