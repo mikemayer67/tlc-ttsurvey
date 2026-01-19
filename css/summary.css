@@ -171,4 +171,38 @@
   padding: 0 5px;
 }
 
+a.js-only {
+  display:none;
+}
 
+#ttt-navbar a.file-download {
+  background-color: #ddd;
+  padding: 1px 6px;
+  margin:0 2px;
+  border:solid 1px gray;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+
+  color: black;
+  font-family: var(--sans-serif-font);
+  font-size: 60%;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  /* Smooth transitions */
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.05s ease;
+}
+
+#ttt-navbar a.file-download:hover {
+  background-color: #eee; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+#ttt-navbar a.file-download:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}

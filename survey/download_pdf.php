@@ -11,11 +11,11 @@ log_dev("-------------- Start of Preview --------------");
 
 validate_and_retain_get_nonce('admin-surveys');
 
-$survey_id=$_GET['printable'];
+$survey_id=$_GET['sid'];
 
 $page_title = 'Printable Survey';
 $info    = survey_info($survey_id);
-if(!$info) { app_die(); }
+if(!$info) { die(); }
 
 $title   = $info['title'];
 $content = survey_content($survey_id);
