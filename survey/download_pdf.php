@@ -10,7 +10,7 @@ log_dev("-------------- Start of Printable --------------");
 
 validate_and_retain_get_nonce('admin-surveys');
 
-$survey_id=$_GET['printable'];
+$survey_id=$_GET['sid'];
 
 $info = survey_info($survey_id);
 if(!$info) { api_die(); }
