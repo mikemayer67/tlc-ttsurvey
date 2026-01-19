@@ -47,6 +47,23 @@ function adjust_list(l)
   items.each( (i,item) => { item.style.width = $(item).data('natural-width'); });
 }
 
+function download_csv(e)
+{
+  e.preventDefault();
+  // not really an ajax call, but channels through the same mechanism
+  const url = new URL(ce.ajaxuri, window.location.href);
+  url.searchParams.set('download','summary');
+  url.searchParams.set('f','csv');
+  url.searchParams.set('sid', ce.survey_id);
+  url.searchParams.set('ttt',ce.nonce);
+  window.open(url.toString(), 'ttt_summary_download');
+}
+
+function download_pdf(e)
+{
+  alert('Not yet implemented');
+}
+
 function adjust_column_widths(ncol,container_width,widths)
 {
   const n = widths.length;
@@ -67,6 +84,14 @@ function adjust_column_widths(ncol,container_width,widths)
 
 $(document).ready( function() {
   ce.resizable_lists = $('.resizable-list');
+  ce.inputs = $('#ttt-navbar input[type=hidden]');
+  ce.nonce = ce.inputs.filter('[name=nonce]').val();
+  ce.ajaxuri = ce.inputs.filter('[name=ajaxurl]').val();
+  ce.survey_id = ce.inputs.filter('[name=survey_id]').val();
+
+  $('.js-only').removeClass('js-only');
+  $('#download-csv').on('click',download_csv);
+  $('#download-pdf').on('click',download_pdf);
 
   ce.resizable_lists.children().each( function(i,item) {
     $(item).data('natural-width', item.getBoundingClientRect().width);

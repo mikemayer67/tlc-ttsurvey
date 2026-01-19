@@ -67,7 +67,9 @@ function handle_printable(e)
   e.preventDefault();
   // not really an ajax call, but channels through the same mechanism
   const url = new URL(ce.ajaxuri, window.location.href);
-  url.searchParams.set('printable', ce.cur_survey.id);
+  url.searchParams.set('download', 'survey');
+  url.searchParams.set('sid',ce.cur_survey.id);
+  url.searchParams.set('f','pdf');
   url.searchParams.set('ttt',ce.nonce);
   window.open(url.toString(), 'ttt_printable');
 }
