@@ -261,6 +261,38 @@ function cache_scroll_position()
 }
 
 //
+// Survey heartbeat
+// Sends an ajax request every 10 minutes in an attempt to keep the session alive
+//
+
+let heartbeatTimer = null;
+const startHeartbeat = (() => {
+  let timerID = null;
+  return () => {
+    if(timerID) { return; }
+    timerID = setInterval( () => {
+      $.ajax({
+        type:'POST',
+        url:ce.ajaxuri,
+        dataType:'json',
+        data: {
+          ajax: 'survey/heartbeat',
+          nonce: ce.nonce,
+        }
+      })
+      .done(function(data,status,jqXHR) {
+        console.log('heartbeat heard');
+      })
+      .fail( function(jqXHR,textStatus,errorThrown) {
+        console.log('heartbeam missed');
+      });
+    },
+    600000); // beat once every 10 minutes for now...
+  };
+})();
+
+
+//
 // Ready / Setup
 //
 
@@ -277,6 +309,7 @@ $(document).ready( function() {
 
   ce.checkable = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
   ce.inputs    = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
+  ce.ajaxuri   = ce.form.find('input[name=ajaxuri]').val();
 
   // add a hidden input to let PHP know that we have javascript enabled on the browswer
   $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);
@@ -305,5 +338,7 @@ $(document).ready( function() {
     ce.inputs.on(   'input', handle_input_change);
 
     cache_input_values();
+
+    startHeartbeat();
   }
 });
