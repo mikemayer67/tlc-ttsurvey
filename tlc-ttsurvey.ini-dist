@@ -57,3 +57,8 @@ mysql_password = "FILL THIS IN"
 ;;------------------------------------------------------------------------------
 cookies_require_https = 1
 
+;;------------------------------------------------------------------------------
+;; The following should ONLY be set to true in a development environment.
+;;   Doing so opens certain security holes necessary for testing.
+;;------------------------------------------------------------------------------
+;; dev_env = false

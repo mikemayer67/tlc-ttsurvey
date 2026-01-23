@@ -28,6 +28,10 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
+  if(key_exists('ajaxtest',$_GET)) {
+    require_once(app_file('test/ajax.php'));
+  }
+
   // Handle logout and forget token requests
   //   Allow from get or post queries
   if(key_exists('logout',$_REQUEST)) {
@@ -39,9 +43,14 @@ try
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
+    require_once(app_file('include/ajax.php'));
     list($scope,$action) = explode('/',$_POST['ajax']);
     if(!isset($action)) { http_response_code(405); die(); }
-    require safe_app_file("$scope/ajax/$action.php");
+    try {
+      require safe_app_file("$scope/ajax/$action.php");
+    } catch(\Throwable $e) {
+      send_ajax_internal_error(basename($e->getFile()) . "[" . $e->getLine() . "]: " . $e->getMessage()); 
+    }
     die();
   }
 

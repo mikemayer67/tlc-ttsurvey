@@ -10,8 +10,8 @@ validate_ajax_nonce('admin-log');
 
 start_ob_logging();
 
-$level = $_POST['level'] ?? 2;
-$lines = $_POST['lines'] ?? null;
+$level = parse_ajax_integer_input('level',default:2,min:0,max:5);
+$lines = parse_ajax_integer_input('lines',default:0, min:0);
 
 $log_file = log_file();
 fflush(logger());
@@ -55,6 +55,6 @@ end_ob_logging();
 
 // Not using AjaxResponse as js is expecting an indexed array
 //   not an associative array
-send_ajax_response($log);
+send_ajax_response($rval);
 
 die();
