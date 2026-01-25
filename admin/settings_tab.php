@@ -21,6 +21,8 @@ add_hidden_input('nonce',$nonce);
 add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','settings');
 
+echo "<table class='settings'>";
+
 add_input_section('Look and Feel', [
   [ 
     'app_name',
@@ -148,6 +150,8 @@ add_input_section('Email Server',[
     ]
   ],
 ]);
+
+echo "</table>";
 
 echo "<div class='submit-bar'>";
 echo "<input id='changes-submit' class='submit' type='submit' value='Save Changes'>";

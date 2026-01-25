@@ -37,15 +37,10 @@ function add_navbar_right_admin($kwarg)
 
 function add_input_section($label,$fields)
 {
-  echo "<div class='section-header'><div>$label</div></div>";
-
-  $table_class = strtolower(str_replace(' ','-',$label));
-  echo "<table class='settings $table_class'>";
+  echo "<tr class='section-header'><td colspan='2'>$label</td></tr>";
   foreach($fields as $field) {
     add_input_field($field);
   }
-
-  echo "</table>";
 }
 
 function add_input_field($field)
