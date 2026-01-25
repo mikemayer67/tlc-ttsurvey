@@ -217,11 +217,16 @@ function validate_app_logo($logo,&$error=null) {
   $error = '';
   _fix_validate_value($logo);
   if($logo==='') { return true; }
-  $imgfile = safe_app_file("img/$logo");
-  if( !getimagesize($imgfile) ) {
-    $error = "not found on server";
+  $imgfile = realpath(app_file("img/$logo"));
+  if(!$imgfile) { 
+    $error = "Logo file does not exist";
+    return false;
   }
-  return strlen($error) == 0;
+  if( !getimagesize($imgfile) ) {
+    $error = "Logo image file does not exist"; 
+    return false;
+  }
+  return true;
 }
 
 function validate_admin_name($name, &$error = null): bool {

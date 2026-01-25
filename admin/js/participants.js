@@ -51,7 +51,6 @@
           message = message + "---------------------------------\n";
           message = message + data.too_soon.join(", ");
         }
-
         if(data.failed.length > 0) {
           message = message + "\n\nS";
           message = message + "SMTP Faiilures (see log) for:\n";

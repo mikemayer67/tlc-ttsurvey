@@ -16,8 +16,11 @@ start_ob_logging();
 
 log_info("Logging in Admin");
 
-$userid   = adjust_user_input('userid',   $_POST['userid']   ?? '');
-$password = adjust_user_input('password', $_POST['password'] ?? '');
+$userid   = parse_ajax_string_input('userid');
+$password = parse_ajax_string_input('password');
+
+$userid   = adjust_user_input('userid',   $userid);
+$password = adjust_user_input('password', $password);
 
 $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
 $admin_username = $config['admin_username'] ?? null;

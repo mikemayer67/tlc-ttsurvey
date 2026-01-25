@@ -17,12 +17,18 @@ if(!$survey_id) {
   send_ajax_internal_error("No active survey... should not have called this function");
 }
 
-$userids = $_POST['userids'];
-if(!$userids) {
-  send_ajax_bad_request('No userids specified');
-}
-
 start_ob_logging();
+
+try {
+  $userids = $_POST['userids'];
+  if(!$userids)           { 
+    send_ajax_bad_request('No userids specified');     }
+  if(!is_array($userids)) { send_ajax_bad_request('Userids must be an array'); }
+}
+catch(\Throwable $e)
+{
+  send_ajax_bad_request($e->getMessage());
+}
 
 $user_status = array_fill_keys( $userids, ['draft'=>null, 'submitted'=>null] );
 
@@ -32,7 +38,7 @@ $query = <<<SQL
   SELECT userid,
          UNIX_TIMESTAMP(draft)     as draft,
          UNIX_TIMESTAMP(submitted) as submitted
-    FROM tlc_tt_user_user_status
+    FROM tlc_tt_user_status
    WHERE userid in ($qmarks) and survey_id=$survey_id
   SQL;
 
@@ -136,7 +142,6 @@ foreach($user_status as $userid=>$info)
   { 
     $email_status['failed'][] = $userid; 
   }
-
 }
 
 end_ob_logging();

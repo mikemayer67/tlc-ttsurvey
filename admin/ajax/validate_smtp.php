@@ -73,6 +73,7 @@ if(!$test_email) {
 }
   // attempt to send test email
   
+start_ob_logging();
 $mail = new PHPMailer(true);
 
 $mail->isSMTP();
@@ -83,6 +84,7 @@ $mail->SMTPSecure = $smtp_auth;
 $mail->SMTPAuth   = true;
 $mail->Username   = $smtp_username;
 $mail->Password   = $smtp_password;
+$mail->Timeout    = 10; // seconds
 
 if($smtp_reply_email && $smtp_reply_name) {
   $mail->addReplyTo($smtp_reply_email,$smtp_reply_name);
@@ -102,15 +104,16 @@ $mail->Subject = "SMTP Test";
 $mail->isHTML(false);
 $mail->Body = "SMTP Test Email";
 
-ob_start();
 try {
   $mail->send();
 } 
 catch(Exception $e) {
   log_warning("SMTP failed: ". $e->getMessage());
+  ob_end_clean();
   send_ajax_failure($e->getMessage());
 }
-log_info("SMTP logging:\n".ob_get_contents());
+$smtp_output = ob_get_contents();
+log_info("SMTP logging:\n$smtp_output");
 ob_end_clean();
 
 $response = new AjaxResponse();

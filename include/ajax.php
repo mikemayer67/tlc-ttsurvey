@@ -75,7 +75,7 @@ function send_ajax_bad_nonce(string $error, int $level=2)
   require_once('include/login.php');
   $userid = active_userid();
   log_warning("Bad nonce [$userid]: $error",$level);
-  send_ajax_response(['reason'=>$error],403);
+  send_ajax_response(['reason'=>"Invalid nonce"],403);
 }
 
 /**
@@ -124,6 +124,22 @@ function parse_ajax_integer_input(string $key,?int $default=null, ?int $min=null
   if($value === false) { send_ajax_bad_request("$key input must be an integer"); }
   if(!is_null($min) && $value < $min ) { send_ajax_bad_request("$key input must be at least $min"); }
   if(!is_null($max) && $value > $max ) { send_ajax_bad_request("$key input must be at most $max"); }
+  return $value;
+}
+
+/**
+ * Extracts and validates string input to an AJAX call
+ *   Sends an immediate ajax failure if validation does not pass
+ *   Removes quoting and leading/trailing whitespace
+ * @param string $key 
+ * @param string|null $default (optional) if not provided, input value is required
+ * @return string 
+ */
+function parse_ajax_string_input(string $key,?string $default=null) : string
+{
+  $value = $_POST[$key] ?? $default;
+  if(is_null($value)) { send_ajax_bad_request("requred $key input is missing"); }
+  $value = trim(stripslashes($value));
   return $value;
 }
 

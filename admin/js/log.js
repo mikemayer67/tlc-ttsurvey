@@ -115,6 +115,9 @@
         w.document.write("<pre>"+data_str+"</pre>");
         w.close();
       });
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) { 
+      ajax_error_hander(jqXHR,'get log entries');
     });
 
     ce.log_level.on('change',refresh_display);

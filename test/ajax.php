@@ -30,16 +30,49 @@ elseif($test === 'all')
   start_header('AJAX Testing');
   $vr = rand();
   echo "<script src='js/jquery-3.7.1.min.js'></script>";
-  echo "<script src='test/ajax.js'></script>";
+  echo "<script type='module' src='test/ajax.js'></script>";
   echo "<link rel='stylesheet' type='text/css' href='test/ajax.css?v=$vr'>";
   end_header();
 
   $ajaxuri = app_uri();
   echo "<input id='ajaxuri' type='hidden' value='$ajaxuri'>";
 
+  $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
+  $admin_username = $config['admin_username'] ?? null;
+  $admin_password = $config['admin_password'] ?? null;
+  if($admin_username) { echo "<input id='admin-username' type='hidden' value='$admin_username'>"; }
+  if($admin_password) { echo "<input id='admin-password' type='hidden' value='$admin_password'>"; }
+
+  $all_userids = MySQLSelectValues('select userid from tlc_tt_userids','');
+  $all_userids = json_encode($all_userids);
+  echo "<input id='all-userids', type='hidden', value='$all_userids'>";
+
+  $smtp_inputs = [
+    'smtp_host'=>Settings::get('smtp_host'),
+    'smtp_username'=>Settings::get('smtp_username'),
+    'smtp_password'=>Settings::get('smtp_password'),
+    'smtp_auth'=>Settings::get('smtp_auth'),
+    'smtp_port'=>Settings::get('smtp_port'),
+    'reply_email'=>Settings::get('smtp_reply_email'),
+    'reply_name'=>Settings::get('smtp_reply_name'),
+  ];
+  $smtp_inputs = json_encode($smtp_inputs);
+  echo "<input id='smtp-inputs', type='hidden', value='$smtp_inputs'>";
+
+
   echo "<h2>Ajax Testing</h2>";
-  echo "<p><b>All of your open forms are now hosed... their nonces must be refreshed</b></p>";
-  echo "<table id='results'><tr>";
+
+  echo "<table class='inputs'><tr>";
+  echo "<td class='key'>Userid</td>";
+  echo "<td><input id='userid' placeholder='optional'></td>";
+  echo "</tr><tr>";
+  echo "<td class='key'>Password</td>";
+  echo "<td><input id='passwd' type='password' placeholder='optional'></td>";
+  echo "</tr><tr>";
+  echo "<td colspan=2><button id='run_all_tests'>Run All Tests</td>";
+  echo "</tr></table>";
+
+  echo "<table class='results'><tr>";
   echo "<th>API</th><th>Caller</th><th>Inputs</th><th>Result</th>";
   echo "</tr></table>";
 

@@ -7,7 +7,7 @@ require_once(app_file('include/logger.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/ajax.php'));
 
-validate_and_retain_nonce('admin-settings');
+validate_ajax_nonce('admin-settings');
 
 start_ob_logging();
 
@@ -22,7 +22,7 @@ end_ob_logging();
 $response = new AjaxResponse();
 if($errors) {
   $response->fail();
-  foreach($errors as $k=>$v) { $resonse->add($k,$v); }
+  foreach($errors as $k=>$v) { $response->add($k,$v); }
 }
 $response->send();
 
