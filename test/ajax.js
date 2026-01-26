@@ -153,6 +153,8 @@ function all_tests() {
   rval.push(new PassTest('survey_data.js', 'admin/get_survey_content', {survey_id}));
   rval.push(new FailTest('survey_data.js', 'admin/get_survey_content', {survey_id, nonce:'bad'}));
   rval.push(new FailTest('survey_data.js', 'admin/get_survey_content'));
+  rval.push(new FailTest('survey_data.js', 'admin/get_survey_content', {survey_id:-1}));
+  rval.push(new FailTest('survey_data.js', 'admin/get_survey_content', {survey_id:'cat'}));
 
   return rval;
 }

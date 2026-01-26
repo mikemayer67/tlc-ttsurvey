@@ -11,13 +11,13 @@ validate_ajax_nonce('admin-surveys');
 
 start_ob_logging();
 
-$id = parse_ajax_string_input('survey_id');
+$id = parse_ajax_integer_input('survey_id');
 
 // assume failure unless content was actually found
 $response = new AjaxResponse(false);
 
 $content = survey_content($id);
-if(!$content) { send_ajax_failure("No survey content found for id=$id"); }
+if(!$content['sections']) { send_ajax_failure("No survey content found for id=$id"); }
 
 end_ob_logging();
 
