@@ -163,7 +163,7 @@ export default function init()
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_hander(jqXHR,'update password');
+      ajax_error_handler(jqXHR,'update password');
     })
     .always( function() {
       submit_btn.enable();

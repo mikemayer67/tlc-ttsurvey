@@ -61,7 +61,7 @@
       update_submit();
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      ajax_error_hander(jqXHR,'update roles')
+      ajax_error_handler(jqXHR,'update roles')
     });
   }
 

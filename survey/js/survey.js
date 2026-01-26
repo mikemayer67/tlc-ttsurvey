@@ -9,7 +9,7 @@ function internal_error(jqXHR)
   );
 }
 
-function ajax_error_hander(jqXHR,activity)
+function ajax_error_handler(jqXHR,activity)
 {
   if(jqXHR.status == 400) {
     // bad request
@@ -368,7 +368,6 @@ $(document).ready( function() {
     ce.inputs.on(   'input', handle_input_change);
 
     cache_input_values();
-
     startHeartbeat();
   }
 });

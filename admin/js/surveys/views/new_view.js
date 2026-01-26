@@ -94,7 +94,7 @@ export default function init(ce)
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_hander(jqXHR,'create new survey');
+      ajax_error_handler(jqXHR,'create new survey');
     });
   }
 

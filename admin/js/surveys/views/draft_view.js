@@ -204,7 +204,7 @@ export default function init(ce)
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      ajax_error_hander(jqXHR,'update survey');
+      ajax_error_handler(jqXHR,'update survey');
     } )
     .always( function() {
       validate_all();

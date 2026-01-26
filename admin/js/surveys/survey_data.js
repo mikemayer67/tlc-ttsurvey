@@ -79,7 +79,7 @@ export default function init(ce)
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_hander(jqXHR,'retrieve survey content');
+      ajax_error_handler(jqXHR,'retrieve survey content');
     }) ;
     return null;
   }
@@ -170,7 +170,7 @@ export default function init(ce)
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_hander(jqXHR,'update survey state')
+      ajax_error_handler(jqXHR,'update survey state')
     }) ;
   }
 

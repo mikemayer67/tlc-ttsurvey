@@ -61,7 +61,7 @@
         alert(message);
       })
       .fail( function(jqXHR,textStatus,errorThrown) {
-        ajax_error_hander(jqXHR,'send reminder eamils');
+        ajax_error_handler(jqXHR,'send reminder eamils');
       });
     }
   }
@@ -151,7 +151,7 @@
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      ajax_error_hander(jqXHR,'get password reset token');
+      ajax_error_handler(jqXHR,'get password reset token');
     } )
   }
 

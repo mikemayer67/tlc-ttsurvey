@@ -20,7 +20,7 @@ function internal_error(jqXHR)
        );
 }
 
-function ajax_error_hander(jqXHR,activity)
+function ajax_error_handler(jqXHR,activity)
 {
   if(jqXHR.status == 400) {
     // bad request
@@ -113,7 +113,7 @@ function handle_admin_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_hander(jqXHR,'log out admin');
+    ajax_error_handler(jqXHR,'log out admin');
   });
 }
 
@@ -128,7 +128,7 @@ function handle_user_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_hander(jqXHR,'log out admin');
+    ajax_error_handler(jqXHR,'log out admin');
   });
 }
 
@@ -161,7 +161,7 @@ function check_lock()
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_hander(jqXHR,'obtain admin lock');
+      ajax_error_handler(jqXHR,'obtain admin lock');
     });
   }
 }
@@ -219,7 +219,7 @@ function hold_lock()
     }
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_hander(jqXHR,'hold admin lock');
+    ajax_error_handler(jqXHR,'hold admin lock');
   });
 }
 
