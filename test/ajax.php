@@ -43,6 +43,9 @@ elseif($test === 'all')
   if($admin_username) { echo "<input id='admin-username' type='hidden' value='$admin_username'>"; }
   if($admin_password) { echo "<input id='admin-password' type='hidden' value='$admin_password'>"; }
 
+  $active_survey_id = active_survey_id();
+  if($active_survey_id) { echo "<input id='survey-id' type='hidden' value='$active_survey_id'>"; }
+
   $all_userids = MySQLSelectValues('select userid from tlc_tt_userids','');
   $all_userids = json_encode($all_userids);
   echo "<input id='all-userids', type='hidden', value='$all_userids'>";
@@ -73,7 +76,7 @@ elseif($test === 'all')
   echo "</tr></table>";
 
   echo "<table class='results'><tr>";
-  echo "<th>API</th><th>Caller</th><th>Inputs</th><th>Result</th>";
+  echo "<th>API</th><th>Caller</th><th>Inputs</th><th>Expected</th><th>Result</th>";
   echo "</tr></table>";
 
   die();

@@ -11,7 +11,7 @@ validate_ajax_nonce('admin-surveys');
 
 start_ob_logging();
 
-$id = $_POST['survey_id'];
+$id = parse_ajax_string_input('survey_id');
 
 // assume failure unless content was actually found
 $response = new AjaxResponse(false);

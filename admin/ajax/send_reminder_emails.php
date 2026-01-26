@@ -97,11 +97,9 @@ foreach($user_status as $userid=>$info)
     SQL;
 
   $hist = MySQLSelectRow($query,'s',$userid);
-  log_dev("$userid history: ".print_r($hist,true));
 
   if( $hist && $hist['subject'] === $subject ) {
     $last_sent = $hist['last_sent'];
-    log_dev("last_sent:$last_sent, now=$now, freq=$reminder_freq");
     if($now < $last_sent + $reminder_freq) {
       $email_status['too_soon'][] = $userid;
       continue;

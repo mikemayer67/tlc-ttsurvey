@@ -48,7 +48,7 @@ tr.fail td {
 }
 
 tr.expected_fail {
-  background: lightgreen;
+  background: rgb(172, 250, 172);
 }
 
 tr.skipped { 
