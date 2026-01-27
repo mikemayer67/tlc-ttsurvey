@@ -235,9 +235,9 @@ function setup_toggle_cache(e)
   if(cache) {
     cache = JSON.parse(cache);
 
-    const nonce = ce.form.find('input[name=prior-nonce]').val();
+    const ui_cache_id = ce.form.find('input[name=ui-cache-id]').val();
 
-    if(nonce === cache.nonce) { 
+    if(ui_cache_id === cache.id) { 
       open_section = cache.open_details || undefined;
       scroll_pos   = cache.scroll_pos   || 0; 
 
@@ -252,9 +252,13 @@ function setup_toggle_cache(e)
     }
   }
 
-  // start a new cache and it it local storage
-  cache = { nonce:ce.nonce, open_details:open_section, scroll_pos };
-  localStorage.setItem(cache_key, JSON.stringify(cache));
+  // start a new cache and add it to local storage
+  ce.cache_id = String(Math.floor(Date.now() / 1000));
+  const new_cache = { id:ce.cache_id, open_details:open_section, scroll_pos };
+  localStorage.setItem(cache_key, JSON.stringify(new_cache));
+  ce.form.append(
+    $('<input id="ui-cache-id" type="hidden" name="ui-cache-id">').val(ce.cache_id)
+  );
 }
 
 function update_toggle_cache(e)
@@ -272,7 +276,7 @@ function update_toggle_cache(e)
   if(!cache) { return; }
 
   cache = JSON.parse(cache);
-  if(cache.nonce !== ce.nonce) { return; }
+  if(cache.id !== ce.cache_id) { return; }
 
   cache.open_details = section;
 
@@ -285,7 +289,7 @@ function cache_scroll_position()
   if(!cache) { return; }
 
   cache = JSON.parse(cache);
-  if(cache.nonce !== ce.nonce) { return; }
+  if(cache.id !== ce.cache_id) { return; }
 
   cache.scroll_pos = window.scrollY ?? window.pageYOffset ?? 0;
   localStorage.setItem(cache_key, JSON.stringify(cache));
