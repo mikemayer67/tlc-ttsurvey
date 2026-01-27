@@ -11,13 +11,8 @@ $token  = active_token();
 
 if(!$_SESSION) {
   // session has expired... let's jump start it
-  // @@@ MAM... this is a hack to address the timeout issue
-  //   it needs to be replaced with some actual hardening of the code
   $_SESSION['active-userid'] = $userid;
   $_SESSION['active-token'] = $token;
-  $_SESSION['nonce'] = ['survey-form'=>$_POST['nonce']];
-
-  log_dev("Clear... hand me the paddles... restarting session for $userid");
 }
 
 http_response_code(200);

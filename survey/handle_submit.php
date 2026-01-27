@@ -20,8 +20,6 @@ if($action === 'cancel')
 
 // validate that all credentials are in order before proceeding
 
-validate_nonce('survey-form');
-
 $active_userid = active_userid() ?? '';
 if($active_userid === '') { validation_error("Attempt to submit responses without being logged in"); }
 

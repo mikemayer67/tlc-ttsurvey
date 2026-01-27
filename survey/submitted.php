@@ -51,7 +51,6 @@ function show_submitted_page($userid,$survey_id,$timestamp)
   //         - proceed to Case 1
   
   $action = app_uri();
-  $nonce = gen_nonce('survey-form');
   $timestamp = recent_timestamp_string($timestamp);
 
   $user       = User::from_userid($userid);
@@ -66,7 +65,6 @@ function show_submitted_page($userid,$survey_id,$timestamp)
 
   echo "<div class='submitted-wrapper'>";
   echo "<form id='submitted' class='submitted-box' method='post' action='$action'>";
-  add_hidden_input('nonce',$nonce);
   add_hidden_input('submitted',1);
   add_hidden_input('userid',$userid);
 

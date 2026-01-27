@@ -46,11 +46,9 @@ class RenderEngine
       if(is_null($survey_id)) { internal_error("missing survey_id in kwargs"); }
 
       echo "<form id='survey' action='$action' method='post'>";
-      $nonce = gen_nonce('survey-form');
       $ui_cache_id = $_SESSION['ui-cache-id'] ?? null;
 
       add_hidden_input('submit',1);
-      add_hidden_input('nonce',$nonce);
       if($ui_cache_id) { add_hidden_input('ui-cache-id',$ui_cache_id); }
       add_hidden_input('ajaxuri',app_uri());
       add_hidden_input('userid',$userid);
