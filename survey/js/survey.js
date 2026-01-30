@@ -28,8 +28,8 @@ function ajax_error_handler(jqXHR,activity)
   } 
   else if(jqXHR.status == 403) {
     // forbidden
-    //   for the survey form, should mean there was an expired nonce
-    //   reload the page for a new nonce value
+    //   with the removal of nonces from this form, should never see this
+    //   ... but if we do, reload the page to refresh it
     alert("Form timed out... reloading the survey");
     location.reload();
   } 
@@ -187,7 +187,7 @@ function handle_save()
 {
   // Cache the scroll position before submitting the form for saving a draft
   // Do NOT call preventDefault as this would block the actual form submission
-  cache_scroll_position();
+  update_ui_cache()
 }
 
 //
@@ -223,7 +223,7 @@ function update_submit_buttons()
 
 const cache_key = 'tlc-tt-survey-ui-state';
 
-function setup_toggle_cache(e)
+function start_ui_cache(e)
 {
   // create a set of the open details sections
   let open_section = undefined;
@@ -261,44 +261,31 @@ function setup_toggle_cache(e)
   );
 }
 
-function update_toggle_cache(e)
-{
-  const section = $(this).data('section');
-  const is_open = $(this).prop('open');
-
-  if(is_open) {
-    ce.details.each(function() {
-      if( $(this).data('section') !== section ) { $(this).prop('open',false); }
-    })
-  }
-
-  let cache = localStorage.getItem(cache_key);
-  if(!cache) { return; }
-
-  cache = JSON.parse(cache);
-  if(cache.id !== ce.cache_id) { return; }
-
-  cache.open_details = section;
-
-  localStorage.setItem(cache_key, JSON.stringify(cache));
-}
-
-function cache_scroll_position() 
+function update_ui_cache(e)
 {
   let cache = localStorage.getItem(cache_key);
   if(!cache) { return; }
 
   cache = JSON.parse(cache);
-  if(cache.id !== ce.cache_id) { return; }
+
+  cache.open_details = undefined;
+  ce.details.each(function () {
+    const section = $(this).data('section');
+    if($(this).prop('open')) { cache.open_details = section; }
+  });
 
   cache.scroll_pos = window.scrollY ?? window.pageYOffset ?? 0;
-  localStorage.setItem(cache_key, JSON.stringify(cache));
+
+  localStorage.setItem(cache_key, JSON.stringify(cache)); 
 }
 
 //
 // Survey heartbeat
 // Sends an ajax request every 10 minutes in an attempt to keep the session alive
-//
+// Note: this was initially set up to solve the problem of nonces expiring, but
+//   with the removal of nonces from this form, this may no longer be necessary.
+//   It is retained nonetheless, just to attempt to keep the session alive.
+//   Hopefully this will not come back to BMITA by hiding some other issue.
 
 let heartbeatTimer = null;
 const startHeartbeat = (() => {
@@ -312,7 +299,6 @@ const startHeartbeat = (() => {
         dataType:'json',
         data: {
           ajax: 'survey/heartbeat',
-          nonce: ce.nonce,
         }
       })
       .done(function(data,status,jqXHR) {
@@ -322,7 +308,7 @@ const startHeartbeat = (() => {
         console.log('heartbeam missed');
       });
     },
-    600000); // beat once every 10 minutes for now...
+    600000); // beat once every 10 minutes
   };
 })();
 
@@ -334,7 +320,6 @@ $(document).ready( function() {
   ce.navbar  = $('#ttt-navbar');
   ce.status  = $('#ttt-status');
   ce.form    = $('#ttt-body form');
-  ce.nonce   = ce.form.find('input[name=nonce]').val();
   ce.details = ce.form.find('details');
   ce.submit  = ce.form.find('button.submit');
   ce.save    = ce.form.find('button.save');
@@ -358,8 +343,7 @@ $(document).ready( function() {
 
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar
-    setup_toggle_cache();
-    ce.details.on('toggle',update_toggle_cache);
+    start_ui_cache();
 
     ce.cancel.on('click',handle_cancel);
     ce.save.on('click',handle_save);

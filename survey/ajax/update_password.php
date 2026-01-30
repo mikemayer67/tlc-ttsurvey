@@ -10,8 +10,6 @@ require_once(app_file('include/validation.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/ajax.php'));
 
-validate_ajax_nonce('survey-form');
-
 start_ob_logging();
 
 $userid = strtolower($_POST['userid']);

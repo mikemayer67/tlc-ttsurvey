@@ -7,8 +7,6 @@ require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/ajax.php'));
 
-validate_ajax_nonce('survey-form');
-
 // The active userid and token come from the cookies sent with the AJAX request
 //   Verify that these are still valid credentials.
 $active_userid = active_userid();
