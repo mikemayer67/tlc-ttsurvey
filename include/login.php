@@ -44,13 +44,13 @@ define('SECURE_COOKIE_OPTIONS', [
  *   - these will be passed back in the ajax response
  *   - the javascript that invoked ajax must set the cookies on the browser
  *
+ * LoginCookies is a singleton class accessed via the instance() method.
+ *   To support ajax, instance() should be passed a truthy value.
+ *
  * AJAX SUPPORT IS CURRENTLY COMMENTED OUT... Its use would require
  *   dropping the httponly security guards on the access cookies.  I'm leaving
  *   it here in case I find an actual need for it. I'd rather have to uncomment
  *   some code than reimplement this rather hackish ajax workaround.
- *
- * LoginCookies is a singleton class accessed via the instance() method.
- *   To support ajax, instance() should be passed a truthy value.
  **/
 
 class LoginCookies
@@ -61,8 +61,7 @@ class LoginCookies
   private $_active_token = '';
   private $_access_tokens = array();
 
-//  public static function instance($ajax=false)
-  public static function instance()
+  public static function instance( /* $ajax=false */)
   {
     if(!self::$_instance) { self::$_instance = new LoginCookies(); }
 //    if($ajax) { self::$_instance->_ajax = true; }
@@ -108,7 +107,7 @@ class LoginCookies
   public function active_userid() { return $this->_active_userid; }
   public function active_token()  { return $this->_active_token;  }
 
-  public function set_active_userid($userid,$token) // @@@USERiD
+  public function set_active_userid($userid,$token)
   {
     $this->_active_userid = $userid;
     $_SESSION['active-userid'] = $userid;
@@ -140,7 +139,7 @@ class LoginCookies
     return $this->_set_cookie( 
       ACCESS_TOKENS_COOKIE, 
       json_encode($this->_access_tokens), 
-      time() + 86400*365,
+      time() + 86400*365*1.5,
     );
   }
 
@@ -182,14 +181,12 @@ function regen_active_token()
 function remember_user_token($userid,$token)
 {
   $userid = strtolower($userid);
-
   return LoginCookies::instance()->cache_token( $userid, $token );
 }
 
 function forget_user_token($userid)
 {
   $userid = strtolower($userid);
-
   return LoginCookies::instance()->clear_token($userid);
 }
 
