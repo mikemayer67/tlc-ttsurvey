@@ -12,7 +12,7 @@ require_once(app_file('include/ajax.php'));
 $active_userid = active_userid();
 $active_token  = active_token();
 
-if( !validate_user_access_token($active_userid, $active_token)) {
+if( !validate_access_token($active_userid, $active_token)) {
   log_warning("Invalid userid/token in ajax validation: userid=$active_userid");
   send_ajax_unauthorized('invalid userid/token');
 }

@@ -57,9 +57,9 @@ class LoginCookies
 {
   private static $_instance = null;
 // private $_ajax = false;
-  private $_active_userid = '';
-  private $_active_token = '';
-  private $_access_tokens = array();
+  private $_active_userid;
+  private $_active_token;
+  private $_access_tokens;
 
   public static function instance( /* $ajax=false */)
   {
@@ -74,6 +74,7 @@ class LoginCookies
 
     $this->_active_userid = stripslashes($_COOKIE[ACTIVE_USER_COOKIE]??"");
     $this->_active_token  = stripslashes($_COOKIE[ACTIVE_TOKEN_COOKIE]??"");
+    $this->_access_tokens = array();
 
     // manage/renew persistent cookies
 
@@ -83,7 +84,7 @@ class LoginCookies
     if($tokens) {
       // remove any cached user access tokens that are no longer valid
       foreach( $tokens as $userid=>$token ) {
-        if(validate_user_access_token($userid,$token))
+        if(validate_access_token($userid,$token))
         {
           $this->_access_tokens[$userid] = $token;
         }
@@ -111,7 +112,6 @@ class LoginCookies
   {
     $this->_active_userid = $userid;
     $_SESSION['active-userid'] = $userid;
-    $_SESSION['active-token'] = $token;
     return array(
       $this->_set_cookie(ACTIVE_USER_COOKIE,$userid,0),
       $this->_set_cookie(ACTIVE_TOKEN_COOKIE,$token,0)
@@ -167,7 +167,7 @@ function resume_survey_as($userid,$user_token)
 {
   $userid = strtolower($userid);
 
-  if( !validate_user_access_token($userid,$user_token) ) { return false; }
+  if( !validate_access_token($userid,$user_token) ) { return false; }
   $session_token = gen_token();
   return LoginCookies::instance()->set_active_userid( $userid, $session_token );
 }
