@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/users.php'));
@@ -63,7 +63,7 @@ function handle_register_new_user()
   $pwconfirm = $_POST['password-confirm'] ?? '';
   $fullname  = $_POST['fullname']         ?? '';
   $email     = $_POST['email']            ?? null;
-  $remember  = $_POST['remember']         ?? 0;
+  $remember  = $_POST['remember']         ?? false;
 
   if($userid==='')    { internal_error("Missing userid in register request"); }
   if($password==='')  { internal_error("Missing password in register request"); }
@@ -105,9 +105,7 @@ function handle_register_new_user()
   // user created
   //   set this as the active user
   //   add userid/token to cached access tokens if requested
-  start_survey_as($user);
-
-  if( $remember ) { remember_user_token($userid,$user->access_token()); }
+  start_survey_as($userid, $remember);
 }
 
 handle_register_form();

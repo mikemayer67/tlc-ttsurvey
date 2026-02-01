@@ -113,7 +113,7 @@ export default function init()
         name_input.val(data.name);
         email_input.val(data.email);
 
-        ce.navbar.find('span.username span').text(data.name);
+        ce.navbar.find('span.username').text(data.name);
 
         if(data.email || old_email) {
           $.ajax({

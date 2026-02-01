@@ -88,7 +88,7 @@ try
   } 
   
   // If there is no active user, present the login page
-  require_once(app_file('include/login.php'));
+  require_once(app_file('include/cookiejar.php'));
   $active_user = active_userid();
 
   if(!$active_user) {
@@ -128,7 +128,8 @@ try
   };
 
   if(key_exists('forget',$_REQUEST)) {
-    forget_user_token($_REQUEST['forget'] ?? '');
+    require_once(app_file('include/cookiejar.php'));
+    CookieJar::forget_access_token($userid);
     // .. no reason to abort at this point... 
   }
 

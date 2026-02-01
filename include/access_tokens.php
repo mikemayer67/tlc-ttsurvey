@@ -8,7 +8,7 @@ require_once(app_file("include/db.php"));
 class AccessTokens
 {
   // singleton pointer
-  private static array $_instances = array();
+  private static array $_users = array();
 
   private string $_userid = '';
   private array  $_tokens = array();
@@ -34,7 +34,7 @@ class AccessTokens
     $this->_userid = $userid;
     $this->_tokens = $tokens ? $tokens : array();
 
-    self::$_instances[$userid] = $this;
+    self::$_users[$userid] = $this;
   }
 
   /**
@@ -42,22 +42,83 @@ class AccessTokens
    * @param string $userid 
    * @return AccessTokens 
    */
-  public static function lookup(string $userid) : AccessTokens
+  private static function lookup(string $userid) : AccessTokens
   {
-    return self::$_instances[$userid] ?? new AccessTokens($userid);
+    return self::$_users[$userid] ?? new AccessTokens($userid);
+  }
+
+  // Public static methods
+
+  /**
+   * Adds a new userid access token and updates the database
+   * @param string $userid 
+   * @param string $token 
+   * @return bool 
+   */
+  public static function add(string $userid,string $token) : bool
+  {
+    return self::lookup($userid)->_add($token);
   }
 
   /**
-   * Adds a new token and updates the database
+   * Removes the specified token for the specified userid and udpates the database
+   * @param string $userid 
    * @param string $token 
-   * @return bool to indicate success of adding new token
+   * @return void 
    */
-  public function add(string $token) : bool
+  public static function remove(string $userid,string $token)
+  {
+    self::lookup($userid)->_remove($token);
+  }
+
+  /**
+   * Validates that the specified userid/token exists
+   * @param string $userid 
+   * @param string $token 
+   * @return bool 
+   */
+  public static function validate(string $userid, string $token) : bool 
+  {
+    $user = self::lookup($userid);
+    return in_array($token, $user->_tokens);
+  }
+
+  /**
+   * Generates a new token for the specified userid
+   * @param string $userid 
+   * @return string the new token (empty on failure)
+   */
+  public static function generate(string $userid) : string
+  {
+    $new_token = gen_token();
+    $rc = self::add($userid,$new_token);
+    return $rc ? $new_token : '';
+  }
+
+  /**
+   * Invalidates the specified token and generates a replacment
+   * @param string $userid 
+   * @param string $token to be invalidated
+   * @return string the new token (empty on failure)
+   */
+  public static function regenerate(string $userid, string $old_token) : string
+  {
+    self::remove($userid, $old_token);
+    return self::generate($userid);
+  }
+
+  // Private internal implementations of the public interface
+
+  /**
+   * @param string $token 
+   * @return bool 
+   */
+  private function _add(string $token) : bool
   {
     $query = <<<MYSQL
       insert into tlc_tt_access_tokens (userid,token,expires)
       values (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
-      on duplicate key
+      on duplicate key update
         expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
     MYSQL;
     $r = MySQLExecute($query,"ss",$this->_userid,$token);
@@ -68,11 +129,10 @@ class AccessTokens
   }
 
   /**
-   * Removes the specified token and udpates the database
    * @param string $token 
    * @return void 
    */
-  public function remove(string $token)
+  private function _remove(string $token)
   {
     $query = <<<MYSQL
       delete from tlc_tt_access_tokens 
@@ -80,42 +140,13 @@ class AccessTokens
     MYSQL;
     MySQLExecute($query,"ss",$this->_userid,$token);
 
-    $this->_tokens = array_filter($this->_tokens, fn($t) => $t !== $token);
-  }
-
-  /**
-   * Validates that the specified token exists
-   * @param string $token 
-   * @return bool 
-   */
-  public function validate(string $token) : bool
-  {
-    return in_array($token,$this->_tokens);
-  }
-
-  /**
-   * Generates a new token
-   * @return string the new token (empty on failure)
-   */
-  public function generate() : string
-  {
-    $new_token = gen_token();
-    $rc = $this->add($new_token);
-    return $rc ? $new_token : '';
-  }
-
-  /**
-   * Invalidates the specified token and generates a replacment
-   * @param string $token to be invalidated
-   * @return string the new token (empty on failure)
-   */
-  public function regenerate(string $old_token) : string
-  {
-    $this->remove($old_token);
-    return $this->generate();
+    $tokens = $this->_tokens;
+    $tokens = array_filter($tokens, fn($t) => $t !== $token);
+    $this->_tokens = $tokens;
   }
 }
 
+// Convenience functions
 
 /**
  * Validates the specified access token for the specified userid
@@ -126,19 +157,40 @@ class AccessTokens
 function validate_access_token($userid,$token)
 {
   $userid = strtolower($userid);
-  $tokens = AccessTokens::lookup($userid);
-  return $tokens->validate($token);
+  return AccessTokens::validate($userid,$token);
+}
+
+/**
+ * Generate a new access token for the specified userid
+ * @param string $userid 
+ * @return string 
+ */
+function generate_access_token(string $userid) : string
+{
+  $userid = strtolower($userid);
+  return AccessTokens::generate($userid);
 }
 
 /**
  * Invalidates the specified token and generates a new one for the specified userid
- * @param mixed $userid 
- * @param mixed $token 
+ * @param string $userid 
+ * @param string $token 
  * @return string the new token (empty on failure)
  */
-function regenerate_access_token($userid,$token) : string
+function regenerate_access_token(string $userid,string $token) : string
 {
   $userid = strtolower($userid);
-  $tokens = AccessTokens::lookup($userid);
-  return $tokens->regenerate($token);
+  return AccessTokens::regenerate($userid,$token);
+}
+
+/**
+ * Invalidates the specifed token for the specified user
+ * @param string $userid 
+ * @param string $token 
+ * @return void 
+ */
+function remove_access_token(string $userid,string $token)
+{
+  $userid = strtolower($userid);
+  AccessTokens::remove($userid,$token);
 }

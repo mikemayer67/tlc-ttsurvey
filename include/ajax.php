@@ -72,7 +72,7 @@ function send_ajax_unauthorized(string $error)
 function send_ajax_bad_nonce(string $error, int $level=2)
 {
   require_once('include/logger.php');
-  require_once('include/login.php');
+  require_once('include/cookiejar.php');
   $userid = active_userid();
   log_warning("Bad nonce [$userid]: $error",$level);
   send_ajax_response(['reason'=>"Invalid nonce"],403);

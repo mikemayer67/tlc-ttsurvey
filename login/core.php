@@ -9,11 +9,12 @@ require_once(app_file('include/redirect.php'));
 
 if(key_exists('forget',$_GET)) 
 {
+  require_once(app_file('include/cookiejar.php'));
   // nonce from get request, but don't drop it as this isn't an actual form submission
   validate_get_nonce('login',false);
 
   $forget = $_GET['forget'] ?? null;
-  forget_user_token($forget);
+  if($forget) { CookieJar::forget_access_token($forget); }
   header('Location: '.app_uri());
   die();
 }

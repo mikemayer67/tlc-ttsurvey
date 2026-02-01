@@ -5,7 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/validation.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
 require_once(app_file('include/ajax.php'));
@@ -38,8 +38,7 @@ else if(validate_user_password($userid,$password))
   $roles = user_roles($userid);
   if($roles) {
     logout_active_user();
-    $user = User::from_userid($userid);
-    start_survey_as($user);
+    start_survey_as($userid);
   } else {
     $response->fail("$userid has no admin roles");
   }

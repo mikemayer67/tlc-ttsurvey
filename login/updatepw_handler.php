@@ -81,7 +81,6 @@ function handle_updatepw_form()
   // update session and user access tokens
   require_once(app_file('include/login.php'));
   regen_active_token();
-  remember_user_token($userid, $user->regenerate_access_token() );
 }
 
 function handle_error($msg)

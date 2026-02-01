@@ -7,6 +7,7 @@ require(app_file('survey/ajax/validate.php'));
 
 require_once(app_file('include/users.php'));
 require_once(app_file('include/validation.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/login.php'));
 require_once(app_file('include/ajax.php'));
 
@@ -40,10 +41,9 @@ if( $old_pw_valid && $new_pw_valid ) {
   $response->fail();
 }
 
-end_ob_logging();
-
 regen_active_token();
-remember_user_token($userid, $user->regenerate_access_token() );
+
+end_ob_logging();
 
 $response->send();
 die();

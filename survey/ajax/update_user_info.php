@@ -7,7 +7,7 @@ require(app_file('survey/ajax/validate.php'));
 
 require_once(app_file('include/users.php'));
 require_once(app_file('include/validation.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/ajax.php'));
 
 start_ob_logging();
@@ -24,12 +24,12 @@ $response = new AjaxResponse();
 $error = '';
 $name_valid = adjust_and_validate_user_input('fullname',$name,$error);
 $response->add('name',$name);
-$resposse->add('name_error',$name_valid ? '' : $error);
+$response->add('name_error',$name_valid ? '' : $error);
 
 $error = '';
 $email_valid = adjust_and_validate_user_input('email',$email,$error);
 $response->add('email',$email);
-$resposse->add('email_error',$email_valid ? '' : $error);
+$response->add('email_error',$email_valid ? '' : $error);
 
 if($name_valid && $email_valid) 
 {
