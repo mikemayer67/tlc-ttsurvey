@@ -21,6 +21,7 @@ require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
+require_once(app_file('include/login.php'));
 
 session_start();
 
