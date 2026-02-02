@@ -67,6 +67,8 @@ else {
   $state  = 'new';
 }
 
+$render_args['timestamps'] = user_status_timestamps($userid,$active_id);
+
 $responses['state'] = $state;
 
 start_survey_page($navbar_args);

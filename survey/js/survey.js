@@ -202,17 +202,22 @@ function handle_input_change(e)
 
 function update_submit_buttons()
 {
+  // If saved draft or submitted responses have changed on the server,
+  //   the submit buttons must remain disabled
+  if(ce.modified_on_server) { return; }
+
   // If currently showing the latest submitted responses:
   //   the submit, save, and cancel buttons should be disabled if there are no changes.
   // If currently showing a working draft:
   //   the submit button should always be enabled
   //   the save and cancel buttons should be disabled if there are no changes.
-  ce.save.prop(  'disabled',!ce.dirty);
-  ce.cancel.prop('disabled',!ce.dirty);
-  if(ttt_user_responses.state === 'submitted') {
-    ce.submit.prop('disabled',!ce.dirty);
+
+  ce.save.prop('disabled', !ce.dirty);
+  ce.cancel.prop('disabled', !ce.dirty);
+  if (ttt_user_responses.state === 'submitted') {
+    ce.submit.prop('disabled', !ce.dirty);
   } else {
-    ce.submit.prop('disabled',false);
+    ce.submit.prop('disabled', false);
   }
   ce.confirm_logout = ce.dirty;
 }
@@ -279,38 +284,51 @@ function update_ui_cache(e)
   localStorage.setItem(cache_key, JSON.stringify(cache)); 
 }
 
-//
 // Survey heartbeat
-// Sends an ajax request every 10 minutes in an attempt to keep the session alive
-// Note: this was initially set up to solve the problem of nonces expiring, but
-//   with the removal of nonces from this form, this may no longer be necessary.
-//   It is retained nonetheless, just to attempt to keep the session alive.
-//   Hopefully this will not come back to BMITA by hiding some other issue.
-
-let heartbeatTimer = null;
-const startHeartbeat = (() => {
-  let timerID = null;
-  return () => {
-    if(timerID) { return; }
-    timerID = setInterval( () => {
-      $.ajax({
-        type:'POST',
-        url:ce.ajaxuri,
-        dataType:'json',
-        data: {
-          ajax: 'survey/heartbeat',
-        }
-      })
-      .done(function(data,status,jqXHR) {
-        console.log('heartbeat heard');
-      })
-      .fail( function(jqXHR,textStatus,errorThrown) {
-        console.log('heartbeam missed');
-      });
-    },
-    600000); // beat once every 10 minutes
-  };
-})();
+// Sends an ajax request every 2 minutes in an attempt to keep the session alive
+// and to query the status of the user's responses in the database.  
+// 
+// If the responses were updated in a different browser, window, tab, etc.
+//   disable this form and inform the user immediately.
+function heartbeat() {
+  $.ajax({
+    type: 'POST',
+    url: ce.ajaxuri,
+    dataType: 'json',
+    data: {
+      ajax: 'survey/heartbeat',
+      userid: ce.userid,
+      survey_id: ce.survey_id,
+      timestamps: ce.timestamps,
+    }
+  })
+  .done(function (data, status, jqXHR) {
+    if (data.modified) {
+      clearInterval(ce.heartbeatTimer);
+      // Disable ability to save/submit changes
+      ce.modified_on_server = true;
+      ce.form.find('div.submit-bar').hide();
+      ce.buttons.prop('disabled', true);
+      ce.confirm_logout = false;
+      // notify user what happened
+      let what = '';
+      if (data.modified === 'draft') {
+        what = 'a new draft was saved';
+      } else { // submittedd
+        what = 'new survey responses were submitted';
+      }
+      show_status('warning',
+        [
+          'Since you started this form, ', what,' in a different browser session.',
+          '<ul style="margin-block-start:5px; margin-block-end:5px">',
+          '<li>You will need to reload this page in order to continue.</li>',
+          '<li>Any changes you made here will be lost.</li>','</ul>',
+        ].join('')
+      );
+      ce.status.off('click');
+    }
+  });
+}
 
 //
 // Ready / Setup
@@ -321,14 +339,19 @@ $(document).ready( function() {
   ce.status  = $('#ttt-status');
   ce.form    = $('#ttt-body form');
   ce.details = ce.form.find('details');
-  ce.submit  = ce.form.find('button.submit');
-  ce.save    = ce.form.find('button.save');
-  ce.delete  = ce.form.find('button.delete');
-  ce.cancel  = ce.form.find('button.cancel');
+  ce.buttons = ce.form.find('button');
+  ce.submit  = ce.buttons.filter('.submit');
+  ce.save    = ce.buttons.filter('.save');
+  ce.delete  = ce.buttons.filter('.delete');
+  ce.cancel  = ce.buttons.filter('.cancel');
 
-  ce.checkable = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
-  ce.inputs    = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
-  ce.ajaxuri   = ce.form.find('input[name=ajaxuri]').val();
+  ce.checkable  = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
+  ce.inputs     = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
+  ce.ajaxuri    = ce.form.find('input[name=ajaxuri]').val();
+
+  ce.userid     = ce.form.find('input[name=userid]').val();
+  ce.survey_id  = ce.form.find('input[name=survey_id]').val();
+  ce.timestamps = JSON.parse(ce.form.find('input[name=timestamps]').val());
 
   // add a hidden input to let PHP know that we have javascript enabled on the browswer
   $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);
@@ -336,6 +359,7 @@ $(document).ready( function() {
   setup_hints();
 
   ce.confirm_logout = false;
+  ce.modified_on_server = false;
 
   ce.status.on('click',hide_status);
 
@@ -356,6 +380,6 @@ $(document).ready( function() {
     ce.inputs.on(   'input', handle_input_change);
 
     cache_input_values();
-    startHeartbeat();
+    ce.heartbeatTimer = setInterval(heartbeat,15000); //@@@TODO change this to 2 minutes after testing
   }
 });

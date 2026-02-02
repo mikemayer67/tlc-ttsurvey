@@ -119,5 +119,22 @@ function start_nosurvey_page()
   start_body();
 }
 
+/**
+ * Looks up the user draft/submitted status and returns this as a colon delineated string
+ * @param string $userid 
+ * @param string $survey_id 
+ * @return string 'draft:submitted' timestamps
+ */
+function user_status_timestamps(string $userid,string $survey_id) : string
+{
+  $query = <<<MYSQL
+    select UNIX_TIMESTAMP(draft),UNIX_TIMESTAMP(submitted)
+      from tlc_tt_user_status 
+     where userid=? and survey_id=?
+  MYSQL;
+  $row = MySQLSelectRow($query,'si',$userid,intval($survey_id));
+  return $row ? implode(':',$row) : 'null:null';
+}
+
 
 

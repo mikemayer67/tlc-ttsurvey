@@ -38,9 +38,10 @@ class RenderEngine
       echo "<form id='survey'>";
     } 
     else {
-      $action = app_uri();
-      $userid    = $kwargs['userid'] ?? null;
-      $survey_id = $kwargs['survey_id'] ?? null;
+      $action     = app_uri();
+      $userid     = $kwargs['userid'] ?? null;
+      $survey_id  = $kwargs['survey_id'] ?? null;
+      $timestamps = $kwargs['timestamps'] ?? [];
 
       if(is_null($userid))    { internal_error("missing userid in kwargs");    }
       if(is_null($survey_id)) { internal_error("missing survey_id in kwargs"); }
@@ -53,6 +54,7 @@ class RenderEngine
       add_hidden_input('ajaxuri',app_uri());
       add_hidden_input('userid',$userid);
       add_hidden_input('survey_id',$survey_id);
+      add_hidden_input('timestamps', json_encode($timestamps));
     }
 
     $sections = $content['sections'];
