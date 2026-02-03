@@ -100,7 +100,7 @@ try
   // Handle any explicit redirect request
   $redirect_page = get_redirect_page();
   if($redirect_page) {
-    $page = safe_app_file("login/{$redirect_page}_page.php");
+    $page = safe_app_file("{$page}.php");
     if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
     require($page);
     die();

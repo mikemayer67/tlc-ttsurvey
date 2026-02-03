@@ -43,7 +43,7 @@ function handle_register_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    start_redirect('register')
+    start_redirect_to_login_page('register')
       ->add('userid',   $_POST['userid']   ?? null)
       ->add('fullname', $_POST['fullname'] ?? null)
       ->add('email',    $_POST['email']    ?? null)

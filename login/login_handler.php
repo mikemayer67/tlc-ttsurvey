@@ -48,7 +48,7 @@ function handle_login_form()
     //   Cache the userid and remember inputs
     //   Set the redirect page to the main login entry page
     set_error_status($e->getMessage());
-    start_redirect('login')
+    start_redirect_to_login_page('login')
       ->add('userid',   $_POST['userid']   ?? null )
       ->add('remember', $_POST['remember'] ?? null )
     ;

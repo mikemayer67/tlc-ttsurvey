@@ -44,7 +44,7 @@ function handle_recover_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    start_redirect('recover')
+    start_redirect_to_login_page('recover')
       ->add('userid', $_POST['userid'] ?? null )
       ->add('email',  $_POST['email']  ?? null )
     ;
@@ -101,7 +101,7 @@ function handle_recover_userid_password()
   if(sendmail_recovery($email,$tokens,$error))
   {
     set_info_status("Login recovery instructions sent to $email");
-    start_redirect('pwreset')
+    start_redirect_to_login_page('pwreset')
       ->add('userid', $_POST['userid'] ?? null)
     ;
   } else {
@@ -111,7 +111,7 @@ function handle_recover_userid_password()
       "Failed to send email with recovery instructions to $email.".
       "<div class='note'>Please let $admin know and mention error #$SendmailLogToken</div>"
     );
-    start_redirect('recover');
+    start_redirect_to_login_page('recover');
   }
 
 }

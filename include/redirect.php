@@ -111,7 +111,17 @@ function clear_redirect()
 }
 
 /**
- * Constructs and returns a new RedirectDataWriter
+ * Constructs and returns a new RedirectDataWriter to a login page
+ * @param string $page 
+ * @return RedirectDataWriter 
+ */
+function start_redirect_to_login_page(string $page) : RedirectDataWriter
+{
+  return new RedirectDataWriter('login/'.$page."_page");
+}
+
+/**
+ * Constructs and returns a new RedirectDataWriter to a fully qualified page
  * @param string $page 
  * @return RedirectDataWriter 
  */

@@ -44,9 +44,9 @@ function handle_pwreset_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    set_redirect_page('pwreset');
+    start_redirect_to_login_page('pwreset');
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 }

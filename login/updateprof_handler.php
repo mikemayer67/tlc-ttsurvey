@@ -22,7 +22,7 @@ function handle_updateprof_form()
   if(!$action) { internal_error("Missing action in update request");   }
 
   if($action === 'cancel') { 
-    start_redirect('close')
+    start_redirect_to_login_page('close')
       ->add('message',"Update Profile Cancelled")
     ;
     return;
@@ -83,7 +83,7 @@ function handle_updateprof_form()
   }
 
   // success
-  start_redirect('close')
+  start_redirect_to_login_page('close')
     ->add('message',"User Profile Updated")
     ->add('email',$user->email() ?? '')
   ;
@@ -91,7 +91,7 @@ function handle_updateprof_form()
 
 function handle_error($msg)
 {
-  start_redirect('updateprof')
+  start_redirect_to_login_page('updateprof')
     ->add('status',[$msg,'error'])
   ;
   $nonce = get_nonce('update-page');
