@@ -310,6 +310,7 @@ function heartbeat() {
       ce.form.find('div.submit-bar').hide();
       ce.buttons.prop('disabled', true);
       ce.confirm_logout = false;
+      ce.timestamps = JSON.parse(data.new_timestamps);
       // notify user what happened
       let what = '';
       if (data.modified === 'draft') {
@@ -327,6 +328,9 @@ function heartbeat() {
       );
       ce.status.off('click');
     }
+  })
+  .fail( function(jqXHR) {
+    console.log(jqXHR);
   });
 }
 
@@ -380,6 +384,6 @@ $(document).ready( function() {
     ce.inputs.on(   'input', handle_input_change);
 
     cache_input_values();
-    ce.heartbeatTimer = setInterval(heartbeat,15000); //@@@TODO change this to 2 minutes after testing
+    ce.heartbeatTimer = setInterval(heartbeat,120000);
   }
 });

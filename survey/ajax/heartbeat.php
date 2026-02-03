@@ -9,20 +9,12 @@ require_once(app_file('survey/elements.php'));
 
 $userid    = $_POST['userid'];
 $survey_id = $_POST['survey_id'];
-$cur_ts    = user_status_timestamps($userid,$survey_id);
-$new_ts    = $cur_ts;
-$form_ts   = $_POST['timestamps'] ?? 'null:null';
-
-$cur_ts  = explode(':',$cur_ts);
-$form_ts = explode(':',$form_ts);
-
-$response = ['success'=>true, 'modified'=>false];
-
-if($cur_ts[0] !== $form_ts[0]) { $response['modified'] = 'draft';     }
-if($cur_ts[1] !== $form_ts[1]) { $response['modified'] = 'submitted'; }
-
-if($response['modified']) { $response['new_timestamps'] = $new_ts; }
+$timestamps = user_status_timestamps($userid,$survey_id);
 
 http_response_code(200);
-echo json_encode($response);
+echo json_encode([
+  'success' => true,
+  'modified' => validate_status_timestamps($timestamps),
+  'new_timestamps' => $timestamps,
+]);
 die();

@@ -136,5 +136,19 @@ function user_status_timestamps(string $userid,string $survey_id) : string
   return $row ? implode(':',$row) : 'null:null';
 }
 
+/**
+ * Compares the current status timestamps with the timestamps in the POST
+ * @param string $current timestamp string as returned by user_status_timestamps
+ * @return string what was modified if there was a change, otherwise an empty string
+ */
+function validate_status_timestamps(string $current) : string
+{
+  $post_ts   = $_POST['timestamps'] ?? 'null:null';
 
+  $cur_ts  = explode(':', $current);
+  $post_ts = explode(':', $_POST['timestamps'] ?? 'null:null');
 
+  if ($cur_ts[1] !== $post_ts[1]) { return 'new survey responses were submitted'; }
+  if ($cur_ts[0] !== $post_ts[0]) { return 'a new draft was saved'; }
+  return '';
+}
