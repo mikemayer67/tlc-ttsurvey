@@ -113,7 +113,7 @@ export default function init()
         name_input.val(data.name);
         email_input.val(data.email);
 
-        ce.navbar.find('span.username span').text(data.name);
+        ce.navbar.find('span.username').text(data.name);
 
         if(data.email || old_email) {
           $.ajax({
@@ -134,6 +134,7 @@ export default function init()
         $(document).trigger('UserProfileUpdated',[old_email,new_email] );
 
       } else {
+        // update profile failed ... update the UX to show the errors
         name_err.text(data.name_error);
         name_input.toggleClass('error',data.name_error.length>0);
         email_err.text(data.email_error);
@@ -141,11 +142,7 @@ export default function init()
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      if(jqXHR.status===405) {
-        location.replace('405.php');
-      } else {
-        internal_error(jqXHR);
-      }
+      ajax_error_handler(jqXHR,'update profile');
     })
     .always( function() {
       submit_btn.enable();

@@ -9,7 +9,17 @@ function adjust_and_validate_user_input($key,&$value,&$error=null)
   return validate_user_input($key,$value,$error);
 }
 
-function adjust_user_input($key,$value)
+/**
+ * Cleans up user input based on type.
+ *  - [all]: converts null to '', removes quoting and leading/trailing whitespace
+ *  - userid: converts to lower case (for database storage)
+ *  - fullname: condenses multiple apostrophes, hyphens, or tildes
+ *  - password: condenses multiple whitespace and converts all whitespce to ' '
+ * @param mixed $key 
+ * @param mixed $value 
+ * @return string 
+ */
+function adjust_user_input($key,$value) : string
 {
   $value = trim(stripslashes($value??''));
 

@@ -4,6 +4,20 @@
   table-layout:auto;
 }
 
+#ttt-body div.body form table tr.section-header td {
+  font-size:1.2em;
+  font-weight:bold;
+  padding-top:1em;
+}
+
+#ttt-body div.body form table tr.section-header:first-of-type td {
+  padding-top:0.5em;
+}
+
+#ttt-body div.body form table tr td {
+  padding-top:0.75em;
+}
+
 #ttt-body div.body form table tr.info td {
   padding-top:0;
 }
@@ -18,6 +32,9 @@
 
 #ttt-body div.body form table td.label {
   padding-right:0.5em;
+  padding-left:1em;
+  text-align:right;
+  width:1%;
   font-weight:bold;
   white-space:nowrap;
 }
@@ -25,7 +42,6 @@
 #ttt-body div.body form table td div.input-box {
   display:inline-block;
   position:relative;
-  padding-top:1em;
   width:min(600px,95%);
 }
 

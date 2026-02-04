@@ -7,6 +7,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require(app_file('survey/ajax/validate.php'));
 
 require_once(app_file('include/sendmail.php'));
+require_once(app_file('include/ajax.php'));
 
 start_ob_logging();
 $userid = strtolower($_POST['userid']);
@@ -14,7 +15,9 @@ $email  = $_POST['email'];
 sendmail_profile($email,$userid,['password']);
 end_ob_logging();
 
-http_response_code(200);
-regen_active_token();
+regen_active_token(); // note: this sets cookies
+
+$response = new AjaxResponse();
+$response->send();
 
 die();

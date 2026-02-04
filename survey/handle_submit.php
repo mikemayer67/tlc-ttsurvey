@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/submitted.php'));
 
 $action = $_POST['action'] ?? 'cancel';
@@ -19,8 +20,6 @@ if($action === 'cancel')
 }
 
 // validate that all credentials are in order before proceeding
-
-validate_nonce('survey-form');
 
 $active_userid = active_userid() ?? '';
 if($active_userid === '') { validation_error("Attempt to submit responses without being logged in"); }
@@ -41,6 +40,14 @@ $active_id = intval($active_id);
 $survey_id = intval($survey_id);
 if(intval($active_id) !== intval($survey_id)) {
   validation_error("Attempt to submit responses for survey #$survey_id when active survey is #$active_id");
+}
+
+$current_timestamps  = user_status_timestamps($userid,$survey_id);
+$comparison = compare_status_timestamps($current_timestamps);
+$modified = $comparison['modified'];
+if($modified) {
+  fail_conflicting_submit($userid, $action, $comparison);
+  die();
 }
 
 $result = update_user_responses($userid,$survey_id,$action,$_POST);

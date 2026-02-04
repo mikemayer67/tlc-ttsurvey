@@ -16,25 +16,16 @@
       data: data,
     } )
     .done( function(data,status,jqXHR) {
-      if(data.success) {
-        const n = data.count;
-        switch(n) {
-          case 0:
-            alert('No unused text strings found in the database');
-            break;
-          case 1:
-            alert('Removed 1 unused text string from the database');
-            break;
-          default:
-            alert('Removed ' + n + ' unused text strings from the database');
-            break;
-        }
+      if(data.count == 0) {
+        alert('No unused text strings found in the database');
+      } else if(data.count == 1) {
+        alert('Removed 1 unused text string from the database');
       } else {
-        alert(data.reason);
+        alert('Removed ' + data.count + ' unused text strings from the database');
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_handler(jqXHR,'cleanup strings');
     } );
   }
 
@@ -51,25 +42,16 @@
       data: data,
     } )
     .done( function(data,status,jqXHR) {
-      if(data.success) {
-        const n = data.count;
-        switch(n) {
-          case 0:
-            alert('No unused select options found in the database');
-            break;
-          case 1:
-            alert('Removed 1 unused select option from the database');
-            break;
-          default:
-            alert('Removed ' + n + ' unused select options from the database');
-            break;
-        }
+      if(data.count == 0 ) {
+        alert('No unused select options found in the database');
+      } else if(data.count == 1) {
+        alert('Removed 1 unused select option from the database');
       } else {
-        alert(data.reason);
+        alert('Removed ' + data.count + ' unused select options from the database');
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_handler(jqXHR,'cleanup options');
     } );
   }
 

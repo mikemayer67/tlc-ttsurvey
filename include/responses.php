@@ -301,7 +301,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
 {
   // handle the action specific setup
 
-  unset($_SESSION['prior-nonce']);
+  unset($_SESSION['ui-cache-id']);
 
   switch($action) 
   {
@@ -310,7 +310,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
       return;
 
     case 'save':
-      $_SESSION['prior-nonce'] = $_POST['nonce'];
+      $_SESSION['ui-cache-id'] = $_POST['ui-cache-id'];
       $draft = 1;
       break;
 

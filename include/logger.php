@@ -44,11 +44,6 @@ function logger()
   return $_fp;
 }
 
-function log_array($x)
-{
-  return json_encode($x);
-}
-
 // writes to the app log based on prefix and log level
 //   unrecognized prefixes will be ignored, but...
 //     if the log level includes warnings, a warning will be
@@ -155,8 +150,10 @@ function warning_handler($errno,$errstr,$errfile,$errline)
 
 function handle_warnings() 
 {
-  set_error_handler('tlc\tts\warning_handler',E_WARNING|E_NOTICE);
-  set_error_handler('tlc\tts\warning_handler',E_DEPRECATED|E_USER_DEPRECATED);
+  set_error_handler(
+    'tlc\tts\warning_handler',
+    E_WARNING|E_NOTICE|E_DEPRECATED|E_USER_DEPRECATED
+  );
 }
 
 function start_ob_logging()

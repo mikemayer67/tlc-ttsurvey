@@ -3,12 +3,11 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-define('REDIRECT_PAGE',    'redirect-page');
-define('REDIRECT_DATA',    'redirect-data');
-define('REDIRECT_TIMEOUT', 'redirect-timeout');
+define('REDIRECT_TIMEOUT', 10); // seconds
+define('REDIRECT_KEY', 'tlc.tts.redirect');
 
-// The functions in this file allow for data to be retained across a http
-//   redirection back to the app's main entry point.  
+// The classes and functions in this file allow for data to be retained across a
+//    http redirection back to the app's main entry point.  
 //
 // As there is no mechanism for sending POST data with the redirection, this
 //   data is stored in the SESSION data.  There are two pieces to this data:
@@ -18,72 +17,137 @@ define('REDIRECT_TIMEOUT', 'redirect-timeout');
 //
 // Because this is meant to be a sort of "jump cable" across the redirect, this
 //   data should not persist to subsequent app entries.  Once the data has been
-//   retrieved with get_redirect_page or get_redirect_data, it is immediately
-//   purged from the SESSION data.
+//   retrieved, it is immediately purged from the SESSION data.
 
-function set_redirect_page($page)
+/**
+ * Writer class for redirect session data.
+ * Stores values directly in $_SESSION; does not persist in object instance.
+ */
+class RedirectDataWriter 
 {
-  $_SESSION[REDIRECT_PAGE] = $page;
-}
-
-function get_redirect_page()
-{
-  $page = $_SESSION[REDIRECT_PAGE] ?? null;
-  clear_redirect_page();
-  return $page;
-}
-
-function clear_redirect_page()
-{
-  unset($_SESSION[REDIRECT_PAGE]);
-}
-
-
-function add_redirect_data($key,$value)
-{
-  if(!key_exists(REDIRECT_DATA,$_SESSION)) {
-    $_SESSION[REDIRECT_DATA] = array();
-  }
-  $_SESSION[REDIRECT_DATA][$key] = $value;
-  $_SESSION[REDIRECT_TIMEOUT] = time() + 10;
-}
-
-function get_redirect_data()
-{
-  if(!key_exists(REDIRECT_TIMEOUT,$_SESSION)) {
-    unset($_SESSION[REDIRECT_DATA]);
-    return null;
-  }
-  if(!key_exists(REDIRECT_DATA,$_SESSION)) {
-    unset($_SESSION[REDIRECT_TIMEOUT]);
-    return null;
-  }
-
-  // expire the data if we're after the timeout period
-  if( time() > $_SESSION[REDIRECT_TIMEOUT] ) 
+  /**
+   * Starts (or replaces) the redirect data in the session data
+   * @param string $page 
+   * @return void 
+   */
+  public function __construct(string $page)
   {
-    clear_redirect_data();
-    return null;
+    $_SESSION[REDIRECT_KEY] = [
+      'page' => $page,
+      'data' => [],
+      'expires' => time() + REDIRECT_TIMEOUT, // data expires 10 seconds after this method is called
+    ];
   }
 
-  // grab the data
-  $data = $_SESSION[REDIRECT_DATA];
+  /**
+   * Appends a key/value entry to the redirect data
+   *   returns a pointer to the class instance for to enable 
+   *   chaining of add() calls.
+   * @param string $key 
+   * @param mixed $value 
+   * @return RedirectDataWriter
+   */
+  public function add(string $key, mixed $value) : RedirectDataWriter
+  {
+    if (!isset($_SESSION[REDIRECT_KEY])) {
+      internal_error("SESSION redirect data was prematurely purged");
+    }
+    $_SESSION[REDIRECT_KEY]['data'][$key] = $value;
 
-  // clear all session redirect data
-  clear_redirect_data();
-
-  // return the data
-  return $data;
+    return $this;
+  }
 }
 
-function clear_redirect_data()
+/**
+ * Handles the reading of redirect data in the session data
+ *   This is a singleton class that must be accessed using the 
+ *   instance() class method.
+ */
+class RedirectDataReader
 {
-  unset($_SESSION[REDIRECT_DATA]);
-  unset($_SESSION[REDIRECT_TIMEOUT]);
+  private static $instance_ = null;
+  private $page = null;
+  private $data = null;
+
+  public static function instance() : RedirectDataReader
+  {
+    if(!self::$instance_) { self::$instance_ = new RedirectDataReader(); }
+    return self::$instance_;
+  }
+
+  private function __construct()
+  {
+    if (!isset($_SESSION[REDIRECT_KEY])) { return; }
+    // purge the data if we're after the expiration time
+    $expires = $_SESSION[REDIRECT_KEY]['expires'] ?? 0;
+    if( time() <= $expires) {
+      $this->page = $_SESSION[REDIRECT_KEY]['page'] ?? null;
+      $this->data = $_SESSION[REDIRECT_KEY]['data'] ?? [];
+    }
+
+    unset($_SESSION[REDIRECT_KEY]);
+  }
+
+  /**
+   * returns the redirect page (if set) or null (if not)
+   * @return null|string 
+   */
+  public function page() : ?string { return $this->page; }
+
+  /**
+   * returns any defined redirect data 
+   * @return null|array 
+   */
+  public function data() : ?array  { return $this->data; }
 }
 
+/**
+ * Purges redirect data defined in the session data
+ * @return void 
+ */
 function clear_redirect()
 {
-  clear_redirect_page();
-  clear_redirect_data();
+  unset($_SESSION[REDIRECT_KEY]);
+}
+
+/**
+ * Constructs and returns a new RedirectDataWriter to a login page
+ * @param string $page 
+ * @return RedirectDataWriter 
+ */
+function start_redirect_to_login_page(string $page) : RedirectDataWriter
+{
+  return new RedirectDataWriter('login/'.$page."_page");
+}
+
+/**
+ * Constructs and returns a new RedirectDataWriter to a fully qualified page
+ * @param string $page 
+ * @return RedirectDataWriter 
+ */
+function start_redirect(string $page) : RedirectDataWriter
+{
+  return new RedirectDataWriter($page);
+}
+
+/**
+ * returns the redirect page (if set) or null (if not)
+ * It is intended that this function will be called when determining 
+ *   the survey or admin page to redirect to.  
+ * @return null|string 
+ */
+function get_redirect_page() : ?string
+{
+  $reader = RedirectDataReader::instance();
+  return $reader->page();
+}
+
+/**
+ * returns any redirect data defined in the session data
+ * @return null|array
+ */
+function get_redirect_data() : ?array
+{
+  $reader = RedirectDataReader::instance();
+  return $reader->data();
 }

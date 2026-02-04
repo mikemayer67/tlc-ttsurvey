@@ -3,11 +3,12 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('/include/login.php'));
+require_once(app_file('/include/cookiejar.php'));
 require_once(app_file('/include/redirect.php'));
 require_once(app_file('/include/status.php'));
 require_once(app_file('include/logger.php'));
-
+require_once(app_file('include/users.php'));
+require_once(app_file('include/login.php'));
 
 // Note that all the logic in this file is wrapped up in functions...
 //   the very last action in this file is execute the main entry point for 
@@ -47,11 +48,12 @@ function handle_login_form()
     //   Cache the userid and remember inputs
     //   Set the redirect page to the main login entry page
     set_error_status($e->getMessage());
-    add_redirect_data('userid',  $_POST['userid']   ?? null);
-    add_redirect_data('remember',$_POST['remember'] ?? null);
-    set_redirect_page('login');
+    start_redirect_to_login_page('login')
+      ->add('userid',   $_POST['userid']   ?? null )
+      ->add('remember', $_POST['remember'] ?? null )
+    ;
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 
@@ -60,17 +62,23 @@ function handle_login_form()
   die();
 }
 
-function handle_login_with_token($resume)
+/**
+ * Attempts to log in with a given 'userid:token'
+ * @param string $userid_token (colon delineated "userid:token")
+ * @return void
+ * @throws BadInput if invalid userid:token was provided
+ */
+function handle_login_with_token(string $userid_token)
 {
   // extract the userid and token from the resume input
-  list($userid,$token) = explode(':',$resume);
+  list($userid,$token) = explode(':',$userid_token);
   $userid = strtolower($userid);
 
   // try to resume with provided userid/token
   //   if not, raise an exception
-  if( !resume_survey_as($userid,$token) )
-  {
-    forget_user_token($userid);
+  if(!resume_survey_as($userid,$token)) {
+    require_once(app_file('include/cookiejar.php'));
+    CookieJar::forget_access_token($userid);
     throw new BadInput("Access token for $userid is no longer valid");
   } 
 }
@@ -100,12 +108,8 @@ function handle_login_with_password()
   //   add userid/token to cached access tokens if requested
   //   redirect to survey entry point to reload with the survey
 
-  start_survey_as($user);
-
-  $remember = $_POST['remember'] ?? 0;
-  if( $remember ) {
-    remember_user_token($userid,$user->access_token());
-  }
+  $remember = $_POST['remember'] ?? false;
+  start_survey_as($userid, $remember);
 }
 
 handle_login_form();

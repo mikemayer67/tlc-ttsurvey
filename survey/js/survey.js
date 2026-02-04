@@ -9,6 +9,37 @@ function internal_error(jqXHR)
   );
 }
 
+function ajax_error_handler(jqXHR,activity)
+{
+  if(jqXHR.status == 400) {
+    // bad request
+    //   do nothing other than to warn the user (should be an admin)
+    const log_id = jqXHR.responseJSON?.log_id || '121467';
+    alert(
+      'Failed to ' + activity + ".\n" + 
+      "Please let the survey admin something went wrong\n" +
+      "  and givem them logID=" + log_id
+    );
+  } 
+  else if(jqXHR.status == 401) {
+    // authentication error.
+    //   send them back to main entry point to reauthenticate
+    window.location.href = ce.ajaxuri;
+  } 
+  else if(jqXHR.status == 403) {
+    // forbidden
+    //   with the removal of nonces from this form, should never see this
+    //   ... but if we do, reload the page to refresh it
+    alert("Form timed out... reloading the survey");
+    location.reload();
+  } 
+  else { 
+    // not sure what went wrong
+    //   treat it as an internal error
+    internal_error(jqXHR);
+  }
+}
+
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
@@ -156,7 +187,7 @@ function handle_save()
 {
   // Cache the scroll position before submitting the form for saving a draft
   // Do NOT call preventDefault as this would block the actual form submission
-  cache_scroll_position();
+  update_ui_cache()
 }
 
 //
@@ -171,17 +202,22 @@ function handle_input_change(e)
 
 function update_submit_buttons()
 {
+  // If saved draft or submitted responses have changed on the server,
+  //   the submit buttons must remain disabled
+  if(ce.modified_on_server) { return; }
+
   // If currently showing the latest submitted responses:
   //   the submit, save, and cancel buttons should be disabled if there are no changes.
   // If currently showing a working draft:
   //   the submit button should always be enabled
   //   the save and cancel buttons should be disabled if there are no changes.
-  ce.save.prop(  'disabled',!ce.dirty);
-  ce.cancel.prop('disabled',!ce.dirty);
-  if(ttt_user_responses.state === 'submitted') {
-    ce.submit.prop('disabled',!ce.dirty);
+
+  ce.save.prop('disabled', !ce.dirty);
+  ce.cancel.prop('disabled', !ce.dirty);
+  if (ttt_user_responses.state === 'submitted') {
+    ce.submit.prop('disabled', !ce.dirty);
   } else {
-    ce.submit.prop('disabled',false);
+    ce.submit.prop('disabled', false);
   }
   ce.confirm_logout = ce.dirty;
 }
@@ -192,7 +228,7 @@ function update_submit_buttons()
 
 const cache_key = 'tlc-tt-survey-ui-state';
 
-function setup_toggle_cache(e)
+function start_ui_cache(e)
 {
   // create a set of the open details sections
   let open_section = undefined;
@@ -204,9 +240,9 @@ function setup_toggle_cache(e)
   if(cache) {
     cache = JSON.parse(cache);
 
-    const nonce = ce.form.find('input[name=prior-nonce]').val();
+    const ui_cache_id = ce.form.find('input[name=ui-cache-id]').val();
 
-    if(nonce === cache.nonce) { 
+    if(ui_cache_id === cache.id) { 
       open_section = cache.open_details || undefined;
       scroll_pos   = cache.scroll_pos   || 0; 
 
@@ -221,76 +257,82 @@ function setup_toggle_cache(e)
     }
   }
 
-  // start a new cache and it it local storage
-  cache = { nonce:ce.nonce, open_details:open_section, scroll_pos };
-  localStorage.setItem(cache_key, JSON.stringify(cache));
+  // start a new cache and add it to local storage
+  ce.cache_id = String(Math.floor(Date.now() / 1000));
+  const new_cache = { id:ce.cache_id, open_details:open_section, scroll_pos };
+  localStorage.setItem(cache_key, JSON.stringify(new_cache));
+  ce.form.append(
+    $('<input id="ui-cache-id" type="hidden" name="ui-cache-id">').val(ce.cache_id)
+  );
 }
 
-function update_toggle_cache(e)
-{
-  const section = $(this).data('section');
-  const is_open = $(this).prop('open');
-
-  if(is_open) {
-    ce.details.each(function() {
-      if( $(this).data('section') !== section ) { $(this).prop('open',false); }
-    })
-  }
-
-  let cache = localStorage.getItem(cache_key);
-  if(!cache) { return; }
-
-  cache = JSON.parse(cache);
-  if(cache.nonce !== ce.nonce) { return; }
-
-  cache.open_details = section;
-
-  localStorage.setItem(cache_key, JSON.stringify(cache));
-}
-
-function cache_scroll_position() 
+function update_ui_cache(e)
 {
   let cache = localStorage.getItem(cache_key);
   if(!cache) { return; }
 
   cache = JSON.parse(cache);
-  if(cache.nonce !== ce.nonce) { return; }
+
+  cache.open_details = undefined;
+  ce.details.each(function () {
+    const section = $(this).data('section');
+    if($(this).prop('open')) { cache.open_details = section; }
+  });
 
   cache.scroll_pos = window.scrollY ?? window.pageYOffset ?? 0;
-  localStorage.setItem(cache_key, JSON.stringify(cache));
+
+  localStorage.setItem(cache_key, JSON.stringify(cache)); 
 }
 
-//
 // Survey heartbeat
-// Sends an ajax request every 10 minutes in an attempt to keep the session alive
-//
-
-let heartbeatTimer = null;
-const startHeartbeat = (() => {
-  let timerID = null;
-  return () => {
-    if(timerID) { return; }
-    timerID = setInterval( () => {
-      $.ajax({
-        type:'POST',
-        url:ce.ajaxuri,
-        dataType:'json',
-        data: {
-          ajax: 'survey/heartbeat',
-          nonce: ce.nonce,
-        }
-      })
-      .done(function(data,status,jqXHR) {
-        console.log('heartbeat heard');
-      })
-      .fail( function(jqXHR,textStatus,errorThrown) {
-        console.log('heartbeam missed');
-      });
-    },
-    600000); // beat once every 10 minutes for now...
-  };
-})();
-
+// Sends an ajax request every 2 minutes in an attempt to keep the session alive
+// and to query the status of the user's responses in the database.  
+// 
+// If the responses were updated in a different browser, window, tab, etc.
+//   disable this form and inform the user immediately.
+function heartbeat() {
+  $.ajax({
+    type: 'POST',
+    url: ce.ajaxuri,
+    dataType: 'json',
+    data: {
+      ajax: 'survey/heartbeat',
+      userid: ce.userid,
+      survey_id: ce.survey_id,
+      timestamps: ce.timestamps,
+    }
+  })
+  .done(function (data, status, jqXHR) {
+    if (data.modified) {
+      clearInterval(ce.heartbeatTimer);
+      // Disable ability to save/submit changes
+      ce.modified_on_server = true;
+      ce.form.find('div.submit-bar').hide();
+      ce.buttons.prop('disabled', true);
+      ce.confirm_logout = false;
+      ce.timestamps = data.new_timestamps;
+      // notify user what happened
+      let what = '';
+      if (data.modified === 'draft') {
+        what = 'a new draft was saved';
+      } else { // submittedd
+        what = 'new survey responses were submitted';
+      }
+      show_status('warning',
+        [
+          'Since you started this form, ', what,' in a different browser session.',
+          '<ul style="margin-block-start:5px; margin-block-end:5px">',
+          '<li>You will need to reload this page in order to continue.</li>',
+          '<li>Any changes you made here will be lost.</li>','</ul>',
+        ].join('')
+      );
+      ce.status.off('click');
+    }
+  })
+  .fail( function(jqXHR) {
+    console.log(jqXHR);
+  });
+}
 
 //
 // Ready / Setup
@@ -300,16 +342,20 @@ $(document).ready( function() {
   ce.navbar  = $('#ttt-navbar');
   ce.status  = $('#ttt-status');
   ce.form    = $('#ttt-body form');
-  ce.nonce   = ce.form.find('input[name=nonce]').val();
   ce.details = ce.form.find('details');
-  ce.submit  = ce.form.find('button.submit');
-  ce.save    = ce.form.find('button.save');
-  ce.delete  = ce.form.find('button.delete');
-  ce.cancel  = ce.form.find('button.cancel');
+  ce.buttons = ce.form.find('button');
+  ce.submit  = ce.buttons.filter('.submit');
+  ce.save    = ce.buttons.filter('.save');
+  ce.delete  = ce.buttons.filter('.delete');
+  ce.cancel  = ce.buttons.filter('.cancel');
 
-  ce.checkable = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
-  ce.inputs    = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
-  ce.ajaxuri   = ce.form.find('input[name=ajaxuri]').val();
+  ce.checkable  = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
+  ce.inputs     = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
+  ce.ajaxuri    = ce.form.find('input[name=ajaxuri]').val();
+
+  ce.userid     = ce.form.find('input[name=userid]').val();
+  ce.survey_id  = ce.form.find('input[name=survey_id]').val();
+  ce.timestamps = ce.form.find('input[name=timestamps]').val();
 
   // add a hidden input to let PHP know that we have javascript enabled on the browswer
   $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);
@@ -317,6 +363,7 @@ $(document).ready( function() {
   setup_hints();
 
   ce.confirm_logout = false;
+  ce.modified_on_server = false;
 
   ce.status.on('click',hide_status);
 
@@ -324,8 +371,7 @@ $(document).ready( function() {
 
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar
-    setup_toggle_cache();
-    ce.details.on('toggle',update_toggle_cache);
+    start_ui_cache();
 
     ce.cancel.on('click',handle_cancel);
     ce.save.on('click',handle_save);
@@ -338,7 +384,6 @@ $(document).ready( function() {
     ce.inputs.on(   'input', handle_input_change);
 
     cache_input_values();
-
-    startHeartbeat();
+    ce.heartbeatTimer = setInterval(heartbeat,120000);
   }
 });

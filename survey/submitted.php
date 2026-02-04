@@ -7,7 +7,7 @@ require_once(app_file('include/elements.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/sendmail.php'));
 
-function show_submitted_page($userid,$survey_id,$timestamp)
+function show_submitted_page(string $userid,int $survey_id,int $timestamp)
 {
   // We can get to this function by a few different means and in various states.
   //   Let's take a look at them and also note what should happen in javascript (if anything).
@@ -51,7 +51,6 @@ function show_submitted_page($userid,$survey_id,$timestamp)
   //         - proceed to Case 1
   
   $action = app_uri();
-  $nonce = gen_nonce('survey-form');
   $timestamp = recent_timestamp_string($timestamp);
 
   $user       = User::from_userid($userid);
@@ -66,7 +65,6 @@ function show_submitted_page($userid,$survey_id,$timestamp)
 
   echo "<div class='submitted-wrapper'>";
   echo "<form id='submitted' class='submitted-box' method='post' action='$action'>";
-  add_hidden_input('nonce',$nonce);
   add_hidden_input('submitted',1);
   add_hidden_input('userid',$userid);
 
@@ -175,6 +173,62 @@ function withdraw_responses($userid,$survey_id,$restart=false)
 function withdraw_and_restart($userid,$survey_id)
 {
   withdraw_responses($userid,$survey_id,true);
+}
+
+/**
+ * Renders the submission failure due to conflicting submissions
+ * @param string $userid 
+ * @param string $action 
+ * @param array $change result from compare_status_timestamps
+ * @return void 
+ */
+function fail_conflicting_submit(string $userid,string $action,array $change)
+{
+   // Unlike the otehr rendering support functions in this file,
+   //   this one is called before start_survey_page, and must therefore
+   //   call this explicitly.
+
+  $navbar_args = [
+    'title'     => active_survey_title(),
+    'userid'    => $userid,
+    'draft'     => $change['cur_draft'],
+    'submitted' => $change['cur_submitted'],
+  ];
+
+  switch ($action) {
+    case 'delete':
+      $message = 'Failed to delete the draft.';
+      break;
+    case 'save':
+      $message = 'Failed to save your draft changes.';
+      break;
+    case 'submit':
+      $message = 'Failed to submit your responses.';
+      break;
+    default:
+      $message = 'Failed to accept your updates.';
+      break;
+  }
+
+  $modified = $change['modified'];
+  $reason  = "While you were working on this form, $modified.";
+
+  start_survey_page($navbar_args);
+
+  $contact = admin_contact();
+  $uri = app_uri();
+
+  echo "<div class='submitted-wrapper'>";
+  echo "<form id='failed' class='submitted-box' method='post'>";
+  echo "<div class='error'>$message</div>";
+  echo "<div class='conflict'>$reason</div>";
+  echo "<br>";
+  echo "<div class='contact'>Did you have another survey form open?</div>";
+  echo "<div class='contact'>If not, please contact $contact for help.</div>";
+  echo "<br>";
+  echo "<div class='return'><a href='$uri'>Click here to reload the survey with updated data</a>.</div>";
+  echo "</form>";
+  echo "</div>";
 }
 
 function insert_withdraw_redirect()

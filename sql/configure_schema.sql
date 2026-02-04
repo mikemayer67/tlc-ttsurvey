@@ -477,6 +477,29 @@ IF current_version < 2 THEN
   INSERT INTO tlc_tt_version_history (version,description) values (current_version,'Add email reminder tracking');
 END IF;
 
+--
+-- VERSION 3 --
+--
+IF current_version < 3 THEN
+-- This version creates the table for holding user access tokens in the database
+  CREATE TABLE tlc_tt_access_tokens (
+    userid   varchar(24)  NOT NULL,
+    token    varchar(45)  NOT NULL COMMENT 'access token',
+    expires  datetime     NOT NULL COMMENT 'when the token expires unless renewed',
+    PRIMARY KEY (userid,token),
+    FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+  );
+
+  INSERT INTO tlc_tt_access_tokens (
+    SELECT userid, token, CURRENT_TIMESTAMP + INTERVAL 18 MONTH FROM tlc_tt_userids
+  );
+
+
+-- Add version 3 to the history and increment current version
+  SET current_version = 3;
+  INSERT INTO tlc_tt_version_history (version,description) values (current_version,'Move access token from PHP session to databae');
+END IF;
+
 -- The following is a template for new versions
 --   Copy it and place above this line and remove all leading '-- '
 --   Replace all '#' with the next version number
@@ -489,7 +512,7 @@ END IF;
 --
 -- -- Add version # to the history and increment current version
 --   SET current_version = #;
---   INSERT INTO tlc_tt_version_history (version,description) values (current_version,"<Your Description Here>");
+--   INSERT INTO tlc_tt_version_history (version,description) values (current_version,'<Your Description Here>');
 -- END IF;
 
 END//

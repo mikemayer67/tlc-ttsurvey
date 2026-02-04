@@ -89,7 +89,7 @@ function MySQLExecute($query,$types=null,...$params)
     log_error($e->getMessage());
   }
 
-  log_warning("Failed:: MySQLExecute($query,$types,".log_array($params).")");
+  log_warning("Failed:: MySQLExecute($query,$types,".json_encode($params).")");
   return false;
 }
 
@@ -126,7 +126,7 @@ function MySQLSelect($all,$mode,$query,$types=null,$params=[])
       return $result->fetch_array($mode);
     }
   }
-  log_dev("Failed MySQLSelect($all,$mode,$query,$types,".log_array($params).")");
+  log_dev("Failed MySQLSelect($all,$mode,$query,$types,".json_encode($params).")");
   return false;
 }
 

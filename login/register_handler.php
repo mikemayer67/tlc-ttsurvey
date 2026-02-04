@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/users.php'));
@@ -28,7 +28,7 @@ function handle_register_form()
     switch( $action = $_POST['action'] )
     {
     case 'cancel':
-      clear_redirect_data();
+      clear_redirect();
       break;
     case 'register':
       handle_register_new_user();
@@ -43,13 +43,14 @@ function handle_register_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    add_redirect_data('userid',   $_POST['userid']   ?? null);
-    add_redirect_data('fullname', $_POST['fullname'] ?? null);
-    add_redirect_data('email',    $_POST['email']    ?? null);
-    add_redirect_data('remember', $_POST['remember'] ?? null);
-    set_redirect_page('register');
+    start_redirect_to_login_page('register')
+      ->add('userid',   $_POST['userid']   ?? null)
+      ->add('fullname', $_POST['fullname'] ?? null)
+      ->add('email',    $_POST['email']    ?? null)
+      ->add('remember', $_POST['remember'] ?? null)
+    ;
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 }
@@ -62,7 +63,7 @@ function handle_register_new_user()
   $pwconfirm = $_POST['password-confirm'] ?? '';
   $fullname  = $_POST['fullname']         ?? '';
   $email     = $_POST['email']            ?? null;
-  $remember  = $_POST['remember']         ?? 0;
+  $remember  = $_POST['remember']         ?? false;
 
   if($userid==='')    { internal_error("Missing userid in register request"); }
   if($password==='')  { internal_error("Missing password in register request"); }
@@ -98,15 +99,13 @@ function handle_register_new_user()
   if(!$user) {
     $token = gen_token(6);
     log_error("[$token] Failed to create user ($userid, $fullname, password, $email)");
-    throw BadInput("Failed to create user [error #$token]");
+    throw new BadInput("Failed to create user [error #$token]");
   }
 
   // user created
   //   set this as the active user
   //   add userid/token to cached access tokens if requested
-  start_survey_as($user);
-
-  if( $remember ) { remember_user_token($userid,$user->access_token()); }
+  start_survey_as($userid, $remember);
 }
 
 handle_register_form();

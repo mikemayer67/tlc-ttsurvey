@@ -197,21 +197,18 @@ export default function init(ce)
         show_status('info','Changes Saved');
 
         select_survey();
-      } 
-      else {
-        if( 'bad_nonce' in data ) {
-          alert("Somthing got out of sync.  Reloading page.");
-          window.location.reload();
-        } else {
-          alert("handle bad input notices");
-        }
+
+      } else {
+        // should never get here...
+        internal_error(jqXHR);
       }
-      validate_all();
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_handler(jqXHR,'update survey');
     } )
-    ;
+    .always( function() {
+      validate_all();
+    });
   }
 
   let _previewWindow = null;

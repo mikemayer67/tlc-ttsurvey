@@ -20,6 +20,30 @@ function internal_error(jqXHR)
        );
 }
 
+function ajax_error_handler(jqXHR,activity)
+{
+  if(jqXHR.status == 400) {
+    // bad request
+    //   do nothing other than to warn the user (should be an admin)
+    const reason = jqXHR.responseJSON?.reason || 'invalid request';
+    alert('Failed to ' + activity + ': ' + reason);
+  } else if(jqXHR.status == 401) {
+    // authentication error.
+    //   send them back to main entry point to reauthenticate
+    window.location.href = ce.ajaxuri;
+  } else if(jqXHR.status == 403) {
+    // forbidden
+    //   for the admin dashboard, should mean there was an expired nonce
+    //   reload the page for a new nonce value
+    alert("Form timed out... reloading the admin dashboard");
+    location.reload();
+  } else { 
+    // not sure what went wrong
+    //   treat it as an internal error
+    internal_error(jqXHR);
+  }
+}
+
 function hide_status()
 {
   ace.status.removeClass().addClass('none');
@@ -89,7 +113,7 @@ function handle_admin_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    internal_error(jqXHR);
+    ajax_error_handler(jqXHR,'log out admin');
   });
 }
 
@@ -104,7 +128,7 @@ function handle_user_logout() {
     window.location = ace.ajaxuri + '?admin';
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    internal_error(jqXHR);
+    ajax_error_handler(jqXHR,'log out admin');
   });
 }
 
@@ -137,7 +161,7 @@ function check_lock()
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      internal_error(jqXHR);
+      ajax_error_handler(jqXHR,'obtain admin lock');
     });
   }
 }
@@ -195,7 +219,7 @@ function hold_lock()
     }
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    internal_error(jqXHR);
+    ajax_error_handler(jqXHR,'hold admin lock');
   });
 }
 
