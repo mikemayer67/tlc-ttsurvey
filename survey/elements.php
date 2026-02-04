@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/elements.php'));
+require_once(app_file('include/timestamps.php'));
 
 function start_survey_page($kwargs)
 {
@@ -139,16 +140,39 @@ function user_status_timestamps(string $userid,string $survey_id) : string
 /**
  * Compares the current status timestamps with the timestamps in the POST
  * @param string $current timestamp string as returned by user_status_timestamps
- * @return string what was modified if there was a change, otherwise an empty string
+ * @return array{
+ *    ?change: string what changed
+ *    old_draft: ?int draft timestamp in $_POST
+ *    old_submitted: ?int submitted timestamp in $_POST
+ *    cur_draft: ?int draft timestamp currently in database
+ *    cur_submitted: ?int submitted timestamp curreintly in database
+ * }
  */
-function validate_status_timestamps(string $current) : string
+function compare_status_timestamps(string $current) : array
 {
-  $post_ts   = $_POST['timestamps'] ?? 'null:null';
+  $to_int = fn($s) => $s==='' ? null : intval($s);
 
-  $cur_ts  = explode(':', $current);
-  $post_ts = explode(':', $_POST['timestamps'] ?? 'null:null');
+  $cur  = explode(':', $current);
+  $cur_draft     = $to_int($cur[0]);
+  $cur_submitted = $to_int($cur[1]);
 
-  if ($cur_ts[1] !== $post_ts[1]) { return 'new survey responses were submitted'; }
-  if ($cur_ts[0] !== $post_ts[0]) { return 'a new draft was saved'; }
-  return '';
+  $post = explode(':', $_POST['timestamps'] ?? 'null:null');
+  $post_draft     = $to_int($post[0]);
+  $post_submitted = $to_int($post[1]);
+
+  if($cur_submitted !== $post_submitted) {
+    $change = 'new survey responses were submitted'; 
+  } elseif($cur_draft !== $post_draft) { 
+    $change = 'a new draft was saved'; 
+  } else {
+    $change = null;
+  }
+
+  return [
+    'modified'      => $change,
+    'old_draft'     => $post_draft,
+    'old_submitted' => $post_submitted,
+    'cur_draft'     => $cur_draft,
+    'cur_submitted' => $cur_submitted,
+  ];
 }

@@ -54,7 +54,7 @@ class RenderEngine
       add_hidden_input('ajaxuri',app_uri());
       add_hidden_input('userid',$userid);
       add_hidden_input('survey_id',$survey_id);
-      add_hidden_input('timestamps', json_encode($timestamps));
+      add_hidden_input('timestamps', $timestamps);
     }
 
     $sections = $content['sections'];

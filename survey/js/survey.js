@@ -310,7 +310,7 @@ function heartbeat() {
       ce.form.find('div.submit-bar').hide();
       ce.buttons.prop('disabled', true);
       ce.confirm_logout = false;
-      ce.timestamps = JSON.parse(data.new_timestamps);
+      ce.timestamps = data.new_timestamps;
       // notify user what happened
       let what = '';
       if (data.modified === 'draft') {
@@ -355,7 +355,7 @@ $(document).ready( function() {
 
   ce.userid     = ce.form.find('input[name=userid]').val();
   ce.survey_id  = ce.form.find('input[name=survey_id]').val();
-  ce.timestamps = JSON.parse(ce.form.find('input[name=timestamps]').val());
+  ce.timestamps = ce.form.find('input[name=timestamps]').val();
 
   // add a hidden input to let PHP know that we have javascript enabled on the browswer
   $('<input>',{type:'hidden',name:'js_enabled',value:'1'}).appendTo(ce.form);

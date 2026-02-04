@@ -11,10 +11,12 @@ $userid    = $_POST['userid'];
 $survey_id = $_POST['survey_id'];
 $timestamps = user_status_timestamps($userid,$survey_id);
 
+$change = compare_status_timestamps($timestamps);
+
 http_response_code(200);
 echo json_encode([
   'success' => true,
-  'modified' => validate_status_timestamps($timestamps),
+  'modified' => $change['modified'] ?? '',
   'new_timestamps' => $timestamps,
 ]);
 die();

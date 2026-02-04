@@ -43,12 +43,10 @@ if(intval($active_id) !== intval($survey_id)) {
 }
 
 $current_timestamps  = user_status_timestamps($userid,$survey_id);
-$modified = validate_status_timestamps($current_timestamps);
+$comparison = compare_status_timestamps($current_timestamps);
+$modified = $comparison['modified'];
 if($modified) {
-  $message = "";
-  set_status_message($message);
-  set_status_message("Sorry, but the changes you just submitted could not be accepted: $modified.",'error');
-  header('Location: '.app_uri());
+  fail_conflicting_submit($userid, $action, $comparison);
   die();
 }
 
