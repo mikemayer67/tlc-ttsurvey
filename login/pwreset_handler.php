@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/users.php'));
@@ -29,7 +29,7 @@ function handle_pwreset_form()
     switch($action)
     {
     case 'cancel':
-      clear_redirect_data();
+      clear_redirect();
       break;
     case 'pwreset':
       handle_password_reset();
@@ -44,9 +44,9 @@ function handle_pwreset_form()
     //   Set the error status
     //   Cache inputs and set redirect to return to this page
     set_error_status($e->getMessage());
-    set_redirect_page('pwreset');
+    start_redirect_to_login_page('pwreset');
   }
-  catch (Exception $e) {
+  catch (\Exception $e) {
     internal_error($e->getMessage());
   }
 }
@@ -93,6 +93,6 @@ function handle_password_reset()
 
 handle_pwreset_form();
 
-clear_redirect_data();
+clear_redirect();
 header("Location: ".app_uri());
 die();

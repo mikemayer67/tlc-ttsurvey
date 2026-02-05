@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));

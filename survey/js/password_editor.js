@@ -154,6 +154,7 @@ export default function init()
         }
 
       } else {
+        // update password failed ... update the UX to show the errors
         old_pw_err.text(data.old_error);
         old_pw_input.toggleClass('error',data.old_error.length>0);
         new_pw_err.text(data.new_error);
@@ -162,11 +163,7 @@ export default function init()
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      if(jqXHR.status===405) {
-        location.replace('405.php');
-      } else {
-        internal_error(jqXHR);
-      }
+      ajax_error_handler(jqXHR,'update password');
     })
     .always( function() {
       submit_btn.enable();

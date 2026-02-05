@@ -8,21 +8,29 @@ require_once(app_file('include/users.php'));
 require_once(app_file('include/sendmail.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/ajax.php'));
 
 validate_ajax_nonce('admin-participants');
 
-start_ob_logging();
-
 $survey_id = active_survey_id();
 if(!$survey_id) {
-  internal_error("No active survey... should not have called this function");
+  send_ajax_internal_error("No active survey... should not have called this function");
 }
 
-$userids = $_POST['userids'];
-if(!$userids) {
-  $response = array('success'=>false, $error=>'No userids specified');
+start_ob_logging();
+
+try {
+  $userids = $_POST['userids'];
+  if(!$userids)           { 
+    send_ajax_bad_request('No userids specified');     }
+  if(!is_array($userids)) { send_ajax_bad_request('Userids must be an array'); }
 }
-$status = array_fill_keys( $userids, ['draft'=>null, 'submitted'=>null] );
+catch(\Throwable $e)
+{
+  send_ajax_bad_request($e->getMessage());
+}
+
+$user_status = array_fill_keys( $userids, ['draft'=>null, 'submitted'=>null] );
 
 $qmarks = '?' . str_repeat(',?',count($userids)-1);
 $types  = str_repeat('s',count($userids));
@@ -40,13 +48,13 @@ foreach($rows as $row)
   $userid    = $row['userid'];
   $draft     = $row['draft'];
   $submitted = $row['submitted'];
-  $status[$userid] = ['draft'=>$draft, 'submitted'=>$submitted];
+  $user_status[$userid] = ['draft'=>$draft, 'submitted'=>$submitted];
 }
 
 $now = time();
 $reminder_freq = reminder_freq() * 3600;
 
-$response = array(
+$email_status = array(
   'sent'=>[],
   'no_user'=>[],
   'no_email'=>[],
@@ -55,21 +63,20 @@ $response = array(
   'failed'=>[],
 );
 
-foreach($status as $userid=>$info)
+foreach($user_status as $userid=>$info)
 {
   $user = User::from_userid($userid);
   if(!$user) { 
-    $response['no_user'][] = $userid;
+    $email_status['no_user'][] = $userid;
     continue;
   }
   $processed = [];
 
   $email = $user->email();
   if(!$email) {
-    $response['no_email'][] = $userid;
+    $email_status['no_email'][] = $userid;
     continue;
   }
-  log_dev("$userid info: ".print_r($info,true));
   if($info['draft']) { 
     if($info['submitted']) { $subject = 'unsbumitted-updates'; }
     else                   { $subject = 'draft-only';          }
@@ -77,10 +84,9 @@ foreach($status as $userid=>$info)
     if($info['submitted']) { $subject = null;          }
     else                   { $subject = 'no-response'; }
   }
-  log_dev("$userid subject=$subject");
 
   if(is_null($subject)) {
-    $response['not_needed'][] = $userid;
+    $email_status['not_needed'][] = $userid;
     continue;
   }
 
@@ -91,13 +97,11 @@ foreach($status as $userid=>$info)
     SQL;
 
   $hist = MySQLSelectRow($query,'s',$userid);
-  log_dev("$userid history: ".print_r($hist,true));
 
   if( $hist && $hist['subject'] === $subject ) {
     $last_sent = $hist['last_sent'];
-    log_dev("last_sent:$last_sent, now=$now, freq=$reminder_freq");
     if($now < $last_sent + $reminder_freq) {
-      $response['too_soon'][] = $userid;
+      $email_status['too_soon'][] = $userid;
       continue;
     }
   }
@@ -120,7 +124,7 @@ foreach($status as $userid=>$info)
   }
   if($result) 
   { 
-    $response['sent'][]   = $userid;
+    $email_status['sent'][]   = $userid;
 
     $query = <<<SQL
       INSERT into tlc_tt_reminder_emails (userid, subject, last_sent, email)
@@ -134,12 +138,14 @@ foreach($status as $userid=>$info)
   }
   else
   { 
-    $response['failed'][] = $userid; 
+    $email_status['failed'][] = $userid; 
   }
-
 }
 
 end_ob_logging();
 
-echo json_encode($response);
+$response = new AjaxResponse();
+foreach($email_status as $k=>$v) { $response->add($k,$v); }
+$response->send();
+
 die();

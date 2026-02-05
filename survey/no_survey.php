@@ -12,8 +12,6 @@ echo "<div class='ttt-splash'>";
 add_img_tag('coming_soon.png','','Coming Soon');
 
 echo "<form id='survey'>";
-$nonce = gen_nonce('survey-form');
-add_hidden_input('nonce',$nonce);
 add_hidden_input('ajaxuri',app_uri());
 
 echo "<div class='ttt-caption'>";

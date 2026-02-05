@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/status.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
 
@@ -253,7 +253,7 @@ function add_user_menu($userid)
     echo "</span>";
   }
   $username = $user->fullname();
-  echo "<span>$username</span>";
+  echo "<span class='username'>$username</span>";
   add_menu_trigger($user);
 
   return true;

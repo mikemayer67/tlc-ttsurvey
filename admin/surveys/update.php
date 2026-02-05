@@ -109,11 +109,9 @@ function cache_user_responses($survey_id)
 
     $query = "drop table if exists $cache";
     MySQLExecute($query);
-    log_dev($query);
 
     $query = "create table $cache as select * from $table where survey_id=$survey_id";
     $rc = MySQLExecute($query);
-    log_dev("$rc: $query");
     if($rc === false) { throw new \Exception("Failed to cache $table"); }
   }
 }
@@ -126,7 +124,6 @@ function restore_user_responses($survey_id)
   $cache = $table . '_cache';
   $query = "insert into $table select * from $cache where survey_id=$survey_id";
   $rc = MySQLExecute($query);
-  log_dev("$rc: $query");
   if($rc === false) { throw new \Exception("Failed to restore user status"); }
 
   $query = <<<SQL
@@ -138,7 +135,6 @@ function restore_user_responses($survey_id)
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
-  log_dev("$rc: $query");
   if($rc === false) { throw new \Exception("Failed to restore user responses"); }
 
   $query = <<<SQL
@@ -151,7 +147,6 @@ function restore_user_responses($survey_id)
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
-  log_dev("$rc: $query");
   if($rc === false) { throw new \Exception("Failed to restore user response options"); }
 
   $query = <<<SQL
@@ -164,7 +159,6 @@ function restore_user_responses($survey_id)
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
-  log_dev("$rc: $query");
   if($rc === false) { throw new \Exception("Failed to restore section feedback"); }
 }
 

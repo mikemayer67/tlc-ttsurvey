@@ -662,16 +662,17 @@ div.submit-bar button:disabled {
   color:darkred;
 }
 
-.submitted-box div.timestamp
+.submitted-box div.timestamp,
+.submitted-box div.contact,
+.submitted-box div.conflict
 {
   margin-top:0.25em;
   font-size:110%;
 }
 
-.submitted-box div.contact
+.submitted-box div.conflict
 {
-  margin-top:0.25em;
-  font-size:110%;
+  font-weight: bold;
 }
 
 .submitted-box div.return

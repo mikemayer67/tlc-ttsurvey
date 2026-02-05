@@ -28,7 +28,7 @@
       ce.log_display.scrollTop(ce.log_display[0].scrollHeight);
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_handler(jqXHR,'get log entries');
     });
 
     resume_refresh();
@@ -115,6 +115,9 @@
         w.document.write("<pre>"+data_str+"</pre>");
         w.close();
       });
+    })
+    .fail( function(jqXHR,textStatus,errorThrown) { 
+      ajax_error_handler(jqXHR,'get log entries');
     });
 
     ce.log_level.on('change',refresh_display);

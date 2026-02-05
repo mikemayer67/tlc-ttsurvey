@@ -4,7 +4,7 @@
 ;;   the database and are accessed via functions defined in include/settings.php
 ;;
 ;; You will need to copy (or rename) this file to 'tlc-ttsurvey.ini' and 
-;;   fill in all of hte required fields for the app to function.
+;;   fill in all of the required fields for the app to function.
 ;;==============================================================================
 
 ;;------------------------------------------------------------------------------
@@ -51,3 +51,14 @@ mysql_username = "FILL THIS IN"
 mysql_password = "FILL THIS IN"
 ;mysql_charset = "utf8mb4"
 
+;;------------------------------------------------------------------------------
+;; The following should ONLY be set to falsy value in a development environment.
+;;   Doing so disables the requirement that https be used for cookies.   
+;;------------------------------------------------------------------------------
+cookies_require_https = 1
+
+;;------------------------------------------------------------------------------
+;; The following should ONLY be set to true in a development environment.
+;;   Doing so opens certain security holes necessary for testing.
+;;------------------------------------------------------------------------------
+;; dev_env = false

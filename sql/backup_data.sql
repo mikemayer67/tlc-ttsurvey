@@ -12,6 +12,7 @@ drop table if exists bkp_survey_questions;
 drop table if exists bkp_surveys;
 drop table if exists bkp_survey_sections;
 drop table if exists bkp_userids;
+drop table if exists bkp_access_tokens;
 drop table if exists bkp_user_status;
 drop table if exists bkp_version_history;
 
@@ -29,5 +30,6 @@ create table bkp_survey_questions as select * from tlc_tt_survey_questions;
 create table bkp_surveys          as select * from tlc_tt_surveys;
 create table bkp_survey_sections  as select * from tlc_tt_survey_sections;
 create table bkp_userids          as select * from tlc_tt_userids;
+create table bkp_access_tokens    as select * from tlc_tt_access_tokens;
 create table bkp_user_status      as select * from tlc_tt_user_status;
 create table bkp_version_history  as select * from tlc_tt_version_history;

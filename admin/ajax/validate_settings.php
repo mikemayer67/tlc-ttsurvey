@@ -5,8 +5,9 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/settings.php'));
+require_once(app_file('include/ajax.php'));
 
-validate_and_retain_nonce('admin-settings');
+validate_ajax_nonce('admin-settings');
 
 start_ob_logging();
 
@@ -14,16 +15,17 @@ $settings = $_POST;
 unset($settings['ajax']);
 unset($settings['nonce']);
 
-$response = Settings::validate($settings);
-
-// resonse currently contains the list of errors.
-//   it shows success if empty
-//   it shows failure if not empty
-$response['success'] = count($response) == 0;
+$errors = Settings::validate($settings);
 
 end_ob_logging();
 
-echo json_encode($response);
+$response = new AjaxResponse();
+if($errors) {
+  $response->fail();
+  foreach($errors as $k=>$v) { $response->add($k,$v); }
+}
+$response->send();
+
 die();
 
 

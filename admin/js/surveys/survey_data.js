@@ -73,18 +73,13 @@ export default function init(ce)
         }
         _surveys[id].content = content;
         $(document).trigger('ContentDataLoaded',[id,data.content]);
-      }
-      else if( 'bad_nonce' in data ) {
-        alert("Somthing got out of sync.  Reloading page.");
-        location.reload();
-      } 
-      else {
-        alert("Data got out of sync with database: " + data.error);
+      } else {
+        alert(data.reason);
         location.reload();
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      internal_error(jqXHR);
+      ajax_error_handler(jqXHR,'retrieve survey content');
     }) ;
     return null;
   }
@@ -175,7 +170,7 @@ export default function init(ce)
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) {
-      internal_error(jqXHR);
+      ajax_error_handler(jqXHR,'update survey state')
     }) ;
   }
 

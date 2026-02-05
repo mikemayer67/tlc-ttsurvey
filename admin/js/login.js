@@ -31,7 +31,7 @@
         }
       })
       .fail( function(jqXHR,textStatus,errorThrown) { 
-        internal_error(jqXHR); 
+        ajax_error_handler(jqXHR,'log in as admin')
       });
     }
   }

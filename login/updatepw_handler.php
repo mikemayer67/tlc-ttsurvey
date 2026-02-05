@@ -22,8 +22,9 @@ function handle_updatepw_form()
   if(!$action) { internal_error("Missing action in update request");   }
 
   if($action === 'cancel') { 
-    add_redirect_data('message',"Password Reset Cancelled");
-    set_redirect_page('close');
+    start_redirect_to_login_page('close')
+      ->add('message',"Password Reset Cancelled")
+    ;
     return;
   }
 
@@ -72,20 +73,21 @@ function handle_updatepw_form()
   }
 
   // success
-  add_redirect_data('message',"User Password Updated");
-  add_redirect_data('email',$user->email() ?? '');
-  set_redirect_page('close');
+  start_redirect_to_login_page('close')
+    ->add('message',"User Password Updated")
+    ->add('email',$user->email() ?? '')
+  ;
 
   // update session and user access tokens
   require_once(app_file('include/login.php'));
   regen_active_token();
-  remember_user_token($userid, $user->regenerate_access_token() );
 }
 
 function handle_error($msg)
 {
-  add_redirect_data('status',[$msg,'error']);
-  set_redirect_page('updatepw');
+  start_redirect_to_login_page('updatepw')
+    ->add('status',[$msg,'error'])
+  ;
   $nonce = get_nonce('update-page');
   $app_uri = app_uri("ttt=$nonce");
   header("Location: $app_uri");

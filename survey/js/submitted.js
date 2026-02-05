@@ -55,11 +55,7 @@ function send_confirmation_email(form)
     });
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
-    if(jqXHR.status===405) {
-      location.replace('405.php');
-    } else {
-      internal_error(jqXHR);
-    }
+    ajax_error_handler(jqXHR,'send confirmation email');
   });
 }
 

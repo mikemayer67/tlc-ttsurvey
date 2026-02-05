@@ -1,0 +1,73 @@
+table {
+  border-collapse: collapse;
+  border: 2px solid black;
+  padding:8px;
+}
+
+table.inputs {
+  margin:1em;
+  background:rgb(237, 237, 237);
+}
+
+table.inputs td.key {
+  text-align: right;
+  vertical-align: middle;
+}
+
+table.inputs button {
+  width:100%;
+  font-family:'serif';
+  font-size:90%;
+  font-weight: bold;
+}
+table.inputs input {
+  font-size:100%;
+}
+
+td, th {
+  border: 1px solid black;
+  padding: 4px;
+  vertical-align: top;
+}
+
+th {
+  font-weight:bold;
+  border-bottom: 2px solid black;
+}
+
+table.results {
+  font-size:80%;
+}
+
+tr.pass td {
+  background:lightgreen;
+}
+
+tr.fail td {
+  background:lightpink; 
+}
+
+tr.expected_fail {
+  background: rgb(172, 250, 172);
+}
+
+tr.skipped { 
+  background:lightgray;
+}
+
+table.jsobj {
+  margin:3px;
+  border:none;
+}
+table.jsobj td, table.jsob th {
+  border:none;
+  padding:0 3px;
+}
+
+table.jsobj td.key {
+  font-weight:bold;
+  text-align:right;
+}
+table.jsobj td.key::after {
+  content:":";
+}

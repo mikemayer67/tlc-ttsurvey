@@ -21,6 +21,7 @@ require_once(APP_DIR.'/include/init.php');
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
+require_once(app_file('include/login.php'));
 
 require_once(app_file('include/db.php'));
 verify_required_db_version(3);
@@ -30,6 +31,10 @@ session_start();
 try
 {
   log_dev("-------------- Start of TT --------------");
+
+  if(key_exists('ajaxtest',$_GET)) {
+    require_once(app_file('test/ajax.php'));
+  }
 
   // Handle logout and forget token requests
   //   Allow from get or post queries
@@ -42,9 +47,14 @@ try
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
+    require_once(app_file('include/ajax.php'));
     list($scope,$action) = explode('/',$_POST['ajax']);
     if(!isset($action)) { http_response_code(405); die(); }
-    require safe_app_file("$scope/ajax/$action.php");
+    try {
+      require safe_app_file("$scope/ajax/$action.php");
+    } catch(\Throwable $e) {
+      send_ajax_internal_error(basename($e->getFile()) . "[" . $e->getLine() . "]: " . $e->getMessage()); 
+    }
     die();
   }
 
@@ -82,7 +92,7 @@ try
   } 
   
   // If there is no active user, present the login page
-  require_once(app_file('include/login.php'));
+  require_once(app_file('include/cookiejar.php'));
   $active_user = active_userid();
 
   if(!$active_user) {
@@ -93,7 +103,7 @@ try
   // Handle any explicit redirect request
   $redirect_page = get_redirect_page();
   if($redirect_page) {
-    $page = safe_app_file("login/{$redirect_page}_page.php");
+    $page = safe_app_file("{$page}.php");
     if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
     require($page);
     die();
@@ -122,7 +132,8 @@ try
   };
 
   if(key_exists('forget',$_REQUEST)) {
-    forget_user_token($_REQUEST['forget'] ?? '');
+    require_once(app_file('include/cookiejar.php'));
+    CookieJar::forget_access_token($userid);
     // .. no reason to abort at this point... 
   }
 

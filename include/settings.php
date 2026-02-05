@@ -218,12 +218,15 @@ function validate_app_logo($logo,&$error=null) {
   _fix_validate_value($logo);
   if($logo==='') { return true; }
   $imgfile = realpath(app_file("img/$logo"));
-  if($imgfile && getImagesize($imgfile)) { 
-    return true; 
-  } else {
-    $error = "not found on server";
+  if(!$imgfile) { 
+    $error = "Logo file does not exist";
     return false;
   }
+  if( !getimagesize($imgfile) ) {
+    $error = "Logo image file does not exist"; 
+    return false;
+  }
+  return true;
 }
 
 function validate_admin_name($name, &$error = null): bool {

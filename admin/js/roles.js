@@ -34,9 +34,14 @@
 
     var cur_roles = current_roles();
     var summary_flags = current_summary_flags();
-    var changes   = role_changes(cur_roles);
+    var changes = role_changes(cur_roles);
 
-    var data = {...changes, summary_flags, 'ajax':'admin/update_roles', 'nonce':ce.nonce};
+    var data = {
+      ...changes, 
+      summary_flags, 
+      'ajax':'admin/update_roles', 
+      'nonce':ce.nonce
+    };
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
@@ -51,17 +56,12 @@
         saved_summary_flags = summary_flags;
         show_status('info','Changes Saved');
       } else {
-        if( 'bad_nonce' in data) {
-          alert("Somthing got out of sync.  Reloading page.");
-          location.reload();
-        } else {
-          show_status('warning',data.error);
-        }
+        show_status('warning', data.error);
       }
       update_submit();
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      internal_error(jqXHR); 
+      ajax_error_handler(jqXHR,'update roles')
     });
   }
 
@@ -196,7 +196,9 @@
   {
     let rval = 0;
     ce.summary_flags.each( function() {
-      if( $(this).prop('checked') ) { rval += Number($(this).val()); }
+      if( $(this).prop('checked') ) { 
+        rval += Number($(this).val());
+      }
     });
     return rval;
   }

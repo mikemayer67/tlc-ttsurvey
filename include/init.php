@@ -9,8 +9,6 @@ define('PKG_NAME', 'tlc-ttsurvey');
 // Error handling 
 
 class BadInput      extends \Exception {}
-class MissingInput  extends \Exception {}
-class SMTPError     extends \Exception {}
 
 function api_die($msg='') 
 {
@@ -184,18 +182,6 @@ function validate_nonce($key,$src='POST',$invalidate=true)
     api_die("Invalid nonce: key=$key");
   }
   if($invalidate) { $_SESSION['nonce'][$key] = null; }
-}
-
-function validate_ajax_nonce($key)
-{
-  $expected = $_SESSION['nonce'][$key] ?? null;
-  $actual   = $_POST['nonce'];
-  if($actual !== $expected) {
-    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
-    $response = array('success'=>false, 'bad_nonce'=>true );
-    echo json_encode($response);
-    die();
-  }
 }
 
 function validate_get_nonce($key,$invalidate=true)   { validate_nonce($key,'GET',$invalidate); }
