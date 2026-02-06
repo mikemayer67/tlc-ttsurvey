@@ -112,6 +112,16 @@ abstract class PDFBox
   public function __construct(TCPDF $tcpdf) {}
 
   /**
+   * Computes the layout of all toplevel boxes.
+   *   This sets the page, x, and y location of each child box
+   * The default method does nothing.  Boxes which manage other boxes
+   *   must override this method.
+   * @param TCPDF $tcpdf 
+   * @return mixed 
+   */
+  public function computeLayout(TCPDF $tcpdf) {}
+
+  /**
    * Kicks off the rendering of the box to the PDF output. 
    *   This method should be overridden by subclasses.
    * @param TCPDF instances of a TCDPF class (or subclass)
@@ -135,6 +145,13 @@ abstract class PDFRootBox extends PDFBox
   // This list of all top level child boxes
   /** @var PDFBox[] $_children */
   private array $_children = [];
+  private float $_content_left = 0;
+  private float $_content_right = 0;
+  private float $_content_top = 0;
+  private float $_content_bottom = 0;
+
+  private int $_page_count = 0;
+  public function numPages() : int { return $this->_page_count; }
 
   /**
    * Constructor does nothing but invokes the PDFBox constructor.
@@ -146,7 +163,15 @@ abstract class PDFRootBox extends PDFBox
   public function __construct(TCPDF $tcpdf)
   {
     parent::__construct($tcpdf);
+
+    $this->_content_left   = PDF_MARGIN_LEFT;
+    $this->_content_right  = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+    $this->_content_top    = PDF_MARGIN_TOP;
+    $this->_content_bottom = $tcpdf->getPageHeight() - PDF_MARGIN_BOTTOM;
   }
+
+  public function content_width()  : float { return $this->_content_right  - $this->_content_left; }
+  public function content_height() : float { return $this->_content_bottom - $this->_content_top;  }
 
   /**
    * Adds a child box to the root box.
@@ -160,45 +185,40 @@ abstract class PDFRootBox extends PDFBox
 
   /**
    * Computes the layout of all toplevel boxes.
-   *   This sets the page, x, and y location of each box
+   *   This sets the page, x, and y location of each child box
    * @param TCPDF $tcpdf 
    * @return void 
    */
   public function computeLayout(TCPDF $tcpdf)
   {
-    $content_left   = PDF_MARGIN_LEFT;
-    $content_right  = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
-    $content_width  = $content_right - $content_left;
-
-    $content_top    = PDF_MARGIN_TOP;
-    $content_bottom = $tcpdf->getPageHeight() - PDF_MARGIN_BOTTOM;
-    $content_height = $content_bottom - $content_top;
-
     $page   = 1;
     $prior = null;
     $indent = 0;
-    $cur_y  = $content_top;
+    $cur_y  = $this->_content_top;
 
     foreach ($this->_children as $box) {
       if ($box->resetIndent()) {
         $indent = 0;
       }
 
-      $max_y = PDF_MARGIN_TOP + $content_height * $box->maxPagePos();
+      $max_y = PDF_MARGIN_TOP + $this->content_height() * $box->maxPagePos();
 
       $cur_y += $box->yOffset($prior);
       $prior = $box;
 
-      if (($cur_y > $max_y) || ($cur_y + $box->getHeight() > $content_bottom)) {
+      if (($cur_y > $max_y) || ($cur_y + $box->getHeight() > $this->_content_bottom)) {
         $page += 1;
-        $cur_y = $content_top;
+        $cur_y = $this->_content_top;
       }
 
-      $box->setPosition($page, $content_left + $indent, $cur_y);
+      $box->setPosition($page, $this->_content_left + $indent, $cur_y);
+      $box->computeLayout($tcpdf);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();
     }
+
+    $this->_page_count = $page;
   }
 
   /**
@@ -231,6 +251,8 @@ class PDFTextBox extends PDFBox
   private float $_size = 0;     // fontn size
 
   private bool $_multi = false;
+
+  private float $_max_width=0; // @@@TODO remove this
 
   /**
    * PDFTextBox Constructor.  
@@ -265,6 +287,8 @@ class PDFTextBox extends PDFBox
 
     $tcpdf->setFont($this->_family, $this->_style, $this->_size);
 
+    $this->_max_width = $w;
+
     if ($multi) {
       $this->_text = $text;
       $this->_width = $w;
@@ -286,6 +310,8 @@ class PDFTextBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf): bool
   {
+    $tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
+    $tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
     $tcpdf->setFont($this->_family, $this->_style, $this->_size);
     $tcpdf->setY($this->_y);
     $tcpdf->setX($this->_x);

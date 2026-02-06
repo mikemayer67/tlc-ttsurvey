@@ -136,6 +136,7 @@ class SurveyPDF extends TCPDF
 
     $content_root = new SurveyRootBox($this, $content);
     $content_root->computeLayout($this);
+    $this->page_count = $content_root->numPages();
     $content_root->render($this);
   }
 }
@@ -159,27 +160,32 @@ class SurveyRootBox extends PDFRootBox
   {
     parent::__construct($tcpdf);
 
+    $max_width = $this->content_width();
+
     // Sort the sections by sequence
     $sections = $content['sections'];
     usort($sections, fn($a, $b) => $a['sequence'] <=> $b['sequence']);
     foreach ($sections as $section) {
-      $this->add_section($tcpdf, $section, $content);
+      $this->add_section($tcpdf, $max_width, $section, $content);
     }
   }
 
   /**
    * Adds section content to the survey form
    * @param SurveyPDF $tcpdf 
+   * @param float $width 
    * @param array $section section specific content data
    * @param array $content overall survey content structure data
    * @return void 
    */
-  private function add_section(SurveyPDF $tcpdf, array $section, array $content)
+  private function add_section(SurveyPDF $tcpdf, float $width, array $section, array $content)
   {
-    $box = new SurveySectionBox($tcpdf, $section);
+    $box = new SurveySectionBox($tcpdf, $width, $section);
     $this->addChild($box);
 
-    $this->add_questions($tcpdf, $section['section_id'], $content);
+    $width -= $box->incrementIndent();
+
+    $this->add_questions($tcpdf, $width, $section['section_id'], $content);
   }
 
   /**
@@ -189,7 +195,7 @@ class SurveyRootBox extends PDFRootBox
    * @param array $content overall survey content structure data
    * @return void 
    */
-  private function add_questions(SurveyPDF $tcpdf, int $sid, array $content): void
+  private function add_questions(SurveyPDF $tcpdf, $width, int $sid, array $content): void
   {
     // find the questions to add to this section
     $questions = array_values(array_filter(
@@ -228,7 +234,7 @@ class SurveyRootBox extends PDFRootBox
 
     // add question boxes to the survey
     foreach($question_boxes as $questions) {
-      $box = new SurveyQuestionBox($tcpdf, $questions, $content);
+      $box = new SurveyQuestionBox($tcpdf, $width, $questions, $content);
       $this->addChild($box);
     }
   }
@@ -246,10 +252,11 @@ class SurveySectionBox extends PDFBox
 
   /**
    * @param SurveyPDF $tcpdf 
+   * @param float $box_width
    * @param array $section 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, array $section)
+  public function __construct(SurveyPDF $tcpdf, float $width, array $section)
   {
     parent::__construct($tcpdf);
 
@@ -257,10 +264,7 @@ class SurveySectionBox extends PDFBox
     $collapsible = $section['collapsible'] ?? true;
     $intro       = $section['intro'] ?? '';
 
-    $page_width = $tcpdf->getPageWidth();
-    $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
-
-    $this->_width = $box_width;
+    $this->_width = $width;
     $this->_height = 0;
 
     if ($collapsible || $intro) {
@@ -272,7 +276,7 @@ class SurveySectionBox extends PDFBox
     }
 
     if ($collapsible) {
-      $this->_name_box = new PDFTextBox($tcpdf, $box_width, $name, K_SERIF_FONT, size: 16);
+      $this->_name_box = new PDFTextBox($tcpdf, $width, $name, K_SERIF_FONT, size: 16);
       $this->_height += $this->_name_box->getHeight();
     }
     if ($collapsible && $intro) {
@@ -280,9 +284,9 @@ class SurveySectionBox extends PDFBox
     }
     if ($intro) {
       if (possibleMarkdown($intro)) {
-        $this->_intro_box = new PDFMarkdownBox($tcpdf, $box_width, $intro, size: 9);
+        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro, size: 9);
       } else {
-        $this->_intro_box = new PDFTextBox($tcpdf, $box_width, $intro, style: 'I', size: 9, multi: true);
+        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, style: 'I', size: 9, multi: true);
       }
       $this->_height += $this->_intro_box->getHeight();
     }
@@ -317,34 +321,43 @@ class SurveySectionBox extends PDFBox
   }
 
   /**
-   * Renders the content of a SurveySection box
+   * Computes the layout of the name/intro boxes within the section box
    * @param TCPDF $tcpdf 
-   * @return bool 
+   * @return void 
    */
-  protected function render(TCPDF $tcpdf): bool
+  public function computeLayout(TCPDF $tcpdf)
   {
     $x = $this->_x;
     $y = $this->_y;
 
     if ($this->_name_box) {
       $this->_name_box->setPosition($this->_page, $x, $y);
-      if (!$this->_name_box->render($tcpdf)) { return false; }
-
       $y += $this->_name_box->getHeight();
+      if ($this->_intro_box) { $y += $this->_gap; }
+    }
+    if ($this->_intro_box) {
+      $this->_intro_box->setPosition($this->_page, $x, $y);
+    }
+  }
+
+  /**
+   * Renders the content of a SurveySection box
+   * @param TCPDF $tcpdf 
+   * @return bool 
+   */
+  protected function render(TCPDF $tcpdf): bool
+  {
+    if ($this->_name_box) {
+      if (!$this->_name_box->render($tcpdf)) { return false; }
+      $y = $this->_name_box->_y + $this->_name_box->getHeight();
       $tcpdf->setLineWidth(0.2);
       $x1 = PDF_MARGIN_LEFT;
       $x2 = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
       $tcpdf->Line($x1, $y, $x2, $y);
-      if ($this->_intro_box) {
-        $y += $this->_gap;
-      }
     }
 
     if ($this->_intro_box) {
-      $this->_intro_box->setPosition($this->_page, $x, $y);
-      if (!$this->_intro_box->render($tcpdf)) {
-        return false;
-      }
+      if (!$this->_intro_box->render($tcpdf)) { return false; }
     }
 
     return true;
@@ -360,14 +373,12 @@ class SurveyQuestionBox extends PDFBox
 
   /**
    * @param SurveyPDF $tcpdf 
+   * @param float $max_width
    * @param array $questions 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, array $questions, array $content)
+  public function __construct(SurveyPDF $tcpdf, float $max_width, array $questions, array $content)
   {
-    $page_width = $tcpdf->getPageWidth();
-    $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
-
     $this->_width = 0;
     $this->_height = 0;
 
@@ -376,15 +387,36 @@ class SurveyQuestionBox extends PDFBox
 
       switch($type) {
         case 'INFO':
-          $box = new SurveyInfoBox($tcpdf,$question);
+          $box = new SurveyInfoBox($tcpdf,$max_width,$question);
           break;
         default:
-          $box = new PDFTextBox($tcpdf, $box_width, $type);
+          $box = new PDFTextBox($tcpdf, $max_width, $type);
           break;
       }
       $this->_height += $box->getHeight();
       $this->_width = max($this->_width, $box->getWidth());
       $this->_child_boxes[] = $box;
+
+      $max_width -= $box->incrementIndent();
+    }
+  }
+
+  /**
+   * Computes the layout of the question boxes
+   * @param TCPDF $tcpdf 
+   * @return void 
+   */
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $x = $this->_x;
+    $y = $this->_y;
+
+    foreach($this->_child_boxes as $box) 
+    {
+      $box->setPosition($this->_page,$x,$y);
+      $y += $box->getHeight();
+      $x += $box->incrementIndent();
+      $box->computeLayout($tcpdf);
     }
   }
 
@@ -395,14 +427,9 @@ class SurveyQuestionBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf) : bool
   {
-    $x = $this->_x;
-    $y = $this->_y;
-
     foreach($this->_child_boxes as $box) 
     {
-      $box->setPosition($this->_page,$x,$y);
       if(!$box->render($tcpdf)) { return false; }
-      $y += $box->getHeight();
     }
 
     return true;
@@ -412,29 +439,50 @@ class SurveyQuestionBox extends PDFBox
 class SurveyInfoBox extends PDFBox
 {
   private PDFBox $_box;
+  private bool $_new_group = false;
   /**
    * @param TCPDF $tcpdf 
+   * @param float $max_width
    * @param array $question 
    * @return void 
    */
-  public function __construct(TCPDF $tcpdf, array $question)
+  public function __construct(TCPDF $tcpdf, float $max_width, array $question)
   {
     parent::__construct($tcpdf);
 
     $info = $question['info'];
 
-    $page_width = $tcpdf->getPageWidth();
-    $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
+    $this->_new_group = strtoupper($question['grouped']??"") === "NEW";
 
-    $this->_width = $box_width;
+    $this->_width = $max_width;
     $this->_height = 0;
 
     if(possibleMarkdown($info)) {
-      $this->_box = new PDFMarkdownBox($tcpdf,$box_width,$info);
+      $this->_box = new PDFMarkdownBox($tcpdf,$max_width,$info);
     } else {
-      $this->_box = new PDFTextBox($tcpdf, $box_width, $info, multi:true);
+      $this->_box = new PDFTextBox($tcpdf, $max_width, $info, multi:true);
     }
     $this->_height += $this->_box->getHeight();
+  }
+
+  /**
+   * Info boxes increate the indent for subsequent boxes if they are
+   * starting a new question group
+   * @return float 
+   */
+  public function incrementIndent() : float
+  {
+    return $this->_new_group ? K_QUARTER_INCH : 0;
+  }
+
+  /**
+   * Computes the layout of the actual info box
+   * @param TCPDF $tcpdf 
+   * @return void 
+   */
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $this->_box->setPosition($this->_page, $this->_x, $this->_y);
   }
 
   /**
@@ -444,7 +492,7 @@ class SurveyInfoBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf): bool
   {
-    $this->_box->setPosition($this->_page, $this->_x, $this->_y);
+    $tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
     return $this->_box->render($tcpdf);
   }
 }
