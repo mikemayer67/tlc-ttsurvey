@@ -1,12 +1,7 @@
 <?php
-
 namespace tlc\tts;
 
-if (!defined('APP_DIR')) {
-  http_response_code(405);
-  error_log("Invalid entry attempt: " . __FILE__);
-  die();
-}
+if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/tcpdf_utils.php'));
 
@@ -41,19 +36,13 @@ abstract class PDFBox
    * Returns the height of the box on the PDF page
    * @return float
    */
-  public function getHeight(): float
-  {
-    return $this->_height;
-  }
+  public function getHeight(): float { return $this->_height; }
 
   /**
    * Returns the width of the box on the PDF page
    * @return float
    */
-  public function getWidth(): float
-  {
-    return $this->_width;
-  }
+  public function getWidth(): float { return $this->_width; }
 
   /**
    * Returns the maximum fractional Y position down the page at which this box
@@ -61,10 +50,7 @@ abstract class PDFBox
    * This method should be overwritten in subclasses as needed.
    * @return float 
    */
-  public function maxPagePos(): float
-  {
-    return 1;
-  }
+  public function maxPagePos(): float { return 1; }
 
   /**
    * Returns the vertical offset from the prior box (or 0 if no prior)
@@ -73,9 +59,7 @@ abstract class PDFBox
    */
   public function yOffset(?PDFBox $prior): float
   {
-    if (is_null($prior)) {
-      return 0;
-    }
+    if (is_null($prior)) { return 0; }
     return max($this->_top_pad, $prior->_bottom_pad);
   }
 
@@ -85,21 +69,15 @@ abstract class PDFBox
    *   Subclasses which reset the indent should override this method
    * @return bool 
    */
-  public function resetIndent(): bool
-  {
-    return false;
-  }
+  public function resetIndent(): bool { return false; }
 
   /**
-   * Returns whether subsequent boxes should be at an increased indent
+   * Returns amount by which subsequent boxes should be at an increased indent
    *   Default = 0
    *   Subclasses which increment indent should override this method
    * @return float amount by which to increment the indent
    */
-  public function incrementIndent(): float
-  {
-    return 0;
-  }
+  public function incrementIndent(): float { return 0; }
 
   /**
    * @internal Used to define the position of the box.  Must be called before render()
@@ -160,7 +138,7 @@ abstract class PDFRootBox extends PDFBox
 
   /**
    * Constructor does nothing but invokes the PDFBox constructor.
-   *   While the existence of this method is not strictly necessary, it seves as
+   *   While the existence of this method is not strictly necessary, it serves as
    *   a reminder that all subclasses of PDFRootBox should also invoke the parent constrctor
    * @param TCPDF instances of a TCDPF class (or subclass)
    * @return void 
@@ -233,9 +211,7 @@ abstract class PDFRootBox extends PDFBox
   {
     $prior = null;
     foreach ($this->_children as $child) {
-      if ($child->isNewPage($prior)) {
-        $tcpdf->AddPage();
-      }
+      if ($child->isNewPage($prior)) { $tcpdf->AddPage(); }
       $rc = $child->render($tcpdf);
       if (!$rc) return false;
       $prior = $child;

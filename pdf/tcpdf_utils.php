@@ -24,17 +24,15 @@ function tcpdf_line_height(TCPDF $tcpdf) : float
  */
 function tcpdf_truncate_text(TCPDF $tcpdf, string $text, float $w) : string
 {
-  $w2 = $tcpdf->GetStringWidth($text);
-  if($w2 < $w) { return $text; }
+  $wt = $tcpdf->GetStringWidth($text);
+  if($wt < $w) { return $text; }
 
   $pad = $tcpdf->GetStringWidth('...');
 
-  $s2 = $text;
+  $n1 = 0;
   $n2 = strlen($text);
 
-  $s1 = '';
-  $n1 = 0;
-  $w1 = 0;
+  $keep = '';
 
   while($n2 > $n1 + 1) {
     $nt = intdiv($n1+$n2,2);
@@ -42,11 +40,10 @@ function tcpdf_truncate_text(TCPDF $tcpdf, string $text, float $w) : string
     $wt = $tcpdf->GetStringWidth($st);
     if($wt > $w-$pad) {
       $n2 = $nt;
-      $s2 = $st;
     } else {
       $n1 = $nt;
-      $s1 = $st;
+      $keep = $st;
     }
   }
-  return $s1 . '...';
+  return $keep . '...';
 }

@@ -19,7 +19,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 // But... once you dig into the autoconfig code, you find that the config
 //   file is loaded by autoconfig UNLESS the constant K_TCPDF_EXTERNAL_CONFIG
 //   is set to true.  In this case, the config file that ships with TCPDF is 
-//   ignored.  This allows sers of the package to pre-override the autoconfig
+//   ignored.  This allows users of the package to pre-override the autoconfig
 //   constants before loading TCPDF via autoload.
 // 
 // I recommend looking through the two config files that ship with TCPDF

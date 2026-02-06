@@ -1,14 +1,10 @@
 <?php
-
 namespace tlc\tts;
 
-if (!defined('APP_DIR')) {
-  http_response_code(405);
-  error_log("Invalid entry attempt: " . __FILE__);
-  die();
-}
+if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('include/login.php'));
+require_once(app_file('include/users.php'));
 require_once(app_file('pdf/tcpdf_config.php'));
 require_once(app_file('pdf/tcpdf_utils.php'));
 require_once(app_file('pdf/pdf_box.php'));
@@ -125,7 +121,7 @@ class SurveyPDF extends TCPDF
     //   information... but that makes right justification of the page number in the
     //   footer problematic.  This design allows us to know the page information while
     //   rendering each page and thus format the footer more cleanly.
-    //   (yes, this is a silly detail... but each enough to handle)
+    //   (yes, this is a silly detail... but easy enough to handle)
 
     // Finally... provide the methods for placing all of the elements onto the pages.
 
@@ -233,7 +229,7 @@ class SurveyRootBox extends PDFRootBox
     // add question boxes to the survey
     foreach($question_boxes as $questions) {
       $box = new SurveyQuestionBox($tcpdf, $questions, $content);
-      $this->addChild($box
+      $this->addChild($box);
     }
   }
 }
@@ -380,15 +376,15 @@ class SurveyQuestionBox extends PDFBox
 
       switch($type) {
         case 'INFO':
-        $box = new SurveyInfoBox
-        break;
+          $box = new SurveyInfoBox($tcpdf,$question);
+          break;
         default:
-          $stub = new PDFTextBox($tcpdf, $box_width, $type);
-          $this->_height += $stub->getHeight();
-          $this->_width = max($this->_width, $stub->getWidth());
-          $this->_child_boxes[] = $stub;
+          $box = new PDFTextBox($tcpdf, $box_width, $type);
           break;
       }
+      $this->_height += $box->getHeight();
+      $this->_width = max($this->_width, $box->getWidth());
+      $this->_child_boxes[] = $box;
     }
   }
 
@@ -415,6 +411,7 @@ class SurveyQuestionBox extends PDFBox
 
 class SurveyInfoBox extends PDFBox
 {
+  private PDFBox $_box;
   /**
    * @param TCPDF $tcpdf 
    * @param array $question 
@@ -422,8 +419,32 @@ class SurveyInfoBox extends PDFBox
    */
   public function __construct(TCPDF $tcpdf, array $question)
   {
+    parent::__construct($tcpdf);
 
+    $info = $question['info'];
+
+    $page_width = $tcpdf->getPageWidth();
+    $box_width = $page_width - PDF_MARGIN_LEFT - PDF_MARGIN_RIGHT;
+
+    $this->_width = $box_width;
+    $this->_height = 0;
+
+    if(possibleMarkdown($info)) {
+      $this->_box = new PDFMarkdownBox($tcpdf,$box_width,$info);
+    } else {
+      $this->_box = new PDFTextBox($tcpdf, $box_width, $info, multi:true);
+    }
+    $this->_height += $this->_box->getHeight();
   }
 
-
+  /**
+   * Renders the content of a SurveyInfo box
+   * @param TCPDF $tcpdf 
+   * @return bool 
+   */
+  protected function render(TCPDF $tcpdf): bool
+  {
+    $this->_box->setPosition($this->_page, $this->_x, $this->_y);
+    return $this->_box->render($tcpdf);
+  }
 }
