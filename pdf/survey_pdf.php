@@ -382,12 +382,18 @@ class SurveyQuestionBox extends PDFBox
     $this->_width = 0;
     $this->_height = 0;
 
+    $this->_top_pad    = 2; // mm
+    $this->_bottom_pad = 1; // mm
+
     foreach($questions as $question) {
       $type = $question['type'];
 
       switch($type) {
         case 'INFO':
           $box = new SurveyInfoBox($tcpdf,$max_width,$question);
+          break;
+        case 'FREETEXT':
+          $box = new SurveyFreetextBox($tcpdf,$max_width,$question);
           break;
         default:
           $box = new PDFTextBox($tcpdf, $max_width, $type);
@@ -492,7 +498,89 @@ class SurveyInfoBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf): bool
   {
-    $tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
+    //$tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
     return $this->_box->render($tcpdf);
   }
 }
+
+class SurveyFreetextBox extends PDFBox
+{
+  private ?PDFBox $_intro_box = null;
+  private PDFBox  $_wording_box;
+  private array   $_entry_box = [0,0,0,3*K_QUARTER_INCH];
+
+  private float $_gap = 1; // mm
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @param float $max_width 
+   * @param array $question 
+   * @return void 
+   */
+  public function __construct(TCPDF $tcpdf, float $width, array $question)
+  {
+    parent::__construct($tcpdf);
+
+    $wording = $question['wording'];
+    $intro   = $question['intro'] ?? null;
+
+    $this->_width = $width;
+    $this->_height = 0;
+
+    if ($intro) {
+      if (possibleMarkdown($intro)) {
+        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro);
+      } else {
+        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, multi: true);
+      }
+      $this->_height += $this->_intro_box->getHeight() + $this->_gap;
+      $width -= K_QUARTER_INCH;
+    }
+
+    $this->_wording_box = new PDFTextBox($tcpdf,$width,$wording);
+    $this->_height += $this->_wording_box->getHeight();
+
+    $this->_entry_box[2] = $width;
+    $this->_height += $this->_entry_box[3];
+  }
+
+  /**
+   * Computes the layout of the intro/wording/entry boxes
+   * @param TCPDF $tcpdf 
+   * @return void 
+   */
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $x = $this->_x;
+    $y = $this->_y;
+
+    if($this->_intro_box) {
+      $this->_intro_box->setPosition($this->_page, $x, $y);
+      $y += $this->_intro_box->getHeight() + $this->_gap;
+      $x += K_QUARTER_INCH;
+    }
+    $this->_wording_box->setPosition($this->_page, $x, $y);
+    $y += $this->_wording_box->getHeight();
+
+    $this->_entry_box[0] = $x;
+    $this->_entry_box[1] = $y;
+  }
+
+  /**
+   * Renders the content of a free text box
+   * @param TCPDF $tcpdf 
+   * @return bool 
+   */
+  protected function render(TCPDF $tcpdf) : bool
+  {
+    if($this->_intro_box) {
+      if(!$this->_intro_box->render($tcpdf)) { return false; }
+    }
+    if(!$this->_wording_box->render($tcpdf)) { return false; }
+    $tcpdf->setLineWidth(0.2);
+    $tcpdf->Rect(...$this->_entry_box);
+
+    return true;
+  }
+}
+

@@ -310,8 +310,8 @@ class PDFTextBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf): bool
   {
-    $tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
-    $tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
+    //$tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
+    //$tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
     $tcpdf->setFont($this->_family, $this->_style, $this->_size);
     $tcpdf->setY($this->_y);
     $tcpdf->setX($this->_x);
