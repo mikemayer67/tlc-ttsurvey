@@ -211,30 +211,30 @@ class SurveyRootBox extends PDFRootBox
       return $a['sequence'] <=> $b['sequence'];
     });
 
-    // group the questions into boxes that should not break between pages.
-    $question_boxes = [];
-    $cur_box = [];
+    // group the questions into groups that should not break between pages.
+    $groups = [];
+    $group = [];
     foreach($questions as $question) {
       switch( $question['grouped'] ?? 'NO' ) {
         case 'YES':
-          $cur_box[] = $question;
+          $group[] = $question;
         break;
         case 'NEW':
-          if ($cur_box) { $question_boxes[] = $cur_box; }
-          $cur_box = [$question];
+          if ($group) { $groups[] = $group; }
+          $group = [$question];
           break;
         default:
-          if ($cur_box) { $question_boxes[] = $cur_box; }
-          $question_boxes[] = [$question];
-          $cur_box = [];
+          if ($group) { $groups[] = $group; }
+          $groups[] = [$question];
+          $group = [];
           break;
       }
     }
-    if($cur_box) { $question_boxes[] = $cur_box; }
+    if($group) { $groups[] = $group; }
 
     // add question boxes to the survey
-    foreach($question_boxes as $questions) {
-      $box = new SurveyQuestionBox($tcpdf, $width, $questions, $content);
+    foreach($groups as $questions) {
+      $box = new SurveyGroupBox($tcpdf, $width, $questions, $content);
       $this->addChild($box);
     }
   }
@@ -364,7 +364,7 @@ class SurveySectionBox extends PDFBox
   }
 }
 
-class SurveyQuestionBox extends PDFBox
+class SurveyGroupBox extends PDFBox
 {
   /**
    * @var PDFBox[] child question boxes
@@ -385,6 +385,7 @@ class SurveyQuestionBox extends PDFBox
     $this->_top_pad    = 2; // mm
     $this->_bottom_pad = 1; // mm
 
+    $aligned_width = 0;
     foreach($questions as $question) {
       $type = $question['type'];
 
@@ -395,6 +396,9 @@ class SurveyQuestionBox extends PDFBox
         case 'FREETEXT':
           $box = new SurveyFreetextBox($tcpdf,$max_width,$question);
           break;
+        case 'BOOL':
+          $box = new SurveyBoolBox($tcpdf,$max_width,$question);
+          break;
         default:
           $box = new PDFTextBox($tcpdf, $max_width, $type);
           break;
@@ -403,7 +407,16 @@ class SurveyQuestionBox extends PDFBox
       $this->_width = max($this->_width, $box->getWidth());
       $this->_child_boxes[] = $box;
 
+      if($box instanceof SurveyQuestionBox) {
+        $aligned_width = max($aligned_width, $box->alignedWidth());
+      }
+
       $max_width -= $box->incrementIndent();
+    }
+    foreach($this->_child_boxes as $box) {
+      if($box instanceof SurveyQuestionBox) {
+        $box->alignedWidth($aligned_width);
+      }
     }
   }
 
@@ -427,7 +440,7 @@ class SurveyQuestionBox extends PDFBox
   }
 
   /**
-   * Renders the content of a SurveyQuestionBox
+   * Renders the content of a SurveyGroupBox
    * @param TCPDF $tcpdf 
    * @return bool 
    */
@@ -442,7 +455,160 @@ class SurveyQuestionBox extends PDFBox
   }
 }
 
-class SurveyInfoBox extends PDFBox
+abstract class SurveyQuestionBox extends PDFBox 
+{
+  protected float $_aligned_width = 0;
+  protected string $_justification = 'left';
+
+  /**
+   * Getter/Setter for alignment width
+   *   i.e. the part of the box which must be aligned
+   * @param null|float $new_width 
+   * @return float (getter: the cur value, setter: the old value)
+   */
+  public function alignedWidth(?float $new_width=null) : float
+  {
+    $rval = $this->_aligned_width;
+    if($new_width !== null ) { $this->_aligned_width = $new_width; }
+    return $rval;
+  }
+
+  /**
+   * Getter/Setter for justification
+   *   i.e. justification in the box which must be aligned
+   *  Passing an invalid value (i.e. not 'left' or 'right') 
+   * @param null|string $new_value 
+   * @return null|string current value unless bad value passed to setter
+   */
+  public function justification(?string $new_value=null) : ?string
+  {
+    $rval = $this->_justification;
+    if( $new_value !== null ) {
+      $new_value = strtoupper($new_value);
+      if (in_array($new_value, ['LEFT', 'RIGHT'])) {
+        $this->_justification = $new_value;
+      } else {
+        $rval = null;
+      }
+    }
+    return $rval;
+  }
+}
+
+class SurveyIntroBox extends PDFBox
+{
+  private PDFBox $_box;
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @param float $max_width 
+   * @param string $intro 
+   * @return void 
+   */
+  public function __construct(TCPDF $tcpdf, float $max_width, string $intro)
+  {
+    if (possibleMarkdown($intro)) {
+      $this->_box = new PDFMarkdownBox($tcpdf, $max_width, $intro);
+    } else {
+      $this->_box = new PDFTextBox($tcpdf, $max_width, $intro, multi: true);
+    }
+    $this->_height = $this->_box->getHeight();
+  }
+
+  public function incrementIndent(): float { return K_QUARTER_INCH; }
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @return mixed 
+   */
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $this->_box->setPosition($this->_page, $this->_x, $this->_y);
+  }
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @return bool 
+   */
+  public function render(TCPDF $tcpdf): bool
+  {
+    return $this->_box->render($tcpdf);
+  }
+
+}
+
+class SurveyQualifierBox extends PDFBox
+{
+  private PDFBox $_label;
+  private int    $_label_width = 0;
+  private int    $_label_height = 0;
+  private bool   $_multi_line = false;
+
+  private array $_entry_box = [0,0,0,K_QUARTER_INCH];
+  private float $_gap = 1; // mm
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @param float $max_width 
+   * @param string $label 
+   * @return void 
+   */
+  public function __construct(TCPDF $tcpdf, float $max_width, string $label)
+  {
+    $this->_entry_box[2] = min(3*K_INCH, $max_width/2);
+
+    $this->_label = new PDFTextBox($tcpdf, $max_width, $label);
+    $this->_label_width  = $this->_label->getWidth();
+    $this->_label_height = $this->_label->getHeight();
+    if($this->_label_width + $this->_entry_box[2] + $this->_gap < $max_width) {
+      $this->_multi_line = false;
+      $this->_height += max($this->_label_height,$this->_entry_box[3]);
+    } else {
+      $this->_multi_line = true;
+      $this->_height += $this->_label_height + $this->_gap + $this->_entry_box[3];
+    }
+  }
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @return void
+   */
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $page = $this->_page;
+    $x    = $this->_x;
+    $y    = $this->_y;
+    if($this->_multi_line) {
+      $this->_label->setPosition($page, $x, $y);
+      // set the (x,y) for the entry box on the next line
+      $y += $this->_label_height + $this->_gap;
+      $x += K_INCH;
+    } else {
+      $dy = ($this->_entry_box[3] - $this->_label_height)/2;
+      if($dy >= 0) {
+        // shift the label down so as to center on entry
+        $this->_label->setPosition($page, $x, $y+$dy);
+      } else {
+        $this->_label->setPosition($page, $x, $y);
+        // shift the entry down so as to center on label
+        $y += $dy;
+      }
+      // shift the entry horizontally to after the label
+      $x += $this->_label_width + $this->_gap;
+    }
+    $this->_entry_box[0] = $x;
+    $this->_entry_box[1] = $y;
+  }
+
+  public function render(TCPDF $tcpdf): bool
+  {
+    if(!$this->_label->render($tcpdf)) { return false; }
+    $tcpdf->Rect(...$this->_entry_box);
+    return true;
+  }
+}
+
+class SurveyInfoBox extends SurveyQuestionBox
 {
   private PDFBox $_box;
   private bool $_new_group = false;
@@ -503,12 +669,12 @@ class SurveyInfoBox extends PDFBox
   }
 }
 
-class SurveyFreetextBox extends PDFBox
+class SurveyFreetextBox extends SurveyQuestionBox
 {
-  private ?PDFBox $_intro_box = null;
-  private PDFBox  $_wording_box;
-  private array   $_entry_box = [0,0,0,3*K_QUARTER_INCH];
+  private ?SurveyIntroBox $_intro_box = null;
+  private PDFBox          $_wording_box;
 
+  private array $_entry_box = [0,0,0,3*K_QUARTER_INCH];
   private float $_gap = 1; // mm
 
   /**
@@ -517,30 +683,26 @@ class SurveyFreetextBox extends PDFBox
    * @param array $question 
    * @return void 
    */
-  public function __construct(TCPDF $tcpdf, float $width, array $question)
+  public function __construct(TCPDF $tcpdf, float $max_width, array $question)
   {
     parent::__construct($tcpdf);
 
     $wording = $question['wording'];
     $intro   = $question['intro'] ?? null;
 
-    $this->_width = $width;
+    $this->_width = $max_width;
     $this->_height = 0;
 
-    if ($intro) {
-      if (possibleMarkdown($intro)) {
-        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro);
-      } else {
-        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, multi: true);
-      }
-      $this->_height += $this->_intro_box->getHeight() + $this->_gap;
-      $width -= K_QUARTER_INCH;
+    if($intro) {
+      $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
+      $max_width -= $this->_intro_box->incrementIndent();
+      $this->_height += $this->_intro_box->getHeight();
     }
 
-    $this->_wording_box = new PDFTextBox($tcpdf,$width,$wording);
+    $this->_wording_box = new PDFTextBox($tcpdf,$max_width,$wording);
     $this->_height += $this->_wording_box->getHeight();
 
-    $this->_entry_box[2] = $width;
+    $this->_entry_box[2] = $max_width;
     $this->_height += $this->_entry_box[3];
   }
 
@@ -556,9 +718,11 @@ class SurveyFreetextBox extends PDFBox
 
     if($this->_intro_box) {
       $this->_intro_box->setPosition($this->_page, $x, $y);
+      $this->_intro_box->computeLayout($tcpdf);
       $y += $this->_intro_box->getHeight() + $this->_gap;
-      $x += K_QUARTER_INCH;
+      $x += $this->_intro_box->incrementIndent();
     }
+
     $this->_wording_box->setPosition($this->_page, $x, $y);
     $y += $this->_wording_box->getHeight();
 
@@ -573,10 +737,12 @@ class SurveyFreetextBox extends PDFBox
    */
   protected function render(TCPDF $tcpdf) : bool
   {
-    if($this->_intro_box) {
-      if(!$this->_intro_box->render($tcpdf)) { return false; }
+    $box = $this->_intro_box;
+    if($box) {
+      if(!$box->render($tcpdf)) { return false; }
     }
-    if(!$this->_wording_box->render($tcpdf)) { return false; }
+    $box = $this->_wording_box;
+    if(!$box->render($tcpdf)) { return false; }
     $tcpdf->setLineWidth(0.2);
     $tcpdf->Rect(...$this->_entry_box);
 
@@ -584,3 +750,107 @@ class SurveyFreetextBox extends PDFBox
   }
 }
 
+class SurveyBoolBox extends SurveyQuestionBox
+{
+  private PDFBox  $_wording_box;
+  private float   $_wording_height = 0;
+  private float   $_wording_width  = 0;
+  private ?SurveyIntroBox     $_intro_box = null;
+  private ?SurveyQualifierBox $_qual_box = null;
+
+  private array $_checkbox = [
+    0,0, // x,y
+    K_EIGHTH_INCH,K_EIGHTH_INCH, // width,height
+    K_INCH/32, // corner radius
+    ];
+
+  private float $_gap = 1; // mm
+
+  /**
+   * @param TCPDF $tcpdf 
+   * @param float $max_width 
+   * @param array $question 
+   * @return void 
+   */
+  public function __construct(TCPDF $tcpdf, float $max_width, array $question)
+  {
+    parent::__construct($tcpdf);
+
+    $intro   = $question['intro'] ?? null;
+    $wording = $question['wording'];
+    $qual    = $question['qualifier'] ?? null;
+
+    if($intro) {
+      $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
+      $max_width -= $this->_intro_box->incrementIndent();
+      $this->_height += $this->_intro_box->getHeight();
+    }
+
+    $box = new PDFTextBox($tcpdf,$max_width,$wording);
+    $this->_wording_box = $box;
+    $this->_wording_width = $box->getWidth();
+    $this->_wording_height = $box->getHeight();
+    $this->_height += max($this->_wording_height, $this->_checkbox[3]);
+
+    $this->alignedWidth($box->getWidth() + $this->_checkbox[2] + $this->_gap);
+    $this->justification($question['layout'] ?? 'LEFT');
+
+    if($qual) {
+      $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
+      $this->_height += $this->_qual_box->getHeight();
+    }
+  }
+
+  public function computeLayout(TCPDF $tcpdf)
+  {
+    $page = $this->_page;
+    $x = $this->_x;
+    $y = $this->_y;
+
+    // add (optional) intro box
+    if($this->_intro_box) {
+      $this->_intro_box->setPosition($page,$x,$y);
+      $this->_intro_box->computeLayout($tcpdf);
+      $y += $this->_intro_box->getHeight();
+      $x += $this->_intro_box->incrementIndent();
+    }
+
+    // add wording box + checkbox
+    if($this->justification() === 'LEFT') {
+      $xc = $x;
+      $xw = $xc + $this->_checkbox[2] + $this->_gap;
+    } else {
+      $xc = $x + $this->alignedWidth() - $this->_checkbox[2];
+      $xw = $xc - ( $this->_gap + $this->_wording_width );
+    }
+    $dy = ($this->_checkbox[3] - $this->_wording_height)/2;
+    $yw = ($dy > 0) ? $y+$dy : $y;
+    $yc = ($dy > 0) ? $y     : $y - $dy;
+
+    $this->_wording_box->setPosition($page, $xw, $yw);
+    $this->_checkbox[0] = $xc;
+    $this->_checkbox[1] = $yc;
+
+    $y += $this->_wording_box->getHeight();
+
+    // add (optional) qual box
+    if($this->_qual_box) {
+      $this->_qual_box->setPosition($page,$x+K_QUARTER_INCH,$y);
+      $this->_qual_box->computeLayout($tcpdf);
+    }
+  }
+
+  public function render(TCPDF $tcpdf): bool
+  {
+    if(
+      ($this->_intro_box?->render($tcpdf) ?? true) &&
+      $this->_wording_box->render($tcpdf) &&
+      ($this->_qual_box?->render($tcpdf) ?? true )
+    ) {
+      $tcpdf->setLineWidth(0.2);
+      $tcpdf->RoundedRect(...$this->_checkbox);
+      return true;
+    }
+    return false;
+  }
+}
