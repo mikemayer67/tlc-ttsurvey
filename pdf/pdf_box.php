@@ -20,6 +20,8 @@ use \TCPDF;
  */
 abstract class PDFBox
 {
+  protected TCPDF $_tcpdf;
+
   // Each of the following properties must be explicitly set in the box subclass
   //   The following are set in the subclass constructor
   protected float $_height     = 0;  // height of the box as it lays out on the PDF page
@@ -27,7 +29,7 @@ abstract class PDFBox
   protected float $_top_pad    = 0;  // required padding between this box and prior box
   protected float $_bottom_pad = 0;  // required padding between this box and next box
 
-  //   The following are set in setPosition
+  //   The following are set in the call to layout()
   protected int   $_page = 0;
   protected float $_x    = 0; // x location of the upper left corner of the box on the page
   protected float $_y    = 0; // y location of the upper left corner of the box on the page
@@ -79,14 +81,17 @@ abstract class PDFBox
    */
   public function incrementIndent(): float { return 0; }
 
+  
   /**
-   * @internal Used to define the position of the box.  Must be called before render()
+   * Positions the box and its children. 
+   * - Must be overridden in child classes
+   * - Must be called before render()
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function setPosition(int $page, float $x, float $y)
+  protected function layout(int $page, float $x, float $y)
   {
     $this->_page = $page;
     $this->_x    = $x;
@@ -109,25 +114,17 @@ abstract class PDFBox
    * @param TCPDF instances of a TCDPF class (or subclass)
    * @return void 
    */
-  public function __construct(TCPDF $tcpdf) {}
-
-  /**
-   * Computes the layout of all toplevel boxes.
-   *   This sets the page, x, and y location of each child box
-   * The default method does nothing.  Boxes which manage other boxes
-   *   must override this method.
-   * @param TCPDF $tcpdf 
-   * @return mixed 
-   */
-  public function computeLayout(TCPDF $tcpdf) {}
+  public function __construct(TCPDF $tcpdf) 
+  {
+    $this->_tcpdf = $tcpdf;
+  }
 
   /**
    * Kicks off the rendering of the box to the PDF output. 
    *   This method should be overridden by subclasses.
-   * @param TCPDF instances of a TCDPF class (or subclass)
    * @return bool indicates success/failure of the rendering
    */
-  abstract protected function render(TCPDF $tcpdf): bool;
+  abstract protected function render(): bool;
 }
 
 
@@ -186,10 +183,9 @@ abstract class PDFRootBox extends PDFBox
   /**
    * Computes the layout of all toplevel boxes.
    *   This sets the page, x, and y location of each child box
-   * @param TCPDF $tcpdf 
    * @return void 
    */
-  public function computeLayout(TCPDF $tcpdf)
+  public function layoutChildren()
   {
     $page   = 1;
     $prior = null;
@@ -211,8 +207,7 @@ abstract class PDFRootBox extends PDFBox
         $cur_y = $this->_content_top;
       }
 
-      $box->setPosition($page, $this->_content_left + $indent, $cur_y);
-      $box->computeLayout($tcpdf);
+      $box->layout($page, $this->_content_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();
@@ -224,15 +219,14 @@ abstract class PDFRootBox extends PDFBox
   /**
    * Controls the rendering of all child boxes.
    *   This method should not need to be overwritten by subclassses of PDFRootBox
-   * @param TCPDF $tcpdf 
    * @return bool 
    */
-  public function render(TCPDF $tcpdf): bool
+  public function render(): bool
   {
     $prior = null;
     foreach ($this->_children as $child) {
-      if ($child->isNewPage($prior)) { $tcpdf->AddPage(); }
-      $rc = $child->render($tcpdf);
+      if ($child->isNewPage($prior)) { $this->_tcpdf->AddPage(); }
+      $rc = $child->render();
       if (!$rc) return false;
       $prior = $child;
     }
@@ -305,20 +299,19 @@ class PDFTextBox extends PDFBox
 
   /**
    * Renders the PDFTextBox
-   * @param TCPDF $tcpdf 
    * @return bool 
    */
-  protected function render(TCPDF $tcpdf): bool
+  protected function render(): bool
   {
     //$tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
     //$tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
-    $tcpdf->setFont($this->_family, $this->_style, $this->_size);
-    $tcpdf->setY($this->_y);
-    $tcpdf->setX($this->_x);
+    $this->_tcpdf->setFont($this->_family, $this->_style, $this->_size);
+    $this->_tcpdf->setY($this->_y);
+    $this->_tcpdf->setX($this->_x);
     if ($this->_multi) {
-      $tcpdf->MultiCell($this->_width, $this->_height, $this->_text, align:'L');
+      $this->_tcpdf->MultiCell($this->_width, $this->_height, $this->_text, align:'L');
     } else {
-      $tcpdf->Cell($this->_width, $this->_height, $this->_text);
+      $this->_tcpdf->Cell($this->_width, $this->_height, $this->_text);
     }
     return true;
   }
@@ -375,13 +368,12 @@ class PDFMarkdownBox extends PDFBox
 
   /**
    * Renders a PDFMarkdownBox
-   * @param TCPDF $tcpdf 
    * @return bool 
    */
-  protected function render(TCPDF $tcpdf): bool
+  protected function render(): bool
   {
-    $tcpdf->setFont($this->_family, '', $this->_size);
-    $tcpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
+    $this->_tcpdf->setFont($this->_family, '', $this->_size);
+    $this->_tcpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
     return true;
   }
 }
