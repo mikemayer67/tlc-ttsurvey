@@ -64,12 +64,6 @@ try
     die();
   }
 
-  // If a printable survey was requested, jump to the printable page
-  //if(key_exists('printable',$_REQUEST)) {
-  //  require(app_file('survey/printable.php'));
-  //  die();
-  //}
-
   // If a file download was requested, jump to the requested download page
   if(key_exists('download',$_REQUEST)) {
     $page = $_REQUEST['download'];
