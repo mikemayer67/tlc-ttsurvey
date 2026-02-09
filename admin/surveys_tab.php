@@ -135,7 +135,7 @@ echo <<<HTML
     Javascript enabled
   </label>
   <input id='survey-preview' class='preview'    type='submit' value='Preview Survey'>
-  <input id='gen-printable'  class='printable'  type='submit' value='Gen Printable PDF'>
+  <input id='download-pdf'  class='download-pdf'  type='submit' value='Download PDF'>
 </div>
 
 </form>

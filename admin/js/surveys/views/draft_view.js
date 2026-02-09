@@ -39,7 +39,7 @@ export default function init(ce)
     ce.revert.show();
     ce.preview.show();
     ce.preview_js.show();
-    ce.printable.css('margin-right','0.5em').show();
+    ce.download_pdf.css('margin-right','0.5em').show();
 
     // change the ContentDataLoaded handler
     $(document)

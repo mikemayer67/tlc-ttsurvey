@@ -18,7 +18,7 @@ export default function init(ce)
     ce.revert.hide();
     ce.preview.hide();
     ce.preview_js.hide();
-    ce.printable.css('margin-right','auto').show();
+    ce.download_pdf.css('margin-right','auto').show();
   }
 
   return {

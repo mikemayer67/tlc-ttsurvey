@@ -63,7 +63,7 @@ export default function init(ce)
     ce.submit.show();
     ce.preview.hide();
     ce.preview_js.hide();
-    ce.printable.hide();
+    ce.download_pdf.hide();
 
     update_submit();
   }
