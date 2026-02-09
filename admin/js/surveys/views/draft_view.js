@@ -214,8 +214,10 @@ export default function init(ce)
   let _previewWindow = null;
   const _previewTabName = 'ttt_preview';
 
-  function handle_preview()
+  function handle_preview(e)
   {
+    const tgt = $(e.target);
+
     // create or reuse the preview tab
     var can_reuse = !!_previewWindow && !_previewWindow.closed;
     if( can_reuse ) {
@@ -252,7 +254,7 @@ export default function init(ce)
       $('<input>',{ type:'hidden', name:'nonce', value:nonce }),
       $('<input>',{ type:'hidden', name:'title', value:title}),
       $('<input>',{ type:'hidden', name:'content', value: json_content }),
-      $('<input>',{ type:'hidden', name:'preview_js', value:ce.preview_js.prop('checked') })
+      $('<input>',{ type:'hidden', name:'preview_js', value:tgt.hasClass('js')}),
     )
     .appendTo('body');
 

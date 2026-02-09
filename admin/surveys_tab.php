@@ -134,8 +134,9 @@ echo <<<HTML
     <input id='preview-js' class='preview-js' type='checkbox' checked>
     Javascript enabled
   </label>
-  <input id='survey-preview' class='preview'    type='submit' value='Preview Survey'>
-  <input id='download-pdf'  class='download-pdf'  type='submit' value='Download PDF'>
+  <input id='survey-preview-js' class='preview js' type='submit' value='Preview'>
+  <input id='survey-preview-nojs' class='preview nojs' type='submit' value='Preview (no Javascript)'>
+  <input id='download-pdf' class='download-pdf' type='submit' value='Download PDF'>
 </div>
 
 </form>

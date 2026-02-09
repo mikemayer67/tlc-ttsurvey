@@ -59,7 +59,7 @@ function handle_revert(e)
 function handle_preview(e)
 {
   e.preventDefault();
-  ce.dispatch('handle_preview');
+  ce.dispatch('handle_preview',e);
 }
 
 function handle_download_pdf(e)
@@ -123,7 +123,7 @@ $(document).ready(
   ce.submit_bar = ce.form.find('div.submit-bar');
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
-  ce.preview    = $('#survey-preview');
+  ce.preview    = ce.submit_bar.find('input.preview');
   ce.preview_js = $('#preview-js').parent();
   ce.download_pdf  = $('#download-pdf');
 
