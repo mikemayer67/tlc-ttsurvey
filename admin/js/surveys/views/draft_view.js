@@ -38,8 +38,7 @@ export default function init(ce)
     ce.submit.show();
     ce.revert.show();
     ce.preview.show();
-    ce.preview_js.show();
-    ce.download_pdf.css('margin-right','0.5em').show();
+    ce.download_pdf.show();
 
     // change the ContentDataLoaded handler
     $(document)
@@ -93,7 +92,6 @@ export default function init(ce)
     );
 
     ce.preview.prop('disabled',!has_content());
-    ce.preview_js.parent().toggleClass('hidden',!has_content());
 
     if(dirty) { 
       ce.revert.prop('disabled',false).css('opacity',1); 

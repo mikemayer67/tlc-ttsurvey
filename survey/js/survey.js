@@ -381,15 +381,16 @@ $(document).ready( function() {
 
   ce.navbar.find('.admin.link a').on('click',handle_admin_link);
 
+  ce.details.on('toggle',handle_details_toggle);
+  enable_radio_button_deselect();
+
+
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar
     start_ui_cache();
-    ce.details.on('toggle',handle_details_toggle);
 
     ce.cancel.on('click',handle_cancel);
     ce.save.on('click',handle_save);
-
-    enable_radio_button_deselect();
 
     ce.dirty = false;
     update_submit_buttons();

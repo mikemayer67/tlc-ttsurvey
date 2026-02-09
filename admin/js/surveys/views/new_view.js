@@ -62,7 +62,6 @@ export default function init(ce)
     ce.revert.val('Cancel').prop('disabled',!_prior_id).css('opacity',_prior_id?1:0.25);
     ce.submit.show();
     ce.preview.hide();
-    ce.preview_js.hide();
     ce.download_pdf.hide();
 
     update_submit();

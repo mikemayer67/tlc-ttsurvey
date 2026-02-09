@@ -231,23 +231,17 @@ div.noscript div {
   color:#444;
 }
 
-#ttt-body div.body form div.submit-bar label.preview-js {
-  margin-right:auto;
-  margin-left:3px;
-  font-style:italic;
-  font-size:90%;
-}
-
-#ttt-body div.body form div.submit-bar label.preview-js.hidden {
-  visibility:hidden;
-}
-
 #ttt-body div.body form div.submit-bar input.preview,
 #ttt-body div.body form div.submit-bar input.download-pdf {
   background:#048;
   color:white;
-  margin-right:0.5em;
   transition: all .25s;
+}
+#ttt-body div.body form div.submit-bar input.preview.nojs {
+  margin-right:0.5em;
+}
+#ttt-body div.body form div.submit-bar input.download-pdf {
+  margin-right:auto;
 }
 
 #ttt-body div.body form div.submit-bar input.preview:disabled {

@@ -124,7 +124,6 @@ $(document).ready(
   ce.submit     = $('#changes-submit');
   ce.revert     = $('#changes-revert');
   ce.preview    = ce.submit_bar.find('input.preview');
-  ce.preview_js = $('#preview-js').parent();
   ce.download_pdf  = $('#download-pdf');
 
   ce.has_admin_lock = admin_lock.has_lock;

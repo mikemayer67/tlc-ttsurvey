@@ -130,13 +130,9 @@ echo <<<HTML
 <div class='submit-bar'>
   <input id='changes-submit' class='submit'     type='submit' value='Save Changes'>
   <input id='changes-revert' class='revert'     type='submit' value='Revert' formnovalidate>
-  <label class='preview-js'>
-    <input id='preview-js' class='preview-js' type='checkbox' checked>
-    Javascript enabled
-  </label>
-  <input id='survey-preview-js' class='preview js' type='submit' value='Preview'>
-  <input id='survey-preview-nojs' class='preview nojs' type='submit' value='Preview (no Javascript)'>
   <input id='download-pdf' class='download-pdf' type='submit' value='Download PDF'>
+  <input id='survey-preview-nojs' class='preview nojs' type='submit' value='Preview (no Javascript)'>
+  <input id='survey-preview-js' class='preview js' type='submit' value='Preview'>
 </div>
 
 </form>

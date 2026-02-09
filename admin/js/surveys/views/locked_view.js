@@ -17,8 +17,7 @@ export default function init(ce)
     ce.submit.hide();
     ce.revert.hide();
     ce.preview.hide();
-    ce.preview_js.hide();
-    ce.download_pdf.css('margin-right','auto').show();
+    ce.download_pdf.show();
   }
 
   return {
