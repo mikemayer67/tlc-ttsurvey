@@ -1,0 +1,27 @@
+Here are the possible cases fully enumerated. 
+The columns are: 
+  - user action (save or submit) 
+  - draft_ts exists in database 
+  - form_draft_ts matches draft_ts 
+  - submitted_ts exists in database 
+  - form_submitted_ts matches submitted_ts 
+  
+  save, no,  n/a, no,  n/a -> all is new, save the draft 
+  save, no,  n/a, yes, yes -> update the saved draft, leave submitted alone 
+  save, no,  n/a, yes, no  -> [need to think on this, the draft may be based off of older submission] 
+  save, yes, yes, no,  n/a -> update the saved draft 
+  save, yes, yes, yes, yes -> update the saved draft, leave submitted alone
+  save, yes, yes, yes, no  -> [need to think on this... same as above]
+  save, yes, no,  no,  n/a -> reject save and prompt user for override
+  save, yes, no,  yes, yes -> reject save and prompt user for override 
+  save, yes, no,  yes, no  -> [need to think on this... same as above... but worse]
+  
+  submit, no,  n/a, no,  n/a -> save the submission
+  submit, no,  n/a, yes, yes -> update submission
+  submit, no,  n/a, yes, no  -> reject submission and prompt user for override
+  submit, yes, yes, no,  n/a -> save the submission
+  submit, yes, yes, yes, yes -> update the submission
+  submit, yes, yes, yes, no  -> reject submission and prompt user for override
+  submit, yes, no,  no,  n/a -> save the submission
+  submit, yes, no,  yes, yes -> update the submission
+  submit, yes, no,  yes, no  -> reject submission and prompt user for override

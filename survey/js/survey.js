@@ -266,6 +266,18 @@ function start_ui_cache(e)
   );
 }
 
+function handle_details_toggle(e)
+{
+  const section = $(this).data('section');
+  const is_open = $(this).prop('open');
+  if(is_open) {
+    ce.details.each(function() {
+      if( $(this).data('section') !== section ) { $(this).prop('open',false) }
+    })
+  }
+
+}
+
 function update_ui_cache(e)
 {
   let cache = localStorage.getItem(cache_key);
@@ -372,6 +384,7 @@ $(document).ready( function() {
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar
     start_ui_cache();
+    ce.details.on('toggle',handle_details_toggle);
 
     ce.cancel.on('click',handle_cancel);
     ce.save.on('click',handle_save);
