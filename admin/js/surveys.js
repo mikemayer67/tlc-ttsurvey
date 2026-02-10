@@ -120,11 +120,13 @@ $(document).ready(
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 
-  ce.submit_bar = ce.form.find('div.submit-bar');
-  ce.submit     = $('#changes-submit');
-  ce.revert     = $('#changes-revert');
-  ce.preview    = ce.submit_bar.find('input.preview');
-  ce.download_pdf  = $('#download-pdf');
+  ce.submit_bar   = ce.form.find('div.submit-bar');
+  ce.submit       = $('#changes-submit');
+  ce.revert       = $('#changes-revert');
+  ce.preview      = ce.submit_bar.find('input.preview');
+  ce.preview_js   = ce.preview.filter('.js');
+  ce.preview_nojs = ce.preview.filter('.nojs');
+  ce.download_pdf = $('#download-pdf');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);

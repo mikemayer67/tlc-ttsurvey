@@ -132,7 +132,7 @@ echo <<<HTML
   <input id='changes-revert' class='revert'     type='submit' value='Revert' formnovalidate>
   <input id='download-pdf' class='download-pdf' type='submit' value='Download PDF'>
   <input id='survey-preview-nojs' class='preview nojs' type='submit' value='Preview (no Javascript)'>
-  <input id='survey-preview-js' class='preview js' type='submit' value='Preview'>
+  <input id='survey-preview-js' class='preview js' type='submit' value='Preview Survey'>
 </div>
 
 </form>
