@@ -271,11 +271,15 @@ function handle_details_toggle(e)
   const section = $(this).data('section');
   const is_open = $(this).prop('open');
   if(is_open) {
+    const summary = $(this).find('summary')[0];
+    const oldY = summary.getBoundingClientRect().top;
     ce.details.each(function() {
       if( $(this).data('section') !== section ) { $(this).prop('open',false) }
     })
+    const curY = summary.getBoundingClientRect().top;
+    const delta = curY - oldY;
+    if(delta !== 0) { window.scrollBy(0,delta); }
   }
-
 }
 
 function update_ui_cache(e)
