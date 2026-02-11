@@ -1,3 +1,5 @@
+import {preview_handler} from './preview_handler.js';
+
 export default function init(ce)
 {
   function select_survey()
@@ -23,7 +25,7 @@ export default function init(ce)
 
   function handle_preview(e)
   {
-    alert("Handle Locked Preview");
+    preview_handler(ce,e);
   }
 
   return {
