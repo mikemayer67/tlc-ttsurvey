@@ -1,11 +1,93 @@
 <?php
 namespace tlc\tts;
 
+use Soap\Sdl;
+
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
+require_once(app_file('pdf/survey/alignable_box.php'));
+require_once(app_file('pdf/survey/option_box.php'));
+require_once(app_file('pdf/survey/enums.php'));
 
-class SurveyOtherBox extends PDFBox
+/**
+ * A SurveyOtherBox extends SurveyOptionBox by adding an input area
+ *   for the user to fill in an option value of their own
+ * This input area:
+ *   always appears after the label and radio/checkbox
+ *   does not factor into the alignment width
+ */
+class SurveyOtherBox extends SurveyAlignableBox
 {
-  
+  private SurveyOptionBox $_option;
+  private float $other_width;
+
+  private float $_input_x = 0;
+  private float $_input_y = 0;
+  private float $_input_width = 2*K_INCH;
+  private float $_input_height = K_QUARTER_INCH;
+
+  private float $_gap = 2;
+
+  public function __construct(
+    SurveyPDF $tcpdf,
+    float $max_width,
+    string $option_label,
+    OptionShape $option_shape,
+    string $other_label,
+    SurveyJustification $justification)
+  {
+    parent::__construct($tcpdf,$justification);
+
+    $extra_width = $this->_input_width + $this->_gap;
+
+    $this->_option = new SurveyOptionBox(
+      $tcpdf, $max_width - $extra_width,
+      $option_label, $option_shape, $justification
+    );
+
+    $this->_height = max($this->_input_height, $this->_option->getHeight());
+    $this->_width = $this->_option->getWidth() + $extra_width;
+  }
+
+  // The alignment width applies to the option box alone
+  //  It should not apply to the other input
+  public function getAlignedWidth(): float {
+    return $this->_option->getAlignedWidth();
+  }
+  public function setAlignedWidth(float $w) {
+    if($this->_justification === SurveyJustification::RIGHT) {
+      $dw = $w - $this->_option->getAlignedWidth();
+      if($dw > 0) { $this->_width += $dw; }
+    }
+    $this->_option->setAlignedWidth($w);
+  }
+
+  protected function layout(int $page, float $x, float $y)
+  {
+    parent::layout($page, $x, $y);
+    
+    if($this->_justification === SurveyJustification::LEFT) {
+      $input_x = $x + $this->_gap + $this->_option->getWidth();
+    } else {
+      $input_x = $x + $this->_gap + $this->_option->getAlignedWidth();
+    }
+    $dy = ($this->_input_height - $this->_option->getHeight())/2;
+    $input_y = ($dy<0) ? $y - $dy : $y;
+
+    $this->_option->layout($page,$x,max($y,$y+$dy));
+  }
+
+  public function render() : bool
+  {
+    if(!$this->_option->render()) { return false; }
+
+    $this->_tcpdf->setLineWidth(0.2);
+    $this->_tcpdf->Rect(
+      $this->_input_x, $this->_input_y,
+      $this->_input_width, $this->_input_height,
+    );
+
+    return true;
+  }
 }

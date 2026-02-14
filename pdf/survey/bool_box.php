@@ -20,7 +20,7 @@ class SurveyBoolBox extends SurveyAlignableBox
   private ?SurveyIntroBox     $_intro_box = null;
   private ?SurveyQualifierBox $_qual_box  = null;
 
-  private float $_gap = 1; // mm
+  private float $_padding = 0;
 
   /**
    * @param SurveyPDF $tcpdf 
@@ -41,6 +41,8 @@ class SurveyBoolBox extends SurveyAlignableBox
       $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
       $max_width -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
+      $this->_width = $max_width;
+      $this->_padding = 3;
     }
 
     $this->_input = new SurveyOptionBox(
@@ -49,12 +51,17 @@ class SurveyBoolBox extends SurveyAlignableBox
       SurveyJustification::fromInput($layout),
     );
     $this->_height += $this->_input->getHeight();
+    $this->_width = max($this->_width, $this->_input->getWidth());
     $this->_aligned_width = $this->_input->getAlignedWidth();
 
     if($qual) {
       $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
       $this->_height += $this->_qual_box->getHeight();
+      $this->_width = max($this->_width, $max_width);
+      $this->_padding = 3;
     }
+
+    $this->_height += 2*$this->_padding;
   }
 
   // The alignment width applies to the input box alone
@@ -76,6 +83,7 @@ class SurveyBoolBox extends SurveyAlignableBox
   protected function layout(int $page, float $x, float $y)
   {
     parent::layout($page, $x, $y);
+    $y += $this->_padding;
 
     // add (optional) intro box
     if($this->_intro_box) {

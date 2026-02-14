@@ -6,10 +6,38 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/enums.php'));
 
+/**
+ * SurveyAlignableBox extends PDFBox allowing for alignment and justification
+ * This is an abstract class that simply provides accessors to the
+ *   alignment and justification attributes.
+ * It is up to subclasses to determine what to do with the 
+ *   alignment and justification attributes.
+ * @package tlc\tts
+ */
 abstract class SurveyAlignableBox extends PDFBox 
 {
   protected float $_aligned_width = 0;
   protected SurveyJustification $_justification = SurveyJustification::LEFT;
+
+  /**
+   * @param SurveyPDF $tcpdf 
+   * @param null|SurveyJustification $justification 
+   * @param null|float $width 
+   * @return void 
+   */
+  public function __construct(
+    SurveyPDF $tcpdf,
+    ?SurveyJustification $justification = null,
+    ?float $width = null )
+  {
+    parent::__construct($tcpdf);
+    if($width !== null ) {
+      $this->_aligned_width = $width;
+    }
+    if($justification !== null) {
+      $this->_justification = $justification;
+    }
+  }
 
   /**
    * Getter for aligned width, i.e. the part of the box which must be aligned
