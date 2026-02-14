@@ -16,6 +16,7 @@ use \TCPDF;
  * 
  * @method float getHeight()
  * @method float getWidth()
+ * @method void  grow(?float $width,?float $height)
  * @method float maxPagePos()
  */
 abstract class PDFBox
@@ -45,6 +46,18 @@ abstract class PDFBox
    * @return float
    */
   public function getWidth(): float { return $this->_width; }
+
+  /**
+   * Resizes the width and/or height, but only if it makes that dimension larger.
+   * @param float|null $width 
+   * @param float|null $height 
+   * @return void 
+   */
+  protected function grow(?float $width=null, ?float $height=null)
+  {
+    if($width !== null)  { $this->_width  = max($this->_width,  $width);  }
+    if($height !== null) { $this->_height = max($this->_height, $height); }
+  }
 
   /**
    * Returns the maximum fractional Y position down the page at which this box
@@ -246,8 +259,6 @@ class PDFTextBox extends PDFBox
 
   private bool $_multi = false;
 
-  private float $_max_width=0; // @@@TODO remove this
-
   /**
    * PDFTextBox Constructor.  
    *   The box's final width and height will reflect the dimensions necessary to
@@ -280,8 +291,6 @@ class PDFTextBox extends PDFBox
     $this->_size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
 
     $tcpdf->setFont($this->_family, $this->_style, $this->_size);
-
-    $this->_max_width = $w;
 
     if ($multi) {
       $this->_text = $text;
