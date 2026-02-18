@@ -123,11 +123,13 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   echo "</button>";
   echo "</div>";
 
-  echo "<div class='restart'>";
-  echo "<button type='submit' class='linkbutton' name='action' value='restart'>";
-  echo "I would like to withdraw it and start over";
-  echo "</button>";
-  echo "</div>";
+//  This option turned out to be dangerous.  Don't re-enable it without some sort
+//    of confirmation mechanism
+//  echo "<div class='restart'>";
+//  echo "<button type='submit' class='linkbutton' name='action' value='restart'>";
+//  echo "I would like to withdraw it and start over";
+//  echo "</button>";
+//  echo "</div>";
 
   echo "</form>";
   echo "</div>";  // .submitted-wrapper
