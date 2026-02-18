@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/info_box.php'));
 require_once(app_file('pdf/survey/freetext_box.php'));
 require_once(app_file('pdf/survey/bool_box.php'));
-//require_once(app_file('pdf/survey/select_box.php'));
+require_once(app_file('pdf/survey/select_box.php'));
 
 class SurveyGroupBox extends PDFBox
 {
@@ -48,8 +48,7 @@ class SurveyGroupBox extends PDFBox
           break;
         case 'SELECT_ONE':
         case 'SELECT_MULTI':
-//          $box = new SurveySelectBox($tcpdf,$max_width,$question);
-          $box = new PDFTextBox($tcpdf,$max_width,$type);
+          $box = new SurveySelectBox($tcpdf,$max_width,$question,$content['options']);
           break;
       }
       $this->_height += $box->getHeight();

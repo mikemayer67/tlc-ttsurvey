@@ -15,7 +15,6 @@ require_once(app_file('pdf/survey/enums.php'));
 
 class SurveyBoolBox extends SurveyAlignableBox 
 {
-  private PDFBox              $_wording_box;
   private SurveyOptionBox     $_input;
   private ?SurveyIntroBox     $_intro_box = null;
   private ?SurveyQualifierBox $_qual_box  = null;

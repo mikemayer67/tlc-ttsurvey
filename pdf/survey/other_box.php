@@ -29,12 +29,19 @@ class SurveyOtherBox extends SurveyAlignableBox
 
   private float $_gap = 2;
 
+  /**
+   * @param SurveyPDF $tcpdf 
+   * @param float $max_width 
+   * @param string $option_label 
+   * @param OptionShape $option_shape 
+   * @param SurveyJustification $justification 
+   * @return void 
+   */
   public function __construct(
     SurveyPDF $tcpdf,
     float $max_width,
-    string $option_label,
-    OptionShape $option_shape,
-    string $other_label,
+    string $label,
+    OptionShape $shape,
     SurveyJustification $justification)
   {
     parent::__construct($tcpdf,$justification);
@@ -42,8 +49,7 @@ class SurveyOtherBox extends SurveyAlignableBox
     $extra_width = $this->_input_width + $this->_gap;
 
     $this->_option = new SurveyOptionBox(
-      $tcpdf, $max_width - $extra_width,
-      $option_label, $option_shape, $justification
+      $tcpdf, $max_width - $extra_width, $label, $shape, $justification
     );
 
     $this->_height = max($this->_input_height, $this->_option->getHeight());
