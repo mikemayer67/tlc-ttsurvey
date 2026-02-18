@@ -90,17 +90,17 @@ class SurveySectionBox extends PDFBox
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page,$x,$y);
+    parent::position($x,$y);
 
     if ($this->_name_box) {
-      $this->_name_box->layout($page, $x, $y);
+      $this->_name_box->position($x, $y);
       $y += $this->_name_box->getHeight();
       if ($this->_intro_box) { $y += $this->_gap; }
     }
     if ($this->_intro_box) {
-      $this->_intro_box->layout($page, $x, $y);
+      $this->_intro_box->position($x, $y);
     }
   }
 

@@ -40,7 +40,7 @@ class SurveyBoolBox extends SurveyAlignableBox
       $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
       $max_width -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
-      $this->_width = $max_width;
+      $this->_width = max($this->_width, $this->_intro_box->getWidth());
       $this->_padding = 3;
     }
 
@@ -73,30 +73,30 @@ class SurveyBoolBox extends SurveyAlignableBox
   }
 
   /**
-   * Manages layout of a bool box and its children
+   * Manages positioning of a bool box and its children
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
     $y += $this->_padding;
 
     // add (optional) intro box
     if($this->_intro_box) {
-      $this->_intro_box->layout($page,$x,$y);
+      $this->_intro_box->position($x,$y);
       $y += $this->_intro_box->getHeight();
       $x += $this->_intro_box->incrementIndent();
     }
 
-    $this->_input->layout($page,$x,$y);
+    $this->_input->position($x,$y);
     $y += $this->_input->getHeight();
 
     // add (optional) qual box
     if($this->_qual_box) {
-      $this->_qual_box->layout($page,$x+K_QUARTER_INCH,$y);
+      $this->_qual_box->position($x+K_QUARTER_INCH,$y);
     }
   }
 

@@ -69,9 +69,9 @@ class SurveyOtherBox extends SurveyAlignableBox
     $this->_option->setAlignedWidth($w);
   }
 
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
     
     if($this->_justification === SurveyJustification::LEFT) {
       $input_x = $x + $this->_gap + $this->_option->getWidth();
@@ -81,7 +81,7 @@ class SurveyOtherBox extends SurveyAlignableBox
     $dy = ($this->_input_height - $this->_option->getHeight())/2;
     $input_y = ($dy<0) ? $y - $dy : $y;
 
-    $this->_option->layout($page,$x,max($y,$y+$dy));
+    $this->_option->position($x,max($y,$y+$dy));
   }
 
   public function render() : bool

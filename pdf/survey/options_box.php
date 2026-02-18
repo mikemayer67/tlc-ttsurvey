@@ -32,6 +32,19 @@ class SurveyOptionsBox extends PDFBox
   public function inline() : bool { return $this->_inline; }
 
   /**
+   * Returns the height of the first row in the options box
+   * @return float 
+   */
+  public function first_row_height() : float
+  {
+    $rval = 0;
+    foreach ($this->_rows[0] as $box) {
+      $rval = max($rval, $box->getHeight());
+    }
+    return $rval;
+  }
+
+  /**
    * @param TCPDF $tcpdf 
    * @param float $max_width 
    * @param float $inline_width 
@@ -159,9 +172,9 @@ class SurveyOptionsBox extends PDFBox
     $this->_height += $row_height + $this->vgap;
   }
 
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page,$x,$y);
+    parent::position($x,$y);
 
     foreach($this->_rows as $row) 
     {
@@ -174,7 +187,7 @@ class SurveyOptionsBox extends PDFBox
         $box_height = $box->getHeight();
         $dy = ($row_height - $box_height)/2;
 
-        $box->layout($page,$bx,$y+$dy);
+        $box->position($bx,$y+$dy);
         $bx += $box->getWidth() + $this->hgap;
       }
       $y += $row_height + $this->vgap;

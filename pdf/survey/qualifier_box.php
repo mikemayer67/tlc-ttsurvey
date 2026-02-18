@@ -40,18 +40,18 @@ class SurveyQualifierBox extends PDFBox
   }
 
   /**
-   * Manages layout of a qualifer box and its children
+   * Manages positioning of a qualifer box and its children
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
 
     if($this->_multi_line) {
-      $this->_label->layout($page, $x, $y);
+      $this->_label->position($x, $y);
       // set the (x,y) for the entry box on the next line
       $y += $this->_label_height + $this->_gap;
       $x += K_INCH;
@@ -59,9 +59,9 @@ class SurveyQualifierBox extends PDFBox
       $dy = ($this->_entry_box[3] - $this->_label_height)/2;
       if($dy >= 0) {
         // shift the label down so as to center on entry
-        $this->_label->layout($page, $x, $y+$dy);
+        $this->_label->position($x, $y+$dy);
       } else {
-        $this->_label->layout($page, $x, $y);
+        $this->_label->position($x, $y);
         // shift the entry down so as to center on label
         $y += $dy;
       }

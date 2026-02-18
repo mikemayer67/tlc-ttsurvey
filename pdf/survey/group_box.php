@@ -75,13 +75,13 @@ class SurveyGroupBox extends PDFBox
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
 
     foreach($this->_child_boxes as $box) 
     {
-      $box->layout($page,$x,$y);
+      $box->position($x,$y);
       $y += $box->getHeight();
       $x += $box->incrementIndent();
     }

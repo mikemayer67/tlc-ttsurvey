@@ -19,13 +19,8 @@ class SurveySelectBox extends SurveyAlignableBox
 
   private float $_padding = 0;
 
-  private array $_checkbox = [
-    0,0, // x,y
-    K_EIGHTH_INCH,K_EIGHTH_INCH, // width,height
-    K_INCH/32, // corner radius
-    ];
-
-  private float $_gap = 1; // mm
+  private static float $hgap = K_QUARTER_INCH;
+  private static float $opt_indent = K_HALF_INCH;
 
   /**
    * @param SurveyPDF $tcpdf 
@@ -53,13 +48,14 @@ class SurveySelectBox extends SurveyAlignableBox
       $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
       $max_width -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
+      $this->_padding = 3;
     }
 
     $this->_wording = new PDFTextBox($tcpdf, $max_width, $wording);
 
     $this->_options = new SurveyOptionsBox(
-      $tcpdf, $max_width, 
-      $max_width - ($this->_wording->getWidth() + K_QUARTER_INCH),
+      $tcpdf, $max_width - self::$opt_indent, 
+      $max_width - ($this->_wording->getWidth() + self::$hgap),
       $question, $options,
     );
 
@@ -70,21 +66,64 @@ class SurveySelectBox extends SurveyAlignableBox
   }
 
   /**
-   * Manages layout of a bool box and its children
+   * Manages positioning of a bool box and its children
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
+    $y += $this->_padding;
 
+    // add (optional) intro box
+    if($this->_intro_box) {
+      $this->_intro_box->position($x,$y);
+      $y += $this->_intro_box->getHeight();
+      $x += $this->_intro_box->incrementIndent();
+    }
 
+    // add the guts of the select box
+    $hw = $this->_wording->getHeight();
+    $ho = $this->_options->getHeight();
+    if($this->_options->inline()) {
+      $xw = $x;
+      $xo = $x + $this->_wording->getWidth() + self::$hgap;
+      $hr = $this->_options->first_row_height();
+      $dy = ($hr - $hw)/2;
+      $yw = ($dy>0) ? $y + $dy : $y;
+      $yo = ($dy<0) ? $y - $dy : $y;
+      $this->_wording->position($xw, $yw);
+      $this->_options->position($xo, $yo);
+      $y += max($hw,$ho);
+    } 
+    else 
+    {
+      $xw = $x;
+      $xo = $x + self::$opt_indent;
+      $yw = $y;
+      $yo = $y + $ho;
+      $dy = $hw + $ho;
+      $this->_wording->position($x, $y);
+      $this->_options->position($x + self::$opt_indent, $y + $ho);
+      $y += $hw + $ho;
+    }
+    $y += $this->_padding;
+
+      // add (optional) qual box
+    if($this->_qual_box) {
+      $this->_qual_box->position($x+K_QUARTER_INCH,$y);
+    }
   }
 
   public function render(): bool
   {
-    return true;
+    return (
+      $this->_wording->render() &&
+      $this->_options->render() &&
+      ($this->_intro_box?->render() ?? true) &&
+      ($this->_qual_box?->render() ?? true)
+    );
   }
 }

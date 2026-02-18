@@ -44,23 +44,23 @@ class SurveyFreetextBox extends PDFBox
   }
 
   /**
-   * Manages layout of a free text box and its children
+   * Manages positioning of a free text box and its children
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
 
     if($this->_intro_box) {
-      $this->_intro_box->layout($page, $x, $y);
+      $this->_intro_box->position($x, $y);
       $y += $this->_intro_box->getHeight() + $this->_gap;
       $x += $this->_intro_box->incrementIndent();
     }
 
-    $this->_wording_box->layout($page, $x, $y);
+    $this->_wording_box->position($x, $y);
     $y += $this->_wording_box->getHeight();
 
     $this->_entry_box[0] = $x;

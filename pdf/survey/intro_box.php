@@ -31,16 +31,16 @@ class SurveyIntroBox extends PDFBox
   public function incrementIndent(): float { return K_QUARTER_INCH; }
 
   /**
-   * Manages layout of a intro box and its children
+   * Manages positioning of a intro box and its children
    * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
-    $this->_box->layout($page, $x,$y);
+    parent::position($x, $y);
+    $this->_box->position($x,$y);
   }
 
   /**

@@ -30,8 +30,11 @@ abstract class PDFBox
   protected float $_top_pad    = 0;  // required padding between this box and prior box
   protected float $_bottom_pad = 0;  // required padding between this box and next box
 
-  //   The following are set in the call to layout()
+  // Only set on boxes that start a new page
+  protected static int $_cur_page = 0;
   protected int   $_page = 0;
+
+  // The following are set in the call to position()
   protected float $_x    = 0; // x location of the upper left corner of the box on the page
   protected float $_y    = 0; // y location of the upper left corner of the box on the page
 
@@ -96,6 +99,22 @@ abstract class PDFBox
 
   
   /**
+   * Sets the page number on boxes that start a new page
+   * @param int $page 
+   * @return void 
+   */
+  protected function startPage() 
+  {
+    self::$_cur_page += 1;
+    $this->_page = self::$_cur_page;
+  }
+
+  /**
+   * @return int number of pages in the PDF document
+   */
+  public static function numPages() : int {return self::$_cur_page; }
+
+  /**
    * Positions the box and its children. 
    * - Must be overridden in child classes
    * - Must be called before render()
@@ -104,9 +123,8 @@ abstract class PDFBox
    * @param float $y 
    * @return void 
    */
-  protected function layout(int $page, float $x, float $y)
+  protected function position(float $x, float $y)
   {
-    $this->_page = $page;
     $this->_x    = $x;
     $this->_y    = $y;
   }
@@ -160,9 +178,6 @@ abstract class PDFRootBox extends PDFBox
   private float $_content_top = 0;
   private float $_content_bottom = 0;
 
-  private int $_page_count = 0;
-  public function numPages() : int { return $this->_page_count; }
-
   /**
    * Constructor does nothing but invokes the PDFBox constructor.
    *   While the existence of this method is not strictly necessary, it serves as
@@ -200,33 +215,29 @@ abstract class PDFRootBox extends PDFBox
    */
   public function layoutChildren()
   {
-    $page   = 1;
     $prior = null;
     $indent = 0;
     $cur_y  = $this->_content_top;
 
-    foreach ($this->_children as $box) {
-      if ($box->resetIndent()) {
-        $indent = 0;
-      }
+    foreach ($this->_children as $box) 
+    {
+      if ($box->resetIndent()) { $indent = 0; }
 
       $max_y = PDF_MARGIN_TOP + $this->content_height() * $box->maxPagePos();
 
       $cur_y += $box->yOffset($prior);
       $prior = $box;
 
-      if (($cur_y > $max_y) || ($cur_y + $box->getHeight() > $this->_content_bottom)) {
-        $page += 1;
+      if (PDFBox::numPages() === 0 || ($cur_y > $max_y) || ($cur_y + $box->getHeight() > $this->_content_bottom)) {
+        $box->startPage();
         $cur_y = $this->_content_top;
       }
 
-      $box->layout($page, $this->_content_left + $indent, $cur_y);
+      $box->position($this->_content_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();
     }
-
-    $this->_page_count = $page;
   }
 
   /**

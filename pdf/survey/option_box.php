@@ -60,9 +60,9 @@ class SurveyOptionBox extends SurveyAlignableBox
     $this->_aligned_width = $this->_width;
   }
 
-  protected function layout(int $page, float $x, float $y)
+  protected function position( float $x, float $y)
   {
-    parent::layout($page, $x, $y);
+    parent::position($x, $y);
 
     if($this->_justification === SurveyJustification::LEFT) {
       $xc = $x;
@@ -76,7 +76,7 @@ class SurveyOptionBox extends SurveyAlignableBox
     $yw = ($dy>0) ? $y + $dy : $y;
     $yc = ($dy<0) ? $y - $dy : $y;
 
-    $this->_label->layout($page, $xw, $yw);
+    $this->_label->position($xw, $yw);
     $this->_input_x = $xc;
     $this->_input_y = $yc;
   }

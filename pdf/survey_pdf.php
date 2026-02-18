@@ -135,7 +135,7 @@ class SurveyPDF extends TCPDF
 
     $content_root = new SurveyRootBox($this, $content);
     $content_root->layoutChildren($this);
-    $this->page_count = $content_root->numPages();
+    $this->page_count = PDFBox::numPages();
     $content_root->render($this);
   }
 }
