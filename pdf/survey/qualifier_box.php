@@ -75,6 +75,7 @@ class SurveyQualifierBox extends PDFBox
   public function render(): bool
   {
     if(!$this->_label->render()) { return false; }
+    $this->_tcpdf->setLineWidth(0.2);
     $this->_tcpdf->Rect(...$this->_entry_box);
     return true;
   }

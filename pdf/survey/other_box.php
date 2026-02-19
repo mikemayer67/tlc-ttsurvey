@@ -74,12 +74,12 @@ class SurveyOtherBox extends SurveyAlignableBox
     parent::position($x, $y);
     
     if($this->_justification === SurveyJustification::LEFT) {
-      $input_x = $x + $this->_gap + $this->_option->getWidth();
+      $this->_input_x = $x + $this->_gap + $this->_option->getWidth();
     } else {
-      $input_x = $x + $this->_gap + $this->_option->getAlignedWidth();
+      $this->_input_x = $x + $this->_gap + $this->_option->getAlignedWidth();
     }
     $dy = ($this->_input_height - $this->_option->getHeight())/2;
-    $input_y = ($dy<0) ? $y - $dy : $y;
+    $this->_input_y = ($dy<0) ? $y - $dy : $y;
 
     $this->_option->position($x,max($y,$y+$dy));
   }

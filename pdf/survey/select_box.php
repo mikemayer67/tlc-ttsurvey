@@ -58,6 +58,14 @@ class SurveySelectBox extends SurveyAlignableBox
       $max_width - ($this->_wording->getWidth() + self::$hgap),
       $question, $options,
     );
+    $hw = $this->_wording->getHeight();
+    $ho = $this->_options->getHeight();
+    if($this->_options->inline()) {
+      $this->_height += max($hw,$ho);
+    } else {
+      $this->_height += $hw + $ho;
+    }
+
 
     if($qual) {
       $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
@@ -100,21 +108,16 @@ class SurveySelectBox extends SurveyAlignableBox
     } 
     else 
     {
-      $xw = $x;
-      $xo = $x + self::$opt_indent;
-      $yw = $y;
-      $yo = $y + $ho;
-      $dy = $hw + $ho;
       $this->_wording->position($x, $y);
-      $this->_options->position($x + self::$opt_indent, $y + $ho);
+      $this->_options->position($x + self::$opt_indent, $y + $hw);
       $y += $hw + $ho;
     }
-    $y += $this->_padding;
-
       // add (optional) qual box
     if($this->_qual_box) {
       $this->_qual_box->position($x+K_QUARTER_INCH,$y);
     }
+
+    $y += $this->_padding;
   }
 
   public function render(): bool
