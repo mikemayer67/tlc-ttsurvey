@@ -18,17 +18,37 @@ function api_die($msg='')
   die; 
 }
 
-function internal_error($msg)
+/**
+ * Logs the error, sets http return value to 500, and dies 
+ * @param string $msg error message to write to log
+ * @param int $trace_level for logging location of error
+ * @return n/a
+ */
+function internal_error(string $msg,int $trace_level=2)
 {
   // avoid recursion if internal error occurred while rendering 500.php
   if(defined('RENDERING_ERR_PHP')) { return; }
 
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $msg",2);
+  log_error("[$errid]: $msg",$trace_level);
   http_response_code(500);
   require(app_file("500.php"));
   die;
+}
+
+/**
+ * Get required array element or die with internal error
+ * @param string $key 
+ * @param array $array 
+ * @return mixed 
+ */
+function array_get_required(string $key, array $array) : mixed
+{
+  if(!array_key_exists($key,$array)) {
+    internal_error("Required array key $key missing",3);
+  }
+  return $array[$key];
 }
 
 function validation_error($msg)
