@@ -38,8 +38,10 @@ echo "<div id='content'>";
 
 // Add page header
 
-$logo_file = app_logo();
-$logo_uri  = $logo_file ? img_uri($logo_file) : '';
+// @@@ Change to ImageLibrary:app_logo functions
+$logo_file = get_setting('app_logo');
+$logo_uri  = $logo_file ? img_uri("uploads/$logo_file") : '';
+
 echo "<div class='ttt-header'>";
 if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri'>"; }
 echo "<span class='ttt-title'>$title</span>";

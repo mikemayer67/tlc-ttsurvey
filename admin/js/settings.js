@@ -91,6 +91,30 @@
     ;
   }
 
+  function handle_logo_select(e)
+  {
+    const v1 = ce.logo_select.val();
+    const input = ce.logo_file[0];
+    const v2 = input.files.length>0 ? input.files[0].name : '';
+    if(v1 !== v2) { 
+      ce.logo_file.val(''); 
+      ce.logo_select.find('option.new').remove();
+    }
+  }
+
+  function handle_logo_file(e)
+  {
+    const input = ce.logo_file[0];
+    if(!input.files.length) { return; }
+    const filename = input.files[0].name;
+    const option = $('<option>').val(filename).text(filename).addClass('new');
+    ce.logo_select.find('option.new').remove();
+    ce.logo_select.append(option);
+    ce.logo_select.val(filename);
+
+    ce.logo_select.trigger('change');
+  }
+
   function handle_test_smtp()
   {
     var data = {
@@ -189,6 +213,11 @@
 
     ce.submit.prop('disabled',true);
     ce.revert.prop('disabled',true).css('opacity',0);
+
+    ce.logo_select = $('#app_logo_select');
+    ce.logo_select.on('change', handle_logo_select);
+    ce.logo_file = $('#app_logo_file');
+    ce.logo_file.on('change', handle_logo_file);
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(

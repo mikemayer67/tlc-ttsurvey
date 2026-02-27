@@ -80,7 +80,7 @@ function end_page()
 
 function start_header($title=null)
 {
-  $base  = base_uri();
+  $base  = APP_URI;
   $title = $title ?? active_survey_title() ?? app_name();
 
   $google_fonts = "https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&display=swap";
@@ -184,8 +184,9 @@ function add_navbar($context,$kwargs=[])
 
 function add_navbar_left($kwargs)
 {
-  $logo_file = app_logo();
-  $logo_uri  = $logo_file ? img_uri($logo_file) : '';
+  // @@@ CHANGE to ImageLibrary::app_logo functions
+  $logo_file = get_setting('app_logo');
+  $logo_uri  = $logo_file ? img_uri("uploads/$logo_file") : '';
 
   $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
 

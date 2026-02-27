@@ -217,7 +217,7 @@ function validate_app_logo($logo,&$error=null) {
   $error = '';
   _fix_validate_value($logo);
   if($logo==='') { return true; }
-  $imgfile = realpath(app_file("img/$logo"));
+  $imgfile = realpath(app_file("img/uploads/$logo"));
   if(!$imgfile) { 
     $error = "Logo file does not exist";
     return false;

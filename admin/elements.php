@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/elements.php'));
+require_once(app_file('include/imagelib.php'));
 
 
 function start_admin_page($cur_tab=null)
@@ -73,6 +74,20 @@ function add_input_field($field)
     }
     echo "</select>";
   } 
+  elseif ($type === 'image' ) {
+    $images = ImageLibrary::all_images();
+
+    echo "<select id='{$key}_select' name='$key'>";
+    echo "<option class='none' value=''>None</option>";
+    foreach($images as $image) {
+      $name = $image['name'];
+      echo "<option value='$name'";
+      if($name === $cur_value) { echo " selected='selected'"; }
+      echo ">$name</option>";
+      echo "<input type='file' id='{$key}_file' accept='image/*'>";
+    }
+    echo "</select>";
+  }
   elseif ($type === 'button' ) {
     // note that actual functionality will be added with javascript
     $label = $field['label'] ?? $key;
