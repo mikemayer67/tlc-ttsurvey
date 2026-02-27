@@ -93,13 +93,36 @@
 
   function handle_logo_select(e)
   {
-    const v1 = ce.logo_select.val();
-    const input = ce.logo_file[0];
-    const v2 = input.files.length>0 ? input.files[0].name : '';
-    if(v1 !== v2) { 
-      ce.logo_file.val(''); 
+    const nav_logo = $('#ttt-navbar img.ttt-logo');
+    const selected_logo = ce.logo_select.val();
+    const upload_file = ce.logo_file[0].files[0];
+    const upload_logo = upload_file?.name ?? '';
+
+    if(ce.uploadLogoURI) { 
+      URL.revokeObjectURL(ce.uploadLogoURI); 
+      ce.uploadLogoURI = null;
+    }
+
+    let logo_uri = '';
+    let clear_upload = true;
+
+    if(selected_logo) {
+      if(selected_logo === upload_logo) {
+        logo_uri = URL.createObjectURL(upload_file);
+        ce.uploadLogoURI = logo_uri;
+        clear_upload = false;
+      } else {
+        logo_uri = 'img/uploads/' + encodeURIComponent(selected_logo);
+      }
+    }
+
+    if (clear_upload) {
+      ce.logo_file.val('');
       ce.logo_select.find('option.new').remove();
     }
+
+    if(logo_uri) { nav_logo.prop('src', logo_uri).removeClass('missing'); } 
+    else         { nav_logo.addClass('missing'); }
   }
 
   function handle_logo_file(e)
@@ -188,6 +211,7 @@
   {
     Object.entries(ce.inputs).forEach(  ([key,field]) => { field.val(saved_settings[key]); } );
     Object.entries(ce.selects).forEach( ([key,field]) => { field.val(saved_settings[key]); } );
+    handle_logo_select();
     validate_all();
   }
 

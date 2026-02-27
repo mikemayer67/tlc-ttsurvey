@@ -169,6 +169,10 @@ div.ttt-splash img {
   height:clamp(25px,5vw,40px);
 }
 
+#ttt-navbar .ttt-logo.missing {
+  display:none;
+}
+
 #ttt-navbar .ttt-title
 {
   font-family: var(--serif-font);

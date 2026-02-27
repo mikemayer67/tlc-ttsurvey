@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('survey/print_render.php'));
+require_once(app_file('include/imagelib.php'));
 
 log_dev("-------------- Start of Preview --------------");
 
@@ -38,9 +39,7 @@ echo "<div id='content'>";
 
 // Add page header
 
-// @@@ Change to ImageLibrary:app_logo functions
-$logo_file = get_setting('app_logo');
-$logo_uri  = $logo_file ? img_uri("uploads/$logo_file") : '';
+$logo_uri  = ImageLibrary::app_logo_uri();
 
 echo "<div class='ttt-header'>";
 if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri'>"; }

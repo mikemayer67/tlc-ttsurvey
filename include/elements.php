@@ -9,6 +9,7 @@ require_once(app_file('include/status.php'));
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
+require_once(app_file('include/imagelib.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -184,13 +185,13 @@ function add_navbar($context,$kwargs=[])
 
 function add_navbar_left($kwargs)
 {
-  // @@@ CHANGE to ImageLibrary::app_logo functions
-  $logo_file = get_setting('app_logo');
-  $logo_uri  = $logo_file ? img_uri("uploads/$logo_file") : '';
+  $logo_uri = ImageLibrary::app_logo_uri();
+
+  $missing = $logo_uri ? '' : 'missing';
+  $src     = $logo_uri ? "src='$logo_uri'" : '';
+  echo "<img class='ttt-logo $missing' $src alt='Logo'>";
 
   $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
-
-  if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
   echo "<span class='ttt-title'>$title</span>";
 }
 

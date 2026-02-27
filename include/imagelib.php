@@ -45,46 +45,21 @@ class ImageLibrary
   }
 
   /**
-   * Locate the derivative logo file
-   *   If pdf is specified, only looks for the jpg version (no transparency)
-   *   Otherwise, looks for first png and then jpg version
-   *   If neither are found in the img folder, returns null
-   * @param bool $pdf 
-   * @return null|string 
-   */
-  private static function app_logo(bool $pdf = false) : ?string {
-    if(!$pdf) {
-      $png_file = app_file('img/app_logo.png');
-      if(file_exists($png_file)) { return 'img/app_logo.png'; }
-    }
-    $jpg_file = app_file('img/app_logo.jpg');
-    if (file_exists($jpg_file)) { return 'img/app_logo.jpg'; }
-    return null;
-  }
-
-  /**
    * Returns the filepath the app logo file.
-   *   If pdf is specified, only looks for the jpg version (no transparency)
-   *   Otherwise, looks for first png and then jpg version
-   *   If neither are found in the img folder, returns null
-   * @param bool $pdf 
    * @return null|string 
    */
-  public static function app_logo_file(bool $pdf) : ?string {
-    $logo = self::app_logo($pdf);
-    return $logo ? app_file($logo) : null;
+  public static function app_logo_file() : ?string {
+    $logo_file = app_file('img/app_logo.jpg');
+    return file_exists($logo_file) ? $logo_file : null;
   }
 
   /**
    * Returns the app logo URI
-   *   If pdf is specified, only looks for the jpg version (no transparency)
-   *   Otherwise, looks for first png and then jpg version
-   *   If neither are found in the img folder, returns null
-   * @param bool $pdf 
    * @return null|string 
    */
-  public static function app_logo_uri(bool $pdf) : ?string {
-    $logo = self::app_logo($pdf);
-    return $logo ? app_uri($logo) : null;
+  public static function app_logo_uri() : ?string 
+  {
+    $logo = 'img/app_logo.jpg';
+    return file_exists(app_file($logo)) ? $logo : null;
   }
 }
