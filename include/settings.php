@@ -135,7 +135,6 @@ function setting_default($key)    { return Settings::default($key);  }
 
 // App Look-and-Feel settings
 function app_name()            { return get_setting('app_name'); }
-function app_logo()            { return get_setting('app_logo'); }
 function timezone()            { return get_setting('timezone'); }
 function is_dev()              { return get_setting('is_dev'); }
 
