@@ -7,6 +7,7 @@ body {
 }
 
 :root {
+  --background-color:#f4f4f4;
   --navbar-color:white;
   --navbar-height:3em;
   --footer-height:2em;
@@ -22,7 +23,17 @@ html,body {
   font-weight:normal;
   font-style:normal;
   font-optical-sizing:auto;
-  background: #f4f4f4;
+  background: var(--background-color);
+}
+
+@keyframes bodyErrorFlash {
+  0%   { background-color: #ffe6eb; }   /* light pink */
+  50%  { background-color: #ffb3c1; }   /* stronger pink */
+  100% { background-color: var(--background-color); }
+}
+
+body.flash-error {
+  animation: bodyErrorFlash 0.5s ease-out;
 }
 
 #ttt-body {
@@ -167,6 +178,11 @@ div.ttt-splash img {
 
 #ttt-navbar .ttt-logo {
   height:clamp(25px,5vw,40px);
+  width:clamp(25px,5vw,40px);
+}
+
+#ttt-navbar .ttt-logo.missing {
+  display:none;
 }
 
 #ttt-navbar .ttt-title

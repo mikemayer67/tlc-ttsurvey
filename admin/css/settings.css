@@ -45,6 +45,12 @@
   width:min(600px,95%);
 }
 
+#ttt-body div.body form table td input[type=file] {
+  width:0;
+  margin-left:8px;
+  background: none;
+}
+
 #ttt-body div.body form table td div.input-box div.error {
   display:none;
   color:darkred;

@@ -26,19 +26,24 @@
     if(!ce.submit.is(sender)) { return; }
 
     var cur_values = current_values();
-    var data = {...cur_values, 'ajax':'admin/update_settings', 'nonce':ce.nonce};
+    const formData = new FormData(ce.form[0]);
+    formData.append('ajax','admin/update_settings');
+    formData.append('nonce',ce.nonce);
 
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
       dataType: 'json',
-      data: data,
+      data: formData,
+      processData: false,
+      contentType: false,
     } )
     .done( function(data,status,jqXHR) {
+      if('nonce' in data) { ce.nonce = data.nonce; }
       if(data.success) {
-        ce.nonce = data.nonce;
         ce.hidden['nonce'].attr('value',data.nonce);
         saved_settings = cur_values;
+        ce.logo_select.find('option.new').removeClass('new');
         show_status('info','Changes Saved');
       } 
       else {
@@ -46,7 +51,19 @@
           if (key in ce.inputs) { ce.inputs[key].addClass('invalid-value'); }
           if (key in ce.error_divs) { ce.error_divs[key].show().html(error); }
         }
+        if('app_logo' in data) { revert_logo(); }
+        show_status('error','Failed to Save Changes');
+
+        requestAnimationFrame(() => {
+          $('body').removeClass('flash-error'); 
+          requestAnimationFrame(() => { 
+            $('body').addClass('flash-error');
+          });
+        });
       }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      clear_logo_file();
+      handle_logo_select();
       update_submit();
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
@@ -89,6 +106,56 @@
       ajax_error_handler(jqXHR,'validate settings')
     } )
     ;
+  }
+
+  function handle_logo_select(e)
+  {
+    const nav_logo = $('#ttt-navbar img.ttt-logo');
+    const selected_logo = ce.logo_select.val();
+    const upload_file = ce.logo_file[0].files[0];
+    const upload_logo = upload_file?.name ?? '';
+
+    if(ce.uploadLogoURI) { 
+      URL.revokeObjectURL(ce.uploadLogoURI); 
+      ce.uploadLogoURI = null;
+    }
+
+    let logo_uri = '';
+    let clear_upload = true;
+
+    if(selected_logo) {
+      if(selected_logo === upload_logo) {
+        logo_uri = URL.createObjectURL(upload_file);
+        ce.uploadLogoURI = logo_uri;
+        clear_upload = false;
+      } else {
+        logo_uri = 'img/uploads/' + encodeURIComponent(selected_logo);
+      }
+    }
+
+    if (clear_upload) { clear_logo_file(); }
+
+    if(logo_uri) { nav_logo.prop('src', logo_uri).removeClass('missing'); } 
+    else         { nav_logo.addClass('missing'); }
+  }
+
+  function clear_logo_file()
+  {
+    ce.logo_file.val('');
+    ce.logo_select.find('option.new').remove();
+  }
+
+  function handle_logo_file(e)
+  {
+    const input = ce.logo_file[0];
+    if(!input.files.length) { return; }
+    const filename = input.files[0].name;
+    const option = $('<option>').val(filename).text(filename).addClass('new');
+    ce.logo_select.find('option.new').remove();
+    ce.logo_select.append(option);
+    ce.logo_select.val(filename);
+
+    ce.logo_select.trigger('change');
   }
 
   function handle_test_smtp()
@@ -164,7 +231,14 @@
   {
     Object.entries(ce.inputs).forEach(  ([key,field]) => { field.val(saved_settings[key]); } );
     Object.entries(ce.selects).forEach( ([key,field]) => { field.val(saved_settings[key]); } );
+    handle_logo_select();
     validate_all();
+  }
+
+  function revert_logo()
+  {
+    ce.logo_select.val(saved_settings['app_logo']);
+    handle_logo_select();
   }
 
   function has_changes()
@@ -189,6 +263,11 @@
 
     ce.submit.prop('disabled',true);
     ce.revert.prop('disabled',true).css('opacity',0);
+
+    ce.logo_select = $('#app_logo_select');
+    ce.logo_select.on('change', handle_logo_select);
+    ce.logo_file = $('#app_logo_file');
+    ce.logo_file.on('change', handle_logo_file);
 
     ce.hidden = {}
     ce.form.find('input[type=hidden]').each(
