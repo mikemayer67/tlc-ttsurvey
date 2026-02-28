@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/ajax.php'));
+require_once(app_file('include/imagelib.php'));
 
 validate_ajax_nonce('admin-settings');
 
@@ -17,6 +18,11 @@ unset($settings['nonce']);
 unset($settings['ajax']);
 
 $errors = Settings::validate($settings);
+
+$errors += ImageLibrary::update_app_logo(
+  $_POST['app_logo'] ?? '',
+  $_FILES['app_logo_file'] ?? [],
+);
 
 if($errors) {
   $response->fail();

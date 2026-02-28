@@ -34,7 +34,7 @@ add_input_section('Look and Feel', [
   ],
   [ 
     'app_logo',
-    'info' => 'Location of the application log image (relative to '.APP_URI.'/img)',
+    'type' => 'image',
     'optional'=>true,
   ],
   [ 

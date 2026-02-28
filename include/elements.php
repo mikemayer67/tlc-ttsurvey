@@ -9,6 +9,7 @@ require_once(app_file('include/status.php'));
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
+require_once(app_file('include/imagelib.php'));
 
 function safe_html(string $string): string {
   return htmlspecialchars(
@@ -80,7 +81,7 @@ function end_page()
 
 function start_header($title=null)
 {
-  $base  = base_uri();
+  $base  = APP_URI;
   $title = $title ?? active_survey_title() ?? app_name();
 
   $google_fonts = "https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif+Display:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Quicksand:wght@300..700&display=swap";
@@ -185,12 +186,13 @@ function add_navbar($context,$kwargs=[])
 
 function add_navbar_left($kwargs)
 {
-  $logo_file = app_logo();
-  $logo_uri  = $logo_file ? img_uri($logo_file) : '';
+  $logo_uri = ImageLibrary::app_logo_uri();
+
+  $missing = $logo_uri ? '' : 'missing';
+  $src     = $logo_uri ? "src='$logo_uri'" : '';
+  echo "<img class='ttt-logo $missing' $src alt='Logo'>";
 
   $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
-
-  if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri' alt='Logo'>"; }
   echo "<span class='ttt-title'>$title</span>";
 }
 
