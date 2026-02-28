@@ -77,6 +77,7 @@ function add_input_field($field)
   elseif ($type === 'image' ) {
     $images = ImageLibrary::all_images();
 
+    echo "<div class=input-box>";
     echo "<select id='{$key}_select' name='$key'>";
     echo "<option class='none' value=''>None</option>";
     foreach($images as $image) {
@@ -84,9 +85,11 @@ function add_input_field($field)
       echo "<option value='$name'";
       if($name === $cur_value) { echo " selected='selected'"; }
       echo ">$name</option>";
-      echo "<input type='file' id='{$key}_file' accept='image/*'>";
     }
     echo "</select>";
+    echo "<input type='file' id='{$key}_file' name='{$key}_file' accept='image/*'>";
+    echo "<div class='error' name='$key'>error</div></div>";
+    echo "</div>";
   }
   elseif ($type === 'button' ) {
     // note that actual functionality will be added with javascript

@@ -187,11 +187,6 @@ function smtp_port() {
 
 date_default_timezone_set(timezone());
 
-function time_date_string($tmestamp,$fmt = 'g:ia on D M j, Y') {
-  $dt = new DateTime('@'.$timestamp);
-  return $dt->format($fmt);
-}
-
 //
 // Validation functions
 //
@@ -210,22 +205,6 @@ function validate_timezone($timezone,&$error=null) {
     $error = "unrecognized timezone";
   }
   return strlen($error) == 0;
-}
-
-function validate_app_logo($logo,&$error=null) {
-  $error = '';
-  _fix_validate_value($logo);
-  if($logo==='') { return true; }
-  $imgfile = realpath(app_file("img/uploads/$logo"));
-  if(!$imgfile) { 
-    $error = "Logo file does not exist";
-    return false;
-  }
-  if( !getimagesize($imgfile) ) {
-    $error = "Logo image file does not exist"; 
-    return false;
-  }
-  return true;
 }
 
 function validate_admin_name($name, &$error = null): bool {

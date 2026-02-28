@@ -26,19 +26,24 @@
     if(!ce.submit.is(sender)) { return; }
 
     var cur_values = current_values();
-    var data = {...cur_values, 'ajax':'admin/update_settings', 'nonce':ce.nonce};
+    const formData = new FormData(ce.form[0]);
+    formData.append('ajax','admin/update_settings');
+    formData.append('nonce',ce.nonce);
 
     $.ajax( {
       type: 'POST',
       url: ce.ajaxuri,
       dataType: 'json',
-      data: data,
+      data: formData,
+      processData: false,
+      contentType: false,
     } )
     .done( function(data,status,jqXHR) {
+      if('nonce' in data) { ce.nonce = data.nonce; }
       if(data.success) {
-        ce.nonce = data.nonce;
         ce.hidden['nonce'].attr('value',data.nonce);
         saved_settings = cur_values;
+        ce.logo_select.find('option.new').removeClass('new');
         show_status('info','Changes Saved');
       } 
       else {
@@ -46,7 +51,19 @@
           if (key in ce.inputs) { ce.inputs[key].addClass('invalid-value'); }
           if (key in ce.error_divs) { ce.error_divs[key].show().html(error); }
         }
+        if('app_logo' in data) { revert_logo(); }
+        show_status('error','Failed to Save Changes');
+
+        requestAnimationFrame(() => {
+          $('body').removeClass('flash-error'); 
+          requestAnimationFrame(() => { 
+            $('body').addClass('flash-error');
+          });
+        });
       }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      clear_logo_file();
+      handle_logo_select();
       update_submit();
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
@@ -116,13 +133,16 @@
       }
     }
 
-    if (clear_upload) {
-      ce.logo_file.val('');
-      ce.logo_select.find('option.new').remove();
-    }
+    if (clear_upload) { clear_logo_file(); }
 
     if(logo_uri) { nav_logo.prop('src', logo_uri).removeClass('missing'); } 
     else         { nav_logo.addClass('missing'); }
+  }
+
+  function clear_logo_file()
+  {
+    ce.logo_file.val('');
+    ce.logo_select.find('option.new').remove();
   }
 
   function handle_logo_file(e)
@@ -213,6 +233,12 @@
     Object.entries(ce.selects).forEach( ([key,field]) => { field.val(saved_settings[key]); } );
     handle_logo_select();
     validate_all();
+  }
+
+  function revert_logo()
+  {
+    ce.logo_select.val(saved_settings['app_logo']);
+    handle_logo_select();
   }
 
   function has_changes()
