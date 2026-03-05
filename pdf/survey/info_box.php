@@ -65,6 +65,7 @@ class SurveyInfoBox extends PDFBox
    */
   protected function render(): bool
   {
+    if (!parent::render()) { return false; }
     return $this->_box->render();
   }
 }

@@ -57,6 +57,8 @@ class SurveyOptionsBox extends PDFBox
     TCPDF $tcpdf, float $max_width, float $inline_width,
     array $question, array $options, int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
+    parent::__construct($tcpdf);
+    
     $type = $question['type'];
     $shape = OptionShape::fromInput($type);
     $question_layout = $question['layout'] ?? 'ROW';
@@ -197,9 +199,15 @@ class SurveyOptionsBox extends PDFBox
 
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     foreach($this->_children as $box) {
       if(!$box->render()) { return false; }
     }
     return true;
+  }
+
+  protected function debug_color(): array
+  {
+    return [255,0,0];
   }
 }

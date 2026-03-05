@@ -67,12 +67,15 @@ class SurveySelectBox extends SurveyAlignableBox
     } else {
       $this->_height += $hw + $ho;
     }
-
+    $this->_width = $max_width;
 
     if($qual) {
       $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
       $this->_height += $this->_qual_box->getHeight();
+      $this->_vpad = 3;
     }
+
+    $this->_height += 2*$this->_vpad;
   }
 
   /**
@@ -124,11 +127,17 @@ class SurveySelectBox extends SurveyAlignableBox
 
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     return (
       $this->_wording->render() &&
       $this->_options->render() &&
       ($this->_intro_box?->render() ?? true) &&
       ($this->_qual_box?->render() ?? true)
     );
+  }
+
+  protected function debug_color(): array
+  {
+    return [0,255,0];
   }
 }

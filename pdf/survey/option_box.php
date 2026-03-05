@@ -86,6 +86,7 @@ class SurveyOptionBox extends SurveyAlignableBox
   
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     if(!$this->_label->render()) { return false; }
     
     $this->_tcpdf->setLineWidth(0.2);

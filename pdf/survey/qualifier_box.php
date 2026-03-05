@@ -41,6 +41,7 @@ class SurveyQualifierBox extends PDFBox
       $this->_multi_line = true;
       $this->_height += $this->_label_height + self::vpad + $this->_entry_box[3];
     }
+    $this->_width = min($max_width, $this->_label_width + $this->_entry_box[2] + self::hpad);
   }
 
   /**
@@ -78,9 +79,21 @@ class SurveyQualifierBox extends PDFBox
 
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     if(!$this->_label->render()) { return false; }
     $this->_tcpdf->setLineWidth(0.2);
-    $this->_tcpdf->Rect(...$this->_entry_box);
+    
+    $x1 = $this->_entry_box[0];
+    $y1 = $this->_entry_box[1];
+    $x2 = $x1 + $this->_entry_box[2];
+    $y2 = $y1 + $this->_entry_box[3];
+    $this->_tcpdf->Line($x1,$y2,$x2,$y2);
+    // $this->_tcpdf->Rect(...$this->_entry_box);
     return true;
+  }
+
+  protected function debug_color(): array
+  {
+    return [255,0,255];
   }
 }

@@ -23,6 +23,8 @@ abstract class PDFBox
 {
   protected TCPDF $_tcpdf;
 
+  protected const debug = false;
+
   // Each of the following properties must be explicitly set in the box subclass
   //   The following are set in the subclass constructor
   protected float $_height     = 0;  // height of the box as it lays out on the PDF page
@@ -152,9 +154,33 @@ abstract class PDFBox
   /**
    * Kicks off the rendering of the box to the PDF output. 
    *   This method should be overridden by subclasses.
+   *   Child classes should include call to parent::render()
    * @return bool indicates success/failure of the rendering
    */
-  abstract protected function render(): bool;
+  protected function render(): bool
+  {
+    if(self::debug) {
+      $outline_color = $this->debug_color();
+      if ($outline_color) {
+        $this->_tcpdf->setDrawColor(...$outline_color);
+        $this->_tcpdf->Rect($this->_x, $this->_y, $this->_width, $this->_height);
+        $this->_tcpdf->setDrawColor(0);
+      }
+    }
+    return true;
+  }
+  
+  /**
+   * Used for debugging layout 
+   *   Sets the color to be used to draw outlines around boxes.
+   *   Override this in any PDFBox subclass that needs visual laydown debugging
+   *   Default value is to not draw an outline.
+   * @return array (see TCPDF::setDrawColor for details)
+   */
+  protected function debug_color() : array
+  {
+    return [];
+  }
 }
 
 
@@ -321,6 +347,7 @@ class PDFTextBox extends PDFBox
    */
   protected function render(): bool
   {
+    if (!parent::render()) { return false; }
     //$tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
     //$tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
     $this->_tcpdf->setFont($this->_family, $this->_style, $this->_size);
@@ -390,6 +417,7 @@ class PDFMarkdownBox extends PDFBox
    */
   protected function render(): bool
   {
+    if (!parent::render()) { return false; }
     $this->_tcpdf->setFont($this->_family, '', $this->_size);
     $this->_tcpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
     return true;

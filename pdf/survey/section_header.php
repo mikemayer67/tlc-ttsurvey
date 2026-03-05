@@ -110,6 +110,7 @@ class SurveySectionHeader extends PDFBox
    */
   protected function render(): bool
   {
+    if (!parent::render()) { return false; }
     if ($this->_name_box) {
       if (!$this->_name_box->render()) { return false; }
       $y = $this->_name_box->_y + $this->_name_box->getHeight();

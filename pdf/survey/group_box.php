@@ -93,6 +93,7 @@ class SurveyGroupBox extends PDFBox
    */
   protected function render() : bool
   {
+    if (!parent::render()) { return false; }
     foreach($this->_child_boxes as $box) 
     {
       if(!$box->render()) { return false; }

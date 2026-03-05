@@ -27,6 +27,7 @@ class SurveyIntroBox extends PDFBox
     } else {
       $this->_box = new PDFTextBox($tcpdf,$max_width,$intro,size:$fontsize,multi:true);
     }
+    $this->_width = $max_width;
     $this->_height = $this->_box->getHeight();
   }
 
@@ -50,7 +51,12 @@ class SurveyIntroBox extends PDFBox
    */
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     return $this->_box->render();
   }
 
+  protected function debug_color(): array
+  {
+    return [0,0,255];
+  }
 }

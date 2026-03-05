@@ -102,6 +102,7 @@ class SurveyBoolBox extends SurveyAlignableBox
 
   public function render(): bool
   {
+    if (!parent::render()) { return false; }
     return (
       $this->_input->render() &&
       ($this->_intro_box?->render() ?? true) &&

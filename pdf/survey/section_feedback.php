@@ -62,6 +62,7 @@ class SurveySectionFeedback extends PDFBox
    */
   protected function render() : bool
   {    
+    if (!parent::render()) { return false; }
     $box = $this->_wording_box;
     if(!$box->render()) { return false; }
     
