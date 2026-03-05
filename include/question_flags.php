@@ -10,7 +10,7 @@ class QuestionFlags {
   const MASK_ROW_COL    = 0x0002;  // 0:ROW   1:COLUMN
   const MASK_HAS_OTHER  = 0x0004;  // boolean
   const MASK_WITH_PREV  = 0x0008;  // boolean
-  const MASK_IS_BOXED   = 0x0010;  // boolean
+  const MASK_NEW_BOX    = 0x0010;  // boolean
 
   private int $bits = 0;
 
@@ -69,9 +69,9 @@ class QuestionFlags {
     return $this->_buttle(self::MASK_WITH_PREV,$value);
   }
 
-  public function is_boxed(?bool $value=null) : ?bool
+  public function new_box(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_IS_BOXED,$value);
+    return $this->_buttle(self::MASK_NEW_BOX,$value);
   }
 
   public function layout(string $context, ?string $value=null) : ?string
@@ -106,13 +106,13 @@ class QuestionFlags {
     if( $value === null ) {
       // this is the getter
       if( $this->bits & SELF::MASK_WITH_PREV ) { return "YES"; }
-      if( $this->bits & SELF::MASK_IS_BOXED  ) { return "BOXED"; }
+      if( $this->bits & SELF::MASK_NEW_BOX   ) { return "NEW"; }
       return "NO";
     }
     // this is the setter
     $value = strtoupper($value);
     $this->with_prev( $value == "YES" );
-    $this->is_boxed ( in_array($value, ["YES","BOXED"], true) );
+    $this->new_box( in_array($value, ["YES","NEW"], true) );
 
     return null;
   }

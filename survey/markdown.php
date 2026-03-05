@@ -15,13 +15,16 @@ handle_warnings();
 class MarkdownParser {
   private static $instance = null;
 
+  private $wrap = true;
   private $converter;
   private $purifier;
 
   private function __clone() {}
 
-  private function __construct() 
+  private function __construct($wrap = true) 
   {
+    $this->wrap = $wrap;
+
     // block the deprecation warnings from showing up in the browser
     ob_start();
 
@@ -68,12 +71,16 @@ class MarkdownParser {
     $ob_string = ob_get_clean();
   }
 
-  private function _parse(string $markdown): string 
+  private function _parse(string $markdown, bool $override_wrap=false): string 
   {
     ob_start();
 
     // --- Convert Markdown to HTML ---
     $raw_html = $this->converter->convert($markdown)->getContent();
+    if(empty($raw_html)) {
+      ob_get_clean();
+      return '';
+    }
 
     // --- Set target to _blank for all <a> tags ---
     $doc = new \DOMDocument();
@@ -88,15 +95,37 @@ class MarkdownParser {
 
     $ob_string = ob_get_clean();
 
-    return "<div class='markdown'>$clean_html</div>";
+    if($this->wrap && !$override_wrap) { 
+      $clean_html = "<div class='markdown'>$clean_html</div>";
+    }
+
     // --- Return the converted/sanitized markdown -> HTML ---
+    return $clean_html;
   }
 
-  public static function parse(string $markdown): string
+  public static function parse(string $markdown, $wrap=true): string
   {
     if(self::$instance === null) {
-      self::$instance = new MarkdownParser();
+      self::$instance = new MarkdownParser($wrap);
     }
     return self::$instance->_parse($markdown);
   }
 }
+
+function possibleMarkdown(string $text): bool {
+    $patterns = [
+        '/^\s{0,3}#{1,6}\s+/',         // headers
+        '/(\*{1,2}|_{1,2})\S.*?\1/',   // bold/italic
+        '/\[[^\]]+\]\([^)]+\)/',       // links
+        '/(`{1,3})(.*?)\1/',           // code
+        '/^(\*|\-|\+)\s+\S+/m',        // unordered list
+        '/^\d+\.\s+\S+/m',             // ordered list
+        '/^>\s+.+/m',                   // blockquote
+    ];
+
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $text)) return true;
+    }
+    return false;
+}
+

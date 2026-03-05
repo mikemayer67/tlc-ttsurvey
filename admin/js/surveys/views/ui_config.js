@@ -16,7 +16,7 @@ export default
   grouped: {
     info_label: {
       'YES':   'Group with previous',
-      'BOXED': 'Start question box',
+      'NEW': 'Start question box',
       'NO':    'Not in question box',
     },
     label: {

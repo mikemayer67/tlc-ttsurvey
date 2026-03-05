@@ -23,6 +23,9 @@ require_once(app_file('include/redirect.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/login.php'));
 
+require_once(app_file('include/db.php'));
+verify_required_db_version(3);
+
 session_start();
 
 try
@@ -60,12 +63,6 @@ try
     require(app_file('survey/preview.php'));
     die();
   }
-
-  // If a printable survey was requested, jump to the printable page
-  //if(key_exists('printable',$_REQUEST)) {
-  //  require(app_file('survey/printable.php'));
-  //  die();
-  //}
 
   // If a file download was requested, jump to the requested download page
   if(key_exists('download',$_REQUEST)) {

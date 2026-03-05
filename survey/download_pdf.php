@@ -4,51 +4,27 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/surveys.php'));
-require_once(app_file('include/elements.php'));
-require_once(app_file('survey/print_render.php'));
-require_once(app_file('include/imagelib.php'));
+require_once(app_file('pdf/survey_pdf.php'));
 
-log_dev("-------------- Start of Preview --------------");
+log_dev("-------------- Start of Survey PDF Download --------------");
 
 validate_and_retain_get_nonce('admin-surveys');
 
 $survey_id=$_GET['sid'];
 
-$page_title = 'Printable Survey';
-$info    = survey_info($survey_id);
-if(!$info) { die(); }
+$info = survey_info($survey_id);
+if(!$info) { api_die(); }
 
-$title   = $info['title'];
 $content = survey_content($survey_id);
 
-// Add html header
-start_header($title);
-add_tab_name('ttt_printable');
-$uri = css_uri('printable');
-echo "<link rel='stylesheet' type='text/css' href='$uri'>";
-add_js_resources('printable',js_uri('printable','survey'));
-end_header();
+ob_start();
 
-// Add print size note
-echo "<div id='print-warning'>";
-echo "Note: This page is displayed at actual print size. It may look small on-screen, but it will print correctly.";
-echo "</div>";
+$survey_pdf = new SurveyPDF();
+$survey_pdf->render($info, $content);
 
-// Start content
-echo "<div id='content'>";
+ob_end_clean();
 
-// Add page header
+return $survey_pdf->Output('survey.pdf','I');
 
-$logo_uri  = ImageLibrary::app_logo_uri();
+die();
 
-echo "<div class='ttt-header'>";
-if($logo_uri) { echo "<img class='ttt-logo' src='$logo_uri'>"; }
-echo "<span class='ttt-title'>$title</span>";
-echo "</div>";
-
-
-// Render conttent
-render_printable($content);
-
-echo "</div>"; // content
-echo "</body>";

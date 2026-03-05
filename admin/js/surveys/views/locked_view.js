@@ -1,3 +1,5 @@
+import {preview_handler} from './preview_handler.js';
+
 export default function init(ce)
 {
   function select_survey()
@@ -16,13 +18,18 @@ export default function init(ce)
 
     ce.submit.hide();
     ce.revert.hide();
-    ce.preview.hide();
-    ce.preview_js.hide();
-    ce.printable.css('margin-right','auto').show();
+    ce.preview_js.val("View Survey")
+    ce.preview_nojs.hide();
+    ce.download_pdf.show();
+  }
+
+  function handle_preview(e)
+  {
+    preview_handler(ce,e);
   }
 
   return {
     state:'locked',
-    select_survey: select_survey,
+    select_survey: select_survey, handle_preview
   }
 }

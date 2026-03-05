@@ -1,9 +1,13 @@
 *~
 .*.swp
 
+*_hold.php
+
 .htaccess*
 
 admin/settings.json
+
+design_notes
 
 tlc-ttsurvey.ini
 tlc-ttsurvey.log
@@ -14,6 +18,7 @@ sql/*.sql
 !sql/backup_data.sql
 !sql/restore_data.sql
 
+.vscode/*
 vendor
 
 

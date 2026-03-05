@@ -286,7 +286,7 @@ export default function init(ce,controller)
     const grouped = data.grouped || 'NO';
 
     _grouped_value.empty();
-    ["NO","YES","BOXED"].forEach( (value) => {
+    ["NO","YES","NEW"].forEach( (value) => {
       const label = ui_config.grouped.info_label[value];
       const opt   = $('<option></option>').attr('value',value).text(label);
       _grouped_value.append(opt);

@@ -266,6 +266,22 @@ function start_ui_cache(e)
   );
 }
 
+function handle_details_toggle(e)
+{
+  const section = $(this).data('section');
+  const is_open = $(this).prop('open');
+  if(is_open) {
+    const summary = $(this).find('summary')[0];
+    const oldY = summary.getBoundingClientRect().top;
+    ce.details.each(function() {
+      if( $(this).data('section') !== section ) { $(this).prop('open',false) }
+    })
+    const curY = summary.getBoundingClientRect().top;
+    const delta = curY - oldY;
+    if(delta !== 0) { window.scrollBy(0,delta); }
+  }
+}
+
 function update_ui_cache(e)
 {
   let cache = localStorage.getItem(cache_key);
@@ -369,14 +385,16 @@ $(document).ready( function() {
 
   ce.navbar.find('.admin.link a').on('click',handle_admin_link);
 
+  ce.details.on('toggle',handle_details_toggle);
+  enable_radio_button_deselect();
+
+
   if(ce.submit.length) {
     // the following only apply if there is a submit button bar
     start_ui_cache();
 
     ce.cancel.on('click',handle_cancel);
     ce.save.on('click',handle_save);
-
-    enable_radio_button_deselect();
 
     ce.dirty = false;
     update_submit_buttons();

@@ -59,10 +59,10 @@ function handle_revert(e)
 function handle_preview(e)
 {
   e.preventDefault();
-  ce.dispatch('handle_preview');
+  ce.dispatch('handle_preview',e);
 }
 
-function handle_printable(e)
+function handle_download_pdf(e)
 {
   e.preventDefault();
   // not really an ajax call, but channels through the same mechanism
@@ -71,7 +71,7 @@ function handle_printable(e)
   url.searchParams.set('sid',ce.cur_survey.id);
   url.searchParams.set('f','pdf');
   url.searchParams.set('ttt',ce.nonce);
-  window.open(url.toString(), 'ttt_printable');
+  window.open(url.toString(), 'ttt_download_pdf');
 }
 
 
@@ -120,12 +120,13 @@ $(document).ready(
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 
-  ce.submit_bar = ce.form.find('div.submit-bar');
-  ce.submit     = $('#changes-submit');
-  ce.revert     = $('#changes-revert');
-  ce.preview    = $('#survey-preview');
-  ce.preview_js = $('#preview-js').parent();
-  ce.printable  = $('#gen-printable');
+  ce.submit_bar   = ce.form.find('div.submit-bar');
+  ce.submit       = $('#changes-submit');
+  ce.revert       = $('#changes-revert');
+  ce.preview      = ce.submit_bar.find('input.preview');
+  ce.preview_js   = ce.preview.filter('.js');
+  ce.preview_nojs = ce.preview.filter('.nojs');
+  ce.download_pdf = $('#download-pdf');
 
   ce.has_admin_lock = admin_lock.has_lock;
   ce.isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
@@ -140,7 +141,7 @@ $(document).ready(
   ce.form.on('submit', handle_submit);
   ce.revert.on('click',handle_revert);
   ce.preview.on('click',handle_preview);
-  ce.printable.on('click',handle_printable);
+  ce.download_pdf.on('click',handle_download_pdf);
 
   // Load additional modules
 
