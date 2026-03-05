@@ -9,6 +9,7 @@ require_once(app_file('pdf/survey/options_box.php'));
 require_once(app_file('pdf/survey/intro_box.php'));
 require_once(app_file('pdf/survey/qualifier_box.php'));
 require_once(app_file('pdf/survey/enums.php'));
+require_once(app_file('pdf/survey/config.php'));
 
 class SurveySelectBox extends SurveyAlignableBox
 {
@@ -17,10 +18,10 @@ class SurveySelectBox extends SurveyAlignableBox
   private ?SurveyIntroBox     $_intro_box = null;
   private ?SurveyQualifierBox $_qual_box = null;
 
-  private float $_padding = 0;
+  private float $_vpad = 0;
 
-  private static float $hgap = K_QUARTER_INCH;
-  private static float $opt_indent = K_HALF_INCH;
+  private const hgap = K_QUARTER_INCH;
+  private const opt_indent = K_HALF_INCH;
 
   /**
    * @param SurveyPDF $tcpdf 
@@ -48,15 +49,16 @@ class SurveySelectBox extends SurveyAlignableBox
       $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
       $max_width -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
-      $this->_padding = 3;
+      $this->_vpad = 3;
     }
 
-    $this->_wording = new PDFTextBox($tcpdf, $max_width, $wording);
+    $this->_wording = new PDFTextBox($tcpdf, $max_width, $wording, size:K_SURVEY_FONT_MEDIUM);
 
     $this->_options = new SurveyOptionsBox(
-      $tcpdf, $max_width - self::$opt_indent, 
-      $max_width - ($this->_wording->getWidth() + self::$hgap),
+      $tcpdf, $max_width - self::opt_indent, 
+      $max_width - ($this->_wording->getWidth() + self::hgap),
       $question, $options,
+      fontsize:K_SURVEY_FONT_MEDIUM,
     );
     $hw = $this->_wording->getHeight();
     $ho = $this->_options->getHeight();
@@ -83,7 +85,7 @@ class SurveySelectBox extends SurveyAlignableBox
   protected function position( float $x, float $y)
   {
     parent::position($x, $y);
-    $y += $this->_padding;
+    $y += $this->_vpad;
 
     // add (optional) intro box
     if($this->_intro_box) {
@@ -97,7 +99,7 @@ class SurveySelectBox extends SurveyAlignableBox
     $ho = $this->_options->getHeight();
     if($this->_options->inline()) {
       $xw = $x;
-      $xo = $x + $this->_wording->getWidth() + self::$hgap;
+      $xo = $x + $this->_wording->getWidth() + self::hgap;
       $hr = $this->_options->first_row_height();
       $dy = ($hr - $hw)/2;
       $yw = ($dy>0) ? $y + $dy : $y;
@@ -109,7 +111,7 @@ class SurveySelectBox extends SurveyAlignableBox
     else 
     {
       $this->_wording->position($x, $y);
-      $this->_options->position($x + self::$opt_indent, $y + $hw);
+      $this->_options->position($x + self::opt_indent, $y + $hw);
       $y += $hw + $ho;
     }
       // add (optional) qual box
@@ -117,7 +119,7 @@ class SurveySelectBox extends SurveyAlignableBox
       $this->_qual_box->position($x+K_QUARTER_INCH,$y);
     }
 
-    $y += $this->_padding;
+    $y += $this->_vpad;
   }
 
   public function render(): bool

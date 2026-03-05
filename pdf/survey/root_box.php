@@ -4,14 +4,16 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
-require_once(app_file('pdf/survey/section_box.php'));
+require_once(app_file('pdf/survey/section_header.php'));
+require_once(app_file('pdf/survey/section_feedback.php'));
 require_once(app_file('pdf/survey/group_box.php'));
 
 /**
  * Responsible for parsing the survey content into top PDFBoxes
- * - Section boxes: adds a new section (which starts a new page)
- * - Question boxes: adds a single question
- * - Group boxes: adds a box containing multiple questions
+ * - Section boxes adds a new section (which starts a new page)
+ * - Group boxes adds a box one or more questions
+ * - Question boxes adds a single question
+ * - Section feedback boxes add the optional feedback entry
  */
 class SurveyRootBox extends PDFRootBox
 {
@@ -44,12 +46,20 @@ class SurveyRootBox extends PDFRootBox
    */
   private function add_section(float $width, array $section, array $content)
   {
-    $box = new SurveySectionBox($this->_tcpdf, $width, $section);
+    $box = new SurveySectionHeader($this->_tcpdf, $width, $section);
     $this->addChild($box);
 
     $width -= $box->incrementIndent();
 
     $this->add_questions($width, $section['section_id'], $content);
+
+    $feedback_prompt = $section['feedback'] ?? null;
+    if($feedback_prompt) {
+      $box = new SurveySectionFeedback($this->_tcpdf, $width, $feedback_prompt);
+      $this->addChild($box);
+    }
+
+    //@@@ Add section feedback box here
   }
 
   /**

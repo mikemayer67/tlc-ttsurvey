@@ -21,8 +21,8 @@ class SurveyOptionsBox extends PDFBox
   /** @var PDFBox[][] */
   private array           $_rows = [];
 
-  private float $vgap = K_EIGHTH_INCH/2;
-  private float $hgap = K_EIGHTH_INCH;
+  const vgap = K_EIGHTH_INCH/2;
+  const hgap = K_EIGHTH_INCH;
 
   /**
    * Whether or not the options box should be on same line as the 
@@ -50,11 +50,12 @@ class SurveyOptionsBox extends PDFBox
    * @param float $inline_width 
    * @param array $question 
    * @param array $options 
+   * @param int $fontsize (default=k_SURVEY_FORM_MEDIUM)
    * @return void 
    */
   public function __construct(
     TCPDF $tcpdf, float $max_width, float $inline_width,
-    array $question, array $options)
+    array $question, array $options, int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
     $type = $question['type'];
     $shape = OptionShape::fromInput($type);
@@ -68,13 +69,13 @@ class SurveyOptionsBox extends PDFBox
     foreach($question['options'] as $option) {
       $label = $options[$option];
       $this->_children[] = new SurveyOptionBox(
-        $tcpdf, $max_width, $label, $shape, $justification
+        $tcpdf, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );
     }
     if($question['other_flag']) {
       $label = $question['other'] ?? "Other";
       $this->_children[] = new SurveyOtherBox(
-        $tcpdf, $max_width, $label, $shape, $justification
+        $tcpdf, $max_width, $label, $shape, $justification, fontsize:$fontsize
       );
     }
 
@@ -97,7 +98,7 @@ class SurveyOptionsBox extends PDFBox
     $aligned_width = 0;
     foreach($this->_children as $child) {
       $this->_width = max($this->_width, $child->getWidth());
-      $this->_height += $child->getHeight() + $this->vgap;
+      $this->_height += $child->getHeight() + self::vgap;
       $this->_rows[] = [$child];
       $aligned_width = max($aligned_width, $child->getAlignedWidth());
     }
@@ -121,7 +122,7 @@ class SurveyOptionsBox extends PDFBox
     $width = 0;
     $height = 0;
     foreach($this->_children as $child) {
-      $width += $child->getWidth() + $this->hgap;
+      $width += $child->getWidth() + self::hgap;
       $height = max($height,$child->getHeight());
     }
 
@@ -148,7 +149,7 @@ class SurveyOptionsBox extends PDFBox
       if($row_width + $box_width <= $max_width) {
         // box fits on the current row, add it to the row
         $row[] = $child;
-        $row_width += $box_width + $this->hgap;
+        $row_width += $box_width + self::hgap;
         $row_height = max($row_height, $box_height);
       }
       else
@@ -157,10 +158,10 @@ class SurveyOptionsBox extends PDFBox
         // but first, add the current row to the list of rows
         $this->_rows[] = $row;
         $this->_width = max($this->_width,$row_width);
-        $this->_height += $row_height + $this->vgap;
+        $this->_height += $row_height + self::vgap;
         $row = [$child];
         // now start a new row
-        $row_width  = $box_width + $this->hgap;
+        $row_width  = $box_width + self::hgap;
         $row_height = $box_height;
       }
     }
@@ -169,7 +170,7 @@ class SurveyOptionsBox extends PDFBox
 
     $this->_rows[] = $row;
     $this->_width = max($this->_width, $row_width);
-    $this->_height += $row_height + $this->vgap;
+    $this->_height += $row_height + self::vgap;
   }
 
   protected function position( float $x, float $y)
@@ -188,9 +189,9 @@ class SurveyOptionsBox extends PDFBox
         $dy = ($row_height - $box_height)/2;
 
         $box->position($bx,$y+$dy);
-        $bx += $box->getWidth() + $this->hgap;
+        $bx += $box->getWidth() + self::hgap;
       }
-      $y += $row_height + $this->vgap;
+      $y += $row_height + self::vgap;
     }
   }
 

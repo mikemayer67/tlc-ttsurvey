@@ -32,11 +32,11 @@ abstract class PDFBox
 
   // Only set on boxes that start a new page
   protected static int $_cur_page = 0;
-  protected int   $_page = 0;
+  protected int        $_page     = 0;
 
   // The following are set in the call to position()
-  protected float $_x    = 0; // x location of the upper left corner of the box on the page
-  protected float $_y    = 0; // y location of the upper left corner of the box on the page
+  protected float $_x = 0; // x location of the upper left corner of the box on the page
+  protected float $_y = 0; // y location of the upper left corner of the box on the page
 
   /**
    * Returns the height of the box on the PDF page
@@ -117,6 +117,7 @@ abstract class PDFBox
   /**
    * Positions the box and its children. 
    * - Must be overridden in child classes
+   *   - should include call to super::position($x,$y)
    * - Must be called before render()
    * @param int $page 
    * @param float $x 
@@ -131,13 +132,11 @@ abstract class PDFBox
 
   /**
    * Returns whether or not this box starts a new page
-   * @param ?PDFBox prior
    * @return bool 
    */
-  protected function isNewPage(?PDFBox $prior)
+  protected function isNewPage()
   {
-    if(is_null($prior)) { return true; }
-    return $this->_page > $prior->_page;
+    return $this->_page > 0;
   }
 
   /**
@@ -178,6 +177,8 @@ abstract class PDFRootBox extends PDFBox
   private float $_content_top = 0;
   private float $_content_bottom = 0;
 
+  private const bottom_pad = K_EIGHTH_INCH;
+
   /**
    * Constructor does nothing but invokes the PDFBox constructor.
    *   While the existence of this method is not strictly necessary, it serves as
@@ -192,7 +193,7 @@ abstract class PDFRootBox extends PDFBox
     $this->_content_left   = PDF_MARGIN_LEFT;
     $this->_content_right  = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
     $this->_content_top    = PDF_MARGIN_TOP;
-    $this->_content_bottom = $tcpdf->getPageHeight() - PDF_MARGIN_BOTTOM;
+    $this->_content_bottom = $tcpdf->getPageHeight() - (PDF_MARGIN_BOTTOM + self::bottom_pad);
   }
 
   public function content_width()  : float { return $this->_content_right  - $this->_content_left; }
@@ -247,12 +248,9 @@ abstract class PDFRootBox extends PDFBox
    */
   public function render(): bool
   {
-    $prior = null;
     foreach ($this->_children as $child) {
-      if ($child->isNewPage($prior)) { $this->_tcpdf->AddPage(); }
-      $rc = $child->render();
-      if (!$rc) return false;
-      $prior = $child;
+      if ($child->isNewPage()) { $this->_tcpdf->AddPage(); }
+      if (!$child->render()) { return false; }
     }
     return true;
   }

@@ -4,6 +4,7 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
+require_once(app_file('pdf/survey/config.php'));
 require_once(app_file('survey/markdown.php'));
 
 class SurveyInfoBox extends PDFBox
@@ -28,9 +29,9 @@ class SurveyInfoBox extends PDFBox
     $this->_height = 0;
 
     if(possibleMarkdown($info)) {
-      $this->_box = new PDFMarkdownBox($tcpdf,$max_width,$info);
+      $this->_box = new PDFMarkdownBox($tcpdf,$max_width,$info,size:K_SURVEY_FONT_MEDIUM);
     } else {
-      $this->_box = new PDFTextBox($tcpdf, $max_width, $info, multi:true);
+      $this->_box = new PDFTextBox($tcpdf,$max_width,$info,size:K_SURVEY_FONT_MEDIUM,multi:true);
     }
     $this->_height += $this->_box->getHeight();
   }

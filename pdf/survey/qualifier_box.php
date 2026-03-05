@@ -4,6 +4,7 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
+require_once(app_file('pdf/survey/config.php'));
 
 class SurveyQualifierBox extends PDFBox
 {
@@ -13,29 +14,32 @@ class SurveyQualifierBox extends PDFBox
   private bool   $_multi_line = false;
 
   private array $_entry_box = [0,0,0,K_QUARTER_INCH];
-  private float $_gap = 1; // mm
+
+  private const vpad = 1; // mm
+  private const hpad = 1; // mm
 
   /**
    * @param SurveyPDF $tcpdf 
    * @param float $max_width 
    * @param string $label 
+   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, string $label)
+  public function __construct(SurveyPDF $tcpdf,float $max_width,string $label,int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
     parent::__construct($tcpdf);
 
     $this->_entry_box[2] = min(3*K_INCH, $max_width/2);
 
-    $this->_label = new PDFTextBox($tcpdf, $max_width, $label);
+    $this->_label = new PDFTextBox($tcpdf,$max_width,$label,size:$fontsize);
     $this->_label_width  = $this->_label->getWidth();
     $this->_label_height = $this->_label->getHeight();
-    if($this->_label_width + $this->_entry_box[2] + $this->_gap < $max_width) {
+    if($this->_label_width + $this->_entry_box[2] + self::hpad < $max_width) {
       $this->_multi_line = false;
       $this->_height += max($this->_label_height,$this->_entry_box[3]);
     } else {
       $this->_multi_line = true;
-      $this->_height += $this->_label_height + $this->_gap + $this->_entry_box[3];
+      $this->_height += $this->_label_height + self::vpad + $this->_entry_box[3];
     }
   }
 
@@ -53,7 +57,7 @@ class SurveyQualifierBox extends PDFBox
     if($this->_multi_line) {
       $this->_label->position($x, $y);
       // set the (x,y) for the entry box on the next line
-      $y += $this->_label_height + $this->_gap;
+      $y += $this->_label_height + self::vpad;
       $x += K_INCH;
     } else {
       $dy = ($this->_entry_box[3] - $this->_label_height)/2;
@@ -66,7 +70,7 @@ class SurveyQualifierBox extends PDFBox
         $y += $dy;
       }
       // shift the entry horizontally to after the label
-      $x += $this->_label_width + $this->_gap;
+      $x += $this->_label_width + self::hpad;
     }
     $this->_entry_box[0] = $x;
     $this->_entry_box[1] = $y;

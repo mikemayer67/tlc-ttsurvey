@@ -143,6 +143,7 @@
   {
     ce.logo_file.val('');
     ce.logo_select.find('option.new').remove();
+    saved_settings['app_logo_file'] = '';
   }
 
   function handle_logo_file(e)

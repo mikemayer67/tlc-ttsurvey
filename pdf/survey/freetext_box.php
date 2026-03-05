@@ -5,6 +5,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/intro_box.php'));
+require_once(app_file('pdf/survey/config.php'));
 
 class SurveyFreetextBox extends PDFBox
 {
@@ -12,7 +13,7 @@ class SurveyFreetextBox extends PDFBox
   private PDFBox          $_wording_box;
 
   private array $_entry_box = [0,0,0,3*K_QUARTER_INCH];
-  private float $_gap = 1; // mm
+  const vgap = 1; // mm
 
   /**
    * @param SurveyPDF $tcpdf 
@@ -32,11 +33,11 @@ class SurveyFreetextBox extends PDFBox
 
     if($intro) {
       $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
-      $max_width -= $this->_intro_box->incrementIndent();
+      $max_width     -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
     }
 
-    $this->_wording_box = new PDFTextBox($tcpdf,$max_width,$wording);
+    $this->_wording_box = new PDFTextBox($tcpdf,$max_width,$wording,size:K_SURVEY_FONT_MEDIUM);
     $this->_height += $this->_wording_box->getHeight();
 
     $this->_entry_box[2] = $max_width;
@@ -56,7 +57,7 @@ class SurveyFreetextBox extends PDFBox
 
     if($this->_intro_box) {
       $this->_intro_box->position($x, $y);
-      $y += $this->_intro_box->getHeight() + $this->_gap;
+      $y += $this->_intro_box->getHeight() + self::vgap;
       $x += $this->_intro_box->incrementIndent();
     }
 
@@ -79,8 +80,8 @@ class SurveyFreetextBox extends PDFBox
     }
     $box = $this->_wording_box;
     if(!$box->render()) { return false; }
-    $this->_tcpdf->setLineWidth(0.2);
-    $this->_tcpdf->Rect(...$this->_entry_box);
+    // $this->_tcpdf->setLineWidth(0.2);
+    // $this->_tcpdf->Rect(...$this->_entry_box);
 
     return true;
   }

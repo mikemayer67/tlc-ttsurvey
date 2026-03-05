@@ -5,6 +5,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('include/imagelib.php'));
 require_once(app_file('pdf/tcpdf_config.php'));
 require_once(app_file('pdf/tcpdf_utils.php'));
 require_once(app_file('pdf/survey/root_box.php'));
@@ -60,37 +61,33 @@ class SurveyPDF extends TCPDF
   {
     $page = $this->getPage();
 
-    $icon_height = 3 * K_EIGHTH_INCH;
-    $icon_width  = 0;
-    $logo = app_logo();
-    if ($logo) {
-      $logo_file = app_file("img/$logo");
-      $logo_size = getimagesize($logo_file);
-      $logo_width = $logo_size[0];
-      $logo_height = $logo_size[1];
-
-      $icon_width = $icon_height * $logo_width / $logo_height;
-      $icon_margin = 1; // mm
+    $logo_height = 3 * K_EIGHTH_INCH;
+    $logo_width  = 0;
+    $logo_margin = 0;
+    $logo_file = ImageLibrary::app_logo_file();
+    if ($logo_file) {
+      $logo_width = $logo_height;
+      $logo_margin = 1; // mm
     }
 
     $this->SetFont(K_SERIF_FONT, size: 20);
     $title_height = tcpdf_line_height($this);
-    $extra_height = $icon_height - $title_height;
+    $extra_height = $logo_height - $title_height;
 
-    $this->setCellPaddings($icon_width + K_EIGHTH_INCH / 2, bottom: $extra_height / 2);
-    $this->Cell(0, $icon_height + 2 * $icon_margin, $this->title, border: 'B', align: 'L');
+    $this->setCellPaddings($logo_width + K_EIGHTH_INCH / 2, bottom: $extra_height / 2);
+    $this->Cell(0, $logo_height + 2 * $logo_margin, $this->title, border: 'B', align: 'L');
     $this->Ln(5);
 
     if ($page === 1) {
       $this->setCellPaddings(0, 0, 0, 0);
       $this->SetFont(K_SANS_SERIF_FONT, 'I', 7);
-      $this->SetY(PDF_MARGIN_HEADER + $icon_height + 2 * $icon_margin);
+      $this->SetY(PDF_MARGIN_HEADER + $logo_height + 2 * $logo_margin);
       $this->SetX(6.5 * K_INCH);
       $this->Cell(0, 0, '(participant name)');
     }
 
-    if ($icon_width > 0) {
-      $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $icon_margin, $icon_width, $icon_height);
+    if ($logo_file) {
+      $this->Image($logo_file, PDF_MARGIN_LEFT, PDF_MARGIN_HEADER + $logo_margin, $logo_width, $logo_height);
     }
   }
 

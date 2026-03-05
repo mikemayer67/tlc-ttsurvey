@@ -4,9 +4,10 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
+require_once(app_file('pdf/survey/config.php'));
 require_once(app_file('survey/markdown.php'));
 
-class SurveySectionBox extends PDFBox
+class SurveySectionHeader extends PDFBox
 {
   private ?PDFBox $_name_box = null;
   private ?PDFBox $_intro_box = null;
@@ -39,7 +40,7 @@ class SurveySectionBox extends PDFBox
     }
 
     if ($collapsible) {
-      $this->_name_box = new PDFTextBox($tcpdf, $width, $name, K_SERIF_FONT, size: 16);
+      $this->_name_box = new PDFTextBox($tcpdf, $width, $name, K_SERIF_FONT, size:K_SURVEY_FONT_X_LARGE);
       $this->_height += $this->_name_box->getHeight();
     }
     if ($collapsible && $intro) {
@@ -47,9 +48,9 @@ class SurveySectionBox extends PDFBox
     }
     if ($intro) {
       if (possibleMarkdown($intro)) {
-        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro, size: 9);
+        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro, size:K_SURVEY_FONT_SMALL);
       } else {
-        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, style: 'I', size: 9, multi: true);
+        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, style:'I', size:K_SURVEY_FONT_SMALL, multi:true);
       }
       $this->_height += $this->_intro_box->getHeight();
     }
@@ -85,7 +86,6 @@ class SurveySectionBox extends PDFBox
 
   /**
    * Manages the layout of the section box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
    * @return void 

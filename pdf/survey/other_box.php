@@ -27,7 +27,7 @@ class SurveyOtherBox extends SurveyAlignableBox
   private float $_input_width = 2*K_INCH;
   private float $_input_height = K_QUARTER_INCH;
 
-  private float $_gap = 2;
+  const hgap = 2;
 
   /**
    * @param SurveyPDF $tcpdf 
@@ -35,6 +35,7 @@ class SurveyOtherBox extends SurveyAlignableBox
    * @param string $option_label 
    * @param OptionShape $option_shape 
    * @param SurveyJustification $justification 
+   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
   public function __construct(
@@ -42,14 +43,15 @@ class SurveyOtherBox extends SurveyAlignableBox
     float $max_width,
     string $label,
     OptionShape $shape,
-    SurveyJustification $justification)
+    SurveyJustification $justification,
+    int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
     parent::__construct($tcpdf,$justification);
 
-    $extra_width = $this->_input_width + $this->_gap;
+    $extra_width = $this->_input_width + self::hgap;
 
     $this->_option = new SurveyOptionBox(
-      $tcpdf, $max_width - $extra_width, $label, $shape, $justification
+      $tcpdf, $max_width - $extra_width, $label, $shape, $justification, fontsize:$fontsize
     );
 
     $this->_height = max($this->_input_height, $this->_option->getHeight());
@@ -74,9 +76,9 @@ class SurveyOtherBox extends SurveyAlignableBox
     parent::position($x, $y);
     
     if($this->_justification === SurveyJustification::LEFT) {
-      $this->_input_x = $x + $this->_gap + $this->_option->getWidth();
+      $this->_input_x = $x + self::hgap + $this->_option->getWidth();
     } else {
-      $this->_input_x = $x + $this->_gap + $this->_option->getAlignedWidth();
+      $this->_input_x = $x + self::hgap + $this->_option->getAlignedWidth();
     }
     $dy = ($this->_input_height - $this->_option->getHeight())/2;
     $this->_input_y = ($dy<0) ? $y - $dy : $y;
