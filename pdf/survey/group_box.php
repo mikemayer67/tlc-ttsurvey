@@ -17,14 +17,14 @@ class SurveyGroupBox extends PDFBox
   private array $_child_boxes = [];
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width
    * @param array $questions 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, array $questions, array $content)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $questions, array $content)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $this->_width = 0;
     $this->_height = 0;
@@ -38,17 +38,17 @@ class SurveyGroupBox extends PDFBox
 
       switch($type) {
         case 'INFO':
-          $box = new SurveyInfoBox($tcpdf,$max_width,$question);
+          $box = new SurveyInfoBox($surveyPDF,$max_width,$question);
           break;
         case 'FREETEXT':
-          $box = new SurveyFreetextBox($tcpdf,$max_width,$question);
+          $box = new SurveyFreetextBox($surveyPDF,$max_width,$question);
           break;
         case 'BOOL':
-          $box = new SurveyBoolBox($tcpdf,$max_width,$question);
+          $box = new SurveyBoolBox($surveyPDF,$max_width,$question);
           break;
         case 'SELECT_ONE':
         case 'SELECT_MULTI':
-          $box = new SurveySelectBox($tcpdf,$max_width,$question,$content['options']);
+          $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content['options']);
           break;
       }
       $this->_height += $box->getHeight();

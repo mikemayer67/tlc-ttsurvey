@@ -68,7 +68,7 @@ start_summary_page([
 ]);
 
 if(!$info) {
-  echo "<br>There are currently no active survey";
+  echo "<br>There is currently no active survey";
   end_page();
   die();
 }

@@ -16,14 +16,14 @@ class SurveyFreetextBox extends PDFBox
   const vgap = 1; // mm
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param array $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $wording = $question['wording'];
     $intro   = $question['intro'] ?? null;
@@ -32,12 +32,12 @@ class SurveyFreetextBox extends PDFBox
     $this->_height = 0;
 
     if($intro) {
-      $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
+      $this->_intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
       $max_width     -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
     }
 
-    $this->_wording_box = new PDFTextBox($tcpdf,$max_width,$wording,size:K_SURVEY_FONT_MEDIUM);
+    $this->_wording_box = new PDFTextBox($surveyPDF,$max_width,$wording,size:K_SURVEY_FONT_MEDIUM);
     $this->_height += $this->_wording_box->getHeight();
 
     $this->_entry_box[2] = $max_width;
@@ -86,9 +86,9 @@ class SurveyFreetextBox extends PDFBox
     //$y1 = $this->_entry_box[1];
     //$x2 = $x1 + $this->_entry_box[2];
     //$y2 = $y1 + $this->_entry_box[3];
-    //$this->_tcpdf->Line($x1,$y2,$x2,$y2);
+    //$this->_ttpdf->Line($x1,$y2,$x2,$y2);
     
-    //$this->_tcpdf->Rect(...$this->_entry_box);
+    //$this->_ttpdf->Rect(...$this->_entry_box);
 
     return true;
   }

@@ -94,8 +94,6 @@ class SectionPanel
 
     $this->indent = false;
     foreach($this->questions as $question) {
-      $type    = strtolower($question['type']);
-
       if($question['grouped'] === 'NO') {
         $this->grouped = false;
         $this->indent = false;
@@ -103,7 +101,6 @@ class SectionPanel
         $this->grouped = true;
         // don't start indentation unless info text is found
       }
-
       $this->add_question($question);
     }
 

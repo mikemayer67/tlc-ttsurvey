@@ -3,31 +3,31 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-use \TCPDF;
+require_once(app_file('pdf/ttpdf.php'));
 
 /**
- * Computes the actual line height used by TCPDF given current font
- * @param TCPDF $tcpdf 
+ * Computes the actual line height used by TTPDF given current font
+ * @param TTPDF $ttpdf 
  * @return float 
  */
-function tcpdf_line_height(TCPDF $tcpdf) : float
+function ttpdf_line_height(TTPDF $ttpdf) : float
 {
-  return $tcpdf->getFontSize() * $tcpdf->getCellHeightRatio();
+  return $ttpdf->getFontSize() * $ttpdf->getCellHeightRatio();
 }
 
 /**
  * Truncates a text string to fit in the available width given current font
- * @param TCPDF $tcpdf 
+ * @param TTPDF $ttpdf 
  * @param string $text 
  * @param float $w 
  * @return string 
  */
-function tcpdf_truncate_text(TCPDF $tcpdf, string $text, float $w) : string
+function ttpdf_truncate_text(TTPDF $ttpdf, string $text, float $w) : string
 {
-  $wt = $tcpdf->GetStringWidth($text);
+  $wt = $ttpdf->GetStringWidth($text);
   if($wt < $w) { return $text; }
 
-  $pad = $tcpdf->GetStringWidth('...');
+  $pad = $ttpdf->GetStringWidth('...');
 
   $n1 = 0;
   $n2 = strlen($text);
@@ -37,7 +37,7 @@ function tcpdf_truncate_text(TCPDF $tcpdf, string $text, float $w) : string
   while($n2 > $n1 + 1) {
     $nt = intdiv($n1+$n2,2);
     $st = substr($text,0,$nt);
-    $wt = $tcpdf->GetStringWidth($st);
+    $wt = $ttpdf->GetStringWidth($st);
     if($wt > $w-$pad) {
       $n2 = $nt;
     } else {

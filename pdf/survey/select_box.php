@@ -24,15 +24,15 @@ class SurveySelectBox extends SurveyAlignableBox
   private const opt_indent = K_HALF_INCH;
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param array $question 
    * @param array $options
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, array $question, array $options)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question, array $options)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $type    = $question['type'];
     $intro   = $question['intro'] ?? null;
@@ -46,16 +46,16 @@ class SurveySelectBox extends SurveyAlignableBox
     $layout = OptionLayout::fromInput($layout);
 
     if($intro) {
-      $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
+      $this->_intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
       $max_width -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
       $this->_vpad = 3;
     }
 
-    $this->_wording = new PDFTextBox($tcpdf, $max_width, $wording, size:K_SURVEY_FONT_MEDIUM);
+    $this->_wording = new PDFTextBox($surveyPDF, $max_width, $wording, size:K_SURVEY_FONT_MEDIUM);
 
     $this->_options = new SurveyOptionsBox(
-      $tcpdf, $max_width - self::opt_indent, 
+      $surveyPDF, $max_width - self::opt_indent, 
       $max_width - ($this->_wording->getWidth() + self::hgap),
       $question, $options,
       fontsize:K_SURVEY_FONT_MEDIUM,
@@ -70,7 +70,7 @@ class SurveySelectBox extends SurveyAlignableBox
     $this->_width = $max_width;
 
     if($qual) {
-      $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
+      $this->_qual_box = new SurveyQualifierBox($surveyPDF,$max_width,$qual);
       $this->_height += $this->_qual_box->getHeight();
       $this->_vpad = 3;
     }

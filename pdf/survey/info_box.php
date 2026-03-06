@@ -12,14 +12,14 @@ class SurveyInfoBox extends PDFBox
   private PDFBox $_box;
   private bool $_new_group = false;
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width
    * @param array $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $info = $question['info'];
 
@@ -29,9 +29,9 @@ class SurveyInfoBox extends PDFBox
     $this->_height = 0;
 
     if(possibleMarkdown($info)) {
-      $this->_box = new PDFMarkdownBox($tcpdf,$max_width,$info,size:K_SURVEY_FONT_MEDIUM);
+      $this->_box = new PDFMarkdownBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM);
     } else {
-      $this->_box = new PDFTextBox($tcpdf,$max_width,$info,size:K_SURVEY_FONT_MEDIUM,multi:true);
+      $this->_box = new PDFTextBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM,multi:true);
     }
     $this->_height += $this->_box->getHeight();
   }

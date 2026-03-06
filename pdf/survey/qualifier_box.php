@@ -19,19 +19,19 @@ class SurveyQualifierBox extends PDFBox
   private const hpad = 1; // mm
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $label 
    * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf,float $max_width,string $label,int $fontsize=K_SURVEY_FONT_MEDIUM)
+  public function __construct(SurveyPDF $surveyPDF,float $max_width,string $label,int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $this->_entry_box[2] = min(3*K_INCH, $max_width/2);
 
-    $this->_label = new PDFTextBox($tcpdf,$max_width,$label,size:$fontsize);
+    $this->_label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
     $this->_label_width  = $this->_label->getWidth();
     $this->_label_height = $this->_label->getHeight();
     if($this->_label_width + $this->_entry_box[2] + self::hpad < $max_width) {
@@ -81,14 +81,14 @@ class SurveyQualifierBox extends PDFBox
   {
     if (!parent::render()) { return false; }
     if(!$this->_label->render()) { return false; }
-    $this->_tcpdf->setLineWidth(0.2);
+    $this->_ttpdf->setLineWidth(0.2);
     
     $x1 = $this->_entry_box[0];
     $y1 = $this->_entry_box[1];
     $x2 = $x1 + $this->_entry_box[2];
     $y2 = $y1 + $this->_entry_box[3];
-    $this->_tcpdf->Line($x1,$y2,$x2,$y2);
-    // $this->_tcpdf->Rect(...$this->_entry_box);
+    $this->_ttpdf->Line($x1,$y2,$x2,$y2);
+    // $this->_ttpdf->Rect(...$this->_entry_box);
     return true;
   }
 

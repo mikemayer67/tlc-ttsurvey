@@ -47,22 +47,19 @@ function adjust_list(l)
   items.each( (i,item) => { item.style.width = $(item).data('natural-width'); });
 }
 
-function download_csv(e)
+function download_summary(format)
 {
-  e.preventDefault();
-  // not really an ajax call, but channels through the same mechanism
+  // not really an ajax call, but channels through the same API
   const url = new URL(ce.ajaxuri, window.location.href);
   url.searchParams.set('download','summary');
-  url.searchParams.set('f','csv');
+  url.searchParams.set('f',format);
   url.searchParams.set('sid', ce.survey_id);
   url.searchParams.set('ttt',ce.nonce);
   window.open(url.toString(), 'ttt_summary_download');
 }
 
-function download_pdf(e)
-{
-  alert('Not yet implemented');
-}
+function download_csv(e) { e.preventDefault(); download_summary('csv'); }
+function download_pdf(e) { e.preventDefault(); download_summary('pdf'); }
 
 function adjust_column_widths(ncol,container_width,widths)
 {

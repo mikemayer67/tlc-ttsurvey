@@ -12,20 +12,20 @@ class SurveyIntroBox extends PDFBox
   private PDFBox $_box;
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $intro 
    * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, string $intro, int $fontsize=K_SURVEY_FONT_MEDIUM)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, string $intro, int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     if (possibleMarkdown($intro)) {
-      $this->_box = new PDFMarkdownBox($tcpdf,$max_width,$intro,size:$fontsize);
+      $this->_box = new PDFMarkdownBox($surveyPDF,$max_width,$intro,size:$fontsize);
     } else {
-      $this->_box = new PDFTextBox($tcpdf,$max_width,$intro,size:$fontsize,multi:true);
+      $this->_box = new PDFTextBox($surveyPDF,$max_width,$intro,size:$fontsize,multi:true);
     }
     $this->_width = $max_width;
     $this->_height = $this->_box->getHeight();

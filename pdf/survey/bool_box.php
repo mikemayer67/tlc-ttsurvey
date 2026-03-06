@@ -22,14 +22,14 @@ class SurveyBoolBox extends SurveyAlignableBox
   private float $_vpad = 0;
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param array $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $intro   = $question['intro'] ?? null;
     $wording = $question['wording'];
@@ -37,7 +37,7 @@ class SurveyBoolBox extends SurveyAlignableBox
     $qual    = $question['qualifier'] ?? null;
 
     if($intro) {
-      $this->_intro_box = new SurveyIntroBox($tcpdf,$max_width,$intro);
+      $this->_intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
       $max_width     -= $this->_intro_box->incrementIndent();
       $this->_height += $this->_intro_box->getHeight();
       $this->_width   = max($this->_width, $this->_intro_box->getWidth());
@@ -45,7 +45,7 @@ class SurveyBoolBox extends SurveyAlignableBox
     }
 
     $this->_input = new SurveyOptionBox(
-      $tcpdf, $max_width, $wording, 
+      $surveyPDF, $max_width, $wording, 
       OptionShape::CHECKBOX,
       SurveyJustification::fromInput($layout),
     );
@@ -54,7 +54,7 @@ class SurveyBoolBox extends SurveyAlignableBox
     $this->_aligned_width = $this->_input->getAlignedWidth();
 
     if($qual) {
-      $this->_qual_box = new SurveyQualifierBox($tcpdf,$max_width,$qual);
+      $this->_qual_box = new SurveyQualifierBox($surveyPDF,$max_width,$qual);
       $this->_height += $this->_qual_box->getHeight();
       $this->_width   = max($this->_width, $max_width);
       $this->_vpad    = 3;

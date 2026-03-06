@@ -3,13 +3,12 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
-require_once(app_file('pdf/tcpdf_utils.php'));
-
-use \TCPDF;
+require_once(app_file('pdf/ttpdf.php'));
+require_once(app_file('pdf/ttpdf_utils.php'));
 
 /**
  * PDFBox is the baseclass for wrapping methods used to compute and render Boxes of content
- *   in a PDF file using the TCPDF package.  This class provides an abstract interface that must be
+ *   in a PDF file using the TTPDF package.  This class provides an abstract interface that must be
  *   subclassed for each flavor of box.  It provides common functionality applicable to each of
  *   the subclasses.  
  * It is anticipated that boxes will contain other boxes into a nested laydown structure.
@@ -21,7 +20,7 @@ use \TCPDF;
  */
 abstract class PDFBox
 {
-  protected TCPDF $_tcpdf;
+  protected TTPDF $_ttpdf;
 
   protected const debug = false;
 
@@ -142,13 +141,20 @@ abstract class PDFBox
   }
 
   /**
+   * Returns the section label to appear in the page footer
+   *   Should be overridden in subclasses that modify the current section
+   * @return null|string 
+   */
+  protected function currentSection() : ?string { return null; }
+
+  /**
    * Constructor currently does nothing other than set the minimum required argument list
-   * @param TCPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF instances of a TCDPF class (or subclass)
    * @return void 
    */
-  public function __construct(TCPDF $tcpdf) 
+  public function __construct(TTPDF $ttpdf) 
   {
-    $this->_tcpdf = $tcpdf;
+    $this->_ttpdf = $ttpdf;
   }
 
   /**
@@ -162,9 +168,9 @@ abstract class PDFBox
     if(self::debug) {
       $outline_color = $this->debug_color();
       if ($outline_color) {
-        $this->_tcpdf->setDrawColor(...$outline_color);
-        $this->_tcpdf->Rect($this->_x, $this->_y, $this->_width, $this->_height);
-        $this->_tcpdf->setDrawColor(0);
+        $this->_ttpdf->setDrawColor(...$outline_color);
+        $this->_ttpdf->Rect($this->_x, $this->_y, $this->_width, $this->_height);
+        $this->_ttpdf->setDrawColor(0);
       }
     }
     return true;
@@ -175,7 +181,7 @@ abstract class PDFBox
    *   Sets the color to be used to draw outlines around boxes.
    *   Override this in any PDFBox subclass that needs visual laydown debugging
    *   Default value is to not draw an outline.
-   * @return array (see TCPDF::setDrawColor for details)
+   * @return array (see TTPDF::setDrawColor for details)
    */
   protected function debug_color() : array
   {
@@ -209,17 +215,17 @@ abstract class PDFRootBox extends PDFBox
    * Constructor does nothing but invokes the PDFBox constructor.
    *   While the existence of this method is not strictly necessary, it serves as
    *   a reminder that all subclasses of PDFRootBox should also invoke the parent constrctor
-   * @param TCPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF instances of a TCDPF class (or subclass)
    * @return void 
    */
-  public function __construct(TCPDF $tcpdf)
+  public function __construct(TTPDF $ttpdf)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($ttpdf);
 
     $this->_content_left   = PDF_MARGIN_LEFT;
-    $this->_content_right  = $tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+    $this->_content_right  = $ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
     $this->_content_top    = PDF_MARGIN_TOP;
-    $this->_content_bottom = $tcpdf->getPageHeight() - (PDF_MARGIN_BOTTOM + self::bottom_pad);
+    $this->_content_bottom = $ttpdf->getPageHeight() - (PDF_MARGIN_BOTTOM + self::bottom_pad);
   }
 
   public function content_width()  : float { return $this->_content_right  - $this->_content_left; }
@@ -275,10 +281,22 @@ abstract class PDFRootBox extends PDFBox
   public function render(): bool
   {
     foreach ($this->_children as $child) {
-      if ($child->isNewPage()) { $this->_tcpdf->AddPage(); }
-      if (!$child->render()) { return false; }
+      if ($child->isNewPage()) { $this->_ttpdf->AddPage(); }
+      if (!$this->render_child($child)) { return false; }
     }
     return true;
+  }
+
+  /**
+   * Renders a single child box
+   *   Subclasses that need to do more than simply render the child to the
+   *   page should overload this class. 
+   * @param PDFBox $child 
+   * @return bool 
+   */
+  protected function render_child(PDFBox $child) : bool
+  {
+    return $child->render();
   }
 }
 
@@ -299,7 +317,7 @@ class PDFTextBox extends PDFBox
    *   The box's final width and height will reflect the dimensions necessary to
    *   render the box content, not necessarily the specified width.  The width,
    *   however, will never exceed the specified width.
-   * @param TCPDF $tcpdf 
+   * @param TTPDF $ttpdf 
    * @param float $w max allowable width of the text cell, final width may be less
    * @param string $text string to add to the form
    * @param string $family font family to use, defaults to the sans-serif font
@@ -310,7 +328,7 @@ class PDFTextBox extends PDFBox
    * @return void 
    */
   public function __construct(
-    TCPDF $tcpdf,
+    TTPDF $ttpdf,
     float $w,
     string $text,
     string $family = '',
@@ -319,25 +337,25 @@ class PDFTextBox extends PDFBox
     float $factor = 1,
     bool $multi = false
   ) {
-    parent::__construct($tcpdf);
+    parent::__construct($ttpdf);
 
     $this->_family = $family ? $family : K_SANS_SERIF_FONT;
     $this->_style = $style;
     $this->_size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
 
-    $tcpdf->setFont($this->_family, $this->_style, $this->_size);
+    $ttpdf->setFont($this->_family, $this->_style, $this->_size);
 
     if ($multi) {
       $this->_text = $text;
       $this->_width = $w;
-      $num_lines = $tcpdf->getNumLines($text, $w);
+      $num_lines = $ttpdf->getNumLines($text, $w);
       $this->_multi = $num_lines > 1;
-      $this->_height = $num_lines * tcpdf_line_height($tcpdf);
+      $this->_height = $num_lines * ttpdf_line_height($ttpdf);
     } else {
-      $padding = $tcpdf->getCellPaddings();
-      $this->_text = tcpdf_truncate_text($tcpdf, $text, $w);
-      $this->_width = $tcpdf->GetStringWidth($this->_text) + $padding['L'] + $padding['R'];
-      $this->_height = tcpdf_line_height($tcpdf);
+      $padding = $ttpdf->getCellPaddings();
+      $this->_text = ttpdf_truncate_text($ttpdf, $text, $w);
+      $this->_width = $ttpdf->GetStringWidth($this->_text) + $padding['L'] + $padding['R'];
+      $this->_height = ttpdf_line_height($ttpdf);
     }
   }
 
@@ -348,15 +366,15 @@ class PDFTextBox extends PDFBox
   protected function render(): bool
   {
     if (!parent::render()) { return false; }
-    //$tcpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
-    //$tcpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
-    $this->_tcpdf->setFont($this->_family, $this->_style, $this->_size);
-    $this->_tcpdf->setY($this->_y);
-    $this->_tcpdf->setX($this->_x);
+    //$ttpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
+    //$ttpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
+    $this->_ttpdf->setFont($this->_family, $this->_style, $this->_size);
+    $this->_ttpdf->setY($this->_y);
+    $this->_ttpdf->setX($this->_x);
     if ($this->_multi) {
-      $this->_tcpdf->MultiCell($this->_width, $this->_height, $this->_text, align:'L');
+      $this->_ttpdf->MultiCell($this->_width, $this->_height, $this->_text, align:'L');
     } else {
-      $this->_tcpdf->Cell($this->_width, $this->_height, $this->_text);
+      $this->_ttpdf->Cell($this->_width, $this->_height, $this->_text);
     }
     return true;
   }
@@ -376,7 +394,7 @@ class PDFMarkdownBox extends PDFBox
    *   The box's width will fill the full width specified.
    *   Note that the font style is not specified here as the ability to
    *     add bold and italic belongs to the markdown engine
-   * @param TCPDF $tcpdf 
+   * @param TTPDF $ttpdf 
    * @param float $w width of the markdown box 
    * @param string $markdown markdown text
    * @param string $family font family
@@ -385,30 +403,30 @@ class PDFMarkdownBox extends PDFBox
    * @return void 
    */
   public function __construct(
-    TCPDF $tcpdf,
+    TTPDF $ttpdf,
     float $w,
     string $markdown,
     string $family = '',
     float $size = 0,
     float $factor = 1
   ) {
-    parent::__construct($tcpdf);
+    parent::__construct($ttpdf);
 
     $this->_family = $family ? $family : K_SANS_SERIF_FONT;
     $this->_size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
 
-    $tcpdf->setFont($this->_family, '', $this->_size);
+    $ttpdf->setFont($this->_family, '', $this->_size);
 
     $this->_width = $w;
 
     $this->_html = MarkdownParser::parse($markdown, false);
 
     $startY = 0;  // arbitrary, but 0 is as good as any other number and gives us the most working room
-    $tcpdf->startTransaction();
-    $tcpdf->AddPage();
-    $tcpdf->writeHTMLCell($w, 0, 0, $startY, $this->_html, ln: 1);
-    $this->_height = $tcpdf->GetY() - $startY;
-    $tcpdf->rollbackTransaction(true);
+    $ttpdf->startTransaction();
+    $ttpdf->AddPage();
+    $ttpdf->writeHTMLCell($w, 0, 0, $startY, $this->_html, ln: 1);
+    $this->_height = $ttpdf->GetY() - $startY;
+    $ttpdf->rollbackTransaction(true);
   }
 
   /**
@@ -418,8 +436,8 @@ class PDFMarkdownBox extends PDFBox
   protected function render(): bool
   {
     if (!parent::render()) { return false; }
-    $this->_tcpdf->setFont($this->_family, '', $this->_size);
-    $this->_tcpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
+    $this->_ttpdf->setFont($this->_family, '', $this->_size);
+    $this->_ttpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
     return true;
   }
 }

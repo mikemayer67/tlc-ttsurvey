@@ -20,17 +20,17 @@ abstract class SurveyAlignableBox extends PDFBox
   protected SurveyJustification $_justification = SurveyJustification::LEFT;
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param null|SurveyJustification $justification 
    * @param null|float $width 
    * @return void 
    */
   public function __construct(
-    SurveyPDF $tcpdf,
+    SurveyPDF $surveyPDF,
     ?SurveyJustification $justification = null,
     ?float $width = null )
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
     if($width !== null ) {
       $this->_aligned_width = $width;
     }
