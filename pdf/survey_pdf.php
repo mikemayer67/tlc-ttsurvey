@@ -54,7 +54,7 @@ class SurveyPDF extends TCPDF
     $this->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT, true);
     $this->SetHeaderMargin(PDF_MARGIN_HEADER);
     $this->SetFooterMargin(PDF_MARGIN_FOOTER);
-    $this->SetAutoPageBreak(true, PDF_MARGIN_BOTTOM);
+    $this->SetAutoPageBreak(false);
   }
 
   public function Header(): void
