@@ -6,6 +6,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 require_once(app_file('include/login.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/imagelib.php'));
+require_once(app_file('pdf/ttpdf_config.php'));
 require_once(app_file('pdf/ttpdf_utils.php'));
 require_once(app_file('vendor/autoload.php'));
 
@@ -107,8 +108,9 @@ class TTPDF extends TCPDF
     $this->SetFont(K_SANS_SERIF_FONT, size: 8);
     $line_height = ttpdf_line_height($this);
     $this->SetY(-PDF_MARGIN_FOOTER - $line_height);
+    $fx = $this->GetX();
 
-    $cell_width = ($this->getPageWidth() - ($this->lMargin + $this->rMargin)) / 2;
+    $cell_width = ($this->getPageWidth() - ($this->lMargin + $this->rMargin)) / 3;
 
     $page = $this->getPage();
 
@@ -119,9 +121,11 @@ class TTPDF extends TCPDF
     }
     $section = $this->footer_config['section'] ?? null;
     if($section) {
+      $this->SetX($fx + $cell_width);
       $this->SetFont(K_SANS_SERIF_FONT, size: 8);
       $this->Cell($cell_width, $line_height, $section, 0, 0, 'C');
     }
+    $this->SetX($fx + 2 * $cell_width);
     $this->SetFont(K_SANS_SERIF_FONT, size: 8);
     $this->Cell($cell_width, $line_height, "Page $page of {$this->page_count}", 0, 0, 'R');
   }

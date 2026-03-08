@@ -12,11 +12,12 @@ class SurveySectionHeader extends PDFBox
   private ?PDFBox $_name_box = null;
   private ?PDFBox $_intro_box = null;
 
-  private float $_gap = 1; // mm
+  private const vgap = 1; // mm
 
   /**
+   * constructor
    * @param SurveyPDF $surveyPDF 
-   * @param float $box_width
+   * @param float $width 
    * @param array $section 
    * @return void 
    */
@@ -44,7 +45,7 @@ class SurveySectionHeader extends PDFBox
       $this->_height += $this->_name_box->getHeight();
     }
     if ($collapsible && $intro) {
-      $this->_height += $this->_gap;
+      $this->_height += self::vgap;
     }
     if ($intro) {
       if (possibleMarkdown($intro)) {
@@ -97,7 +98,7 @@ class SurveySectionHeader extends PDFBox
     if ($this->_name_box) {
       $this->_name_box->position($x, $y);
       $y += $this->_name_box->getHeight();
-      if ($this->_intro_box) { $y += $this->_gap; }
+      if ($this->_intro_box) { $y += self::vgap; }
     }
     if ($this->_intro_box) {
       $this->_intro_box->position($x, $y);

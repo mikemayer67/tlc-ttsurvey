@@ -14,7 +14,7 @@ if(!$info) { api_die(); }
 $title = $info['title'];
 
 $content   = survey_content($survey_id);
-$responses = get_all_responses($summary_pdf);
+$responses = get_all_responses($survey_id);
 
 ob_start();
 $summary_pdf = new SummaryPDF("Response Summary: $title");

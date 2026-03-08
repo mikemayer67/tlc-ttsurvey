@@ -135,7 +135,7 @@ abstract class PDFBox
    * Returns whether or not this box starts a new page
    * @return bool 
    */
-  protected function isNewPage()
+  protected function isNewPage() : bool
   {
     return $this->_page > 0;
   }
@@ -181,14 +181,13 @@ abstract class PDFBox
    *   Sets the color to be used to draw outlines around boxes.
    *   Override this in any PDFBox subclass that needs visual laydown debugging
    *   Default value is to not draw an outline.
-   * @return array (see TTPDF::setDrawColor for details)
+   * @return array (see TCPDF::setDrawColor for details)
    */
   protected function debug_color() : array
   {
     return [];
   }
 }
-
 
 /**
  * PDFRootBox is also an abstract class that is intended to contain all top level boxes

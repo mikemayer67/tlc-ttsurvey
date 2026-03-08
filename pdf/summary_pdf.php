@@ -3,8 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
-require_once(app_file('pdf/ttpdf.phpp'));
-require_once(app_file('pdf/summary_root_box.php'));
+require_once(app_file('pdf/ttpdf.php'));
+require_once(app_file('pdf/summary/root_box.php'));
 
 use DateTime;
 
@@ -21,8 +21,8 @@ class SummaryPDF extends TTPDF
       title:$title,
       subject:"Printable version of the survey summary"
     );
-    $this->header_config['logo_size'] = K_HALF_INCH;
-    $this->header_config['title_fontsize'] = 16;
+    $this->header_config['logo_size'] = K_QUARTER_INCH;
+    $this->header_config['title_fontsize'] = 14;
     $this->header_config['include_name_field'] = false;
   }
 

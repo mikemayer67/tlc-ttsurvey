@@ -38,7 +38,7 @@ class SurveyRootBox extends PDFRootBox
   }
 
   /**
-   * Adds section content to the survey form
+   * Adds section content boxes to the survey form
    * @param float $width 
    * @param array $section section specific content data
    * @param array $content overall survey content structure data
