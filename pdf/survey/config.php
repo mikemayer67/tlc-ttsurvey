@@ -4,7 +4,7 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 // This file provides the common look and feel for the Survey PDF
-//  Unlike tcpdf_config.php, this need only be required once needed.
+//  Unlike ttpdf_config.php, this need only be required once needed.
 //  It does not override any of the TCPDF constants.
 
 if(!defined('K_SURVEY_FONT_BASE')) 

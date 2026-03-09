@@ -10,22 +10,22 @@ require_once(app_file('pdf/survey/group_box.php'));
 
 /**
  * Responsible for parsing the survey content into top PDFBoxes
- * - Section boxes adds a new section (which starts a new page)
- * - Group boxes adds a box one or more questions
- * - Question boxes adds a single question
+ * - Section boxes add a new section (which starts a new page)
+ * - Group boxes add a box one or more questions
+ * - Question boxes add a single question
  * - Section feedback boxes add the optional feedback entry
  */
 class SurveyRootBox extends PDFRootBox
 {
   /**
    * Constructs all of the top level child boxes for the survey form
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param array $content survey content structure data
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, array $content)
+  public function __construct(SurveyPDF $surveyPDF, array $content)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $max_width = $this->content_width();
 
@@ -38,7 +38,7 @@ class SurveyRootBox extends PDFRootBox
   }
 
   /**
-   * Adds section content to the survey form
+   * Adds section content boxes to the survey form
    * @param float $width 
    * @param array $section section specific content data
    * @param array $content overall survey content structure data
@@ -46,7 +46,7 @@ class SurveyRootBox extends PDFRootBox
    */
   private function add_section(float $width, array $section, array $content)
   {
-    $box = new SurveySectionHeader($this->_tcpdf, $width, $section);
+    $box = new SurveySectionHeader($this->_ttpdf, $width, $section);
     $this->addChild($box);
 
     $width -= $box->incrementIndent();
@@ -55,7 +55,7 @@ class SurveyRootBox extends PDFRootBox
 
     $feedback_prompt = $section['feedback'] ?? null;
     if($feedback_prompt) {
-      $box = new SurveySectionFeedback($this->_tcpdf, $width, $feedback_prompt);
+      $box = new SurveySectionFeedback($this->_ttpdf, $width, $feedback_prompt);
       $this->addChild($box);
     }
 
@@ -108,7 +108,7 @@ class SurveyRootBox extends PDFRootBox
 
     // add question boxes to the survey
     foreach($groups as $questions) {
-      $box = new SurveyGroupBox($this->_tcpdf, $width, $questions, $content);
+      $box = new SurveyGroupBox($this->_ttpdf, $width, $questions, $content);
       $this->addChild($box);
     }
   }

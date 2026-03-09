@@ -12,16 +12,16 @@ class SurveySectionFeedback extends PDFBox
   private array $_entry_box = [0,0,0,K_INCH];
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $width 
    * @param string $prompt 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $width, string $prompt)
+  public function __construct(SurveyPDF $surveyPDF, float $width, string $prompt)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
-    $this->_wording_box = new PDFTextBox($tcpdf,$width,$prompt,size:K_SURVEY_FONT_MEDIUM);
+    $this->_wording_box = new PDFTextBox($surveyPDF,$width,$prompt,size:K_SURVEY_FONT_MEDIUM);
     
     $this->_width = $width;
     $this->_height = $this->_wording_box->getHeight();
@@ -67,8 +67,8 @@ class SurveySectionFeedback extends PDFBox
     if(!$box->render()) { return false; }
     
     // not currently drawing the entry box, but if desired, uncomment the following
-    //$this->_tcpdf->setLineWidth(0.2);
-    //$this->_tcpdf->Rect(...$this->_entry_box);
+    //$this->_ttpdf->setLineWidth(0.2);
+    //$this->_ttpdf->Rect(...$this->_entry_box);
 
     return true;
   }

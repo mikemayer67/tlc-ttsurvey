@@ -12,17 +12,18 @@ class SurveySectionHeader extends PDFBox
   private ?PDFBox $_name_box = null;
   private ?PDFBox $_intro_box = null;
 
-  private float $_gap = 1; // mm
+  private const vgap = 1; // mm
 
   /**
-   * @param SurveyPDF $tcpdf 
-   * @param float $box_width
+   * constructor
+   * @param SurveyPDF $surveyPDF 
+   * @param float $width 
    * @param array $section 
    * @return void 
    */
-  public function __construct(SurveyPDF $tcpdf, float $width, array $section)
+  public function __construct(SurveyPDF $surveyPDF, float $width, array $section)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
 
     $name        = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
@@ -40,17 +41,17 @@ class SurveySectionHeader extends PDFBox
     }
 
     if ($collapsible) {
-      $this->_name_box = new PDFTextBox($tcpdf, $width, $name, K_SERIF_FONT, size:K_SURVEY_FONT_X_LARGE);
+      $this->_name_box = new PDFTextBox($surveyPDF, $width, $name, K_SERIF_FONT, size:K_SURVEY_FONT_X_LARGE);
       $this->_height += $this->_name_box->getHeight();
     }
     if ($collapsible && $intro) {
-      $this->_height += $this->_gap;
+      $this->_height += self::vgap;
     }
     if ($intro) {
       if (possibleMarkdown($intro)) {
-        $this->_intro_box = new PDFMarkdownBox($tcpdf, $width, $intro, size:K_SURVEY_FONT_SMALL);
+        $this->_intro_box = new PDFMarkdownBox($surveyPDF, $width, $intro, size:K_SURVEY_FONT_SMALL);
       } else {
-        $this->_intro_box = new PDFTextBox($tcpdf, $width, $intro, style:'I', size:K_SURVEY_FONT_SMALL, multi:true);
+        $this->_intro_box = new PDFTextBox($surveyPDF, $width, $intro, style:'I', size:K_SURVEY_FONT_SMALL, multi:true);
       }
       $this->_height += $this->_intro_box->getHeight();
     }
@@ -97,7 +98,7 @@ class SurveySectionHeader extends PDFBox
     if ($this->_name_box) {
       $this->_name_box->position($x, $y);
       $y += $this->_name_box->getHeight();
-      if ($this->_intro_box) { $y += $this->_gap; }
+      if ($this->_intro_box) { $y += self::vgap; }
     }
     if ($this->_intro_box) {
       $this->_intro_box->position($x, $y);
@@ -114,10 +115,10 @@ class SurveySectionHeader extends PDFBox
     if ($this->_name_box) {
       if (!$this->_name_box->render()) { return false; }
       $y = $this->_name_box->_y + $this->_name_box->getHeight();
-      $this->_tcpdf->setLineWidth(0.2);
+      $this->_ttpdf->setLineWidth(0.2);
       $x1 = PDF_MARGIN_LEFT;
-      $x2 = $this->_tcpdf->getPageWidth() - PDF_MARGIN_RIGHT;
-      $this->_tcpdf->Line($x1, $y, $x2, $y);
+      $x2 = $this->_ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+      $this->_ttpdf->Line($x1, $y, $x2, $y);
     }
 
     if ($this->_intro_box) {

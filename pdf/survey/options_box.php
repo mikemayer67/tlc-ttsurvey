@@ -1,8 +1,6 @@
 <?php
 namespace tlc\tts;
 
-use TCPDF;
-
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
@@ -45,7 +43,7 @@ class SurveyOptionsBox extends PDFBox
   }
 
   /**
-   * @param TCPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param float $inline_width 
    * @param array $question 
@@ -54,10 +52,10 @@ class SurveyOptionsBox extends PDFBox
    * @return void 
    */
   public function __construct(
-    TCPDF $tcpdf, float $max_width, float $inline_width,
+    SurveyPDF $surveyPDF, float $max_width, float $inline_width,
     array $question, array $options, int $fontsize=K_SURVEY_FONT_MEDIUM)
   {
-    parent::__construct($tcpdf);
+    parent::__construct($surveyPDF);
     
     $type = $question['type'];
     $shape = OptionShape::fromInput($type);
@@ -71,13 +69,13 @@ class SurveyOptionsBox extends PDFBox
     foreach($question['options'] as $option) {
       $label = $options[$option];
       $this->_children[] = new SurveyOptionBox(
-        $tcpdf, $max_width, $label, $shape, $justification, fontsize:$fontsize,
+        $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );
     }
     if($question['other_flag']) {
       $label = $question['other'] ?? "Other";
       $this->_children[] = new SurveyOtherBox(
-        $tcpdf, $max_width, $label, $shape, $justification, fontsize:$fontsize
+        $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize
       );
     }
 

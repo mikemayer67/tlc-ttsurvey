@@ -15,11 +15,12 @@ $survey_id=$_GET['sid'];
 $info = survey_info($survey_id);
 if(!$info) { api_die(); }
 
+$title = $info['title'];
 $content = survey_content($survey_id);
 
 ob_start();
 
-$survey_pdf = new SurveyPDF();
+$survey_pdf = new SurveyPDF($title);
 $survey_pdf->render($info, $content);
 
 ob_end_clean();

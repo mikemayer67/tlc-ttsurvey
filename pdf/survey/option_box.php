@@ -1,8 +1,6 @@
 <?php
 namespace tlc\tts;
 
-use TCPDF;
-
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/pdf_boxes.php'));
@@ -31,7 +29,7 @@ class SurveyOptionBox extends SurveyAlignableBox
   private float $_gap = 1;
 
   /**
-   * @param SurveyPDF $tcpdf 
+   * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $label 
    * @param OptionShape $shape 
@@ -40,17 +38,17 @@ class SurveyOptionBox extends SurveyAlignableBox
    * @return void 
    */
   public function __construct(
-    SurveyPDF $tcpdf, 
+    SurveyPDF $surveyPDF, 
     float $max_width,
     string $label,
     OptionShape $shape, 
     SurveyJustification $justification,
     int $fontsize = K_SURVEY_FONT_MEDIUM )
   {
-    parent::__construct($tcpdf,$justification);
+    parent::__construct($surveyPDF,$justification);
 
     $max_width -= $this->_input_width + $this->_gap;
-    $this->_label = new PDFTextBox($tcpdf,$max_width,$label,size:$fontsize);
+    $this->_label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
 
     $size = min($this->_input_width, $this->_input_height);
     switch($shape) {
@@ -89,8 +87,8 @@ class SurveyOptionBox extends SurveyAlignableBox
     if (!parent::render()) { return false; }
     if(!$this->_label->render()) { return false; }
     
-    $this->_tcpdf->setLineWidth(0.2);
-    $this->_tcpdf->RoundedRect(
+    $this->_ttpdf->setLineWidth(0.2);
+    $this->_ttpdf->RoundedRect(
       $this->_input_x, $this->_input_y,
       $this->_input_width, $this->_input_height,
       $this->_input_radius
