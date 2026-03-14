@@ -528,6 +528,8 @@ IF current_version < 4 THEN
     SELECT userid, token, CURRENT_TIMESTAMP + INTERVAL 18 MONTH FROM tlc_tt_userids
   );
 
+  ALTER TABLE `tlc_tt`.`tlc_tt_userids` 
+    CHANGE COLUMN `token` `token` VARCHAR(45) NULL DEFAULT NULL COMMENT 'access token' ;
 
 -- Add version 4 to the history and increment current version
   SET current_version = 4;

@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file("include/db.php"));
 require_once(app_file("include/settings.php"));
 require_once(app_file("include/validation.php"));
-
+require_once(app_file("include/sort_keys.php"));
 /**
  * The survey participant information is stored in two mysql tables
  *   tlc_tt_userids: details for each survey participant
@@ -460,13 +460,13 @@ function create_new_user($userid,$fullname,$password,$email=null)
   if($email) {
     $r = MySQLExecute(
       "insert into tlc_tt_userids (userid,fullname,email,password,anonid) values (?,?,?,?,?)",
-      "ssssss",
+      "sssss",
       $userid,$fullname,$email,$password,$anonid
     );
   } else {
     $r = MySQLExecute(
       "insert into tlc_tt_userids (userid,fullname,password,anonid) values (?,?,?,?)",
-      "sssss",
+      "ssss",
       $userid,$fullname,$password,$anonid
     );
   }
@@ -475,8 +475,7 @@ function create_new_user($userid,$fullname,$password,$email=null)
     return null;
   }
 
-  $tokens = AccessTokens::lookup($userid); // this will create a new AccessTokens instance
-  $token = $tokens->generate();
+  $token = generate_access_token($userid);
   if(!$token) {
     MySQLRollback();
     return null;
@@ -501,4 +500,19 @@ function validate_user_password($userid,$password)
     return false;
   }
   return true;
+}
+
+/**
+ * Sorts a list of userid based on the associated fullname 
+ * @param string[] &$userids 
+ * @return void 
+ */
+function sort_userids_by_fullname(array &$userids)
+{
+  $fullname_keys = [];
+  foreach($userids as $userid) {
+    $fullname_keys[$userid] = surname_sort_key(User::from_userid($userid)->fullname());
+  }
+  asort($fullname_keys);
+  $userids = array_keys($fullname_keys);
 }

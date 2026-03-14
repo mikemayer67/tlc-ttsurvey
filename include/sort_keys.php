@@ -3,7 +3,15 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-function surname_sort_key($fullname) {
+require_once(app_file('include/users.php'));
+
+/**
+ * Creates a sortable key for the specified full name.
+ *   Accounts for one or more middle name and suffices.
+ * @param string $fullname 
+ * @return string 
+ */
+function surname_sort_key(string $fullname) : string {
   // written by ChatGPT
 
   $parts = preg_split('/\s+/', trim($fullname));
