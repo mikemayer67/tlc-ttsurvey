@@ -9,7 +9,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 if(!defined('K_SUMMARY_FONT_BASE')) 
 {
-  define('K_SUMMARY_FONT_BASE',     9);
+  define('K_SUMMARY_FONT_BASE',     8);
   define('K_SUMMARY_FONT_HSF',      1.2);
   
   define('K_SUMMARY_FONT_XX_SMALL', round( K_SUMMARY_FONT_BASE * pow(K_SUMMARY_FONT_HSF,-3)) );
