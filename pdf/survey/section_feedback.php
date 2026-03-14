@@ -7,9 +7,9 @@ require_once(app_file('pdf/pdf_boxes.php'));
 
 class SurveySectionFeedback extends PDFBox
 {
-  private PDFTextBox $_wording_box;
+  private PDFTextBox $wording_box;
 
-  private array $_entry_box = [0,0,0,K_INCH];
+  private array $entry_box = [0,0,0,K_INCH];
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -21,13 +21,13 @@ class SurveySectionFeedback extends PDFBox
   {
     parent::__construct($surveyPDF);
 
-    $this->_wording_box = new PDFTextBox($surveyPDF,$width,$prompt,size:K_SURVEY_FONT_MEDIUM);
+    $this->wording_box = new PDFTextBox($surveyPDF,$width,$prompt,size:K_SURVEY_FONT_MEDIUM);
     
-    $this->_width = $width;
-    $this->_height = $this->_wording_box->getHeight();
+    $this->width = $width;
+    $this->height = $this->wording_box->getHeight();
     
-    $this->_entry_box[2] = $width;
-    $this->_height += $this->_entry_box[3];
+    $this->entry_box[2] = $width;
+    $this->height += $this->entry_box[3];
   }
   
   /**
@@ -49,11 +49,11 @@ class SurveySectionFeedback extends PDFBox
   {
     parent::position($x,$y);
 
-    $this->_wording_box->position($x, $y);
-    $y += $this->_wording_box->getHeight();
+    $this->wording_box->position($x, $y);
+    $y += $this->wording_box->getHeight();
 
-    $this->_entry_box[0] = $x;
-    $this->_entry_box[1] = $y;
+    $this->entry_box[0] = $x;
+    $this->entry_box[1] = $y;
   }
 
   /**
@@ -63,12 +63,12 @@ class SurveySectionFeedback extends PDFBox
   protected function render() : bool
   {    
     if (!parent::render()) { return false; }
-    $box = $this->_wording_box;
+    $box = $this->wording_box;
     if(!$box->render()) { return false; }
     
     // not currently drawing the entry box, but if desired, uncomment the following
-    //$this->_ttpdf->setLineWidth(0.2);
-    //$this->_ttpdf->Rect(...$this->_entry_box);
+    //$this->ttpdf->setLineWidth(0.2);
+    //$this->ttpdf->Rect(...$this->entry_box);
 
     return true;
   }

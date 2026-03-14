@@ -8,8 +8,8 @@ require_once(app_file('pdf/summary/config.php'));
 
 class SummarySectionHeader extends PDFBox
 {
-  private string $_name;
-  private ?PDFBox $_name_box = null;
+  private string $name;
+  private ?PDFBox $name_box = null;
 
   /**
    * constructor
@@ -22,23 +22,23 @@ class SummarySectionHeader extends PDFBox
   {
     parent::__construct($summaryPDF);
 
-    $this->_name = $section['name'];
+    $this->name = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
 
-    $this->_width = $width;
-    $this->_height = 0;
+    $this->width = $width;
+    $this->height = 0;
     
     if ($collapsible) {
-      $this->_top_pad    = 0;
-      $this->_bottom_pad = K_QUARTER_INCH;
-      $this->_name_box = new PDFTextBox(
-        $summaryPDF, $width, $this->_name, 
-        K_SANS_SERIF_FONT, 'B', K_SUMMARY_FONT_X_LARGE
+      $this->top_pad    = 0;
+      $this->bottom_pad = K_QUARTER_INCH;
+      $this->name_box = new PDFTextBox(
+        $summaryPDF, $width, $this->name, 
+        style:'B', size:K_SUMMARY_FONT_X_LARGE
       );
-      $this->_height += $this->_name_box->getHeight();
+      $this->height += $this->name_box->getHeight();
     } else {
-      $this->_top_pad = 0;
-      $this->_bottom_pad = 0;
+      $this->top_pad = 0;
+      $this->bottom_pad = 0;
     }
   }
 
@@ -59,7 +59,7 @@ class SummarySectionHeader extends PDFBox
 
   protected function currentSection() : ?string
   {
-    return $this->_name;
+    return $this->name;
   }
 
   /**
@@ -72,9 +72,9 @@ class SummarySectionHeader extends PDFBox
   {
     parent::position($x, $y);
 
-    if ($this->_name_box) {
-      $this->_name_box->position($x, $y);
-      $y += $this->_name_box->getHeight();
+    if ($this->name_box) {
+      $this->name_box->position($x, $y);
+      $y += $this->name_box->getHeight();
     }
   }
 
@@ -86,9 +86,8 @@ class SummarySectionHeader extends PDFBox
   {
 
     if (!parent::render()) { return false; }
-    if ($this->_name_box) {
-      if (!$this->_name_box->render()) { return false; }
-      $y = $this->_name_box->_y + $this->_name_box->getHeight();
+    if ($this->name_box) {
+      if (!$this->name_box->render()) { return false; }
     }
     return true;
   }

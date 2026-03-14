@@ -9,7 +9,7 @@ require_once(app_file('survey/markdown.php'));
 
 class SurveyIntroBox extends PDFBox
 {
-  private PDFBox $_box;
+  private PDFBox $box;
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -23,12 +23,12 @@ class SurveyIntroBox extends PDFBox
     parent::__construct($surveyPDF);
 
     if (possibleMarkdown($intro)) {
-      $this->_box = new PDFMarkdownBox($surveyPDF,$max_width,$intro,size:$fontsize);
+      $this->box = new PDFMarkdownBox($surveyPDF,$max_width,$intro,size:$fontsize);
     } else {
-      $this->_box = new PDFTextBox($surveyPDF,$max_width,$intro,size:$fontsize,multi:true);
+      $this->box = new PDFTextBox($surveyPDF,$max_width,$intro,size:$fontsize,multi:true);
     }
-    $this->_width = $max_width;
-    $this->_height = $this->_box->getHeight();
+    $this->width = $max_width;
+    $this->height = $this->box->getHeight();
   }
 
   public function incrementIndent(): float { return K_QUARTER_INCH; }
@@ -43,7 +43,7 @@ class SurveyIntroBox extends PDFBox
   protected function position( float $x, float $y)
   {
     parent::position($x, $y);
-    $this->_box->position($x,$y);
+    $this->box->position($x,$y);
   }
 
   /**
@@ -52,7 +52,7 @@ class SurveyIntroBox extends PDFBox
   public function render(): bool
   {
     if (!parent::render()) { return false; }
-    return $this->_box->render();
+    return $this->box->render();
   }
 
   protected function debug_color(): array

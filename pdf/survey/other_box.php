@@ -19,13 +19,13 @@ require_once(app_file('pdf/survey/enums.php'));
  */
 class SurveyOtherBox extends SurveyAlignableBox
 {
-  private SurveyOptionBox $_option;
+  private SurveyOptionBox $option;
   private float $other_width;
 
-  private float $_input_x = 0;
-  private float $_input_y = 0;
-  private float $_input_width = 2*K_INCH;
-  private float $_input_height = K_QUARTER_INCH;
+  private float $input_x = 0;
+  private float $input_y = 0;
+  private float $input_width = 2*K_INCH;
+  private float $input_height = K_QUARTER_INCH;
 
   const hgap = 2;
 
@@ -48,53 +48,53 @@ class SurveyOtherBox extends SurveyAlignableBox
   {
     parent::__construct($surveyPDF,$justification);
 
-    $extra_width = $this->_input_width + self::hgap;
+    $extra_width = $this->input_width + self::hgap;
 
-    $this->_option = new SurveyOptionBox(
+    $this->option = new SurveyOptionBox(
       $surveyPDF, $max_width - $extra_width, $label, $shape, $justification, fontsize:$fontsize
     );
 
-    $this->_height = max($this->_input_height, $this->_option->getHeight());
-    $this->_width = $this->_option->getWidth() + $extra_width;
+    $this->height = max($this->input_height, $this->option->getHeight());
+    $this->width = $this->option->getWidth() + $extra_width;
   }
 
   // The alignment width applies to the option box alone
   //  It should not apply to the other input
   public function getAlignedWidth(): float {
-    return $this->_option->getAlignedWidth();
+    return $this->option->getAlignedWidth();
   }
   public function setAlignedWidth(float $w) {
-    if($this->_justification === SurveyJustification::RIGHT) {
-      $dw = $w - $this->_option->getAlignedWidth();
-      if($dw > 0) { $this->_width += $dw; }
+    if($this->justification === SurveyJustification::RIGHT) {
+      $dw = $w - $this->option->getAlignedWidth();
+      if($dw > 0) { $this->width += $dw; }
     }
-    $this->_option->setAlignedWidth($w);
+    $this->option->setAlignedWidth($w);
   }
 
   protected function position( float $x, float $y)
   {
     parent::position($x, $y);
     
-    if($this->_justification === SurveyJustification::LEFT) {
-      $this->_input_x = $x + self::hgap + $this->_option->getWidth();
+    if($this->justification === SurveyJustification::LEFT) {
+      $this->input_x = $x + self::hgap + $this->option->getWidth();
     } else {
-      $this->_input_x = $x + self::hgap + $this->_option->getAlignedWidth();
+      $this->input_x = $x + self::hgap + $this->option->getAlignedWidth();
     }
-    $dy = ($this->_input_height - $this->_option->getHeight())/2;
-    $this->_input_y = ($dy<0) ? $y - $dy : $y;
+    $dy = ($this->input_height - $this->option->getHeight())/2;
+    $this->input_y = ($dy<0) ? $y - $dy : $y;
 
-    $this->_option->position($x,max($y,$y+$dy));
+    $this->option->position($x,max($y,$y+$dy));
   }
 
   public function render() : bool
   {
     if (!parent::render()) { return false; }
-    if(!$this->_option->render()) { return false; }
+    if(!$this->option->render()) { return false; }
 
-    $this->_ttpdf->setLineWidth(0.2);
-    $this->_ttpdf->Rect(
-      $this->_input_x, $this->_input_y,
-      $this->_input_width, $this->_input_height,
+    $this->ttpdf->setLineWidth(0.2);
+    $this->ttpdf->Rect(
+      $this->input_x, $this->input_y,
+      $this->input_width, $this->input_height,
     );
 
     return true;

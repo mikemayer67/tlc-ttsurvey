@@ -9,8 +9,8 @@ require_once(app_file('survey/markdown.php'));
 
 class SurveyInfoBox extends PDFBox
 {
-  private PDFBox $_box;
-  private bool $_new_group = false;
+  private PDFBox $box;
+  private bool $new_group = false;
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width
@@ -23,17 +23,17 @@ class SurveyInfoBox extends PDFBox
 
     $info = $question['info'];
 
-    $this->_new_group = strtoupper($question['grouped']??"") === "NEW";
+    $this->new_group = strtoupper($question['grouped']??"") === "NEW";
 
-    $this->_width = $max_width;
-    $this->_height = 0;
+    $this->width = $max_width;
+    $this->height = 0;
 
     if(possibleMarkdown($info)) {
-      $this->_box = new PDFMarkdownBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM);
+      $this->box = new PDFMarkdownBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM);
     } else {
-      $this->_box = new PDFTextBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM,multi:true);
+      $this->box = new PDFTextBox($surveyPDF,$max_width,$info,size:K_SURVEY_FONT_MEDIUM,multi:true);
     }
-    $this->_height += $this->_box->getHeight();
+    $this->height += $this->box->getHeight();
   }
 
   /**
@@ -43,7 +43,7 @@ class SurveyInfoBox extends PDFBox
    */
   public function incrementIndent() : float
   {
-    return $this->_new_group ? K_QUARTER_INCH : 0;
+    return $this->new_group ? K_QUARTER_INCH : 0;
   }
 
   /**
@@ -56,7 +56,7 @@ class SurveyInfoBox extends PDFBox
   protected function position( float $x, float $y)
   {
     parent::position($x, $y);
-    $this->_box->position($x, $y);
+    $this->box->position($x, $y);
   }
 
   /**
@@ -66,6 +66,6 @@ class SurveyInfoBox extends PDFBox
   protected function render(): bool
   {
     if (!parent::render()) { return false; }
-    return $this->_box->render();
+    return $this->box->render();
   }
 }
