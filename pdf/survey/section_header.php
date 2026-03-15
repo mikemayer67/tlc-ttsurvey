@@ -89,9 +89,9 @@ class SurveySectionHeader extends PDFBox
    * Manages the layout of the section box and its children
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return bool 
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x,$y);
 
@@ -103,6 +103,7 @@ class SurveySectionHeader extends PDFBox
     if ($this->intro_box) {
       $this->intro_box->position($x, $y);
     }
+    return true;
   }
 
   /**

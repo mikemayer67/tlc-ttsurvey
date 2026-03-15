@@ -83,9 +83,9 @@ class SurveySelectBox extends SurveyAlignableBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return bool 
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x, $y);
     $y += $this->vpad;
@@ -123,6 +123,7 @@ class SurveySelectBox extends SurveyAlignableBox
     }
 
     $y += $this->vpad;
+    return true;
   }
 
   public function render(): bool

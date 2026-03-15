@@ -71,7 +71,13 @@ class SurveyOtherBox extends SurveyAlignableBox
     $this->option->setAlignedWidth($w);
   }
 
-  protected function position( float $x, float $y)
+  /**
+   * Manages positioning of an other box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return bool 
+   */
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x, $y);
     
@@ -84,6 +90,7 @@ class SurveyOtherBox extends SurveyAlignableBox
     $this->input_y = ($dy<0) ? $y - $dy : $y;
 
     $this->option->position($x,max($y,$y+$dy));
+    return true;
   }
 
   public function render() : bool

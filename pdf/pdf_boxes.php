@@ -123,12 +123,13 @@ abstract class PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return bool 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : bool
   {
-    $this->x    = $x;
-    $this->y    = $y;
+    $this->x = $x;
+    $this->y = $y;
+    return true;
   }
 
   /**
@@ -274,7 +275,11 @@ abstract class PDFRootBox extends PDFBox
         $cur_y = $this->content_top;
       }
 
-      $box->position($this->content_left + $indent, $cur_y);
+      if(!$box->position($this->content_left + $indent, $cur_y)) {
+        $box->startPage();
+        $cur_y = $this->content_top;
+        $box->position($this->content_left + $indent, $cur_y);
+      }
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();

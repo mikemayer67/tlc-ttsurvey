@@ -87,11 +87,12 @@ class SummarySectionFeedback extends PDFBox
    * Manges the layout of the section feedback box
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return bool 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x,$y);
+
     $hl = $this->label_box->getHeight();
     $hf = $this->feedback_box->getHeight();
     $dy = ($hl-$hf)/2;
@@ -121,6 +122,7 @@ class SummarySectionFeedback extends PDFBox
         $y += max($box1->getHeight(), $box2->getHeight()) + self::vspace;
       }
     }
+    return true;
   }
 
     /**

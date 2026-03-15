@@ -66,9 +66,9 @@ class SummarySectionHeader extends PDFBox
    * Manges the layout of the section header box
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return bool 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x, $y);
 
@@ -76,6 +76,7 @@ class SummarySectionHeader extends PDFBox
       $this->name_box->position($x, $y);
       $y += $this->name_box->getHeight();
     }
+    return true;
   }
 
   /**

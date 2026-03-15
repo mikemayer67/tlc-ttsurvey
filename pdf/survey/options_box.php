@@ -173,7 +173,13 @@ class SurveyOptionsBox extends PDFBox
     $this->height += $row_height + self::vgap;
   }
 
-  protected function position( float $x, float $y)
+  /**
+   * Manages positioning of an options box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return bool 
+   */
+  protected function position(float $x, float $y) : bool
   {
     parent::position($x,$y);
 
@@ -193,6 +199,7 @@ class SurveyOptionsBox extends PDFBox
       }
       $y += $row_height + self::vgap;
     }
+    return true;
   }
 
   public function render(): bool
