@@ -5,21 +5,17 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary/config.php'));
-require_once(app_file('include/users.php'));
+require_once(app_file('pdf/summary/table_response_box.php'));
 
 class SummarySectionFeedback extends PDFBox
 { 
   private PDFTextBox $label_box;
   private PDFTextBox $feedback_box;
-  private float      $responder_width;
-  /** @var PDFTextBox[] $responder_boxes */
-  private array      $responder_boxes = [];
-  /** @var PDFTextBox[] $response_boxes */
-  private array      $response_boxes = [];
+  private ?SummaryTableResponseBox $response_box = null;
 
   private const indent = K_QUARTER_INCH;
   private const vgap  = 2;
-  private const vspace = 1; // mm
+
   /**
    * constructor
    * @param SummaryPDF $summaryPDF 
@@ -51,35 +47,12 @@ class SummarySectionFeedback extends PDFBox
 
     $sid = $section['section_id'];
     $responses = $responses['sections'][$sid] ?? null;
-    $this->responder_width = 0;
     if($responses) {
       $this->height += self::vgap;
-      $name_heights = [];
-
-      $userids = array_keys($responses);
-      sort_userids_by_fullname($userids);
-      foreach($userids as $userid) {
-        $name = User::from_userid($userid)->fullname();
-        $box = new PDFTextBox(
-          $summaryPDF, $max_width/2, "$name: ", 
-          style:'B', size:K_SUMMARY_FONT_MEDIUM
-        );
-        $this->responder_boxes[] = $box;
-        $this->responder_width = max($this->responder_width, $box->getWidth());
-        $name_heights[$userid] = $box->getHeight();
-      }
-
-      $max_width -= $this->responder_width + self::indent;
-      foreach($userids as $userid) {
-        $response = $responses[$userid];
-        $box = new PDFTextBox(
-          $summaryPDF, $max_width, $response, 
-          style:'', size:K_SUMMARY_FONT_MEDIUM, multi:true
-        );
-        $this->response_boxes[] = $box;
-        $this->height += self::vspace + max($name_heights[$userid],$box->getHeight());
-      }
-      $this->height -= self::vspace;
+      $this->response_box = new SummaryTableResponseBox(
+        $summaryPDF, $max_width-self::indent,$responses
+      );
+      $this->height += $this->response_box->getHeight();
     }
   }
 
@@ -102,30 +75,13 @@ class SummarySectionFeedback extends PDFBox
     $this->feedback_box->position($xo,$y+max(0,$dy));
     $y += max($hl,$hf);
 
-    if( $this->responder_boxes )
-    {
-      $xo = $x + $this->responder_width + self::indent;
-      $y += self::vgap;
-      foreach( $this->responder_boxes as $i=>$box1 ) {
-        $box2 = $this->response_boxes[$i];
-
-        $x1 = $xo - $box1->getWidth();
-        $x2 = $xo;
-
-        $dy = ($box2->getLineHeight() - $box1->getLineHeight())/2;
-        $y1 = $y + max(0,$dy);
-        $y2 = $y + max(0,-$dy);
-
-        $box1->position($x1,$y1);
-        $box2->position($x2,$y2);
-
-        $y += max($box1->getHeight(), $box2->getHeight()) + self::vspace;
-      }
+    if( $this->response_box ) {
+      $this->response_box->position($x+self::indent, $y+self::vgap);
     }
     return true;
   }
 
-    /**
+  /**
    * Renders the content of a SummarySection box
    * @return bool 
    */
@@ -136,14 +92,12 @@ class SummarySectionFeedback extends PDFBox
     if (!$this->label_box->render()) { return false; }
     if (!$this->feedback_box->render())  { return false; }
 
-    foreach($this->responder_boxes as $box) { if(!$box->render()) {return false;} }
-    foreach($this->response_boxes  as $box) { if(!$box->render()) {return false;} }
+    if($this->response_box) {
+      return $this->response_box->render();
+    }
 
     return true;
   }
 
-  protected function debug_color(): array 
-  { 
-    return [128,0,0];
-  }
+  protected function debug_color(): array { return [128,0,0]; }
 }

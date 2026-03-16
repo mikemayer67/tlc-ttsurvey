@@ -1,0 +1,92 @@
+<?php
+namespace tlc\tts;
+
+if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
+
+require_once(app_file('pdf/pdf_boxes.php'));
+require_once(app_file('pdf/summary/question_box.php'));
+require_once(app_file('pdf/summary/table_response_box.php'));
+
+class SummaryFreetextBox extends SummaryQuestionBox
+{
+  private PDFTextBox $label_box;
+  private ?SummaryTableResponseBox $response_box = null;
+
+  private const indent = K_QUARTER_INCH;
+  private const vgap = 2;
+
+  /**
+   * @param SummaryPDF $summaryPDF 
+   * @param float $width 
+   * @param array $question 
+   * @param array $responses 
+   * @param null|SummaryQuestionBox $prev 
+   * @return void 
+   */
+  public function __construct(
+    SummaryPDF $summaryPDF,
+    float $width,
+    array $question,
+    array $responses,
+    ?SummaryQuestionBox $prev = null
+  ) {
+    parent::__construct($summaryPDF,$prev);
+
+    $qid       = $question['id'];
+    $wording   = $question['wording'];
+    $responses = $responses['questions'][$qid] ?? [];
+
+    $this->width = $width;
+    
+    $this->label_box = new PDFTextBox(
+      $summaryPDF, $width, $wording, style:'B', size:K_SUMMARY_FONT_LARGE
+    );
+    $this->height = $this->label_box->getHeight();
+
+    if($responses) {
+      $responses = array_map(fn($a) => $a['free_text'], $responses);
+      $this->height += self::vgap;
+      $this->response_box = new SummaryTableResponseBox(
+        $summaryPDF, $width - self::indent, $responses
+      );
+      $this->height += $this->response_box->getHeight();
+    }
+  }
+
+  /**
+   * Manages the layout of a freetext box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return bool 
+   */
+  protected function position(float $x, float $y): bool
+  {
+    parent::position($x, $y);
+    $this->label_box->position($x,$y);
+    $y += $this->label_box->getHeight();
+
+    if( $this->response_box ) {
+      $this->response_box->position($x+self::indent, $y+self::vgap);
+    }
+    return true;
+  }
+
+  /**
+   * Renders the content of a SummarySection box
+   * @return bool 
+   */
+  protected function render() : bool
+  {
+    if(!parent::render()) { return false; }
+    if(!$this->label_box->render()) { return false; }
+
+    if ($this->response_box) {
+      return $this->response_box->render();
+    }
+    return true;
+  }
+
+
+  protected function debug_color(): array { return [0,0,255]; }
+}
+

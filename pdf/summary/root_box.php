@@ -7,6 +7,10 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary_pdf.php'));
 require_once(app_file('pdf/summary/section_header.php'));
 require_once(app_file('pdf/summary/section_feedback.php'));
+require_once(app_file('pdf/summary/info_box.php'));
+require_once(app_file('pdf/summary/bool_box.php'));
+require_once(app_file('pdf/summary/freetext_box.php'));
+require_once(app_file('pdf/summary/select_box.php'));
 require_once(app_file('summary/sections.php'));
 
 /**
@@ -45,13 +49,94 @@ class SummaryRootBox extends PDFRootBox
     $box = new SummarySectionHeader($this->ttpdf,$width,$section);
     $this->addChild($box);
 
-    // @@@ Add questions here
+    $this->add_questions($width, $section, $content, $responses);
 
     $feedback = $section['feedback'] ?? null;
     if($feedback) {
       $box = new SummarySectionFeedback($this->ttpdf, $width, $section, $responses);
       $this->addChild($box);
     }
+  }
+
+  /**
+   * Adds question boxes for the current section to the summary
+   * @param float $max_width 
+   * @param array $section section specific content data
+   * @param array $content overall survey content
+   * @param array $responses overall response data
+   * @return void 
+   */
+  private function add_questions(float $max_width, array $section, array $content, array $responses)
+  {
+    $sid = $section['section_id'];
+
+    $questions = $content['questions'];
+    $questions = array_filter($questions, fn($a) => ($a['section']??null) === $sid );
+    uasort($questions,fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+
+    $grouped = false;
+    $prev    = null;
+    $width   = $max_width;
+    foreach($questions as $question) {
+      switch(strtoupper($question['grouped']??'NO')) {
+        case 'NO':
+          $grouped = false;
+          $prev    = null;
+          $width   = $max_width;
+          break;
+        case 'NEW':
+          $grouped = true;
+          $prev    = null;
+          break;
+        case 'YES':
+          $grouped = true;
+          break;
+      }
+
+      $box = null;
+
+      $type = strtolower($question['type']);
+      switch($type) {
+        case 'info':
+          if($grouped) {
+            $box = new SummaryInfoBox($this->ttpdf,$width,$question,$prev);
+            // @@@ add into 
+            $width = $max_width - SummaryInfoBox::indent;
+          }
+          break;
+        case 'bool':
+          $box = new SummaryBoolBox($this->ttpdf,$width,$question,$responses,$prev);
+          break;
+        case 'freetext':
+          $box = new SummaryFreetextBox($this->ttpdf,$width,$question,$responses,$prev);
+          break;
+        case 'select_one': // intentional fallthrough
+        case 'select_multi':
+          $box = new SummarySelectBox($this->ttpdf,$width,$question,$responses,$prev);
+          break;
+      }
+
+      if($box) {
+        $this->addChild($box);
+        $prev = $box;
+      }
+    }
+  }
+
+  /**
+   * Adds an info text box to the summary
+   *   only displays inside of question group
+   *   questions before the info box should stand alone
+   *   questons in the group after the info box should be indented
+   * @param float $width
+   * @param string $info 
+   * @return void 
+   */
+  private function add_info(float $width, string $info)
+  {
+
+    $info_text = strip_markdown($info);
+    // @@@ create PDFTextBox and add it to summary
   }
 
   protected function render_child(PDFBox $child): bool

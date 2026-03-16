@@ -5,6 +5,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/ttpdf.php'));
 require_once(app_file('pdf/ttpdf_utils.php'));
+require_once(app_file('survey/markdown.php'));
 
 /**
  * PDFBox is the baseclass for wrapping methods used to compute and render Boxes of content
