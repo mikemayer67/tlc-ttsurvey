@@ -16,10 +16,9 @@ class SummaryListResponseBox extends PDFBox
 {
   /** @var PDFBox[] $names */
   private array $names = [];
-  private float $column_count = 0;
-  private float $column_width = 0;
-  private float $row_count    = 0;
-  private float $row_height   = 0;
+  /** @var int[] $row_counts */
+  private array $row_counts = [];
+  private float $row_height = 0;
 
   private const hgap = K_QUARTER_INCH;
   private const vgap = 1; // mm
@@ -37,23 +36,31 @@ class SummaryListResponseBox extends PDFBox
     $userids = array_keys($responses);
     sort_userids_by_fullname($userids);
 
-    $max_name_width = 0;
+    $this->height = 0;
+    $row_width = 0;
+    $row_count = 0;
     foreach($userids as $userid) {
       $user = User::from_userid($userid);
       $name = $user->fullname();
 
-      $box = new PDFTextBox($summaryPDF, $width, $name, size:K_SUMMARY_FONT_MEDIUM);
+      $box = new PDFTextBox($summaryPDF, $width/4, $name, size:K_SUMMARY_FONT_MEDIUM);
       $this->names[] = $box;
-      $max_name_width = max($max_name_width, $box->getWidth());
+
+      $this->row_height = max($this->row_height,$box->getHeight());
+
+      $bw = $box->getWidth();
+      if($row_width + $bw + self::hgap <= $width) {
+        $row_count += 1;
+        $row_width += $bw + self::hgap;
+      } else {
+        $this->row_counts[] = $row_count;
+        $row_count = 1;
+        $row_width = $bw;
+      }
     }
+    $this->row_counts[] = $row_count;
 
-    $this->column_width = $max_name_width + self::hgap;
-
-    $ncol = floor($width / $this->column_width);
-    $nrow = ceil(count($this->names)/$ncol);
-    $this->column_count = $ncol;
-    $this->row_count = $nrow;
-    $this->row_height = $this->names[0]->getHeight();
+    $nrow = count($this->row_counts);
     $this->height = $nrow*$this->row_height + ($nrow-1)*self::vgap;
   }
 
@@ -67,19 +74,19 @@ class SummaryListResponseBox extends PDFBox
   {
     parent::position($x,$y);
 
-    $num_names = count($this->names);
     $row = 0;
-    $col = 0;
-    for($i=0; $i<$num_names; ++$i) {
-      $ni = $row * $this->column_count + $col;
-      $xi = $x + $col * $this->column_width;
-      $yi = $y + $row * ($this->row_height + self::vgap);
-      $this->names[$ni]->position($xi,$yi);
-
-      $col += 1;
-      if($col >= $this->column_count) {
-        $col = 0;
+    $row_count = 0;
+    $xi = $x;
+    foreach($this->names as $box) {
+      $box->position($xi,$y);
+      $row_count += 1;
+      if($row_count < $this->row_counts[$row]) {
+        $xi += $box->getWidth() + self::hgap;
+      } else {
         $row += 1;
+        $row_count = 0;
+        $xi = $x;
+        $y += $this->row_height + self::vgap;
       }
     }
     return true;
