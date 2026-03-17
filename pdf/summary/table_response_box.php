@@ -8,6 +8,8 @@ require_once(app_file('pdf/pdf_boxes.php'));
 
 /**
  * SummaryTableResponseBox is used to render tabulated text responses
+ *   column 1: full name
+ *   column 2: response
  * @package tlc\tts
  */
 class SummaryTableResponseBox extends PDFBox

@@ -4,9 +4,13 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/summary/question_box.php'));
+require_once(app_file('pdf/summary/list_response_box.php'));
 
 class SummaryBoolBox extends SummaryQuestionBox
 {
+  private PDFTextBox $label_box;
+  private ?SummaryListResponseBox $response_box = null;
+
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
@@ -24,12 +28,61 @@ class SummaryBoolBox extends SummaryQuestionBox
   ) {
     parent::__construct($summaryPDF,$prev);
 
-    // $qid       = $question['id'];
-    // $wording   = $question['wording'];
-    // $user_responses = $responses['questions'][$qid] ?? [];
+    $qid       = $question['id'];
+    $wording   = $question['wording'];
+    $responses = $responses['questions'][$qid] ?? [];
 
     $this->width = $width;
-    $this->height = K_HALF_INCH;
+
+    $this->label_box = new PDFTextBox(
+      $summaryPDF, $width, $wording, style:'B', size:K_SUMMARY_FONT_LARGE
+    );
+    $this->height = $this->label_box->getHeight();
+
+    if($responses) { 
+      $this->height += self::vgap;
+      $this->response_box = new SummaryListResponseBox(
+        $summaryPDF, $width-self::indent, $responses
+      );
+      $this->height += $this->response_box->getHeight();
+    }
+  }
+
+  /**
+   * Manages the layout of a bool box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return bool 
+   */
+  protected function position(float $x, float $y): bool
+  {
+      parent::position($x, $y);
+    $this->label_box->position($x,$y);
+    $y += $this->label_box->getHeight();
+
+    if($this->response_box) {
+      $y += self::vgap;
+      $this->response_box->position($x + self::indent, $y);
+      $y += $this->response_box->getHeight();
+    }
+
+    return true;
+  }
+
+  /**
+   * Renders the content of a bool box
+   * @return bool 
+   */
+  protected function render() : bool
+  {
+    if(!parent::render()) { return false; }
+    if(!$this->label_box->render()) { return false; }
+
+    if($this->response_box) {
+      if(!$this->response_box->render()) { return false; }
+    }
+
+    return true;
   }
 
   protected function debug_color(): array { return [255,0,0]; }

@@ -12,9 +12,6 @@ class SummaryFreetextBox extends SummaryQuestionBox
   private PDFTextBox $label_box;
   private ?SummaryTableResponseBox $response_box = null;
 
-  private const indent = K_QUARTER_INCH;
-  private const vgap = 2;
-
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
