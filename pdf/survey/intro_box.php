@@ -56,8 +56,5 @@ class SurveyIntroBox extends PDFBox
     return $this->box->render();
   }
 
-  protected function debug_color(): array
-  {
-    return [0,0,255];
-  }
+  protected function debug_color(): array { return [0,0,255]; }
 }

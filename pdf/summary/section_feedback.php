@@ -99,5 +99,5 @@ class SummarySectionFeedback extends PDFBox
     return true;
   }
 
-  protected function debug_color(): array { return [128,0,0]; }
+//  protected function debug_color(): array { return [128,0,0]; }
 }

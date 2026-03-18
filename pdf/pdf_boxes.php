@@ -23,7 +23,7 @@ abstract class PDFBox
 {
   protected TTPDF $ttpdf;
 
-  protected const debug = true;
+  protected const debug = false;
 
   // Each of the following properties must be explicitly set in the box subclass
   //   The following are set in the subclass constructor
@@ -185,10 +185,7 @@ abstract class PDFBox
    *   Default value is to not draw an outline.
    * @return array (see TCPDF::setDrawColor for details)
    */
-  protected function debug_color() : array
-  {
-    return [];
-  }
+  protected function debug_color() : array { return []; }
 }
 
 /**
@@ -406,10 +403,7 @@ class PDFTextBox extends PDFBox
     return true;
   }
 
-  protected function debug_color(): array
-  {
-    return [128,128,128];
-  }
+  protected function debug_color(): array { return [128,128,128]; }
 }
 
 /**

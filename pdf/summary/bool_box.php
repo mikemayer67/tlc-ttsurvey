@@ -5,11 +5,13 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/list_response_box.php'));
+require_once(app_file('pdf/summary/qualifiers_box.php'));
 
 class SummaryBoolBox extends SummaryQuestionBox
 {
   private PDFTextBox $label_box;
   private ?SummaryListResponseBox $response_box = null;
+  private ?SummaryQualifiersBox   $qualifiers_box = null;
 
   /**
    * @param SummaryPDF $summaryPDF 
@@ -39,12 +41,34 @@ class SummaryBoolBox extends SummaryQuestionBox
     );
     $this->height = $this->label_box->getHeight();
 
-    if($responses) { 
-      $this->height += self::vgap;
-      $this->response_box = new SummaryListResponseBox(
-        $summaryPDF, $width-self::indent, $responses
-      );
-      $this->height += $this->response_box->getHeight();
+    if($responses) 
+    {
+      $selected = [];
+      $qualifiers = [];
+      foreach ($responses as $response) {
+        if ($response['selected']) {
+          $selected[] = $response['userid'];
+        }
+        if ($response['qualifier'] ?? null) {
+          $qualifiers[$response['userid']] = $response['qualifier'];
+        }
+      }
+
+      if($selected) { 
+        $this->height += self::vgap;
+        $this->response_box = new SummaryListResponseBox(
+          $summaryPDF, $width-self::indent, $selected
+        );
+        $this->height += $this->response_box->getHeight();
+      }
+
+      if($qualifiers) {
+        $this->height += self::vgap;
+        $this->qualifiers_box = new SummaryQualifiersBox(
+          $summaryPDF,$width-self::indent,$question['qualifier'],$qualifiers
+        );
+        $this->height += $this->qualifiers_box->getHeight();
+      }
     }
   }
 
@@ -66,6 +90,11 @@ class SummaryBoolBox extends SummaryQuestionBox
       $y += $this->response_box->getHeight();
     }
 
+    if($this->qualifiers_box) {
+      $y += self::vgap;
+      $this->qualifiers_box->position($x + self::indent, $y);
+      $y += $this->response_box->getHeight();
+    }
     return true;
   }
 
@@ -80,6 +109,10 @@ class SummaryBoolBox extends SummaryQuestionBox
 
     if($this->response_box) {
       if(!$this->response_box->render()) { return false; }
+    }
+
+    if($this->qualifiers_box) {
+      if(!$this->qualifiers_box->render()) { return false; }
     }
 
     return true;

@@ -27,13 +27,13 @@ class SummaryListResponseBox extends PDFBox
    * constructor
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $responses 
+   * @param string[] $userids 
    * @return void 
    */
-  public function __construct(SummaryPDF $summaryPDF, float $width, array $responses)
+  public function __construct(SummaryPDF $summaryPDF, float $width, array $userids)
   {
     parent::__construct($summaryPDF);
-    $userids = array_keys($responses);
+
     sort_userids_by_fullname($userids);
 
     $this->height = 0;
@@ -105,5 +105,5 @@ class SummaryListResponseBox extends PDFBox
     return true;
   }
   
-  protected function debug_color(): array { return [255,128,0]; }
+  protected function debug_color(): array { return [0,255,255]; }
 }

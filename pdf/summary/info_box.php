@@ -80,6 +80,6 @@ class SummaryInfoBox extends SummaryQuestionBox
     return $this->text_box->render();
   }
 
-  protected function debug_color(): array { return [255,0,255]; }
+//  protected function debug_color(): array { return [255,0,255]; }
 }
 

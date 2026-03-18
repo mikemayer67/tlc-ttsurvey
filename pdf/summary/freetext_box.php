@@ -84,6 +84,6 @@ class SummaryFreetextBox extends SummaryQuestionBox
   }
 
 
-  protected function debug_color(): array { return [0,0,255]; }
+//  protected function debug_color(): array { return [0,0,255]; }
 }
 
