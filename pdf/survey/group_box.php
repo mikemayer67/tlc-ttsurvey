@@ -90,16 +90,11 @@ class SurveyGroupBox extends PDFBox
 
   /**
    * Renders the content of a SurveyGroupBox
-   * @return bool 
+   * @return void
    */
-  protected function render() : bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    foreach($this->child_boxes as $box) 
-    {
-      if(!$box->render()) { return false; }
-    }
-
-    return true;
+    parent::render();
+    foreach($this->child_boxes as $box) { $box->render(); }
   }
 }

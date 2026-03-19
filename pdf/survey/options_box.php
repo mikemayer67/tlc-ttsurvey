@@ -202,13 +202,10 @@ class SurveyOptionsBox extends PDFBox
     return true;
   }
 
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    foreach($this->children as $box) {
-      if(!$box->render()) { return false; }
-    }
-    return true;
+    parent::render();
+    foreach($this->children as $box) { $box->render(); }
   }
 
   protected function debug_color(): array { return [255,0,0]; }

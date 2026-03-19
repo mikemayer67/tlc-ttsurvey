@@ -78,19 +78,18 @@ class SurveyQualifierBox extends PDFBox
     return true;
   }
 
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    if(!$this->label->render()) { return false; }
-    $this->ttpdf->setLineWidth(0.2);
-    
+    parent::render();
+    $this->label->render();
+
     $x1 = $this->entry_box[0];
     $y1 = $this->entry_box[1];
     $x2 = $x1 + $this->entry_box[2];
     $y2 = $y1 + $this->entry_box[3];
+    $this->ttpdf->setLineWidth(0.2);
     $this->ttpdf->Line($x1,$y2,$x2,$y2);
     // $this->ttpdf->Rect(...$this->entry_box);
-    return true;
   }
 
   protected function debug_color(): array

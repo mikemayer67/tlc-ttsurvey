@@ -163,9 +163,9 @@ abstract class PDFBox
    * Kicks off the rendering of the box to the PDF output. 
    *   This method should be overridden by subclasses.
    *   Child classes should include call to parent::render()
-   * @return bool indicates success/failure of the rendering
+   * @return bool void
    */
-  protected function render(): bool
+  protected function render()
   {
     if(self::debug) {
       $outline_color = $this->debug_color();
@@ -175,7 +175,6 @@ abstract class PDFBox
         $this->ttpdf->setDrawColor(0);
       }
     }
-    return true;
   }
   
   /**
@@ -287,15 +286,14 @@ abstract class PDFRootBox extends PDFBox
   /**
    * Controls the rendering of all child boxes.
    *   This method should not need to be overwritten by subclassses of PDFRootBox
-   * @return bool 
+   * @return void 
    */
-  public function render(): bool
+  public function render()
   {
     foreach ($this->children as $child) {
       if ($child->isNewPage()) { $this->ttpdf->AddPage(); }
-      if (!$this->render_child($child)) { return false; }
+      $this->render_child($child);
     }
-    return true;
   }
 
   /**
@@ -303,11 +301,11 @@ abstract class PDFRootBox extends PDFBox
    *   Subclasses that need to do more than simply render the child to the
    *   page should overload this class. 
    * @param PDFBox $child 
-   * @return bool 
+   * @return void 
    */
-  protected function render_child(PDFBox $child) : bool
+  protected function render_child(PDFBox $child)
   {
-    return $child->render();
+    $child->render();
   }
 }
 
@@ -387,11 +385,11 @@ class PDFTextBox extends PDFBox
 
   /**
    * Renders the PDFTextBox
-   * @return bool 
+   * @return void
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
+    parent::render();
     $this->ttpdf->setFont($this->family, $this->style, $this->size);
     $this->ttpdf->setY($this->y);
     $this->ttpdf->setX($this->x);
@@ -400,7 +398,6 @@ class PDFTextBox extends PDFBox
     } else {
       $this->ttpdf->Cell($this->width, $this->height, $this->text);
     }
-    return true;
   }
 
   protected function debug_color(): array { return [128,128,128]; }
@@ -457,13 +454,12 @@ class PDFMarkdownBox extends PDFBox
 
   /**
    * Renders a PDFMarkdownBox
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
+    parent::render();
     $this->ttpdf->setFont($this->family, '', $this->size);
     $this->ttpdf->writeHTMLCell($this->width, $this->height, $this->x, $this->y,$this->html);
-    return true;
   }
 }

@@ -72,13 +72,13 @@ class SummaryQualifiersBox extends PDFBox
 
   /**
    * Renders the qualifier box and its children
-   * @return bool 
+   * @return void
    */
-  protected function render() : bool
+  protected function render()
   {
-    if(!parent::render()) { return false; }
-    if(!$this->label->render()) { return false; }
-    if(!$this->responses->render()) { return false; }
+    parent::render();
+    $this->label->render();
+    $this->responses->render();
 
     $this->ttpdf->setLineWidth(self::linewidth);
     $this->ttpdf->Line(
@@ -89,6 +89,5 @@ class SummaryQualifiersBox extends PDFBox
       $this->linebox[0],$this->linebox[3],
       $this->linebox[2],$this->linebox[3]
     );
-    return true;
   }
 }

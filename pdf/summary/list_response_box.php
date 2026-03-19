@@ -94,15 +94,12 @@ class SummaryListResponseBox extends PDFBox
 
   /**
    * Renders the content of a list response box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if(!parent::render()) { return false; }
-    foreach($this->names as $box) {
-      if(!$box->render()) { return false; }
-    }
-    return true;
+    parent::render();
+    foreach($this->names as $box) { $box->render(); }
   }
   
   protected function debug_color(): array { return [0,255,255]; }

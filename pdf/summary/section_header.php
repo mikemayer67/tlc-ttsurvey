@@ -81,15 +81,11 @@ class SummarySectionHeader extends PDFBox
 
   /**
    * Renders the content of a SummarySection box
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-
-    if (!parent::render()) { return false; }
-    if ($this->name_box) {
-      if (!$this->name_box->render()) { return false; }
-    }
-    return true;
+    parent::render();
+    $this->name_box?->render();
   }
 }

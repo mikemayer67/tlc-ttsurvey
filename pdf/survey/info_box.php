@@ -62,11 +62,11 @@ class SurveyInfoBox extends PDFBox
 
   /**
    * Renders the content of a SurveyInfo box
-   * @return bool 
+   * @return void
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    return $this->box->render();
+    parent::render();
+    $this->box->render();
   }
 }

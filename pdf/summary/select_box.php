@@ -4,13 +4,17 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/summary/question_box.php'));
+require_once(app_file('pdf/summary/qualifiers_box.php'));
 
 class SummarySelectBox extends SummaryQuestionBox
 {
+  private PDFTextBox $label_box;
+  private ?SummaryQualifiersBox   $qualifiers_box = null;
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
    * @param array $question 
+   * @param array $options
    * @param array $responses 
    * @param null|SummaryQuestionBox $prev 
    * @return void 
@@ -19,17 +23,77 @@ class SummarySelectBox extends SummaryQuestionBox
     SummaryPDF $summaryPDF,
     float $width,
     array $question,
+    array $options,
     array $responses,
     ?SummaryQuestionBox $prev = null
   ) {
-    parent::__construct($summaryPDF,$prev);
+    parent::__construct($summaryPDF, $prev);
 
-    // $qid       = $question['id'];
-    // $wording   = $question['wording'];
-    // $user_responses = $responses['questions'][$qid] ?? [];
+    $qid       = $question['id'];
+    $wording   = $question['wording'];
+    $responses = $responses['questions'][$qid] ?? [];
 
     $this->width = $width;
-    $this->height = K_HALF_INCH;
+
+    $this->label_box = new PDFTextBox(
+      $summaryPDF,
+      $width,
+      $wording,
+      style: 'B',
+      size: K_SUMMARY_FONT_LARGE
+    );
+    $this->height = $this->label_box->getHeight();
+
+    if ($responses) {
+      $qualifiers = [];
+      foreach ($responses as $response) {
+        $userid    = $response['userid'];
+        $qualifier = $response['qualifier'] ?? '';
+
+        if ($qualifier) { $qualifiers[$userid] = $qualifier; }
+      }
+    }
+    if ($qualifiers) {
+      $this->height += self::vgap;
+      $this->qualifiers_box = new SummaryQualifiersBox(
+        $summaryPDF,
+        $width - self::indent,
+        $question['qualifier'],
+        $qualifiers
+      );
+      $this->height += $this->qualifiers_box->getHeight();
+    }
+  }
+
+  /**
+   * Manages the layout of a select box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return bool 
+   */
+  protected function position(float $x, float $y): bool
+  {
+    parent::position($x, $y);
+    $this->label_box->position($x,$y);
+    $y += $this->label_box->getHeight();
+
+    if($this->qualifiers_box) {
+      $y += self::vgap;
+      $this->qualifiers_box->position($x + self::indent, $y);
+      $y += $this->qualifiers_box->getHeight();
+    }
+    return true;
+  }
+
+  /**
+   * Renders the content of a select box
+   * @return void
+   */
+  protected function render()
+  {
+    parent::render();
+    $this->label_box->render();
+    $this->qualifiers_box?->render();
   }
 
   protected function debug_color(): array { return [0,255,0]; }

@@ -108,24 +108,22 @@ class SurveySectionHeader extends PDFBox
 
   /**
    * Renders the content of a SurveySection box
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    if ($this->name_box) {
-      if (!$this->name_box->render()) { return false; }
+    parent::render();
+
+    if($this->name_box) {
+      $this->name_box->render();
+
       $y = $this->name_box->y + $this->name_box->getHeight();
-      $this->ttpdf->setLineWidth(0.2);
       $x1 = PDF_MARGIN_LEFT;
       $x2 = $this->ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+      $this->ttpdf->setLineWidth(0.2);
       $this->ttpdf->Line($x1, $y, $x2, $y);
     }
 
-    if ($this->intro_box) {
-      if (!$this->intro_box->render()) { return false; }
-    }
-
-    return true;
+    $this->intro_box?->render();
   }
 }

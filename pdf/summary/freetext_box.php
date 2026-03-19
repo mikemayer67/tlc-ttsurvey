@@ -70,17 +70,13 @@ class SummaryFreetextBox extends SummaryQuestionBox
 
   /**
    * Renders the content of a SummarySection box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if(!parent::render()) { return false; }
-    if(!$this->label_box->render()) { return false; }
-
-    if ($this->response_box) {
-      return $this->response_box->render();
-    }
-    return true;
+    parent::render();
+    $this->label_box->render();
+    $this->response_box?->render();
   }
 
 

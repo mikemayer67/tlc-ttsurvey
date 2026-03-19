@@ -48,12 +48,13 @@ class SurveyIntroBox extends PDFBox
   }
 
   /**
-   * @return bool 
+   *
+   * @return void
    */
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    return $this->box->render();
+    parent::render();
+    $this->box->render();
   }
 
   protected function debug_color(): array { return [0,0,255]; }

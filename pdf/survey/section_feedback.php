@@ -59,18 +59,15 @@ class SurveySectionFeedback extends PDFBox
 
   /**
    * Renders the content of a SurveyFeedback box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {    
-    if (!parent::render()) { return false; }
-    $box = $this->wording_box;
-    if(!$box->render()) { return false; }
+    parent::render();
+    $this->wording_box->render();
     
     // not currently drawing the entry box, but if desired, uncomment the following
     //$this->ttpdf->setLineWidth(0.2);
     //$this->ttpdf->Rect(...$this->entry_box);
-
-    return true;
   }
 }

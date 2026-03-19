@@ -37,38 +37,50 @@ class SummaryBoolBox extends SummaryQuestionBox
     $this->width = $width;
 
     $this->label_box = new PDFTextBox(
-      $summaryPDF, $width, $wording, style:'B', size:K_SUMMARY_FONT_LARGE
+      $summaryPDF,
+      $width,
+      $wording,
+      style: 'B',
+      size: K_SUMMARY_FONT_LARGE
     );
     $this->height = $this->label_box->getHeight();
 
-    if($responses) 
-    {
-      $selected = [];
+    if ($responses) {
+      $responders = [];
       $qualifiers = [];
       foreach ($responses as $response) {
+        $userid    = $response['userid'];
+        $selected  = $response['selected'] ?? false;
+        $qualifier = $response['qualifier'] ?? '';
+
         if ($response['selected']) {
-          $selected[] = $response['userid'];
+          $responders[]        = $userid;
         }
-        if ($response['qualifier'] ?? null) {
-          $qualifiers[$response['userid']] = $response['qualifier'];
+        if ($qualifier) {
+          $qualifiers[$userid] = $qualifier;
         }
       }
+    }
 
-      if($selected) { 
-        $this->height += self::vgap;
-        $this->response_box = new SummaryListResponseBox(
-          $summaryPDF, $width-self::indent, $selected
-        );
-        $this->height += $this->response_box->getHeight();
-      }
+    if ($responders) {
+      $this->height += self::vgap;
+      $this->response_box = new SummaryListResponseBox(
+        $summaryPDF,
+        $width - self::indent,
+        $responders
+      );
+      $this->height += $this->response_box->getHeight();
+    }
 
-      if($qualifiers) {
-        $this->height += self::vgap;
-        $this->qualifiers_box = new SummaryQualifiersBox(
-          $summaryPDF,$width-self::indent,$question['qualifier'],$qualifiers
-        );
-        $this->height += $this->qualifiers_box->getHeight();
-      }
+    if ($qualifiers) {
+      $this->height += self::vgap;
+      $this->qualifiers_box = new SummaryQualifiersBox(
+        $summaryPDF,
+        $width - self::indent,
+        $question['qualifier'],
+        $qualifiers
+      );
+      $this->height += $this->qualifiers_box->getHeight();
     }
   }
 
@@ -80,7 +92,7 @@ class SummaryBoolBox extends SummaryQuestionBox
    */
   protected function position(float $x, float $y): bool
   {
-      parent::position($x, $y);
+    parent::position($x, $y);
     $this->label_box->position($x,$y);
     $y += $this->label_box->getHeight();
 
@@ -93,29 +105,21 @@ class SummaryBoolBox extends SummaryQuestionBox
     if($this->qualifiers_box) {
       $y += self::vgap;
       $this->qualifiers_box->position($x + self::indent, $y);
-      $y += $this->response_box->getHeight();
+      $y += $this->qualifiers_box->getHeight();
     }
     return true;
   }
 
   /**
    * Renders the content of a bool box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if(!parent::render()) { return false; }
-    if(!$this->label_box->render()) { return false; }
-
-    if($this->response_box) {
-      if(!$this->response_box->render()) { return false; }
-    }
-
-    if($this->qualifiers_box) {
-      if(!$this->qualifiers_box->render()) { return false; }
-    }
-
-    return true;
+    parent::render();
+    $this->label_box->render();
+    $this->response_box?->render();
+    $this->qualifiers_box?->render();
   }
 
   protected function debug_color(): array { return [255,0,0]; }

@@ -93,17 +93,15 @@ class SurveyOtherBox extends SurveyAlignableBox
     return true;
   }
 
-  public function render() : bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    if(!$this->option->render()) { return false; }
+    parent::render();
+    $this->option->render();
 
     $this->ttpdf->setLineWidth(0.2);
     $this->ttpdf->Rect(
       $this->input_x, $this->input_y,
       $this->input_width, $this->input_height,
     );
-
-    return true;
   }
 }

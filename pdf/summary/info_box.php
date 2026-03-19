@@ -72,12 +72,12 @@ class SummaryInfoBox extends SummaryQuestionBox
 
   /**
    * Renders the info text box
-   * @return bool 
+   * @return void
    */
-  protected function render() : bool
+  protected function render()
   {
     parent::render();
-    return $this->text_box->render();
+    $this->text_box->render();
   }
 
 //  protected function debug_color(): array { return [255,0,255]; }

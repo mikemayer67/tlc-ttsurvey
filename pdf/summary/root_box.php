@@ -112,7 +112,8 @@ class SummaryRootBox extends PDFRootBox
           break;
         case 'select_one': // intentional fallthrough
         case 'select_multi':
-          $box = new SummarySelectBox($this->ttpdf,$width,$question,$responses,$prev);
+          $options = $content['options'];
+          $box = new SummarySelectBox($this->ttpdf,$width,$question,$options,$responses,$prev);
           break;
       }
 
@@ -139,13 +140,13 @@ class SummaryRootBox extends PDFRootBox
     // @@@ create PDFTextBox and add it to summary
   }
 
-  protected function render_child(PDFBox $child): bool
+  protected function render_child(PDFBox $child)
   {
     $section = $child->currentSection();
     if($section) {
       assert($this->ttpdf instanceof SummaryPDF);
       $this->ttpdf->setSection($section);
     }
-    return parent::render_child($child);
+    parent::render_child($child);
   }
 }

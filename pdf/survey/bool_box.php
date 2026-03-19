@@ -99,13 +99,11 @@ class SurveyBoolBox extends SurveyAlignableBox
     return true;
   }
 
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    return (
-      $this->input->render() &&
-      ($this->intro_box?->render() ?? true) &&
-      ($this->qual_box?->render() ?? true)
-    );
+    parent::render();
+    $this->input->render();
+    $this->intro_box?->render();
+    $this->qual_box?->render();
   }
 }

@@ -71,26 +71,20 @@ class SurveyFreetextBox extends PDFBox
 
   /**
    * Renders the content of a free text box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    $box = $this->intro_box;
-    if($box) {
-      if(!$box->render()) { return false; }
-    }
-    $box = $this->wording_box;
-    if(!$box->render()) { return false; }
+    parent::render();
+    $this->intro_box?->render();
+    $this->wording_box?->render();
 
+    // uncomment the following if a box or line is desired
     //$x1 = $this->entry_box[0];
     //$y1 = $this->entry_box[1];
     //$x2 = $x1 + $this->entry_box[2];
     //$y2 = $y1 + $this->entry_box[3];
     //$this->ttpdf->Line($x1,$y2,$x2,$y2);
-    
     //$this->ttpdf->Rect(...$this->entry_box);
-
-    return true;
   }
 }

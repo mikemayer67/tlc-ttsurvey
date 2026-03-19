@@ -136,14 +136,13 @@ class SummaryTableResponseBox extends PDFBox
 
   /**
    * Renders the content of a summary response table box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if(!parent::render()) { return false; }
-    foreach($this->name_boxes     as $box) { if(!$box->render()) { return false; } }
-    foreach($this->response_boxes as $box) { if(!$box->render()) { return false; } }
-    return true;
+    parent::render();
+    foreach($this->name_boxes     as $box) { $box->render(); }
+    foreach($this->response_boxes as $box) { $box->render(); }
   }
 
   protected function debug_color(): array { return [255,128,0]; }

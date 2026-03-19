@@ -89,10 +89,13 @@ class SurveyOptionBox extends SurveyAlignableBox
     return true;
   }
   
-  public function render(): bool
+  /**
+   * @return bool 
+   */
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    if(!$this->label->render()) { return false; }
+    parent::render();
+    $this->label->render();
     
     $this->ttpdf->setLineWidth(0.2);
     $this->ttpdf->RoundedRect(
@@ -100,7 +103,6 @@ class SurveyOptionBox extends SurveyAlignableBox
       $this->input_width, $this->input_height,
       $this->input_radius
     );
-    return true;
   }
 
 }
