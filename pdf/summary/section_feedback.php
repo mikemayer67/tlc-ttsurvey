@@ -60,9 +60,9 @@ class SummarySectionFeedback extends PDFBox
    * Manges the layout of the section feedback box
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
 
@@ -75,10 +75,7 @@ class SummarySectionFeedback extends PDFBox
     $this->feedback_box->position($xo,$y+max(0,$dy));
     $y += max($hl,$hf);
 
-    if( $this->response_box ) {
-      $this->response_box->position($x+self::indent, $y+self::vgap);
-    }
-    return true;
+    $this->response_box?->position($x + self::indent, $y + self::vgap);
   }
 
   /**

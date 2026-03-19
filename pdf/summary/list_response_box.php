@@ -68,9 +68,9 @@ class SummaryListResponseBox extends PDFBox
    * Manages the layout of a list response box
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position(float $x, float $y): bool 
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
 
@@ -89,7 +89,6 @@ class SummaryListResponseBox extends PDFBox
         $y += $this->row_height + self::vgap;
       }
     }
-    return true;
   }
 
   /**

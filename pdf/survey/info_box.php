@@ -51,13 +51,12 @@ class SurveyInfoBox extends PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
     $this->box->position($x, $y);
-    return true;
   }
 
   /**

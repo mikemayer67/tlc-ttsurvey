@@ -54,18 +54,15 @@ class SummaryFreetextBox extends SummaryQuestionBox
    * Manages the layout of a freetext box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y): bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);
     $y += $this->label_box->getHeight();
 
-    if( $this->response_box ) {
-      $this->response_box->position($x+self::indent, $y+self::vgap);
-    }
-    return true;
+    $this->response_box?->position($x + self::indent, $y + self::vgap);
   }
 
   /**

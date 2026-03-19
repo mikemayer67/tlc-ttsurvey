@@ -47,9 +47,9 @@ class SummaryQualifiersBox extends PDFBox
    * Lays out the qualifier box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position(float $x, float $y): bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
@@ -66,8 +66,6 @@ class SummaryQualifiersBox extends PDFBox
     $y += $this->responses->getHeight() + self::vgap;
 
     $this->linebox[3] = $y;
-
-    return true;
   }
 
   /**

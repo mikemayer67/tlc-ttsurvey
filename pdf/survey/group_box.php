@@ -73,9 +73,9 @@ class SurveyGroupBox extends PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
@@ -85,7 +85,6 @@ class SurveyGroupBox extends PDFBox
       $y += $box->getHeight();
       $x += $box->incrementIndent();
     }
-    return true;
   }
 
   /**

@@ -75,9 +75,9 @@ class SurveyOtherBox extends SurveyAlignableBox
    * Manages positioning of an other box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
     
@@ -90,7 +90,6 @@ class SurveyOtherBox extends SurveyAlignableBox
     $this->input_y = ($dy<0) ? $y - $dy : $y;
 
     $this->option->position($x,max($y,$y+$dy));
-    return true;
   }
 
   public function render()

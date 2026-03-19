@@ -109,9 +109,9 @@ class SummaryTableResponseBox extends PDFBox
    * Manages the layout of a response table box
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
     
@@ -131,7 +131,6 @@ class SummaryTableResponseBox extends PDFBox
 
       $y += max($name_box->getHeight(), $response_box->getHeight()) + $this->vspace;
     }
-    return true;
   }
 
   /**

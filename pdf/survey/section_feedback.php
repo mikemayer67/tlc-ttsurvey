@@ -43,9 +43,9 @@ class SurveySectionFeedback extends PDFBox
    * Manages the layout of the section feedback box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x,float $y) : bool
+  protected function position(float $x,float $y)
   {
     parent::position($x,$y);
 
@@ -54,7 +54,6 @@ class SurveySectionFeedback extends PDFBox
 
     $this->entry_box[0] = $x;
     $this->entry_box[1] = $y;
-    return true;
   }
 
   /**

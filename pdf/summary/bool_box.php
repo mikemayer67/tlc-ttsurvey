@@ -88,9 +88,9 @@ class SummaryBoolBox extends SummaryQuestionBox
    * Manages the layout of a bool box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y): bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);
@@ -107,7 +107,6 @@ class SummaryBoolBox extends SummaryQuestionBox
       $this->qualifiers_box->position($x + self::indent, $y);
       $y += $this->qualifiers_box->getHeight();
     }
-    return true;
   }
 
   /**

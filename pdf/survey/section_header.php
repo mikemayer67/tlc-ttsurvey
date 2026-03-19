@@ -89,21 +89,19 @@ class SurveySectionHeader extends PDFBox
    * Manages the layout of the section box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
 
-    if ($this->name_box) {
-      $this->name_box->position($x, $y);
-      $y += $this->name_box->getHeight();
-      if ($this->intro_box) { $y += self::vgap; }
+    $this->name_box?->position($x, $y);
+
+    if($this->name_box && $this->intro_box) {
+      $y += self::vgap + $this->name_box->getHeight();
     }
-    if ($this->intro_box) {
-      $this->intro_box->position($x, $y);
-    }
-    return true;
+
+    $this->intro_box?->position($x, $y);
   }
 
   /**

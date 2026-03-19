@@ -62,12 +62,12 @@ class SummaryInfoBox extends SummaryQuestionBox
    * Manages the layout of the info text box
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void 
    */
-  protected function position($x, $y) : bool
+  protected function position($x, $y)
   {
     parent::position($x,$y);
-    return $this->text_box->position($x,$y);
+    $this->text_box->position($x,$y);
   }
 
   /**

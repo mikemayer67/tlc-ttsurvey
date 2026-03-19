@@ -75,9 +75,9 @@ class SurveyBoolBox extends SurveyAlignableBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
     $y += $this->vpad;
@@ -93,10 +93,7 @@ class SurveyBoolBox extends SurveyAlignableBox
     $y += $this->input->getHeight();
 
     // add (optional) qual box
-    if($this->qual_box) {
-      $this->qual_box->position($x+K_QUARTER_INCH,$y);
-    }
-    return true;
+    $this->qual_box?->position($x + K_QUARTER_INCH, $y);
   }
 
   public function render()

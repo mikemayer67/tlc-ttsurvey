@@ -124,13 +124,12 @@ abstract class PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     $this->x = $x;
     $this->y = $y;
-    return true;
   }
 
   /**
@@ -272,11 +271,17 @@ abstract class PDFRootBox extends PDFBox
         $cur_y = $this->content_top;
       }
 
-      if(!$box->position($this->content_left + $indent, $cur_y)) {
-        $box->startPage();
-        $cur_y = $this->content_top;
-        $box->position($this->content_left + $indent, $cur_y);
-      }
+      // @@@ figure out how to implement this without using bool return value from position
+      //     possibly via exception?
+      //-----------
+      // if(!$box->position($this->content_left + $indent, $cur_y)) {
+      //   $box->startPage();
+      //   $cur_y = $this->content_top;
+      //   $box->position($this->content_left + $indent, $cur_y);
+      // }
+      //-----------
+
+      $box->position($this->content_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();

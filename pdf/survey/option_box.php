@@ -65,9 +65,9 @@ class SurveyOptionBox extends SurveyAlignableBox
    * Manages positioning of an option box and its children
    * @param float $x 
    * @param float $y 
-   * @return bool 
+   * @return void
    */
-  protected function position(float $x, float $y) : bool
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
@@ -86,7 +86,6 @@ class SurveyOptionBox extends SurveyAlignableBox
     $this->label->position($xw, $yw);
     $this->input_x = $xc;
     $this->input_y = $yc;
-    return true;
   }
   
   /**
