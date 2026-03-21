@@ -13,7 +13,7 @@ class SurveyFreetextBox extends PDFBox
   private PDFBox          $wording_box;
 
   private array $entry_box = [0,0,0,3*K_QUARTER_INCH];
-  const vgap = 1; // mm
+  private const vgap = 1; // mm
 
   /**
    * @param SurveyPDF $surveyPDF 

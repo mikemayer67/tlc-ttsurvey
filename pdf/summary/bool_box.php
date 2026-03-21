@@ -72,6 +72,8 @@ class SummaryBoolBox extends SummaryQuestionBox
       $this->height += $this->response_box->getHeight();
     }
 
+    if($responders && $qualifiers) { $this->height += self::vgap; }
+
     if ($qualifiers) {
       $this->height += self::vgap;
       $this->qualifiers_box = new SummaryQualifiersBox(
@@ -101,6 +103,8 @@ class SummaryBoolBox extends SummaryQuestionBox
       $this->response_box->position($x + self::indent, $y);
       $y += $this->response_box->getHeight();
     }
+
+    if($this->response_box && $this->qualifiers_box) { $y += self::vgap; }
 
     if($this->qualifiers_box) {
       $y += self::vgap;

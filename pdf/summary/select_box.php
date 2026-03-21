@@ -14,6 +14,8 @@ class SummarySelectBox extends SummaryQuestionBox
   private ?SummaryQualifiersBox $qualifiers_box = null;
   /** @var SummaryOptionBox[] $option_boxes */
   private array $option_boxes = [];
+
+  
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
@@ -40,11 +42,10 @@ class SummarySelectBox extends SummaryQuestionBox
       style: 'B', size: K_SUMMARY_FONT_LARGE
     );
     $this->height = $this->label_box->getHeight();
+    $width -= self::indent;
 
     $qid       = $question['id'];
     $responses = $responses['questions'][$qid] ?? [];
-
-    if(!$responses) { return; } // no responses... we're done
 
     $options = array_combine(
       $question['options'],
@@ -73,17 +74,14 @@ class SummarySelectBox extends SummaryQuestionBox
       
       if($box) {
         $this->option_boxes[] = $box;
-        $this->height += self::vgap + $box->getHeight();
+        $this->height += $box->getHeight();
       }
     }
 
     $qualifiers = array_filter($responses, fn($a) => ($a['qualifier']??''));
     if ($qualifiers) {
       $qualifiers = array_map(fn($r)=>$r['qualifier'],$qualifiers);
-      $this->qualifiers_box = new SummaryQualifiersBox(
-        $summaryPDF, $width - self::indent,
-        $question['qualifier'], $qualifiers
-      );
+      $this->qualifiers_box = new SummaryQualifiersBox( $summaryPDF, $width, $question['qualifier'], $qualifiers);
       $this->height += self::vgap + $this->qualifiers_box->getHeight();
     }
   }
@@ -103,7 +101,6 @@ class SummarySelectBox extends SummaryQuestionBox
     $x += self::indent;
 
     foreach($this->option_boxes as $box) {
-      $y += self::vgap;
       $box->position($x,$y);
       $y += $box->getHeight();
     }

@@ -27,7 +27,7 @@ class SummaryRootBox extends PDFRootBox
    */
   public function __construct(SummaryPDF $summaryPDF, array $content, array $responses)
   {
-    parent::__construct($summaryPDF, top:3*K_QUARTER_INCH, right:K_QUARTER_INCH, left:K_QUARTER_INCH);
+    parent::__construct($summaryPDF, top:3*K_QUARTER_INCH, right:K_QUARTER_INCH, left:K_HALF_INCH);
     $sections = summary_sections($content);
     foreach($sections as $section) {
       $this->add_section($this->content_width(),$section,$content,$responses);

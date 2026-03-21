@@ -16,7 +16,7 @@ class SummaryQuestionBox extends PDFBox
   protected ?SummaryQuestionBox $prev;
 
   protected const indent = K_QUARTER_INCH;
-  protected const vgap = 2;
+  protected const vgap = 1;
 
   public function __construct(SummaryPDF $summaryPDF, ?SummaryQuestionBox $prev=null)
   {

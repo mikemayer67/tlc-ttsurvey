@@ -11,6 +11,8 @@ class SummarySectionHeader extends PDFBox
   private string $name;
   private ?PDFBox $name_box = null;
 
+  private const indent = -K_QUARTER_INCH;
+
   /**
    * constructor
    * @param SummaryPDF $summaryPDF 
@@ -33,7 +35,7 @@ class SummarySectionHeader extends PDFBox
       $this->bottom_pad = K_QUARTER_INCH;
       $this->name_box = new PDFTextBox(
         $summaryPDF, $width, $this->name, 
-        style:'B', size:K_SUMMARY_FONT_X_LARGE
+        style:'B', size:K_SUMMARY_FONT_XX_LARGE
       );
       $this->height += $this->name_box->getHeight();
     } else {
@@ -71,7 +73,7 @@ class SummarySectionHeader extends PDFBox
   protected function position(float $x, float $y)
   {
     parent::position($x, $y);
-    $this->name_box?->position($x, $y);
+    $this->name_box?->position($x+self::indent, $y);
   }
 
   /**

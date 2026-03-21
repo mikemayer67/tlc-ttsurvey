@@ -19,8 +19,8 @@ class SurveyOptionsBox extends PDFBox
   /** @var PDFBox[][] */
   private array           $rows = [];
 
-  const vgap = K_EIGHTH_INCH/2;
-  const hgap = K_EIGHTH_INCH;
+  private const vgap = K_EIGHTH_INCH/2;
+  private const hgap = K_EIGHTH_INCH;
 
   /**
    * Whether or not the options box should be on same line as the 

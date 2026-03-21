@@ -57,7 +57,7 @@ class SummaryOptionBox extends PDFBox
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);
-    $y += $this->label_box->getHeight() + self::vgap;
+    $y += $this->label_box->getHeight();
     $x += self::indent;
     $this->response_box?->position($x,$y);
   }
@@ -73,5 +73,5 @@ class SummaryOptionBox extends PDFBox
     $this->response_box?->render();
   }
 
-  protected function debug_color(): array { return [255,128,0]; }
+  protected function debug_color(): array { return [255,0,255]; }
 }

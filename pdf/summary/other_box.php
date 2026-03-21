@@ -13,7 +13,7 @@ class SummaryOtherBox extends PDFBox
   private SummaryTableResponseBox $responses;
 
   private const vspace=0;
-  private const vgap=1; // mm
+  private const vgap=0; // mm
   private const indent = K_QUARTER_INCH;
 
   /**
