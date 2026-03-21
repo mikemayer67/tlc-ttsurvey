@@ -112,6 +112,16 @@ abstract class PDFBox
   }
 
   /**
+   * The current box wants to start a new page
+   *   Default = false
+   *   Subclasses which may need to start a new page should overide the method
+   * @param float $y location where box will be positioned on current page
+   * @param PDFRootBox $root container into which box will be positioned
+   * @return bool
+   */
+  protected function needsPageBreak(float $y, PDFRootBox $root) : bool { return false; }
+
+  /**
    * @return int number of pages in the PDF document
    */
   public static function numPages() : int {return self::$cur_page; }
@@ -200,10 +210,10 @@ abstract class PDFRootBox extends PDFBox
   // This list of all top level child boxes
   /** @var PDFBox[] $children */
   private array $children = [];
-  private float $content_left = 0;
-  private float $content_right = 0;
-  private float $content_top = 0;
-  private float $content_bottom = 0;
+  private float $_left = 0;
+  private float $_right = 0;
+  private float $_top = 0;
+  private float $_bottom = 0;
 
   private const bottom_pad = K_EIGHTH_INCH;
 
@@ -227,14 +237,16 @@ abstract class PDFRootBox extends PDFBox
   ) {
     parent::__construct($ttpdf);
 
-    $this->content_left   = $left;
-    $this->content_right  = $ttpdf->getPageWidth() - $right;
-    $this->content_top    = $top;
-    $this->content_bottom = $ttpdf->getPageHeight() - ($bottom + self::bottom_pad);
+    $this->_left   = $left;
+    $this->_right  = $ttpdf->getPageWidth() - $right;
+    $this->_top    = $top;
+    $this->_bottom = $ttpdf->getPageHeight() - ($bottom + self::bottom_pad);
   }
 
-  public function content_width()  : float { return $this->content_right  - $this->content_left; }
-  public function content_height() : float { return $this->content_bottom - $this->content_top;  }
+  public function content_width()  : float { return $this->_right  - $this->_left; }
+  public function content_height() : float { return $this->_bottom - $this->_top;  }
+  public function content_top()    : float { return $this->_top; }
+  public function content_bottom() : float { return $this->_bottom; }
 
   /**
    * Adds a child box to the root box.
@@ -255,7 +267,7 @@ abstract class PDFRootBox extends PDFBox
   {
     $prior = null;
     $indent = 0;
-    $cur_y  = $this->content_top;
+    $cur_y  = $this->_top;
 
     foreach ($this->children as $box) 
     {
@@ -266,22 +278,17 @@ abstract class PDFRootBox extends PDFBox
       $cur_y += $box->yOffset($prior);
       $prior = $box;
 
-      if (PDFBox::numPages() === 0 || ($cur_y > $max_y) || ($cur_y + $box->getHeight() > $this->content_bottom)) {
+      if (
+        PDFBox::numPages() === 0  // very first page
+        || ($cur_y > $max_y)      // start position exceeds limit for box type
+        || $box->needsPageBreak($cur_y, $this) // box is requesting a new page
+        || ($cur_y + $box->getHeight() > $this->_bottom) // box won't fit on page
+      ) {
         $box->startPage();
-        $cur_y = $this->content_top;
+        $cur_y = $this->_top;
       }
 
-      // @@@ figure out how to implement this without using bool return value from position
-      //     possibly via exception?
-      //-----------
-      // if(!$box->position($this->content_left + $indent, $cur_y)) {
-      //   $box->startPage();
-      //   $cur_y = $this->content_top;
-      //   $box->position($this->content_left + $indent, $cur_y);
-      // }
-      //-----------
-
-      $box->position($this->content_left + $indent, $cur_y);
+      $box->position($this->_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();

@@ -59,6 +59,45 @@ class SummaryInfoBox extends SummaryQuestionBox
   }
 
   /**
+   * Determines if there is enough room left on the page to fit
+   *   all questions that follow within the group.  If not, returns true
+   * @param float $y location where box will be positioned on current page
+   * @param PDFRootBox $root container into which box will be positioned
+   * @return bool 
+   */
+  protected function needsPageBreak(float $y, PDFRootBox $root): bool
+  {
+    $full_height = $this->height;   // height of info + all grouped items
+    $widow_height = $this->height;  // height of info + first grouped item
+
+    $prior = $this;
+    $cur = $this->next;
+    $widow_height += $cur->yOffset($prior) + $cur->getHeight();
+
+    while($cur && !($cur instanceof SummaryInfoBox)) {
+      $full_height += $cur->yOffset($prior) + $cur->getHeight();
+      $prior = $cur;
+      $cur = $cur->next;
+    }
+    if( $y + $full_height < $root->content_bottom() ) { 
+      // info + all grouped items fits on the current page, no page break needed
+      return false;
+    }
+    if( $full_height < $root->content_height() ) {
+      // info + all grouped items would fit on an empty page, start a new page
+      return true;
+    }
+    // not possible to fit info + all grouped items on a single page
+    if( $y + $widow_height > $root->content_bottom() ) {
+      // cannot even fit info + 1 item on the current page, start a new page
+      return true;
+    }
+    // go ahead and put the info and whatever will fit on this page
+    // the rest of the content will follow normal page break rules
+    return false;
+  }
+
+  /**
    * Manages the layout of the info text box
    * @param float $x 
    * @param float $y 
