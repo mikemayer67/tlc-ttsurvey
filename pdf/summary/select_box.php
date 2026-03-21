@@ -4,12 +4,16 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/summary/question_box.php'));
+require_once(app_file('pdf/summary/option_box.php'));
+require_once(app_file('pdf/summary/other_box.php'));
 require_once(app_file('pdf/summary/qualifiers_box.php'));
 
 class SummarySelectBox extends SummaryQuestionBox
 {
   private PDFTextBox $label_box;
-  private ?SummaryQualifiersBox   $qualifiers_box = null;
+  private ?SummaryQualifiersBox $qualifiers_box = null;
+  /** @var SummaryOptionBox[] $option_boxes */
+  private array $option_boxes = [];
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
@@ -28,40 +32,59 @@ class SummarySelectBox extends SummaryQuestionBox
     ?SummaryQuestionBox $prev = null
   ) {
     parent::__construct($summaryPDF, $prev);
-
-    $qid       = $question['id'];
-    $wording   = $question['wording'];
-    $responses = $responses['questions'][$qid] ?? [];
-
     $this->width = $width;
 
+    $wording = $question['wording'];
     $this->label_box = new PDFTextBox(
-      $summaryPDF,
-      $width,
-      $wording,
-      style: 'B',
-      size: K_SUMMARY_FONT_LARGE
+      $summaryPDF, $width, $wording,
+      style: 'B', size: K_SUMMARY_FONT_LARGE
     );
     $this->height = $this->label_box->getHeight();
 
-    if ($responses) {
-      $qualifiers = [];
-      foreach ($responses as $response) {
-        $userid    = $response['userid'];
-        $qualifier = $response['qualifier'] ?? '';
+    $qid       = $question['id'];
+    $responses = $responses['questions'][$qid] ?? [];
 
-        if ($qualifier) { $qualifiers[$userid] = $qualifier; }
+    if(!$responses) { return; } // no responses... we're done
+
+    $options = array_combine(
+      $question['options'],
+      array_map(fn($oid)=>$options[$oid], $question['options'])
+    );
+    if($question['other_flag'] ?? false) {
+      $options[0] = $question['other'] ?? 'Other';
+    }
+
+    $multi = strtolower($question['type']) === 'select_multi';
+    foreach($options as $oid=>$option) {
+      $box = null;
+      if($oid && $multi) {
+        $users = array_filter($responses, fn($a) => in_array($oid, $a['options'] ?? []));
+      } else {
+        $users = array_filter($responses, fn($a) => $a['selected'] === $oid);
+      }
+
+      if($oid) { // not "other"
+        $box = new SummaryOptionBox($summaryPDF, $width, $option, array_keys($users));
+      }
+      elseif($users) { // "other", but only if there are responses
+        $users = array_map(fn($r)=>$r['other'],$users);
+        $box = new SummaryOtherBox($summaryPDF,$width,$option,$users);
+      }
+      
+      if($box) {
+        $this->option_boxes[] = $box;
+        $this->height += self::vgap + $box->getHeight();
       }
     }
+
+    $qualifiers = array_filter($responses, fn($a) => ($a['qualifier']??''));
     if ($qualifiers) {
-      $this->height += self::vgap;
+      $qualifiers = array_map(fn($r)=>$r['qualifier'],$qualifiers);
       $this->qualifiers_box = new SummaryQualifiersBox(
-        $summaryPDF,
-        $width - self::indent,
-        $question['qualifier'],
-        $qualifiers
+        $summaryPDF, $width - self::indent,
+        $question['qualifier'], $qualifiers
       );
-      $this->height += $this->qualifiers_box->getHeight();
+      $this->height += self::vgap + $this->qualifiers_box->getHeight();
     }
   }
 
@@ -77,9 +100,17 @@ class SummarySelectBox extends SummaryQuestionBox
     $this->label_box->position($x,$y);
     $y += $this->label_box->getHeight();
 
+    $x += self::indent;
+
+    foreach($this->option_boxes as $box) {
+      $y += self::vgap;
+      $box->position($x,$y);
+      $y += $box->getHeight();
+    }
+
     if($this->qualifiers_box) {
       $y += self::vgap;
-      $this->qualifiers_box->position($x + self::indent, $y);
+      $this->qualifiers_box->position($x, $y);
       $y += $this->qualifiers_box->getHeight();
     }
   }
@@ -92,6 +123,7 @@ class SummarySelectBox extends SummaryQuestionBox
   {
     parent::render();
     $this->label_box->render();
+    foreach($this->option_boxes as $box) { $box->render(); }
     $this->qualifiers_box?->render();
   }
 

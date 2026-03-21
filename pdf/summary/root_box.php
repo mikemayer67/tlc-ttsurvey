@@ -100,7 +100,6 @@ class SummaryRootBox extends PDFRootBox
         case 'info':
           if($grouped) {
             $box = new SummaryInfoBox($this->ttpdf,$width,$question,$prev);
-            // @@@ add into 
             $width = $max_width - SummaryInfoBox::indent;
           }
           break;
@@ -122,22 +121,6 @@ class SummaryRootBox extends PDFRootBox
         $prev = $box;
       }
     }
-  }
-
-  /**
-   * Adds an info text box to the summary
-   *   only displays inside of question group
-   *   questions before the info box should stand alone
-   *   questons in the group after the info box should be indented
-   * @param float $width
-   * @param string $info 
-   * @return void 
-   */
-  private function add_info(float $width, string $info)
-  {
-
-    $info_text = strip_markdown($info);
-    // @@@ create PDFTextBox and add it to summary
   }
 
   protected function render_child(PDFBox $child)
