@@ -78,7 +78,7 @@
 }
 
 #ttt-body div.question div.responses td.name {
-  font-weight:700;
+  font-weight:normal;
   white-space: nowrap;
   vertical-align: top;
 }
@@ -156,7 +156,7 @@
 }
 
 #ttt-body div.question div.qualifiers table td.name {
-  font-weight:700;
+  font-weight:nomral;
 }
 
 #ttt-body div.feedback {
@@ -192,7 +192,7 @@
 }
 
 #ttt-body div.feedback td.name {
-  font-weight:700;
+  font-weight:normal;
   text-align:end;
 }
 

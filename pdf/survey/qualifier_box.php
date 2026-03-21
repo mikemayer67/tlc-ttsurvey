@@ -8,12 +8,12 @@ require_once(app_file('pdf/survey/config.php'));
 
 class SurveyQualifierBox extends PDFBox
 {
-  private PDFBox $_label;
-  private int    $_label_width = 0;
-  private int    $_label_height = 0;
-  private bool   $_multi_line = false;
+  private PDFBox $label;
+  private int    $label_width = 0;
+  private int    $label_height = 0;
+  private bool   $multi_line = false;
 
-  private array $_entry_box = [0,0,0,K_QUARTER_INCH];
+  private array $entry_box = [0,0,0,K_QUARTER_INCH];
 
   private const vpad = 1; // mm
   private const hpad = 1; // mm
@@ -29,19 +29,19 @@ class SurveyQualifierBox extends PDFBox
   {
     parent::__construct($surveyPDF);
 
-    $this->_entry_box[2] = min(3*K_INCH, $max_width/2);
+    $this->entry_box[2] = min(3*K_INCH, $max_width/2);
 
-    $this->_label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
-    $this->_label_width  = $this->_label->getWidth();
-    $this->_label_height = $this->_label->getHeight();
-    if($this->_label_width + $this->_entry_box[2] + self::hpad < $max_width) {
-      $this->_multi_line = false;
-      $this->_height += max($this->_label_height,$this->_entry_box[3]);
+    $this->label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
+    $this->label_width  = $this->label->getWidth();
+    $this->label_height = $this->label->getHeight();
+    if($this->label_width + $this->entry_box[2] + self::hpad < $max_width) {
+      $this->multi_line = false;
+      $this->height += max($this->label_height,$this->entry_box[3]);
     } else {
-      $this->_multi_line = true;
-      $this->_height += $this->_label_height + self::vpad + $this->_entry_box[3];
+      $this->multi_line = true;
+      $this->height += $this->label_height + self::vpad + $this->entry_box[3];
     }
-    $this->_width = min($max_width, $this->_label_width + $this->_entry_box[2] + self::hpad);
+    $this->width = min($max_width, $this->label_width + $this->entry_box[2] + self::hpad);
   }
 
   /**
@@ -51,45 +51,44 @@ class SurveyQualifierBox extends PDFBox
    * @param float $y 
    * @return void 
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
-    if($this->_multi_line) {
-      $this->_label->position($x, $y);
+    if($this->multi_line) {
+      $this->label->position($x, $y);
       // set the (x,y) for the entry box on the next line
-      $y += $this->_label_height + self::vpad;
+      $y += $this->label_height + self::vpad;
       $x += K_INCH;
     } else {
-      $dy = ($this->_entry_box[3] - $this->_label_height)/2;
+      $dy = ($this->entry_box[3] - $this->label_height)/2;
       if($dy >= 0) {
         // shift the label down so as to center on entry
-        $this->_label->position($x, $y+$dy);
+        $this->label->position($x, $y+$dy);
       } else {
-        $this->_label->position($x, $y);
+        $this->label->position($x, $y);
         // shift the entry down so as to center on label
         $y += $dy;
       }
       // shift the entry horizontally to after the label
-      $x += $this->_label_width + self::hpad;
+      $x += $this->label_width + self::hpad;
     }
-    $this->_entry_box[0] = $x;
-    $this->_entry_box[1] = $y;
+    $this->entry_box[0] = $x;
+    $this->entry_box[1] = $y;
   }
 
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    if(!$this->_label->render()) { return false; }
-    $this->_ttpdf->setLineWidth(0.2);
-    
-    $x1 = $this->_entry_box[0];
-    $y1 = $this->_entry_box[1];
-    $x2 = $x1 + $this->_entry_box[2];
-    $y2 = $y1 + $this->_entry_box[3];
-    $this->_ttpdf->Line($x1,$y2,$x2,$y2);
-    // $this->_ttpdf->Rect(...$this->_entry_box);
-    return true;
+    parent::render();
+    $this->label->render();
+
+    $x1 = $this->entry_box[0];
+    $y1 = $this->entry_box[1];
+    $x2 = $x1 + $this->entry_box[2];
+    $y2 = $y1 + $this->entry_box[3];
+    $this->ttpdf->setLineWidth(0.2);
+    $this->ttpdf->Line($x1,$y2,$x2,$y2);
+    // $this->ttpdf->Rect(...$this->entry_box);
   }
 
   protected function debug_color(): array

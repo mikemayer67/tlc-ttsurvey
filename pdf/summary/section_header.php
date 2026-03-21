@@ -8,8 +8,10 @@ require_once(app_file('pdf/summary/config.php'));
 
 class SummarySectionHeader extends PDFBox
 {
-  private string $_name;
-  private ?PDFBox $_name_box = null;
+  private string $name;
+  private ?PDFBox $name_box = null;
+
+  private const indent = -K_QUARTER_INCH;
 
   /**
    * constructor
@@ -22,23 +24,23 @@ class SummarySectionHeader extends PDFBox
   {
     parent::__construct($summaryPDF);
 
-    $this->_name = $section['name'];
+    $this->name = $section['name'];
     $collapsible = $section['collapsible'] ?? true;
 
-    $this->_width = $width;
-    $this->_height = 0;
+    $this->width = $width;
+    $this->height = 0;
     
     if ($collapsible) {
-      $this->_top_pad    = 0;
-      $this->_bottom_pad = K_QUARTER_INCH;
-      $this->_name_box = new PDFTextBox(
-        $summaryPDF, $width, $this->_name, 
-        K_SANS_SERIF_FONT, 'B', K_SUMMARY_FONT_X_LARGE
+      $this->top_pad    = 0;
+      $this->bottom_pad = K_QUARTER_INCH;
+      $this->name_box = new PDFTextBox(
+        $summaryPDF, $width, $this->name, 
+        style:'B', size:K_SUMMARY_FONT_XX_LARGE
       );
-      $this->_height += $this->_name_box->getHeight();
+      $this->height += $this->name_box->getHeight();
     } else {
-      $this->_top_pad = 0;
-      $this->_bottom_pad = 0;
+      $this->top_pad = 0;
+      $this->bottom_pad = 0;
     }
   }
 
@@ -59,37 +61,28 @@ class SummarySectionHeader extends PDFBox
 
   protected function currentSection() : ?string
   {
-    return $this->_name;
+    return $this->name;
   }
 
   /**
    * Manges the layout of the section header box
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return void
    */
   protected function position(float $x, float $y)
   {
     parent::position($x, $y);
-
-    if ($this->_name_box) {
-      $this->_name_box->position($x, $y);
-      $y += $this->_name_box->getHeight();
-    }
+    $this->name_box?->position($x+self::indent, $y);
   }
 
   /**
    * Renders the content of a SummarySection box
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-
-    if (!parent::render()) { return false; }
-    if ($this->_name_box) {
-      if (!$this->_name_box->render()) { return false; }
-      $y = $this->_name_box->_y + $this->_name_box->getHeight();
-    }
-    return true;
+    parent::render();
+    $this->name_box?->render();
   }
 }

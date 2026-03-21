@@ -9,11 +9,11 @@ require_once(app_file('pdf/survey/config.php'));
 
 class SurveyFreetextBox extends PDFBox
 {
-  private ?SurveyIntroBox $_intro_box = null;
-  private PDFBox          $_wording_box;
+  private ?SurveyIntroBox $intro_box = null;
+  private PDFBox          $wording_box;
 
-  private array $_entry_box = [0,0,0,3*K_QUARTER_INCH];
-  const vgap = 1; // mm
+  private array $entry_box = [0,0,0,3*K_QUARTER_INCH];
+  private const vgap = 1; // mm
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -28,20 +28,20 @@ class SurveyFreetextBox extends PDFBox
     $wording = $question['wording'];
     $intro   = $question['intro'] ?? null;
 
-    $this->_width = $max_width;
-    $this->_height = 0;
+    $this->width = $max_width;
+    $this->height = 0;
 
     if($intro) {
-      $this->_intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
-      $max_width     -= $this->_intro_box->incrementIndent();
-      $this->_height += $this->_intro_box->getHeight();
+      $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
+      $max_width     -= $this->intro_box->incrementIndent();
+      $this->height += $this->intro_box->getHeight();
     }
 
-    $this->_wording_box = new PDFTextBox($surveyPDF,$max_width,$wording,size:K_SURVEY_FONT_MEDIUM);
-    $this->_height += $this->_wording_box->getHeight();
+    $this->wording_box = new PDFTextBox($surveyPDF,$max_width,$wording,size:K_SURVEY_FONT_MEDIUM);
+    $this->height += $this->wording_box->getHeight();
 
-    $this->_entry_box[2] = $max_width;
-    $this->_height += $this->_entry_box[3];
+    $this->entry_box[2] = $max_width;
+    $this->height += $this->entry_box[3];
   }
 
   /**
@@ -49,47 +49,41 @@ class SurveyFreetextBox extends PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return void
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
-    if($this->_intro_box) {
-      $this->_intro_box->position($x, $y);
-      $y += $this->_intro_box->getHeight() + self::vgap;
-      $x += $this->_intro_box->incrementIndent();
+    if($this->intro_box) {
+      $this->intro_box->position($x, $y);
+      $y += $this->intro_box->getHeight() + self::vgap;
+      $x += $this->intro_box->incrementIndent();
     }
 
-    $this->_wording_box->position($x, $y);
-    $y += $this->_wording_box->getHeight();
+    $this->wording_box->position($x, $y);
+    $y += $this->wording_box->getHeight();
 
-    $this->_entry_box[0] = $x;
-    $this->_entry_box[1] = $y;
+    $this->entry_box[0] = $x;
+    $this->entry_box[1] = $y;
   }
 
   /**
    * Renders the content of a free text box
-   * @return bool 
+   * @return void 
    */
-  protected function render() : bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    $box = $this->_intro_box;
-    if($box) {
-      if(!$box->render()) { return false; }
-    }
-    $box = $this->_wording_box;
-    if(!$box->render()) { return false; }
+    parent::render();
+    $this->intro_box?->render();
+    $this->wording_box?->render();
 
-    //$x1 = $this->_entry_box[0];
-    //$y1 = $this->_entry_box[1];
-    //$x2 = $x1 + $this->_entry_box[2];
-    //$y2 = $y1 + $this->_entry_box[3];
-    //$this->_ttpdf->Line($x1,$y2,$x2,$y2);
-    
-    //$this->_ttpdf->Rect(...$this->_entry_box);
-
-    return true;
+    // uncomment the following if a box or line is desired
+    //$x1 = $this->entry_box[0];
+    //$y1 = $this->entry_box[1];
+    //$x2 = $x1 + $this->entry_box[2];
+    //$y2 = $y1 + $this->entry_box[3];
+    //$this->ttpdf->Line($x1,$y2,$x2,$y2);
+    //$this->ttpdf->Rect(...$this->entry_box);
   }
 }

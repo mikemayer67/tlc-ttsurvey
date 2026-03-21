@@ -274,7 +274,8 @@ class SectionPanel
       echo "<div class='qualifiers'>";
       echo "<div class='qualifier text'>$label</div>";
       echo "<table class='qualifiers'>";
-      foreach ($qualifiers as $name => $response) {
+      foreach ($qualifiers as $userid => $response) {
+        $name = User::from_userid($userid)->fullname();
         $qual = $response['qualifier'];
         echo "<tr><td class='name'>$name:</td><td class='qual'>$qual</td></tr>";
       }

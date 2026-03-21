@@ -50,6 +50,7 @@ class SurveyPDF extends TTPDF
     $content_root = new SurveyRootBox($this, $content);
     $content_root->layoutChildren($this);
     $this->page_count = PDFBox::numPages();
+    
     $content_root->render($this);
   }
 }

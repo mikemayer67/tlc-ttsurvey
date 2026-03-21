@@ -11,23 +11,23 @@ require_once(app_file('pdf/survey/enums.php'));
 
 class SurveyOptionsBox extends PDFBox
 {
-  private bool         $_inline = false;
-  private OptionLayout $_layout;
+  private bool         $inline = false;
+  private OptionLayout $layout;
 
   /** @var SurveyAlignableBox[] */
-  private array           $_children = [];
+  private array           $children = [];
   /** @var PDFBox[][] */
-  private array           $_rows = [];
+  private array           $rows = [];
 
-  const vgap = K_EIGHTH_INCH/2;
-  const hgap = K_EIGHTH_INCH;
+  private const vgap = K_EIGHTH_INCH/2;
+  private const hgap = K_EIGHTH_INCH;
 
   /**
    * Whether or not the options box should be on same line as the 
    *   question label
    * @return bool 
    */
-  public function inline() : bool { return $this->_inline; }
+  public function inline() : bool { return $this->inline; }
 
   /**
    * Returns the height of the first row in the options box
@@ -36,7 +36,7 @@ class SurveyOptionsBox extends PDFBox
   public function first_row_height() : float
   {
     $rval = 0;
-    foreach ($this->_rows[0] as $box) {
+    foreach ($this->rows[0] as $box) {
       $rval = max($rval, $box->getHeight());
     }
     return $rval;
@@ -63,18 +63,18 @@ class SurveyOptionsBox extends PDFBox
     $justification = SurveyJustification::fromInput($question_layout);
     $layout = OptionLayout::fromInput($question_layout);
 
-    $this->_layout = $layout;
+    $this->layout = $layout;
     
-    $this->_children = [];
+    $this->children = [];
     foreach($question['options'] as $option) {
       $label = $options[$option];
-      $this->_children[] = new SurveyOptionBox(
+      $this->children[] = new SurveyOptionBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );
     }
     if($question['other_flag']) {
       $label = $question['other'] ?? "Other";
-      $this->_children[] = new SurveyOtherBox(
+      $this->children[] = new SurveyOtherBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize
       );
     }
@@ -93,17 +93,17 @@ class SurveyOptionsBox extends PDFBox
    */
   private function construct_column(float $max_width, float $inline_width)
   {
-    $this->_width = 0;
-    $this->_height = 0;
+    $this->width = 0;
+    $this->height = 0;
     $aligned_width = 0;
-    foreach($this->_children as $child) {
-      $this->_width = max($this->_width, $child->getWidth());
-      $this->_height += $child->getHeight() + self::vgap;
-      $this->_rows[] = [$child];
+    foreach($this->children as $child) {
+      $this->width = max($this->width, $child->getWidth());
+      $this->height += $child->getHeight() + self::vgap;
+      $this->rows[] = [$child];
       $aligned_width = max($aligned_width, $child->getAlignedWidth());
     }
-    $this->_inline = ($this->_width <= $inline_width);
-    foreach($this->_children as $child) {
+    $this->inline = ($this->width <= $inline_width);
+    foreach($this->children as $child) {
       $child->setAlignedWidth($aligned_width);
     }
   }
@@ -115,25 +115,25 @@ class SurveyOptionsBox extends PDFBox
    */
   private function construct_rows(float $max_width, float $inline_width)
   {
-    $this->_width = 0;
-    $this->_height = 0;
+    $this->width = 0;
+    $this->height = 0;
 
     // determine total width if all options are on a single row
     $width = 0;
     $height = 0;
-    foreach($this->_children as $child) {
+    foreach($this->children as $child) {
       $width += $child->getWidth() + self::hgap;
       $height = max($height,$child->getHeight());
     }
 
-    $this->_inline = ($width <= $inline_width);
+    $this->inline = ($width <= $inline_width);
 
     // if total width fits in the inline width, we're done
-    if($this->_inline) 
+    if($this->inline) 
     {
-      $this->_width = $width;
-      $this->_height = $height;
-      $this->_rows = [$this->_children];
+      $this->width = $width;
+      $this->height = $height;
+      $this->rows = [$this->children];
       return;
     } 
 
@@ -142,7 +142,7 @@ class SurveyOptionsBox extends PDFBox
     $row = [];
     $row_width = 0;
     $row_height = 0;
-    foreach($this->_children as $child) 
+    foreach($this->children as $child) 
     {
       $box_width  = $child->getWidth();
       $box_height = $child->getHeight();
@@ -156,9 +156,9 @@ class SurveyOptionsBox extends PDFBox
       {
         // box doesn't fit, start a new row
         // but first, add the current row to the list of rows
-        $this->_rows[] = $row;
-        $this->_width = max($this->_width,$row_width);
-        $this->_height += $row_height + self::vgap;
+        $this->rows[] = $row;
+        $this->width = max($this->width,$row_width);
+        $this->height += $row_height + self::vgap;
         $row = [$child];
         // now start a new row
         $row_width  = $box_width + self::hgap;
@@ -168,16 +168,22 @@ class SurveyOptionsBox extends PDFBox
 
     // add the final row to the list of rows
 
-    $this->_rows[] = $row;
-    $this->_width = max($this->_width, $row_width);
-    $this->_height += $row_height + self::vgap;
+    $this->rows[] = $row;
+    $this->width = max($this->width, $row_width);
+    $this->height += $row_height + self::vgap;
   }
 
-  protected function position( float $x, float $y)
+  /**
+   * Manages positioning of an options box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return void
+   */
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
 
-    foreach($this->_rows as $row) 
+    foreach($this->rows as $row) 
     {
       $bx = $x;
       $row_height = 0;
@@ -195,17 +201,11 @@ class SurveyOptionsBox extends PDFBox
     }
   }
 
-  public function render(): bool
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    foreach($this->_children as $box) {
-      if(!$box->render()) { return false; }
-    }
-    return true;
+    parent::render();
+    foreach($this->children as $box) { $box->render(); }
   }
 
-  protected function debug_color(): array
-  {
-    return [255,0,0];
-  }
+  protected function debug_color(): array { return [255,0,0]; }
 }

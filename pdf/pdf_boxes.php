@@ -5,6 +5,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/ttpdf.php'));
 require_once(app_file('pdf/ttpdf_utils.php'));
+require_once(app_file('survey/markdown.php'));
 
 /**
  * PDFBox is the baseclass for wrapping methods used to compute and render Boxes of content
@@ -20,36 +21,36 @@ require_once(app_file('pdf/ttpdf_utils.php'));
  */
 abstract class PDFBox
 {
-  protected TTPDF $_ttpdf;
+  protected TTPDF $ttpdf;
 
   protected const debug = false;
 
   // Each of the following properties must be explicitly set in the box subclass
   //   The following are set in the subclass constructor
-  protected float $_height     = 0;  // height of the box as it lays out on the PDF page
-  protected float $_width      = 0;  // width of the box as it lays out on the PDF page
-  protected float $_top_pad    = 0;  // required padding between this box and prior box
-  protected float $_bottom_pad = 0;  // required padding between this box and next box
+  protected float $height     = 0;  // height of the box as it lays out on the PDF page
+  protected float $width      = 0;  // width of the box as it lays out on the PDF page
+  protected float $top_pad    = 0;  // required padding between this box and prior box
+  protected float $bottom_pad = 0;  // required padding between this box and next box
 
   // Only set on boxes that start a new page
-  protected static int $_cur_page = 0;
-  protected int        $_page     = 0;
+  protected static int $cur_page = 0;
+  protected int        $page     = 0;
 
   // The following are set in the call to position()
-  protected float $_x = 0; // x location of the upper left corner of the box on the page
-  protected float $_y = 0; // y location of the upper left corner of the box on the page
+  protected float $x = 0; // x location of the upper left corner of the box on the page
+  protected float $y = 0; // y location of the upper left corner of the box on the page
 
   /**
    * Returns the height of the box on the PDF page
    * @return float
    */
-  public function getHeight(): float { return $this->_height; }
+  public function getHeight(): float { return $this->height; }
 
   /**
    * Returns the width of the box on the PDF page
    * @return float
    */
-  public function getWidth(): float { return $this->_width; }
+  public function getWidth(): float { return $this->width; }
 
   /**
    * Resizes the width and/or height, but only if it makes that dimension larger.
@@ -59,8 +60,8 @@ abstract class PDFBox
    */
   protected function grow(?float $width=null, ?float $height=null)
   {
-    if($width !== null)  { $this->_width  = max($this->_width,  $width);  }
-    if($height !== null) { $this->_height = max($this->_height, $height); }
+    if($width !== null)  { $this->width  = max($this->width,  $width);  }
+    if($height !== null) { $this->height = max($this->height, $height); }
   }
 
   /**
@@ -79,7 +80,7 @@ abstract class PDFBox
   public function yOffset(?PDFBox $prior): float
   {
     if (is_null($prior)) { return 0; }
-    return max($this->_top_pad, $prior->_bottom_pad);
+    return max($this->top_pad, $prior->bottom_pad);
   }
 
   /**
@@ -106,14 +107,24 @@ abstract class PDFBox
    */
   protected function startPage() 
   {
-    self::$_cur_page += 1;
-    $this->_page = self::$_cur_page;
+    self::$cur_page += 1;
+    $this->page = self::$cur_page;
   }
+
+  /**
+   * The current box wants to start a new page
+   *   Default = false
+   *   Subclasses which may need to start a new page should overide the method
+   * @param float $y location where box will be positioned on current page
+   * @param PDFRootBox $root container into which box will be positioned
+   * @return bool
+   */
+  protected function needsPageBreak(float $y, PDFRootBox $root) : bool { return false; }
 
   /**
    * @return int number of pages in the PDF document
    */
-  public static function numPages() : int {return self::$_cur_page; }
+  public static function numPages() : int {return self::$cur_page; }
 
   /**
    * Positions the box and its children. 
@@ -123,12 +134,12 @@ abstract class PDFBox
    * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return void
    */
   protected function position(float $x, float $y)
   {
-    $this->_x    = $x;
-    $this->_y    = $y;
+    $this->x = $x;
+    $this->y = $y;
   }
 
   /**
@@ -137,7 +148,7 @@ abstract class PDFBox
    */
   protected function isNewPage() : bool
   {
-    return $this->_page > 0;
+    return $this->page > 0;
   }
 
   /**
@@ -154,26 +165,25 @@ abstract class PDFBox
    */
   public function __construct(TTPDF $ttpdf) 
   {
-    $this->_ttpdf = $ttpdf;
+    $this->ttpdf = $ttpdf;
   }
 
   /**
    * Kicks off the rendering of the box to the PDF output. 
    *   This method should be overridden by subclasses.
    *   Child classes should include call to parent::render()
-   * @return bool indicates success/failure of the rendering
+   * @return bool void
    */
-  protected function render(): bool
+  protected function render()
   {
     if(self::debug) {
       $outline_color = $this->debug_color();
       if ($outline_color) {
-        $this->_ttpdf->setDrawColor(...$outline_color);
-        $this->_ttpdf->Rect($this->_x, $this->_y, $this->_width, $this->_height);
-        $this->_ttpdf->setDrawColor(0);
+        $this->ttpdf->setDrawColor(...$outline_color);
+        $this->ttpdf->Rect($this->x, $this->y, $this->width, $this->height);
+        $this->ttpdf->setDrawColor(0);
       }
     }
-    return true;
   }
   
   /**
@@ -183,10 +193,7 @@ abstract class PDFBox
    *   Default value is to not draw an outline.
    * @return array (see TCPDF::setDrawColor for details)
    */
-  protected function debug_color() : array
-  {
-    return [];
-  }
+  protected function debug_color() : array { return []; }
 }
 
 /**
@@ -201,12 +208,12 @@ abstract class PDFBox
 abstract class PDFRootBox extends PDFBox
 {
   // This list of all top level child boxes
-  /** @var PDFBox[] $_children */
-  private array $_children = [];
-  private float $_content_left = 0;
-  private float $_content_right = 0;
-  private float $_content_top = 0;
-  private float $_content_bottom = 0;
+  /** @var PDFBox[] $children */
+  private array $children = [];
+  private float $_left = 0;
+  private float $_right = 0;
+  private float $_top = 0;
+  private float $_bottom = 0;
 
   private const bottom_pad = K_EIGHTH_INCH;
 
@@ -215,20 +222,31 @@ abstract class PDFRootBox extends PDFBox
    *   While the existence of this method is not strictly necessary, it serves as
    *   a reminder that all subclasses of PDFRootBox should also invoke the parent constrctor
    * @param TTPDF instances of a TCDPF class (or subclass)
+   * @param float $top margin (default=PDF_MARGIN_TOP)
+   * @param float $right margin (default=PDF_MARGIN_RIGHT)
+   * @param float $bottom margin (default=PDF_MARGIN_BOTTOM)
+   * @param float $left margin (default=PDF_MARGIN_LEFT)
    * @return void 
    */
-  public function __construct(TTPDF $ttpdf)
-  {
+  public function __construct(
+    TTPDF $ttpdf, 
+    float $top=PDF_MARGIN_TOP, 
+    float $right=PDF_MARGIN_RIGHT,
+    float $bottom=PDF_MARGIN_BOTTOM,
+    float $left=PDF_MARGIN_LEFT
+  ) {
     parent::__construct($ttpdf);
 
-    $this->_content_left   = PDF_MARGIN_LEFT;
-    $this->_content_right  = $ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
-    $this->_content_top    = PDF_MARGIN_TOP;
-    $this->_content_bottom = $ttpdf->getPageHeight() - (PDF_MARGIN_BOTTOM + self::bottom_pad);
+    $this->_left   = $left;
+    $this->_right  = $ttpdf->getPageWidth() - $right;
+    $this->_top    = $top;
+    $this->_bottom = $ttpdf->getPageHeight() - ($bottom + self::bottom_pad);
   }
 
-  public function content_width()  : float { return $this->_content_right  - $this->_content_left; }
-  public function content_height() : float { return $this->_content_bottom - $this->_content_top;  }
+  public function content_width()  : float { return $this->_right  - $this->_left; }
+  public function content_height() : float { return $this->_bottom - $this->_top;  }
+  public function content_top()    : float { return $this->_top; }
+  public function content_bottom() : float { return $this->_bottom; }
 
   /**
    * Adds a child box to the root box.
@@ -237,7 +255,7 @@ abstract class PDFRootBox extends PDFBox
    */
   protected function addChild(PDFBox $child): void
   {
-    $this->_children[] = $child;
+    $this->children[] = $child;
   }
 
   /**
@@ -249,9 +267,9 @@ abstract class PDFRootBox extends PDFBox
   {
     $prior = null;
     $indent = 0;
-    $cur_y  = $this->_content_top;
+    $cur_y  = $this->_top;
 
-    foreach ($this->_children as $box) 
+    foreach ($this->children as $box) 
     {
       if ($box->resetIndent()) { $indent = 0; }
 
@@ -260,12 +278,17 @@ abstract class PDFRootBox extends PDFBox
       $cur_y += $box->yOffset($prior);
       $prior = $box;
 
-      if (PDFBox::numPages() === 0 || ($cur_y > $max_y) || ($cur_y + $box->getHeight() > $this->_content_bottom)) {
+      if (
+        PDFBox::numPages() === 0  // very first page
+        || ($cur_y > $max_y)      // start position exceeds limit for box type
+        || $box->needsPageBreak($cur_y, $this) // box is requesting a new page
+        || ($cur_y + $box->getHeight() > $this->_bottom) // box won't fit on page
+      ) {
         $box->startPage();
-        $cur_y = $this->_content_top;
+        $cur_y = $this->_top;
       }
 
-      $box->position($this->_content_left + $indent, $cur_y);
+      $box->position($this->_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
       $indent += $box->incrementIndent();
@@ -275,15 +298,14 @@ abstract class PDFRootBox extends PDFBox
   /**
    * Controls the rendering of all child boxes.
    *   This method should not need to be overwritten by subclassses of PDFRootBox
-   * @return bool 
+   * @return void 
    */
-  public function render(): bool
+  public function render()
   {
-    foreach ($this->_children as $child) {
-      if ($child->isNewPage()) { $this->_ttpdf->AddPage(); }
-      if (!$this->render_child($child)) { return false; }
+    foreach ($this->children as $child) {
+      if ($child->isNewPage()) { $this->ttpdf->AddPage(); }
+      $this->render_child($child);
     }
-    return true;
   }
 
   /**
@@ -291,11 +313,11 @@ abstract class PDFRootBox extends PDFBox
    *   Subclasses that need to do more than simply render the child to the
    *   page should overload this class. 
    * @param PDFBox $child 
-   * @return bool 
+   * @return void 
    */
-  protected function render_child(PDFBox $child) : bool
+  protected function render_child(PDFBox $child)
   {
-    return $child->render();
+    $child->render();
   }
 }
 
@@ -304,12 +326,12 @@ abstract class PDFRootBox extends PDFBox
  */
 class PDFTextBox extends PDFBox
 {
-  private string $_text = '';   // text to be rendered
-  private string $_family = ''; // font family
-  private string $_style = '';  // font style
-  private float $_size = 0;     // fontn size
+  private string $text = '';   // text to be rendered
+  private string $family = ''; // font family
+  private string $style = '';  // font style
+  private float  $size = 0;    // fontn size
 
-  private bool $_multi = false;
+  private int  $num_lines = 1;
 
   /**
    * PDFTextBox Constructor.  
@@ -338,45 +360,59 @@ class PDFTextBox extends PDFBox
   ) {
     parent::__construct($ttpdf);
 
-    $this->_family = $family ? $family : K_SANS_SERIF_FONT;
-    $this->_style = $style;
-    $this->_size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
+    $this->family = $family ? $family : K_SANS_SERIF_FONT;
+    $this->style = $style;
+    $this->size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
 
-    $ttpdf->setFont($this->_family, $this->_style, $this->_size);
+    $ttpdf->setFont($this->family, $this->style, $this->size);
 
     if ($multi) {
-      $this->_text = $text;
-      $this->_width = $w;
-      $num_lines = $ttpdf->getNumLines($text, $w);
-      $this->_multi = $num_lines > 1;
-      $this->_height = $num_lines * ttpdf_line_height($ttpdf);
+      $this->text = $text;
+      $this->width = $w;
+      $this->num_lines = $ttpdf->getNumLines($text, $w);
+      $this->height = $this->num_lines * ttpdf_line_height($ttpdf);
     } else {
       $padding = $ttpdf->getCellPaddings();
-      $this->_text = ttpdf_truncate_text($ttpdf, $text, $w);
-      $this->_width = $ttpdf->GetStringWidth($this->_text) + $padding['L'] + $padding['R'];
-      $this->_height = ttpdf_line_height($ttpdf);
+      $this->text = ttpdf_truncate_text($ttpdf, $text, $w);
+      $this->width = $ttpdf->GetStringWidth($this->text) + $padding['L'] + $padding['R'];
+      $this->height = ttpdf_line_height($ttpdf);
     }
   }
 
   /**
-   * Renders the PDFTextBox
-   * @return bool 
+   * Number of lines of text in the box
+   * @return int 
    */
-  protected function render(): bool
-  {
-    if (!parent::render()) { return false; }
-    //$ttpdf->Rect($this->_x,$this->_y,$this->_max_width,$this->_height);
-    //$ttpdf->Rect($this->_x,$this->_y,$this->_width,$this->_height);
-    $this->_ttpdf->setFont($this->_family, $this->_style, $this->_size);
-    $this->_ttpdf->setY($this->_y);
-    $this->_ttpdf->setX($this->_x);
-    if ($this->_multi) {
-      $this->_ttpdf->MultiCell($this->_width, $this->_height, $this->_text, align:'L');
-    } else {
-      $this->_ttpdf->Cell($this->_width, $this->_height, $this->_text);
-    }
-    return true;
+  public function getNumLines() : int {
+    return $this->num_lines;
   }
+
+  /**
+   * Height of a single line in the box
+   * @return float 
+   */
+  public function getLineHeight() : float {
+    return $this->height / $this->num_lines;
+  }
+
+  /**
+   * Renders the PDFTextBox
+   * @return void
+   */
+  protected function render()
+  {
+    parent::render();
+    $this->ttpdf->setFont($this->family, $this->style, $this->size);
+    $this->ttpdf->setY($this->y);
+    $this->ttpdf->setX($this->x);
+    if ($this->num_lines > 1) {
+      $this->ttpdf->MultiCell($this->width, $this->height, $this->text, align:'L');
+    } else {
+      $this->ttpdf->Cell($this->width, $this->height, $this->text);
+    }
+  }
+
+  protected function debug_color(): array { return [128,128,128]; }
 }
 
 /**
@@ -384,9 +420,9 @@ class PDFTextBox extends PDFBox
  */
 class PDFMarkdownBox extends PDFBox
 {
-  private string $_html = '';   // text to be rendered
-  private string $_family = ''; // font family
-  private float $_size = 0;     // fontn size
+  private string $html = '';   // text to be rendered
+  private string $family = ''; // font family
+  private float $size = 0;     // fontn size
 
   /**
    * PDFMarkdownBox Constructor.  
@@ -411,32 +447,31 @@ class PDFMarkdownBox extends PDFBox
   ) {
     parent::__construct($ttpdf);
 
-    $this->_family = $family ? $family : K_SANS_SERIF_FONT;
-    $this->_size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
+    $this->family = $family ? $family : K_SANS_SERIF_FONT;
+    $this->size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
 
-    $ttpdf->setFont($this->_family, '', $this->_size);
+    $ttpdf->setFont($this->family, '', $this->size);
 
-    $this->_width = $w;
+    $this->width = $w;
 
-    $this->_html = MarkdownParser::parse($markdown, false);
+    $this->html = MarkdownParser::parse($markdown, false);
 
     $startY = 0;  // arbitrary, but 0 is as good as any other number and gives us the most working room
     $ttpdf->startTransaction();
     $ttpdf->AddPage();
-    $ttpdf->writeHTMLCell($w, 0, 0, $startY, $this->_html, ln: 1);
-    $this->_height = $ttpdf->GetY() - $startY;
+    $ttpdf->writeHTMLCell($w, 0, 0, $startY, $this->html, ln: 1);
+    $this->height = $ttpdf->GetY() - $startY;
     $ttpdf->rollbackTransaction(true);
   }
 
   /**
    * Renders a PDFMarkdownBox
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    $this->_ttpdf->setFont($this->_family, '', $this->_size);
-    $this->_ttpdf->writeHTMLCell($this->_width, $this->_height, $this->_x, $this->_y,$this->_html);
-    return true;
+    parent::render();
+    $this->ttpdf->setFont($this->family, '', $this->size);
+    $this->ttpdf->writeHTMLCell($this->width, $this->height, $this->x, $this->y,$this->html);
   }
 }

@@ -46,7 +46,7 @@ class SurveyRootBox extends PDFRootBox
    */
   private function add_section(float $width, array $section, array $content)
   {
-    $box = new SurveySectionHeader($this->_ttpdf, $width, $section);
+    $box = new SurveySectionHeader($this->ttpdf, $width, $section);
     $this->addChild($box);
 
     $width -= $box->incrementIndent();
@@ -55,11 +55,9 @@ class SurveyRootBox extends PDFRootBox
 
     $feedback_prompt = $section['feedback'] ?? null;
     if($feedback_prompt) {
-      $box = new SurveySectionFeedback($this->_ttpdf, $width, $feedback_prompt);
+      $box = new SurveySectionFeedback($this->ttpdf, $width, $feedback_prompt);
       $this->addChild($box);
     }
-
-    //@@@ Add section feedback box here
   }
 
   /**
@@ -108,7 +106,7 @@ class SurveyRootBox extends PDFRootBox
 
     // add question boxes to the survey
     foreach($groups as $questions) {
-      $box = new SurveyGroupBox($this->_ttpdf, $width, $questions, $content);
+      $box = new SurveyGroupBox($this->ttpdf, $width, $questions, $content);
       $this->addChild($box);
     }
   }

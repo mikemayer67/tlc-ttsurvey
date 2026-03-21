@@ -18,15 +18,15 @@ require_once(app_file('pdf/survey/config.php'));
  */
 class SurveyOptionBox extends SurveyAlignableBox
 {
-  private PDFTextBox $_label;
+  private PDFTextBox $label;
 
-  private float $_input_x = 0;
-  private float $_input_y = 0;
-  private float $_input_width  = K_EIGHTH_INCH;
-  private float $_input_height = K_EIGHTH_INCH;
-  private float $_input_radius = 0;
+  private float $input_x = 0;
+  private float $input_y = 0;
+  private float $input_width  = K_EIGHTH_INCH;
+  private float $input_height = K_EIGHTH_INCH;
+  private float $input_radius = 0;
 
-  private float $_gap = 1;
+  private float $gap = 1;
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -47,53 +47,61 @@ class SurveyOptionBox extends SurveyAlignableBox
   {
     parent::__construct($surveyPDF,$justification);
 
-    $max_width -= $this->_input_width + $this->_gap;
-    $this->_label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
+    $max_width -= $this->input_width + $this->gap;
+    $this->label = new PDFTextBox($surveyPDF,$max_width,$label,size:$fontsize);
 
-    $size = min($this->_input_width, $this->_input_height);
+    $size = min($this->input_width, $this->input_height);
     switch($shape) {
-      case OptionShape::RADIO:    $this->_input_radius = $size/2; break;
-      case OptionShape::CHECKBOX: $this->_input_radius = $size/4; break;
+      case OptionShape::RADIO:    $this->input_radius = $size/2; break;
+      case OptionShape::CHECKBOX: $this->input_radius = $size/4; break;
     }
 
-    $this->_width  = $this->_input_width + $this->_gap + $this->_label->getWidth();
-    $this->_height = max($this->_input_height, $this->_label->getHeight());
-    $this->_aligned_width = $this->_width;
+    $this->width  = $this->input_width + $this->gap + $this->label->getWidth();
+    $this->height = max($this->input_height, $this->label->getHeight());
+    $this->aligned_width = $this->width;
   }
 
-  protected function position( float $x, float $y)
+  /**
+   * Manages positioning of an option box and its children
+   * @param float $x 
+   * @param float $y 
+   * @return void
+   */
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
-    if($this->_justification === SurveyJustification::LEFT) {
+    if($this->justification === SurveyJustification::LEFT) {
       $xc = $x;
-      $xw = $x + $this->_input_width + $this->_gap;
+      $xw = $x + $this->input_width + $this->gap;
     } else {
-      $xc = $x + $this->_aligned_width - $this->_input_width;
-      $xw = $xc - $this->_gap - $this->_label->getWidth();
+      $xc = $x + $this->aligned_width - $this->input_width;
+      $xw = $xc - $this->gap - $this->label->getWidth();
     }
 
-    $dy = ($this->_input_height - $this->_label->getHeight()) / 2;
+    $dy = ($this->input_height - $this->label->getHeight()) / 2;
     $yw = ($dy>0) ? $y + $dy : $y;
     $yc = ($dy<0) ? $y - $dy : $y;
 
-    $this->_label->position($xw, $yw);
-    $this->_input_x = $xc;
-    $this->_input_y = $yc;
+    $this->label->position($xw, $yw);
+    $this->input_x = $xc;
+    $this->input_y = $yc;
   }
   
-  public function render(): bool
+  /**
+   * @return bool 
+   */
+  public function render()
   {
-    if (!parent::render()) { return false; }
-    if(!$this->_label->render()) { return false; }
+    parent::render();
+    $this->label->render();
     
-    $this->_ttpdf->setLineWidth(0.2);
-    $this->_ttpdf->RoundedRect(
-      $this->_input_x, $this->_input_y,
-      $this->_input_width, $this->_input_height,
-      $this->_input_radius
+    $this->ttpdf->setLineWidth(0.2);
+    $this->ttpdf->RoundedRect(
+      $this->input_x, $this->input_y,
+      $this->input_width, $this->input_height,
+      $this->input_radius
     );
-    return true;
   }
 
 }

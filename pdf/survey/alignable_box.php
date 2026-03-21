@@ -16,8 +16,8 @@ require_once(app_file('pdf/survey/enums.php'));
  */
 abstract class SurveyAlignableBox extends PDFBox 
 {
-  protected float $_aligned_width = 0;
-  protected SurveyJustification $_justification = SurveyJustification::LEFT;
+  protected float $aligned_width = 0;
+  protected SurveyJustification $justification = SurveyJustification::LEFT;
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -32,10 +32,10 @@ abstract class SurveyAlignableBox extends PDFBox
   {
     parent::__construct($surveyPDF);
     if($width !== null ) {
-      $this->_aligned_width = $width;
+      $this->aligned_width = $width;
     }
     if($justification !== null) {
-      $this->_justification = $justification;
+      $this->justification = $justification;
     }
   }
 
@@ -43,13 +43,13 @@ abstract class SurveyAlignableBox extends PDFBox
    * Getter for aligned width, i.e. the part of the box which must be aligned
    * @return float 
    */
-  public function getAlignedWidth() : float {return $this->_aligned_width;}
+  public function getAlignedWidth() : float {return $this->aligned_width;}
 
   /**
    * Setter for aligned width, i.e. the part of the box which must be aligned
    * @return float 
    */
-  public function setAlignedWidth(float $w) { $this->_aligned_width = $w; }
+  public function setAlignedWidth(float $w) { $this->aligned_width = $w; }
 
   /**
    * Getter for box justification
@@ -57,7 +57,7 @@ abstract class SurveyAlignableBox extends PDFBox
    */
   public function getJustification() : SurveyJustification
   {
-    return $this->_justification;
+    return $this->justification;
   }
 
   /**
@@ -67,6 +67,6 @@ abstract class SurveyAlignableBox extends PDFBox
    */
   public function setJustification(SurveyJustification $justification)
   {
-    $this->_justification = $justification;
+    $this->justification = $justification;
   }
 }

@@ -9,8 +9,8 @@ require_once(app_file('survey/markdown.php'));
 
 class SurveySectionHeader extends PDFBox
 {
-  private ?PDFBox $_name_box = null;
-  private ?PDFBox $_intro_box = null;
+  private ?PDFBox $name_box = null;
+  private ?PDFBox $intro_box = null;
 
   private const vgap = 1; // mm
 
@@ -29,31 +29,31 @@ class SurveySectionHeader extends PDFBox
     $collapsible = $section['collapsible'] ?? true;
     $intro       = $section['intro'] ?? '';
 
-    $this->_width = $width;
-    $this->_height = 0;
+    $this->width = $width;
+    $this->height = 0;
 
     if ($collapsible || $intro) {
-      $this->_top_pad    = 0.25 * K_INCH;
-      $this->_bottom_pad = 0.125 * K_INCH;
+      $this->top_pad    = 0.25 * K_INCH;
+      $this->bottom_pad = 0.125 * K_INCH;
     } else {
-      $this->_top_pad = 0;
-      $this->_bottom_pad = 0;
+      $this->top_pad = 0;
+      $this->bottom_pad = 0;
     }
 
     if ($collapsible) {
-      $this->_name_box = new PDFTextBox($surveyPDF, $width, $name, K_SERIF_FONT, size:K_SURVEY_FONT_X_LARGE);
-      $this->_height += $this->_name_box->getHeight();
+      $this->name_box = new PDFTextBox($surveyPDF, $width, $name, K_SERIF_FONT, size:K_SURVEY_FONT_X_LARGE);
+      $this->height += $this->name_box->getHeight();
     }
     if ($collapsible && $intro) {
-      $this->_height += self::vgap;
+      $this->height += self::vgap;
     }
     if ($intro) {
       if (possibleMarkdown($intro)) {
-        $this->_intro_box = new PDFMarkdownBox($surveyPDF, $width, $intro, size:K_SURVEY_FONT_SMALL);
+        $this->intro_box = new PDFMarkdownBox($surveyPDF, $width, $intro, size:K_SURVEY_FONT_SMALL);
       } else {
-        $this->_intro_box = new PDFTextBox($surveyPDF, $width, $intro, style:'I', size:K_SURVEY_FONT_SMALL, multi:true);
+        $this->intro_box = new PDFTextBox($surveyPDF, $width, $intro, style:'I', size:K_SURVEY_FONT_SMALL, multi:true);
       }
-      $this->_height += $this->_intro_box->getHeight();
+      $this->height += $this->intro_box->getHeight();
     }
   }
 
@@ -82,49 +82,46 @@ class SurveySectionHeader extends PDFBox
    */
   public function incrementIndent(): float
   {
-    return $this->_intro_box ? K_QUARTER_INCH : 0;
+    return $this->intro_box ? K_QUARTER_INCH : 0;
   }
 
   /**
    * Manages the layout of the section box and its children
    * @param float $x 
    * @param float $y 
-   * @return void 
+   * @return void
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y)
   {
     parent::position($x,$y);
 
-    if ($this->_name_box) {
-      $this->_name_box->position($x, $y);
-      $y += $this->_name_box->getHeight();
-      if ($this->_intro_box) { $y += self::vgap; }
+    $this->name_box?->position($x, $y);
+
+    if($this->name_box && $this->intro_box) {
+      $y += self::vgap + $this->name_box->getHeight();
     }
-    if ($this->_intro_box) {
-      $this->_intro_box->position($x, $y);
-    }
+
+    $this->intro_box?->position($x, $y);
   }
 
   /**
    * Renders the content of a SurveySection box
-   * @return bool 
+   * @return void 
    */
-  protected function render(): bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    if ($this->_name_box) {
-      if (!$this->_name_box->render()) { return false; }
-      $y = $this->_name_box->_y + $this->_name_box->getHeight();
-      $this->_ttpdf->setLineWidth(0.2);
+    parent::render();
+
+    if($this->name_box) {
+      $this->name_box->render();
+
+      $y = $this->name_box->y + $this->name_box->getHeight();
       $x1 = PDF_MARGIN_LEFT;
-      $x2 = $this->_ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
-      $this->_ttpdf->Line($x1, $y, $x2, $y);
+      $x2 = $this->ttpdf->getPageWidth() - PDF_MARGIN_RIGHT;
+      $this->ttpdf->setLineWidth(0.2);
+      $this->ttpdf->Line($x1, $y, $x2, $y);
     }
 
-    if ($this->_intro_box) {
-      if (!$this->_intro_box->render()) { return false; }
-    }
-
-    return true;
+    $this->intro_box?->render();
   }
 }

@@ -6,6 +6,11 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary_pdf.php'));
 require_once(app_file('pdf/summary/section_header.php'));
+require_once(app_file('pdf/summary/section_feedback.php'));
+require_once(app_file('pdf/summary/info_box.php'));
+require_once(app_file('pdf/summary/bool_box.php'));
+require_once(app_file('pdf/summary/freetext_box.php'));
+require_once(app_file('pdf/summary/select_box.php'));
 require_once(app_file('summary/sections.php'));
 
 /**
@@ -22,7 +27,7 @@ class SummaryRootBox extends PDFRootBox
    */
   public function __construct(SummaryPDF $summaryPDF, array $content, array $responses)
   {
-    parent::__construct($summaryPDF);
+    parent::__construct($summaryPDF, top:3*K_QUARTER_INCH, right:K_QUARTER_INCH, left:K_HALF_INCH);
     $sections = summary_sections($content);
     foreach($sections as $section) {
       $this->add_section($this->content_width(),$section,$content,$responses);
@@ -41,17 +46,90 @@ class SummaryRootBox extends PDFRootBox
    */
   private function add_section(float $width, array $section, array $content, array $responses)
   {
-    $box = new SummarySectionHeader($this->_ttpdf,$width,$section);
+    $box = new SummarySectionHeader($this->ttpdf,$width,$section);
     $this->addChild($box);
+
+    $this->add_questions($width, $section, $content, $responses);
+
+    $feedback = $section['feedback'] ?? null;
+    if($feedback) {
+      $box = new SummarySectionFeedback($this->ttpdf, $width, $section, $responses);
+      $this->addChild($box);
+    }
   }
 
-  protected function render_child(PDFBox $child): bool
+  /**
+   * Adds question boxes for the current section to the summary
+   * @param float $max_width 
+   * @param array $section section specific content data
+   * @param array $content overall survey content
+   * @param array $responses overall response data
+   * @return void 
+   */
+  private function add_questions(float $max_width, array $section, array $content, array $responses)
+  {
+    $sid = $section['section_id'];
+
+    $questions = $content['questions'];
+    $questions = array_filter($questions, fn($a) => ($a['section']??null) === $sid );
+    uasort($questions,fn($a,$b) => $a['sequence'] <=> $b['sequence']);
+
+    $grouped = false;
+    $prev    = null;
+    $width   = $max_width;
+    foreach($questions as $question) {
+      switch(strtoupper($question['grouped']??'NO')) {
+        case 'NO':
+          $grouped = false;
+          $prev    = null;
+          $width   = $max_width;
+          break;
+        case 'NEW':
+          $grouped = true;
+          $prev    = null;
+          break;
+        case 'YES':
+          $grouped = true;
+          break;
+      }
+
+      $box = null;
+
+      $type = strtolower($question['type']);
+      switch($type) {
+        case 'info':
+          if($grouped) {
+            $box = new SummaryInfoBox($this->ttpdf,$width,$question,$prev);
+            $width = $max_width - SummaryInfoBox::indent;
+          }
+          break;
+        case 'bool':
+          $box = new SummaryBoolBox($this->ttpdf,$width,$question,$responses,$prev);
+          break;
+        case 'freetext':
+          $box = new SummaryFreetextBox($this->ttpdf,$width,$question,$responses,$prev);
+          break;
+        case 'select_one': // intentional fallthrough
+        case 'select_multi':
+          $options = $content['options'];
+          $box = new SummarySelectBox($this->ttpdf,$width,$question,$options,$responses,$prev);
+          break;
+      }
+
+      if($box) {
+        $this->addChild($box);
+        $prev = $box;
+      }
+    }
+  }
+
+  protected function render_child(PDFBox $child)
   {
     $section = $child->currentSection();
     if($section) {
-      assert($this->_ttpdf instanceof SummaryPDF);
-      $this->_ttpdf->setSection($section);
+      assert($this->ttpdf instanceof SummaryPDF);
+      $this->ttpdf->setSection($section);
     }
-    return parent::render_child($child);
+    parent::render_child($child);
   }
 }

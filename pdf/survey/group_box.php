@@ -14,7 +14,7 @@ class SurveyGroupBox extends PDFBox
   /**
    * @var PDFBox[] child question boxes
    */
-  private array $_child_boxes = [];
+  private array $child_boxes = [];
 
   /**
    * @param SurveyPDF $surveyPDF 
@@ -26,11 +26,11 @@ class SurveyGroupBox extends PDFBox
   {
     parent::__construct($surveyPDF);
 
-    $this->_width = 0;
-    $this->_height = 0;
+    $this->width = 0;
+    $this->height = 0;
 
-    $this->_top_pad    = 2; // mm
-    $this->_bottom_pad = 1; // mm
+    $this->top_pad    = 2; // mm
+    $this->bottom_pad = 1; // mm
 
     $aligned_width = 0;
     foreach($questions as $question) {
@@ -51,9 +51,9 @@ class SurveyGroupBox extends PDFBox
           $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content['options']);
           break;
       }
-      $this->_height += $box->getHeight();
-      $this->_width = max($this->_width, $box->getWidth());
-      $this->_child_boxes[] = $box;
+      $this->height += $box->getHeight();
+      $this->width = max($this->width, $box->getWidth());
+      $this->child_boxes[] = $box;
 
       if($box instanceof SurveyAlignableBox) {
         $aligned_width = max($aligned_width, $box->getAlignedWidth());
@@ -61,7 +61,7 @@ class SurveyGroupBox extends PDFBox
 
       $max_width -= $box->incrementIndent();
     }
-    foreach($this->_child_boxes as $box) {
+    foreach($this->child_boxes as $box) {
       if($box instanceof SurveyAlignableBox) {
         $box->setAlignedWidth($aligned_width);
       }
@@ -75,11 +75,11 @@ class SurveyGroupBox extends PDFBox
    * @param float $y 
    * @return void 
    */
-  protected function position( float $x, float $y)
+  protected function position(float $x, float $y)
   {
     parent::position($x, $y);
 
-    foreach($this->_child_boxes as $box) 
+    foreach($this->child_boxes as $box) 
     {
       $box->position($x,$y);
       $y += $box->getHeight();
@@ -89,16 +89,11 @@ class SurveyGroupBox extends PDFBox
 
   /**
    * Renders the content of a SurveyGroupBox
-   * @return bool 
+   * @return void
    */
-  protected function render() : bool
+  protected function render()
   {
-    if (!parent::render()) { return false; }
-    foreach($this->_child_boxes as $box) 
-    {
-      if(!$box->render()) { return false; }
-    }
-
-    return true;
+    parent::render();
+    foreach($this->child_boxes as $box) { $box->render(); }
   }
 }
