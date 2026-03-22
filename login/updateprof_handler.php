@@ -10,7 +10,7 @@ clear_redirect();
 
 // Note that all the logic in this file is wrapped up in functions...
 //   the very last action in this file is execute the main entry point for 
-//   handling post requests from the pwreset form.
+//   handling post requests from the updatepref form.
 //
 // As sumch this file should be included using require rather than require_once.
 

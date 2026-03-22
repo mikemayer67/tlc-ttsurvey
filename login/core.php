@@ -26,13 +26,15 @@ if(key_exists('forget',$_GET))
 // These SHOULD be mutually exclusive, but if there is conflict, the session data takes precedence
 
 $page = get_redirect_page();
-$page = $page ? $page : $_GET['p'] ?? null;
+if(!$page && key_exists('p',$_GET)) {
+  $page = 'login/' . $_GET['p'] . '_page';
+}
 
 // If a specifc redirect page was specified, jump to that now
 
 if($page)
 {
-  $page = safe_app_file("login/{$page}_page.php");
+  $page = safe_app_file("{$page}.php");
   if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
   require($page);
   die();
