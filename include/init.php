@@ -109,7 +109,7 @@ function safe_app_file(string $path) : string {
     return $file;
   } else {
     http_response_code(405);
-    error_log("Unsafe app file requested: $path");
+    log_error("Unsafe app file requested: $path");
     die();
   }
 }
