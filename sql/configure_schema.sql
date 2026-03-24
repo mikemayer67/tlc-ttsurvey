@@ -115,7 +115,6 @@ CREATE TABLE tlc_tt_userids (
   userid   varchar(24)  PRIMARY KEY,
   fullname varchar(100) NOT NULL,
   email    varchar(45)  DEFAULT NULL,
-  token    varchar(45)  DEFAULT NULL COMMENT 'access token',
   password varchar(64)  NOT NULL COMMENT 'hash of the password',
   anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
   admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'

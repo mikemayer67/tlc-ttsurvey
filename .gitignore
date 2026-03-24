@@ -18,6 +18,7 @@ sql/live_backups
 !sql/configure_schema.sql
 !sql/backup_data.sql
 !sql/restore_data.sql
+!sql/drop_backup.sql
 
 .vscode/*
 vendor
