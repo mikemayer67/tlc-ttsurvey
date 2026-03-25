@@ -110,14 +110,15 @@
           'lines':0,
         }
       })
-      .done( function(data,status,jqHXR) {
+      .done( function(data,status,jqXHR) {
         var data_str = data.join("\n");
         w.document.write("<pre>"+data_str+"</pre>");
         w.close();
+      })
+      .fail(function (jqXHR, textStatus, errorThrown) { 
+        ajax_error_handler(jqXHR,'get log entries');
+        if (w && !w.closed) { w.close(); }
       });
-    })
-    .fail( function(jqXHR,textStatus,errorThrown) { 
-      ajax_error_handler(jqXHR,'get log entries');
     });
 
     ce.log_level.on('change',refresh_display);
