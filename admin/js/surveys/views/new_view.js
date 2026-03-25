@@ -61,7 +61,9 @@ export default function init(ce)
     ce.submit.val('Create Survey');
     ce.revert.val('Cancel').prop('disabled',!_prior_id).css('opacity',_prior_id?1:0.25);
     ce.submit.show();
-    ce.preview_js.val("View Survey")
+    ce.revert.show();
+    ce.preview_js.val("View Survey");
+    ce.preview_js.hide();
     ce.preview_nojs.hide();
     ce.download_pdf.hide();
 
