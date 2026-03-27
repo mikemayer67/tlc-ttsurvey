@@ -16,10 +16,19 @@ user of the app (including changes specific to Trinity).
 
 ## Requirements
 
-This project requires PHP ≥8.1.
-PHP 7 reached end-of-life in 2022 and is no longer supported.
+- HTTP server (e.g. Apache)
+- PHP 8.1 or newer
+- MySQL 5.7 or newer
 
-## Setup Notes:
+## Setup
+
+The full instructions for setting up the survey app can be found
+in the [Getting Started documentation](docs/getting_started.md).
+
+At a high level, this consists of
+- creating the necessary database tables and views
+- customizing the app's .ini file to your particular setup
+- configuring the app's settings via the Admin Dashboard
 
 ### Database
 - This app requires access to a MySQL database

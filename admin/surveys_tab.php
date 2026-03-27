@@ -39,7 +39,7 @@ if(! ($all_surveys || $is_admin) ) {
 echo "<script>";
 echo "const ttt_all_surveys = " . json_encode($all_surveys) . ";";
 echo "const ttt_is_admin = " . ($is_admin ? "true" : "false") . ";";
-echo "const ttt_initial_survey_id = $id;";
+echo "const ttt_initial_survey_id = " . ($id ? "$id" : "null") . ";";
 echo "</script>";
 
 $form_uri = app_uri('admin');

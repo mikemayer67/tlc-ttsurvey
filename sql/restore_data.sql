@@ -28,7 +28,6 @@ insert into tlc_tt_question_map     select * from tlc_bkp_question_map;
 insert into tlc_tt_question_options select * from tlc_bkp_question_options;
 insert into tlc_tt_userids          select * from tlc_bkp_userids;
 insert into tlc_tt_anonids          select * from tlc_bkp_anonids;
-insert into tlc_tt_reset_tokens     select * from tlc_bkp_reset_tokens;
 insert into tlc_tt_roles            select * from tlc_bkp_roles;
 insert into tlc_tt_settings         select * from tlc_bkp_settings;
 insert into tlc_tt_user_status      select * from tlc_bkp_user_status;

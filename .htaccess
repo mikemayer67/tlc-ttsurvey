@@ -46,28 +46,23 @@ RewriteEngine On
 #RewriteRule (.*) tt.php [L]
 
 # ChatGPT rewrite:
-
 # ---------------------------------------------------------
 # 1. Allow existing error pages (405.php, 500.php) to be served
 RewriteCond %{REQUEST_FILENAME} (405|500)\.php$
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
-
 # ---------------------------------------------------------
 # 2. Serve static assets directly (images, CSS, JS)
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{REQUEST_FILENAME} \.(png|jpg|css|js|ico)$ [NC]
 RewriteRule ^ - [L]
-
 # ---------------------------------------------------------
 # 3. Special endpoints: admin and preview
 RewriteRule ^admin/?$ tt.php?admin [L]
 RewriteRule ^preview/?$ tt.php?preview [L]
-
 # ---------------------------------------------------------
 # 4. Catch-all: all other requests go to tt.php
 RewriteRule ^ tt.php [L]
-
 
 # php -- BEGIN cPanel-generated handler, do not edit
 # This domain inherits the “PHP” package.
