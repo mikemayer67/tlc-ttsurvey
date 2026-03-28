@@ -23,7 +23,7 @@ When a user elects to register for a new account, they will be presented with a 
 
 <img src="img/user_register.png" alt="Registration Form" width="600">
 
-The will need to provie:
+They will need to provie:
   - a unique userid (*no two users can have the same userid*)
   - a password (*rules are provided as an info button in the form*)
   - display name that will be used in the survey and response summary
