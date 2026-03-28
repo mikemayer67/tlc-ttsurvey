@@ -3,7 +3,7 @@
 --   of the scripts the SQL scripts that were run against it over
 --   time.
 CREATE TABLE tlc_tt_version_history (
-  release_version VARCHAR(32) PRIMARY KEY,
+  version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
   added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
