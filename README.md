@@ -51,7 +51,7 @@ The app distinguishes between two groups of users
 - May be able to view a summary of all submitted responses (depending on summary visibility rules)
 
 ### Admins
-- There is one **root** admin whose userid and password is set in the tlc-ttsurvey.ini file
+- There is one site admin whose userid and password is set in the tlc-ttsurvey.ini file
   - Has ability to access all parts of the admin dashboard and make any updates to settings or survey content
   - Is not a participant in the survey
 
@@ -153,4 +153,3 @@ The admin dashboard provides the tools necessary for the admins to:
 - view the survey app's log
   - without logging into the server directly
 
-### Editing Survey Content
