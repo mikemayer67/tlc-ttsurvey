@@ -11,6 +11,7 @@ design_notes
 
 tlc-ttsurvey.ini
 tlc-ttsurvey.log
+*.log
 error_log
 
 sql/*.sql
