@@ -8,7 +8,7 @@ create a user login.
 When someone brings up the survey app in their browser and are not currently logged into the 
 app, they are presented with the login page:
 
-![Login Page](img/user_login.png)
+<img src="img/user_login.png" alt="Login Page" width="600">
 
 They have the option to:
 
@@ -21,7 +21,7 @@ They have the option to:
 
 When a user elects to register for a new account, they will be presented with a registration form:
 
-![Registration Form](img/user_register.png)
+<img src="img/user_register.png" alt="Registration Form" width="600">
 
 The will need to provie:
   - a unique userid (*no two users can have the same userid*)
@@ -36,7 +36,7 @@ Once they submit the form, they will be able to log into the survey with the new
 If a user forgot their userid or password and if they provided an email address in their profile, they
 can request to have their login info sent to them.  The password reset form looks like:
 
-![Password Reset Form](img/user_pwrecover.png)
+<img src="img/user_pwrecover.png" alt="Password Reset Form" width="600">
 
 Either the userid or email address needs to be entered into the form.  If an email address is provided
 and is used by more than one account, the email will contain the userids for each of the accounts
@@ -56,13 +56,14 @@ Each participant can manage their profile settings and their submitted responses
 Once logged in a participant can update their profile information or their password via the
 "hamburger" menu at the right end of the navigation bar. 
 
-![User Menu](img/user_menu.png)
+<img src="img/user_menu.png" alt="User Menu" width="200">
 
 The dialog boxes for updating the profile and password should be completely straightforward
 as shown below.
 
-![User Profile Editor](img/user_profile_editor.png)
-![User Password Editor](img/user_password_editor.png)
+<img src="img/user_profile_editor.png" alt="User Profile Editor" width="300">
+
+<img src="img/user_password_editor.png" alt="User Profile Editor" width="300">
 
 ### Submitted responses
 
@@ -73,7 +74,7 @@ the response summary.
 Once a participant has submitted their responses, their response status changes from draft
 to submitted.  After that, the active survey page is replaced with user status page:
 
-![User Response Status](img/user_response_status.md)
+<img src="img/user_response_status.png" alt="User Response Status" width="600">
 
 The user may choose to either:
 
