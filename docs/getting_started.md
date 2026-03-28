@@ -91,7 +91,7 @@ a new schema, make sure that you have no existing tables or views
 that start with `tlc_tt_`.  You wouldn't want installing this app
 to clobber those.
 
-When creating the schema, I suggest using utf8mb4 charset with the
+When creating the schema, I suggest using the `utf8mb4` charset with the
 `utf8mb4-unicode-ci` collation.
 
 Once you have a schema identified, you will need to create the
@@ -172,6 +172,8 @@ the dashboard as yourself either at the URL above or via the
 link (the gear) in the navigation bar at the top of the survey page.
 
 Here are the settings you will probably want to set.
+
+**Be sure to hit the "Save Changes" button to commit your settings.**
 
 **Look and Feel**
 
@@ -272,4 +274,4 @@ to learn more about:
 
 and 
 
-- [Participating in the Survey](participant_guide.md)
+- [Participating in the Survey](participants.md)

@@ -14,6 +14,41 @@ this projects.  I will accept pull requests that add features or increase genera
 in it usage.  I will not accept pull requests that add specificity to any partiular
 user of the app (including changes specific to Trinity).
 
+## Core Features
+
+- Customizable survey branding (name/logo)
+- Responsive design (works on desktop, laptop, or mobile device)
+- Archive of prior surveys and responses
+  - summary can be viewed online
+  - new surveys can be cloned from old surveys
+  - cloned surveys autopopulate content
+  - cloned survesy autopopulate draft user responses
+- Admin Dashboard provides access to:
+  - survey app settings
+  - user roles
+  - review of current/past survey content
+  - creation of draft survey content
+  - summary of user response status
+- Participants manage their own account
+  - self registration
+  - can review/revise/unsubmit their responses
+  - may additionally be granted an admin role
+  - may additionally be granted access to view response summary
+- Multiple question types:
+  - Simple checkbox (yes/no type questions)
+  - Single select options (with optional write-in)
+  - Multiple selection options (with optional write-in)
+  - Freetext responses (user can answer in their own words)
+  - *An optional qualifier field may be added to most question types*
+- Survey content can be grouped by content sections
+  - may be made collapsible to conserve space on the page
+  - particularly useful when using the app on a mobile device
+- Repsonse summaries
+  - viewable online by anyone with role that allows access to the summary
+  - can be downloaded as a CSV or PDF file
+- Printable survey
+  - admins can download a printable PDF for use by folks without online access
+
 ## Requirements
 
 - HTTP server (e.g. Apache)
@@ -30,9 +65,15 @@ At a high level, this consists of
 - customizing the app's .ini file to your particular setup
 - configuring the app's settings via the Admin Dashboard
 
-## Core Concepts
+## Additional Resources
 
-## User Types
+- [Admin Dashboard](admin_dashboard.md)
+- [Survey Content](survey_content.md)
+- [Survey Participation](participants.md)
+- [Admin Roles](admin_roles.md)
+
+## Survey Structure
+## Survey Participation 
 
 The app distinguishes between two groups of users
 
