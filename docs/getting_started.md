@@ -75,6 +75,9 @@ a new schema, make sure that you have no existing tables or views
 that start with `tlc_tt_`.  You wouldn't want installing this app
 to clobber those.
 
+When creating the schema, I suggest using utf8mb4 charset with the
+`utf8mb4-unicode-ci` collation.
+
 Once you have a schema identified, you will need to create the
 tables and views used by this app.  This is done by running the
 SQL script `configure_schema.sql` located in the sql directory.

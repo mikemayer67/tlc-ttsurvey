@@ -30,18 +30,7 @@ At a high level, this consists of
 - customizing the app's .ini file to your particular setup
 - configuring the app's settings via the Admin Dashboard
 
-### Database
-- This app requires access to a MySQL database
-- You *could* use an existing schema, but be sure that there are no current table names or views that start with tlc_tt
-- Use the ```configure_schema.sql`` script in the sql directory to create tables required by this app
-  - Future releases will include migration scripts, but as this is v1.0, there are no migrations yet.
-
-### tlc-ttsurvey.ini-dist
-- The repo does **not** include this file, but it is necessary for the app to work.
-- The easiest way to create it is to make a copy of tlc-ttsurvey.ini.dist.
-- Look for all instances of ```[fill this in]``` and replace with the appropriate value for your hosting environment.
-
-# Core Concepts
+## Core Concepts
 
 ## User Types
 
