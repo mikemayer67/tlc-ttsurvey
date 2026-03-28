@@ -3,7 +3,7 @@
 --   of the scripts the SQL scripts that were run against it over
 --   time.
 CREATE TABLE tlc_tt_version_history (
-  release_version VARCHAR(32) PRIMARY KEY,
+  version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
   added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -391,5 +391,5 @@ SELECT so.survey_id,so.option_id
        AND qo.option_id  = so.option_id
  WHERE qo.survey_id IS NULL;
 
-INSERT INTO tlc_tt_version_history (release_version, change_description)
+INSERT INTO tlc_tt_version_history (version, change_description)
 VALUES ('1.0.0', 'Initial Database Configuration');

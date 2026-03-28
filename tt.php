@@ -24,7 +24,7 @@ require_once(app_file('include/status.php'));
 require_once(app_file('include/login.php'));
 
 require_once(app_file('include/db.php'));
-verify_required_db_version(3);
+verify_required_db_version('1.0.0');
 
 session_start();
 
