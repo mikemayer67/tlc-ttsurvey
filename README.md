@@ -67,10 +67,10 @@ At a high level, this consists of
 
 ## Additional Resources
 
-- [Admin Dashboard](admin_dashboard.md)
-- [Survey Content](survey_content.md)
-- [Survey Participation](participants.md)
-- [Admin Roles](admin_roles.md)
+- [Survey Content](docs/survey_content.md)
+- [Survey Participation](docs/participants.md)
+- [Admin Roles](docs/admin_roles.md)
+- [Admin Dashboard](docs/admin_dashboard.md)
 
 ## Survey Structure
 ## Survey Participation 
@@ -90,17 +90,6 @@ The app distinguishes between two groups of users
   - submit upon completion
   - withdraw submission back to draft state
 - May be able to view a summary of all submitted responses (depending on summary visibility rules)
-
-### Admins
-- There is one site admin whose userid and password is set in the tlc-ttsurvey.ini file
-  - Has ability to access all parts of the admin dashboard and make any updates to settings or survey content
-  - Is not a participant in the survey
-
-- Participants may be granted limited admin authority with one or more of the following roles
-  - Primary Admin: can do anything the root admin can do
-  - Content Editors: can modify the structure and content of surveys that are in draft status
-  - Survey Admins: can create, monitor, and change status of surveys as well as modify the draft survey structure and content
-  - Technical Contacts: the folks to contact if there are issues with using the survey app
 
 ## Survey Structure
 
