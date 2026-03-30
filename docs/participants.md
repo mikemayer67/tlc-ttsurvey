@@ -23,7 +23,7 @@ When a user elects to register for a new account, they will be presented with a 
 
 <img src="img/user_register.png" alt="Registration Form" width="600">
 
-They will need to provie:
+They will need to provide:
   - a unique userid (*no two users can have the same userid*)
   - a password (*rules are provided as an info button in the form*)
   - display name that will be used in the survey and response summary
@@ -61,9 +61,9 @@ Once logged in a participant can update their profile information or their passw
 The dialog boxes for updating the profile and password should be completely straightforward
 as shown below.
 
-<img src="img/user_profile_editor.png" alt="User Profile Editor" width="300">
+<img src="img/user_profile_editor.png" alt="User Profile Editor" width="400">
 
-<img src="img/user_password_editor.png" alt="User Profile Editor" width="300">
+<img src="img/user_password_editor.png" alt="User Profile Editor" width="200">
 
 ### Submitted responses
 
@@ -78,15 +78,18 @@ to submitted.  After that, the active survey page is replaced with user status p
 
 The user may choose to either:
 
-- review their responses with option to make updates
-- withdraw their responses to draft status while making updates
+- **review their responses with option to make updates**
 
-In the first case the survey remains in the submitted state but the participant goes 
-back to the active survey page where they can review their responses, make changes if
-they wish, and then either save the changes as a new draft (the current submitted
-responses are not updated) or submit the updates (replacing the old responses).
+  The survey remains in the submitted state but the participant goes back to the active 
+  survey page where they can review their responses, make changes if
+  they wish, and then either save the changes as a new draft (the current submitted
+  responses are **not** updated) or submit the updates (the current submitted
+  responses **are** updated).
 
-In the latter case, the survey is taken out of the submitted state and returned to
-draft status (using the current submitted responses to seed the draft).  From there,
-they have the same options as above: update the draft or resubmit their new
-responses.
+
+- **withdraw their responses to draft status while making updates**
+
+  The survey is taken out of the submitted state and returned to
+  draft status (using the current submitted responses to seed the draft).  From there,
+  they have the same options as above: update the draft or resubmit their new
+  responses.

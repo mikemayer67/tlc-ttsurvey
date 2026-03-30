@@ -6,5 +6,6 @@ In no particular order, here are the topics addressed in this manual.
 - [Getting Started](getting_started.md)
 - [Survey Content](survey_content.md)
 - [Survey Participants](participants.md)
-- [Admin Roles](admin_roles.md)
 - [Admin Dashboard](admin_dashboard.md)
+- [Admin Roles](admin_roles.md)
+- [Suvey App Settings](admin_settings.md)
