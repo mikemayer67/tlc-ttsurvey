@@ -9,7 +9,7 @@ Before any roles have been assigned, the roles tab will look something like the 
 - The left side of the pane shows the four assignable admin roles.
 - the right side ofthe pane shows the summary visibility rules followed by the list of all current survey participants.
 
-![Empty Roles Tab](img/admin_roles_empty.png)
+<img src="img/admin_roles_empty.png" alt="Empty Roles Tab" width="600">
 
 ## Primary Admin
 
@@ -35,9 +35,9 @@ This behaves exactly like Survey Admins and Content Editors
 
 The following figure shows an example of assigned admin roles
 
-![Example Roles Tab](img/admin_roles_example.png)
+<img src="img/admin_roles_example.png" alt="Sample Roles Tab" width="600">
 
-# Summary Visiblity
+## Summary Visiblity
 
 The figure above also shows the the summary visibility rules (*on the right hand side of the tab*).
 
