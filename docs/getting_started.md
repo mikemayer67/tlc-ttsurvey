@@ -182,7 +182,7 @@ explanation of each of the available settings.
 Now that you have fully configured survey app, you will probably want
 to learn more about:
 
-- [Setting up a Survey](setting_up_a_survey.md)
+- [Managing Survey Content](managing_survey_content.md)
 - [Assigning Roles](assigning_roles.md)
 - [Managing Participants](managing_participants.md)
 
