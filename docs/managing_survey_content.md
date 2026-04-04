@@ -373,6 +373,8 @@ with a draft survey.
 
 ## Viewing the Active or a Closed Survey
 
+<img src="img/survey_viewer_active.png" alt="Active Survey Viewer" width="600">
+
 Essentially the same survey pane is shown as for editing a survey except that none of the fields
 are actually editable.  The key differences are:
 
