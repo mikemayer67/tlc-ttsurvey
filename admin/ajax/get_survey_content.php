@@ -17,7 +17,9 @@ $id = parse_ajax_integer_input('survey_id');
 $response = new AjaxResponse(false);
 
 $content = survey_content($id);
-if(!$content['sections']) { send_ajax_failure("No survey content found for id=$id"); }
+if(!array_key_exists('sections',$content)) {
+  send_ajax_failure("No survey content found for id=$id");
+}
 
 end_ob_logging();
 
