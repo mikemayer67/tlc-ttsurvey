@@ -145,7 +145,7 @@ add_input_section('Email Server',[
     'info'=>[
       'At least one of the following email addresses must be set as recipient of the test email:',
       'admin_email',
-      'primaary_admin (if they have an email set)',
+      'primary_admin (if they have an email set)',
       'smtp_username (if a valid email address)',
     ]
   ],

@@ -7,7 +7,7 @@ $type_labels = [
   'INFO' => 'Info Block',
   'BOOL' => 'Simple Checkbox',
   'SELECT_ONE' => 'Single Selection',
-  'SELECT_MULTI' => 'Multiple Selections',
+  'SELECT_MULTI' => 'Multiple Selection',
   'FREETEXT' => 'Free Text',
 ];
 

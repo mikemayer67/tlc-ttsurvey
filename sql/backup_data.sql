@@ -1,4 +1,5 @@
 drop table if exists tlc_bkp_anonids;
+drop table if exists tlc_bkp_reminder_emails;
 drop table if exists tlc_bkp_question_map;
 drop table if exists tlc_bkp_question_options;
 drop table if exists tlc_bkp_response_options;
@@ -18,6 +19,7 @@ drop table if exists tlc_bkp_version_history;
 
 create table tlc_bkp_version_history  as select * from tlc_tt_version_history;
 create table tlc_bkp_anonids          as select * from tlc_tt_anonids;
+create table tlc_bkp_reminder_emails as select * from tlc_tt_reminder_emails;
 create table tlc_bkp_question_map     as select * from tlc_tt_question_map;
 create table tlc_bkp_question_options as select * from tlc_tt_question_options;
 create table tlc_bkp_response_options as select * from tlc_tt_response_options;
