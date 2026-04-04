@@ -73,4 +73,4 @@ At a high level, this consists of
 - [Admin Dashboard](docs/admin_dashboard.md)
 - [Assigning Admin Roles](docs/assigning_roles.md)
 - [Managing Survey Participants](docs/managing_participants.md)
-- [Setting up a Survey](docs/setting_up_a_survey.md)]
+- [Managing Survey Content](docs/managing_survey_content.md)
