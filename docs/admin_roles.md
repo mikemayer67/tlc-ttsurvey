@@ -1,5 +1,7 @@
 # Admin Roles
 
+Each survey participant may be assigned one or more admin roles as follow.
+
 ## Site Admin
 There is one site admin whose userid and password is set in the app configuration
 file (tlc-ttsurvey.ini).  Additionally a "real" name and email may be provided for
@@ -44,6 +46,7 @@ They do not have any additional admin authority.
 One or more [survey participant](participants.md) may be assigned the role of 
 technical contact. 
 
-Technical contacts have the same authority as survey admins with the added
-"bonus" of being listed on any page or email that instructs a participant
-to contact an admin to report an issue using the survey app.
+The only admin priviledge technical contacts have is that they can view the 
+app log.  They do, however, also have the "bonus" of being listed on any 
+page or email that instructs a participant to contact an admin to report 
+an issue using the survey app.

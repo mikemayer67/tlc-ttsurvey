@@ -61,6 +61,11 @@ content is always visible.  These screenshots show the top of the list of collap
 
 The first shows all collapsible sections closed.  The second shown one open section.
 
-![All Sections Closed](img/sample_survey_closed_sections.png)
+<img src="img/sample_survey_closed_sections.png" alt="All Sections Closed" width="600">
 
-![One Open Section](img/sample_survey_open_section.png)
+<img src="img/sample_survey_open_section.png" alt="One Open Section" width="600">
+
+The app was designed to be responsive to screen size.  The following screenshot shows
+how the survey looks on a small iPhone.
+
+<img src="img/sample_survey_mobile.png" alt="Survey on iPhone" width="300">
