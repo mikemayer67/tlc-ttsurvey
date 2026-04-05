@@ -2,74 +2,64 @@
 --   maintenance of database structure.  It is now just a record
 --   of the scripts the SQL scripts that were run against it over
 --   time.
-CREATE TABLE tlc_tt_version_history (
+CREATE TABLE tlc_tts_version_history (
   version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
   added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE tlc_tt_strings (
-  string_id smallint      UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  str       varchar(1024) NOT NULL,
-  str_hash  binary(32)    GENERATED ALWAYS AS (UNHEX(SHA2(str, 256))) STORED,
-  UNIQUE KEY (str_hash)
-);
-
-CREATE TABLE tlc_tt_surveys (
+--- string length for title is enforced in the validate_survey_name function
+---   in admin/js/surveys/metadata.js
+CREATE TABLE tlc_tts_surveys (
   survey_id   smallint UNSIGNED NOT NULL,
   parent_id   smallint UNSIGNED DEFAULT NULL,
-  title_sid   smallint UNSIGNED NOT NULL COMMENT '(StringID) survey title',
+  title       varchar(128) NOT NULL,
   created     datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   modified    datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   active      datetime DEFAULT NULL,
   closed      datetime DEFAULT NULL,
   PRIMARY KEY (survey_id),
-  FOREIGN KEY (parent_id) REFERENCES tlc_tt_surveys(survey_id) ON UPDATE RESTRICT ON DELETE SET NULL,
-  FOREIGN KEY (title_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT
+  FOREIGN KEY (parent_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE SET NULL
 );
 
-CREATE TABLE tlc_tt_survey_options (
+--- @@@ TODO... enforce the string length for the option string
+CREATE TABLE tlc_tts_survey_options (
   survey_id  smallint UNSIGNED NOT NULL,
   option_id  smallint UNSIGNED NOT NULL COMMENT 'Provides continuity between surveys',
-  text_sid   smallint UNSIGNED NOT NULL COMMENT '(StringID) What will appear in the survey form',
+  option_str varchar(128)      NOT NULL COMMENT 'What will appear in the survey form',
   PRIMARY KEY (survey_id,option_id),
-  FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (text_sid)  REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_survey_sections (
+--- string lengths for name, intro, and feedback are enforeced
+---   in the Section Editor block in admin/survey_frame.php
+CREATE TABLE tlc_tts_survey_sections (
   survey_id    smallint UNSIGNED NOT NULL,
   section_id   smallint UNSIGNED NOT NULL,
   sequence     smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
-  name_sid     smallint UNSIGNED              COMMENT '(StringID) Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
+  name         varchar(128)                   COMMENT 'Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
   collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
-  intro_sid    smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Section intro that will appear in the survey form',
-  feedback_sid smallint UNSIGNED DEFAULT NULL COMMENT '(StringID) Text used to prompt for feedback. No feedback allowed if NULL',
+  intro        varchar(512)      DEFAULT NULL COMMENT 'Section intro that will appear in the survey form',
+  feedback     varchar(128)      DEFAULT NULL COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
   PRIMARY KEY (survey_id,section_id),
   UNIQUE  KEY (survey_id,sequence),
-  FOREIGN KEY (name_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (intro_sid)    REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (feedback_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (survey_id)    REFERENCES tlc_tt_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (survey_id)    REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_survey_questions (
+--- string lengths for wording, other, qualifier, into, and info are enforced
+---   in the Question Editor block in admin/survey_frame.php
+CREATE TABLE tlc_tts_survey_questions (
   question_id    smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
   survey_id      smallint UNSIGNED NOT NULL,
-  wording_sid    smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) The wording of this question shown in the survey (except for INFO)',
+  wording        varchar(128)      DEFAULT NULL       COMMENT 'The wording of this question shown in the survey (except for INFO)',
   question_type  ENUM('INFO','BOOL','OPTIONS','FREETEXT','SELECT_MULTI','SELECT_ONE') NOT NULL ,
-  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'See tlc_tt_view_survey_questions for details',
-  other_sid      smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS type, label to use in the survey for the "other" input field',
-  qualifier_sid  smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For OPTIONS/BOOL types, provide a text input field with the specified label',
-  intro_sid      smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) For non-INFO types, provides a intro of the question on the survey',
-  info_sid       smallint UNSIGNED DEFAULT NULL       COMMENT '(StringID) Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
+  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'See tlc_tts_view_survey_questions for details',
+  other          varchar(45)       DEFAULT NULL       COMMENT 'For OPTIONS type, label to use in the survey for the "other" input field',
+  qualifier      varchar(45)       DEFAULT NULL       COMMENT 'For OPTIONS/BOOL types, provide a text input field with the specified label',
+  intro          varchar(512)      DEFAULT NULL       COMMENT 'For non-INFO types, provides a intro of the question on the survey',
+  info           varchar(1024)     DEFAULT NULL       COMMENT 'Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
   PRIMARY KEY (question_id,survey_id),
-  FOREIGN KEY (wording_sid)   REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (other_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (qualifier_sid) REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (intro_sid)     REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (info_sid)      REFERENCES tlc_tt_strings(string_id) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  FOREIGN KEY (survey_id)     REFERENCES tlc_tt_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 -- Notes:
 -- There are four Survey question types:
@@ -85,33 +75,33 @@ CREATE TABLE tlc_tt_survey_questions (
 --    LCOL      options appear in a left  aligned column with checkboxes before the option label
 --    RCOL      options appear in a right aligned column with checkboxes after  the option label
 
-CREATE TABLE tlc_tt_question_map (
+CREATE TABLE tlc_tts_question_map (
   survey_id     smallint UNSIGNED NOT NULL,
   section_id    smallint UNSIGNED NOT NULL,
   question_seq  smallint UNSIGNED NOT NULL,
   question_id   smallint UNSIGNED NOT NULL,
   PRIMARY KEY (survey_id,section_id,question_seq),
   UNIQUE KEY  (survey_id,question_id),
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tt_survey_sections (survey_id,section_id)
+  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections (survey_id,section_id)
               ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (question_id,survey_id) REFERENCES tlc_tt_survey_questions (question_id,survey_id) 
+  FOREIGN KEY (question_id,survey_id) REFERENCES tlc_tts_survey_questions (question_id,survey_id) 
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_question_options (
+CREATE TABLE tlc_tts_question_options (
   survey_id   smallint UNSIGNED NOT NULL,
   question_id smallint UNSIGNED NOT NULL,
   sequence    smallint UNSIGNED NOT NULL,
   option_id   smallint UNSIGNED NOT NULL,
   PRIMARY KEY (survey_id,question_id,sequence),
   UNIQUE  KEY (survey_id,question_id,option_id), 
-  FOREIGN KEY (survey_id,question_id) REFERENCES tlc_tt_question_map(survey_id,question_id)
+  FOREIGN KEY (survey_id,question_id) REFERENCES tlc_tts_question_map(survey_id,question_id)
               ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,option_id)
+  FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_userids (
+CREATE TABLE tlc_tts_userids (
   userid   varchar(24)  PRIMARY KEY,
   fullname varchar(100) NOT NULL,
   email    varchar(45)  DEFAULT NULL,
@@ -120,32 +110,32 @@ CREATE TABLE tlc_tt_userids (
   admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
   );
 
-CREATE TABLE tlc_tt_anonids (
+CREATE TABLE tlc_tts_anonids (
   anonid    varchar(24) UNIQUE
 );
 
-CREATE TABLE tlc_tt_reset_tokens (
+CREATE TABLE tlc_tts_reset_tokens (
   userid    varchar(24)      NOT NULL PRIMARY KEY,
   token     varchar(20)      NOT NULL,
   expires   datetime         NOT NULL,
-  FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_roles (
+CREATE TABLE tlc_tts_roles (
   userid    varchar(24)         NOT NULL PRIMARY KEY,
   admin     tinyint     UNSIGNED NOT NULL DEFAULT 0,
   content   tinyint     UNSIGNED NOT NULL DEFAULT 0,
   tech      tinyint     UNSIGNED NOT NULL DEFAULT 0,
   summary   tinyint     UNSIGNED NOT NULL DEFAULT 0,
-  FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-create table tlc_tt_settings (
+create table tlc_tts_settings (
   name  varchar(24)  NOT NULL PRIMARY KEY,
   value varchar(255) NOT NULL
 );
 
-CREATE TABLE tlc_tt_user_status (
+CREATE TABLE tlc_tts_user_status (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
   draft       datetime             DEFAULT NULL,
@@ -153,11 +143,11 @@ CREATE TABLE tlc_tt_user_status (
   email_sent  datetime             DEFAULT NULL,
   sent_to     varchar(45)          DEFAULT NULL,
   PRIMARY KEY (userid,survey_id),
-  FOREIGN KEY (userid)    REFERENCES tlc_tt_userids(userid)    ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id) REFERENCES tlc_tt_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid)    REFERENCES tlc_tts_userids(userid)    ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_responses (
+CREATE TABLE tlc_tts_responses (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
   question_id smallint    UNSIGNED NOT NULL,
@@ -167,22 +157,22 @@ CREATE TABLE tlc_tt_responses (
   qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
   other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
   PRIMARY KEY (userid,survey_id,question_id,draft),
-  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tt_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (question_id) REFERENCES tlc_tt_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (question_id) REFERENCES tlc_tts_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_section_feedback (
+CREATE TABLE tlc_tts_section_feedback (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
   section_id  smallint    UNSIGNED NOT NULL,
   draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
   feedback    text                 DEFAULT NULL,
   PRIMARY KEY (userid,survey_id,section_id,draft),
-  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tt_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tt_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_response_options (
+CREATE TABLE tlc_tts_response_options (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
   question_id smallint    UNSIGNED NOT NULL,
@@ -190,69 +180,69 @@ CREATE TABLE tlc_tt_response_options (
   option_id   smallint    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
   UNIQUE KEY  (userid,survey_id,question_id,draft,option_id),
   FOREIGN KEY (userid,survey_id,question_id,draft) 
-              REFERENCES tlc_tt_responses (userid,survey_id,question_id,draft)
+              REFERENCES tlc_tts_responses (userid,survey_id,question_id,draft)
               ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tt_survey_options(survey_id,option_id)
+  FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_reminder_emails (
+CREATE TABLE tlc_tts_reminder_emails (
   userid    varchar(24) NOT NULL,
   subject   varchar(32) NOT NULL,
   last_sent datetime    NOT NULL,
   email     varchar(45) NOT NULL,
   PRIMARY KEY (userid),
-  FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE TABLE tlc_tt_access_tokens (
+CREATE TABLE tlc_tts_access_tokens (
   userid   varchar(24)  NOT NULL,
   token    varchar(45)  NOT NULL COMMENT 'access token',
   expires  datetime     NOT NULL COMMENT 'when the token expires unless renewed',
   PRIMARY KEY (userid,token),
-  FOREIGN KEY (userid) REFERENCES tlc_tt_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
 
-CREATE VIEW tlc_tt_view_surveys
+CREATE VIEW tlc_tts_view_surveys
   AS SELECT s.survey_id, s.parent_id, t.str as title, s.created, s.modified, s.active, s.closed
-     FROM tlc_tt_surveys s
-     LEFT JOIN tlc_tt_strings t ON t.string_id=s.title_sid;
+     FROM tlc_tts_surveys s
+     LEFT JOIN tlc_tts_strings t ON t.string_id=s.title_sid;
 
-CREATE VIEW tlc_tt_draft_surveys
-  AS SELECT * from tlc_tt_view_surveys
+CREATE VIEW tlc_tts_draft_surveys
+  AS SELECT * from tlc_tts_view_surveys
       WHERE active IS NULL;
 
-CREATE VIEW tlc_tt_active_surveys
-  AS SELECT * from tlc_tt_view_surveys
+CREATE VIEW tlc_tts_active_surveys
+  AS SELECT * from tlc_tts_view_surveys
       WHERE active IS NOT NULL AND closed IS NULL;
 
-CREATE VIEW tlc_tt_closed_surveys
-  AS SELECT * from tlc_tt_view_surveys
+CREATE VIEW tlc_tts_closed_surveys
+  AS SELECT * from tlc_tts_view_surveys
       WHERE closed IS NOT NULL;
 
-CREATE VIEW tlc_tt_user_reset_tokens
+CREATE VIEW tlc_tts_user_reset_tokens
   AS SELECT u.userid, t.token, t.expires
-       FROM tlc_tt_userids u, tlc_tt_reset_tokens t
+       FROM tlc_tts_userids u, tlc_tts_reset_tokens t
       WHERE u.userid = t.userid;
       
-CREATE VIEW tlc_tt_active_roles
+CREATE VIEW tlc_tts_active_roles
   AS SELECT r.userid, u.fullname, r.admin, r.content, r.tech, r.summary
-       FROM tlc_tt_roles r
-       LEFT JOIN tlc_tt_userids u ON u.userid=r.userid
+       FROM tlc_tts_roles r
+       LEFT JOIN tlc_tts_userids u ON u.userid=r.userid
       WHERE r.content=1 OR r.admin=1 OR r.tech=1 OR r.summary=1;
 
-CREATE VIEW tlc_tt_view_survey_sections AS
+CREATE VIEW tlc_tts_view_survey_sections AS
 SELECT s.survey_id, s.sequence,
   s.name_sid,        name.str     AS name_str,
   s.collapsible,
   s.intro_sid,       intro.str    AS intro_str,
   s.feedback_sid,    feedback.str AS feedback_str
-FROM tlc_tt_survey_sections s
-LEFT JOIN tlc_tt_strings name     ON s.name_sid = name.string_id
-LEFT JOIN tlc_tt_strings intro    ON s.intro_sid = intro.string_id
-LEFT JOIN tlc_tt_strings feedback ON s.feedback_sid = feedback.string_id;
+FROM tlc_tts_survey_sections s
+LEFT JOIN tlc_tts_strings name     ON s.name_sid = name.string_id
+LEFT JOIN tlc_tts_strings intro    ON s.intro_sid = intro.string_id
+LEFT JOIN tlc_tts_strings feedback ON s.feedback_sid = feedback.string_id;
 
-CREATE VIEW tlc_tt_view_survey_questions AS
+CREATE VIEW tlc_tts_view_survey_questions AS
 SELECT q.question_id, q.survey_id, 
   q.wording_sid,     wording.str     AS wording_str,
   q.question_type, 
@@ -268,128 +258,128 @@ SELECT q.question_id, q.survey_id,
   q.qualifier_sid,   qualifier.str   AS qualifier_str,
   q.intro_sid,       intro.str       AS intro_str,
   q.info_sid,        info.str        AS info_str
-FROM tlc_tt_survey_questions q
-LEFT JOIN tlc_tt_strings wording     ON q.wording_sid = wording.string_id
-LEFT JOIN tlc_tt_strings other       ON q.other_sid = other.string_id
-LEFT JOIN tlc_tt_strings qualifier   ON q.qualifier_sid = qualifier.string_id
-LEFT JOIN tlc_tt_strings intro       ON q.intro_sid = intro.string_id
-LEFT JOIN tlc_tt_strings info        ON q.info_sid = info.string_id;
+FROM tlc_tts_survey_questions q
+LEFT JOIN tlc_tts_strings wording     ON q.wording_sid = wording.string_id
+LEFT JOIN tlc_tts_strings other       ON q.other_sid = other.string_id
+LEFT JOIN tlc_tts_strings qualifier   ON q.qualifier_sid = qualifier.string_id
+LEFT JOIN tlc_tts_strings intro       ON q.intro_sid = intro.string_id
+LEFT JOIN tlc_tts_strings info        ON q.info_sid = info.string_id;
 
-CREATE VIEW tlc_tt_view_survey_options AS
+CREATE VIEW tlc_tts_view_survey_options AS
 SELECT o.survey_id, o.option_id, o.text_sid, text.str AS text_str
-FROM tlc_tt_survey_options o
-LEFT JOIN tlc_tt_strings text ON o.text_sid = text.string_id;
+FROM tlc_tts_survey_options o
+LEFT JOIN tlc_tts_strings text ON o.text_sid = text.string_id;
 
-CREATE VIEW tlc_tt_view_question_options AS
+CREATE VIEW tlc_tts_view_question_options AS
 SELECT q.survey_id,q.question_id, w.str AS wording, 
        qo.sequence, qo.option_id, os.str AS option_str, q.question_type
-FROM tlc_tt_survey_questions q
-LEFT JOIN tlc_tt_question_options qo 
+FROM tlc_tts_survey_questions q
+LEFT JOIN tlc_tts_question_options qo 
        ON qo.question_id=q.question_id and qo.survey_id=q.survey_id
-LEFT JOIN tlc_tt_survey_options so 
+LEFT JOIN tlc_tts_survey_options so 
        ON so.survey_id=qo.survey_id and so.option_id=qo.option_id
-LEFT JOIN tlc_tt_strings w ON w.string_id = q.wording_sid
-LEFT JOIN tlc_tt_strings os ON os.string_id = so.text_sid
+LEFT JOIN tlc_tts_strings w ON w.string_id = q.wording_sid
+LEFT JOIN tlc_tts_strings os ON os.string_id = so.text_sid
 WHERE q.question_type like 'SELECT%';
 
-CREATE VIEW tlc_tt_view_responses_freetext AS
+CREATE VIEW tlc_tts_view_responses_freetext AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
        q.question_id, wording.str as question,
        r.free_text, r.qualifier
-  FROM tlc_tt_responses r
-  LEFT JOIN tlc_tt_survey_questions q 
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
-  LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tts_strings wording ON q.wording_sid = wording.string_id
  WHERE r.free_text is not NULL
    AND q.question_type='FREETEXT';
 
-CREATE VIEW tlc_tt_view_responses_bool AS
+CREATE VIEW tlc_tts_view_responses_bool AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
        q.question_id, wording.str as question,
        CASE WHEN r.selected=0 THEN 'NO' ELSE 'YES' END AS selected,
        r.qualifier
-  FROM tlc_tt_responses r
-  LEFT JOIN tlc_tt_survey_questions q 
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
-  LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tts_strings wording ON q.wording_sid = wording.string_id
  WHERE r.selected is not NULL
    AND q.question_type='BOOL';
 
-CREATE VIEW tlc_tt_view_responses_select_one AS
+CREATE VIEW tlc_tts_view_responses_select_one AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
        q.question_id, wording.str as question,
        r.selected, 
        CASE WHEN r.selected = 0 THEN r.other ELSE opt.str END as 'option', 
        r.qualifier
-  FROM tlc_tt_responses r
-  LEFT JOIN tlc_tt_survey_questions q 
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
- LEFT JOIN tlc_tt_question_options qo
+ LEFT JOIN tlc_tts_question_options qo
          ON qo.survey_id=q.survey_id and qo.question_id=q.question_id and qo.sequence=r.selected
- LEFT JOIN tlc_tt_survey_options so
+ LEFT JOIN tlc_tts_survey_options so
          ON so.survey_id=qo.survey_id and so.option_id=qo.option_id
-  LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
-  LEFT JOIN tlc_tt_strings opt     ON so.text_sid = opt.string_id
+  LEFT JOIN tlc_tts_strings wording ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tts_strings opt     ON so.text_sid = opt.string_id
  WHERE r.selected is not NULL
    AND q.question_type='SELECT_ONE';
 
-CREATE VIEW tlc_tt_view_responses_select_multi AS
+CREATE VIEW tlc_tts_view_responses_select_multi AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
        q.question_id, wording.str as question,
        r.other, r.qualifier
-  FROM tlc_tt_responses r
-  LEFT JOIN tlc_tt_survey_questions q 
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
-  LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
+  LEFT JOIN tlc_tts_strings wording ON q.wording_sid = wording.string_id
  WHERE q.question_type='SELECT_MULTI';
 
-CREATE VIEW tlc_tt_view_response_options AS
+CREATE VIEW tlc_tts_view_response_options AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
        q.question_id, wording.str as question, opt.str
-  FROM tlc_tt_responses r
-  LEFT JOIN tlc_tt_survey_questions q 
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
- LEFT JOIN tlc_tt_response_options ro
+ LEFT JOIN tlc_tts_response_options ro
          ON ro.userid=r.userid and ro.survey_id=r.survey_id and ro.question_id=r.question_id
- LEFT JOIN tlc_tt_survey_options so
+ LEFT JOIN tlc_tts_survey_options so
          ON so.survey_id=ro.survey_id and so.option_id=ro.option_id
-  LEFT JOIN tlc_tt_strings wording ON q.wording_sid = wording.string_id
- LEFT JOIN tlc_tt_strings opt ON opt.string_id = so.text_sid
+  LEFT JOIN tlc_tts_strings wording ON q.wording_sid = wording.string_id
+ LEFT JOIN tlc_tts_strings opt ON opt.string_id = so.text_sid
  WHERE q.question_type='SELECT_MULTI'
    AND ro.option_id is not NULL;
 
-CREATE VIEW tlc_tt_view_last_user_survey AS
+CREATE VIEW tlc_tts_view_last_user_survey AS
 SELECT u.userid, su.survey_id, s.str as survey_name
-  FROM tlc_tt_user_status AS u
+  FROM tlc_tts_user_status AS u
   JOIN ( SELECT userid, MAX(submitted) AS max_submitted  
-         FROM tlc_tt_user_status 
-         WHERE survey_id NOT IN (SELECT survey_id FROM tlc_tt_active_surveys) 
+         FROM tlc_tts_user_status 
+         WHERE survey_id NOT IN (SELECT survey_id FROM tlc_tts_active_surveys) 
          GROUP BY userid) AS uf
       ON u.userid = uf.userid AND u.submitted = uf.max_submitted
-  JOIN ( SELECT survey_id,title_sid FROM tlc_tt_surveys ) AS su ON u.survey_id = su.survey_id
-  JOIN tlc_tt_strings AS s ON s.string_id = su.title_sid;
+  JOIN ( SELECT survey_id,title_sid FROM tlc_tts_surveys ) AS su ON u.survey_id = su.survey_id
+  JOIN tlc_tts_strings AS s ON s.string_id = su.title_sid;
 
-CREATE VIEW tlc_tt_view_unused_strings AS
-SELECT string_id,str FROM tlc_tt_strings WHERE string_id NOT IN 
-(       SELECT title_sid     FROM tlc_tt_surveys          WHERE title_sid     IS NOT NULL
-  UNION SELECT text_sid      FROM tlc_tt_survey_options   WHERE text_sid      IS NOT NULL
-  UNION SELECT name_sid      FROM tlc_tt_survey_sections  WHERE name_sid      IS NOT NULL
-  UNION SELECT intro_sid     FROM tlc_tt_survey_sections  WHERE intro_sid     IS NOT NULL
-  UNION SELECT feedback_sid  FROM tlc_tt_survey_sections  WHERE feedback_sid  IS NOT NULL
-  UNION SELECT wording_sid   FROM tlc_tt_survey_questions WHERE wording_sid   IS NOT NULL
-  UNION SELECT other_sid     FROM tlc_tt_survey_questions WHERE other_sid     IS NOT NULL
-  UNION SELECT qualifier_sid FROM tlc_tt_survey_questions WHERE qualifier_sid IS NOT NULL
-  UNION SELECT intro_sid     FROM tlc_tt_survey_questions WHERE intro_sid     IS NOT NULL
-  UNION SELECT info_sid      FROM tlc_tt_survey_questions WHERE info_sid      IS NOT NULL
+CREATE VIEW tlc_tts_view_unused_strings AS
+SELECT string_id,str FROM tlc_tts_strings WHERE string_id NOT IN 
+(       SELECT title_sid     FROM tlc_tts_surveys          WHERE title_sid     IS NOT NULL
+  UNION SELECT text_sid      FROM tlc_tts_survey_options   WHERE text_sid      IS NOT NULL
+  UNION SELECT name_sid      FROM tlc_tts_survey_sections  WHERE name_sid      IS NOT NULL
+  UNION SELECT intro_sid     FROM tlc_tts_survey_sections  WHERE intro_sid     IS NOT NULL
+  UNION SELECT feedback_sid  FROM tlc_tts_survey_sections  WHERE feedback_sid  IS NOT NULL
+  UNION SELECT wording_sid   FROM tlc_tts_survey_questions WHERE wording_sid   IS NOT NULL
+  UNION SELECT other_sid     FROM tlc_tts_survey_questions WHERE other_sid     IS NOT NULL
+  UNION SELECT qualifier_sid FROM tlc_tts_survey_questions WHERE qualifier_sid IS NOT NULL
+  UNION SELECT intro_sid     FROM tlc_tts_survey_questions WHERE intro_sid     IS NOT NULL
+  UNION SELECT info_sid      FROM tlc_tts_survey_questions WHERE info_sid      IS NOT NULL
 ) ORDER BY string_id ;
 
-CREATE VIEW tlc_tt_view_unused_options AS
+CREATE VIEW tlc_tts_view_unused_options AS
 SELECT so.survey_id,so.option_id
-  FROM tlc_tt_survey_options so
-  LEFT JOIN tlc_tt_question_options qo
+  FROM tlc_tts_survey_options so
+  LEFT JOIN tlc_tts_question_options qo
         ON qo.survey_id  = so.survey_id
        AND qo.option_id  = so.option_id
  WHERE qo.survey_id IS NULL;
 
-INSERT INTO tlc_tt_version_history (version, change_description)
+INSERT INTO tlc_tts_version_history (version, change_description)
 VALUES ('1.0.0', 'Initial Database Configuration');

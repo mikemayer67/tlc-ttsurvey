@@ -68,6 +68,11 @@ export default function init(ce)
         _survey_name.addClass('invalid-value');
         err.html("too short").show();
       }
+      // name length must not exceed the varchar(128) in tlc_tts_surveys
+      if(name.length > 128) {
+        _survey_name.addClass('invalid-value');
+        err.html("too long").show();
+      }
     }
   }
 
