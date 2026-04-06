@@ -5,7 +5,6 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/strings.php'));
 require_once(app_file('include/question_flags.php'));
 
 class Surveys
