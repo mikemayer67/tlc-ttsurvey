@@ -205,7 +205,7 @@ class Surveys
 
       if($qids) {
         # any found, extract their question info
-        $in_clause = ' q.question_id in (' . implode(',', $qids) . ')';
+        $in_clause = ' question_id in (' . implode(',', $qids) . ')';
 
         $query = <<<SQL
           SELECT question_id, wording, question_type, question_flags as flags,
