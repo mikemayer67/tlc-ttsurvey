@@ -8,20 +8,20 @@ require_once(app_file('include/settings.php'));
 
 function survey_roles()
 {
-  return MySQLSelectRows('select * from tlc_tt_active_roles');
+  return MySQLSelectRows('select * from tlc_tts_active_roles');
 }
 
 function add_user_role($userid,$role)
 {
   $userid = strtolower($userid);
 
-  $query = "insert into tlc_tt_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
+  $query = "insert into tlc_tts_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
   return MySQLExecute($query,'ss',$userid,$userid);
 }
 
 function drop_user_role($userid,$role)
 {
-  $query = "update tlc_tt_roles set $role=0 where userid=?";
+  $query = "update tlc_tts_roles set $role=0 where userid=?";
   return MySQLExecute($query,'s',$userid);
 }
 
@@ -48,7 +48,7 @@ function user_roles($userid)
 function assigned_roles($userid)
 {
   $roles =  MySQLSelectRow(
-    'select admin,content,tech,summary from tlc_tt_roles where userid=?','s',$userid
+    'select admin,content,tech,summary from tlc_tts_roles where userid=?','s',$userid
   );
   $rval = [];
   if($roles) { 

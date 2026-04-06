@@ -179,9 +179,9 @@ function MySQLSelectValues($query,$types=null,...$params)
 function verify_required_db_version(string $required) : void
 {
   $query = <<<SQL
-    SELECT version from tlc_tt_version_history
+    SELECT version from tlc_tts_version_history
      WHERE added in (
-       SELECT max(added) from tlc_tt_version_history
+       SELECT max(added) from tlc_tts_version_history
      )
   SQL;
   $cur_version = MySQLSelectValue($query);

@@ -19,13 +19,13 @@ function update_survey_state($survey_id, $new_state, &$message=null)
   }
   switch($new_state) {
   case 'draft':
-    $update = "UPDATE tlc_tt_surveys SET active=NULL, closed=NULL WHERE survey_id=?";
+    $update = "UPDATE tlc_tts_surveys SET active=NULL, closed=NULL WHERE survey_id=?";
     break;
   case 'active':
-    $update = "UPDATE tlc_tt_surveys SET active=CURRENT_TIMESTAMP, closed=NULL WHERE survey_id=?";
+    $update = "UPDATE tlc_tts_surveys SET active=CURRENT_TIMESTAMP, closed=NULL WHERE survey_id=?";
     break;
   case 'closed':
-    $update = "UPDATE tlc_tt_surveys SET closed=CURRENT_TIMESTAMP WHERE survey_id=?";
+    $update = "UPDATE tlc_tts_surveys SET closed=CURRENT_TIMESTAMP WHERE survey_id=?";
     break;
   default:
     throw new FailedToUpdate("Invalid survey state ($new_state)");
@@ -45,7 +45,7 @@ function get_survey_state($survey_id)
       (CASE WHEN closed IS NOT NULL THEN 'closed'
             WHEN active IS NOT NULL THEN 'active'
                                     ELSE 'draft' END) as state
-    FROM tlc_tt_surveys
+    FROM tlc_tts_surveys
     WHERE survey_id=?
   SQL;
   return MySQLSelectValue($query,'i',$survey_id);
@@ -66,16 +66,16 @@ function update_survey($survey_id, $content, $title)
     //  - survey content is retrieved below
     //  - user response data is cached in database
     
-    $details = MySQLSelectRow("select * from tlc_tt_surveys where survey_id=$survey_id");
+    $details = MySQLSelectRow("select * from tlc_tts_surveys where survey_id=$survey_id");
     if($title) {
-      $details['title_sid'] = strings_find_or_create($title);
+      $details['title'] = $title;
     }
 
     cache_user_responses($survey_id);
 
     // We can now safely delete the entry from the survey table
 
-    MySQLExecute("delete from tlc_tt_surveys where survey_id=$survey_id");
+    MySQLExecute("delete from tlc_tts_surveys where survey_id=$survey_id");
 
     // and start repopulating the current revision
 
@@ -91,7 +91,7 @@ function update_survey($survey_id, $content, $title)
     //   if there was an exception the transaction will be rolled back in the catch block
     MySQLCommit(); 
   }
-  catch(Exception $e)
+  catch(\Exception $e)
   {
     MySQLRollback();
     throw $e;
@@ -104,8 +104,8 @@ function cache_user_responses($survey_id)
 
   $tables = ['user_status','responses','response_options','section_feedback'];
   foreach($tables as $table) {
-    $table = 'tlc_tt_' . $table;
-    $cache = $table . "_cache";
+    $table = 'tlc_tts_' . $table;
+    $cache = 'tlc_cache_' . $table;
 
     $query = "drop table if exists $cache";
     MySQLExecute($query);
@@ -120,29 +120,29 @@ function restore_user_responses($survey_id)
 {
   log_dev("Restore responses after temporary drop of survey data");
 
-  $table = 'tlc_tt_user_status';
-  $cache = $table . '_cache';
+  $table = 'tlc_tts_user_status';
+  $cache = 'tlc_cache_user_sttus';
   $query = "insert into $table select * from $cache where survey_id=$survey_id";
   $rc = MySQLExecute($query);
   if($rc === false) { throw new \Exception("Failed to restore user status"); }
 
   $query = <<<SQL
-    INSERT INTO tlc_tt_responses
+    INSERT INTO tlc_tts_responses
            (  userid,   survey_id,   question_id,   draft,   selected,   free_text,   qualifier,   other )
     SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.selected, c.free_text, c.qualifier, c.other
-      FROM tlc_tt_responses_cache c
-      JOIN tlc_tt_survey_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
+      FROM tlc_cache_responses c
+      JOIN tlc_tts_survey_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
   if($rc === false) { throw new \Exception("Failed to restore user responses"); }
 
   $query = <<<SQL
-    INSERT INTO tlc_tt_response_options
+    INSERT INTO tlc_tts_response_options
            (  userid,   survey_id,   question_id,   draft,   option_id )
     SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.option_id
-      FROM tlc_tt_response_options_cache c
-      JOIN tlc_tt_question_options q 
+      FROM tlc_cache_response_options c
+      JOIN tlc_tts_question_options q 
         ON q.survey_id=c.survey_id AND q.question_id=c.question_id AND q.option_id=c.option_id
      WHERE c.survey_id=$survey_id;
   SQL;
@@ -150,11 +150,11 @@ function restore_user_responses($survey_id)
   if($rc === false) { throw new \Exception("Failed to restore user response options"); }
 
   $query = <<<SQL
-    INSERT INTO tlc_tt_section_feedback
+    INSERT INTO tlc_tts_section_feedback
            (  userid,   survey_id,   section_id,   draft,   feedback )
     SELECT  c.userid, c.survey_id, c.section_id, c.draft, c.feedback
-      FROM tlc_tt_section_feedback_cache c
-      JOIN tlc_tt_survey_sections s
+      FROM tlc_cache_section_feedback c
+      JOIN tlc_tts_survey_sections s
         ON s.survey_id=c.survey_id AND s.section_id=c.section_id
      WHERE c.survey_id=$survey_id;
   SQL;
@@ -165,19 +165,19 @@ function restore_user_responses($survey_id)
 function update_survey_details($survey_id,$details)
 {
   $parent_id = $details['parent_id'];
-  $title_sid = $details['title_sid'];
+  $title     = $details['title'];
   $created   = $details['created'];
   // modified gets set via the default
   $active    = $details['active'];
   $closed    = $details['closed'];
 
   $update = <<<SQL
-    INSERT into tlc_tt_surveys
-           (survey_id,parent_id,title_sid,created,active,closed)
+    INSERT into tlc_tts_surveys
+           (survey_id,parent_id,title,created,active,closed)
     VALUES ($survey_id,?,?,?,?,?)
   SQL;
 
-  $rc = MySQLExecute($update,'iisss', $parent_id, $title_sid, $created, $active, $closed);
+  $rc = MySQLExecute($update,'issss', $parent_id, $title, $created, $active, $closed);
 
   if( $rc === false ) {
     throw new FailedToUpdate("Failed to update title for survey $survey_id"); 
@@ -189,16 +189,15 @@ function update_survey_options($survey_id,$content)
   $options = $content['options'];
 
   $insert = <<<SQL
-    INSERT into tlc_tt_survey_options (survey_id, option_id, text_sid) 
+    INSERT into tlc_tts_survey_options (survey_id, option_id, option_str) 
     VALUES ($survey_id,?,?)
-    ON DUPLICATE KEY UPDATE text_sid = values(text_sid)
+    ON DUPLICATE KEY UPDATE option_str = values(option_str)
   SQL;
 
-  foreach($options as $option_id => $text_str) 
+  foreach($options as $option_id => $option_str) 
   {
-    $text_sid = strings_find_or_create($text_str);
-    if( MySQLExecute($insert,'ii', $option_id, $text_sid) === false) {
-      throw new FailedToUpdate("Failed to update survey options ($option_id, $text_str)");
+    if( MySQLExecute($insert,'is', $option_id, $option_str) === false) {
+      throw new FailedToUpdate("Failed to update survey options ($option_id, $option_str)");
     }
   }
 }
@@ -209,21 +208,21 @@ function update_survey_content($survey_id,$content)
   $sections = consolidate_survey_content($content);
 
   $insert = <<<SQL
-    INSERT into tlc_tt_survey_sections
-           (survey_id, section_id, sequence, name_sid, collapsible, intro_sid, feedback_sid)
+    INSERT into tlc_tts_survey_sections
+           (survey_id, section_id, sequence, name, collapsible, intro, feedback)
     VALUES ($survey_id,?,?,?,?,?,?)
   SQL;
 
   foreach( $sections as $section ) {
     $section_id = $section['section_id'];
     $rc = MySQLExecute(
-      $insert, 'iiiiii',
+      $insert, 'iisiss',
       $section_id,
       $section['sequence'],
-      strings_find_or_create($section['name']),
+      $section['name'],
       ($section['collapsible'] ?? null) ? 1 : 0,
-      strings_find_or_create($section['intro']),
-      strings_find_or_create($section['feedback'])
+      $section['intro'],
+      $section['feedback']
     );
     if($rc === false) {
       throw new FailedToUpdate("Failed to update survey sections ($section_id)");
@@ -240,10 +239,8 @@ function update_survey_questions($survey_id,$section_id,$questions)
   usort($questions, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
   $insert = <<<SQL
-    INSERT into tlc_tt_survey_questions
-           (question_id, survey_id,
-            wording_sid,question_type,question_flags,
-            other_sid,qualifier_sid,intro_sid,info_sid)
+    INSERT into tlc_tts_survey_questions
+           (question_id, survey_id, wording,question_type,question_flags, other,qualifier,intro,info)
     VALUES (?,$survey_id,?,?,?,?,?,?,?)
   SQL;
 
@@ -266,15 +263,8 @@ function update_survey_questions($survey_id,$section_id,$questions)
     $flags->has_other($other_flag);
     $flags->grouped($question['grouped'] ?? "NO");
 
-    $rc = MySQLExecute(
-      $insert, 'iisiiiii',
-      $question_id,
-      strings_find_or_create($wording),
-      $type, $flags->get_bits(),
-      strings_find_or_create($other),
-      strings_find_or_create($qualifier),
-      strings_find_or_create($intro),
-      strings_find_or_create($info)
+    $rc = MySQLExecute( $insert, 'ississss',
+      $question_id, $wording, $type, $flags->get_bits(), $other, $qualifier, $intro, $info
     );
     if($rc === false) {
       throw new FailedToUpdate("Failed to update survey question $question_id");
@@ -293,7 +283,7 @@ function update_survey_questions($survey_id,$section_id,$questions)
 function update_question_map($survey_id,$question_id,$section_id,$question_seq)
 {
   $insert = <<<SQL
-    INSERT into tlc_tt_question_map
+    INSERT into tlc_tts_question_map
            (survey_id,section_id,question_seq,question_id)
     VALUES ($survey_id,$section_id,$question_seq,$question_id)
   SQL;
@@ -308,7 +298,7 @@ function update_question_map($survey_id,$question_id,$section_id,$question_seq)
 function update_question_options($survey_id,$question_id,$options)
 {
   $insert = <<<SQL
-    INSERT into tlc_tt_question_options
+    INSERT into tlc_tts_question_options
            (survey_id,question_id,sequence,option_id)
     VALUES ($survey_id,$question_id,?,?)
   SQL;

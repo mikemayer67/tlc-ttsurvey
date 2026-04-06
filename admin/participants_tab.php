@@ -27,7 +27,7 @@ if($active_survey_id) {
     SELECT userid,
            UNIX_TIMESTAMP(draft)      as draft,
            UNIX_TIMESTAMP(submitted)  as submitted
-      FROM tlc_tt_user_status 
+      FROM tlc_tts_user_status 
      WHERE survey_id=(?)
   SQL;
 

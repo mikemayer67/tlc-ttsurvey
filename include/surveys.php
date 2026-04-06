@@ -12,7 +12,7 @@ class Surveys
 {
   static function active_id()
   {
-    $ids = MySQLSelectValues("select survey_id from tlc_tt_active_surveys");
+    $ids = MySQLSelectValues("select survey_id from tlc_tts_active_surveys");
     if(count($ids)>1) {
       internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
     }
@@ -21,7 +21,7 @@ class Surveys
 
   static function active_title()
   {
-    $titles = MySQLSelectValues("select title from tlc_tt_active_surveys");
+    $titles = MySQLSelectValues("select title from tlc_tts_active_surveys");
     if(count($titles)>1) {
       internal_error("Multiple active surveys found in the database: ".implode(', ',$titles));
     }
@@ -44,9 +44,9 @@ class Surveys
   {
     $surveys = [];
 
-    $active = MySQLSelectRows('select * from tlc_tt_active_surveys');
-    $drafts = MySQLSelectRows('select * from tlc_tt_draft_surveys');
-    $closed = MySQLSelectRows('select * from tlc_tt_closed_surveys');
+    $active = MySQLSelectRows('select * from tlc_tts_active_surveys');
+    $drafts = MySQLSelectRows('select * from tlc_tts_draft_surveys');
+    $closed = MySQLSelectRows('select * from tlc_tts_closed_surveys');
 
     $nactive = count($active);
     if($nactive) {
@@ -82,11 +82,10 @@ class Surveys
   static function _options($survey_id)
   {
     $query = <<<SQL
-      SELECT so.option_id, text.str as text
-        FROM tlc_tt_survey_options so
-       INNER JOIN tlc_tt_strings text ON text.string_id = so.text_sid
-       WHERE so.survey_id=(?)
-       ORDER BY so.option_id;
+      SELECT option_id, option_str as text
+        FROM tlc_tts_survey_options
+       WHERE survey_id=(?)
+       ORDER BY option_id;
     SQL;
     $rows = MySQLSelectRows($query, 'i', $survey_id);
   
@@ -96,18 +95,10 @@ class Surveys
   static function _sections($survey_id)
   {
     $query = <<<SQL
-      SELECT s.section_id    as section_id,
-             s.sequence      as sequence,
-             name.str        as name,
-             s.collapsible   as collapsible,
-             intro.str       as intro,
-             feedback.str    as feedback
-      FROM   tlc_tt_survey_sections s
-      INNER JOIN tlc_tt_strings name     ON name.string_id     = s.name_sid
-       LEFT JOIN tlc_tt_strings intro    ON intro.string_id    = s.intro_sid
-       LEFT JOIN tlc_tt_strings feedback ON feedback.string_id = s.feedback_sid
-      WHERE s.survey_id=(?)
-      ORDER BY s.sequence;
+      SELECT section_id, sequence, name, collapsible, intro, feedback
+      FROM   tlc_tts_survey_sections
+      WHERE survey_id=(?)
+      ORDER BY sequence;
     SQL;
     $rows = MySQLSelectRows($query, 'i', $survey_id);
   
@@ -120,20 +111,15 @@ class Surveys
       SELECT q.question_id    as question_id,
              m.section_id     as section,
              m.question_seq   as sequence,
-             wording.str      as wording,
+             q.wording        as wording,
              q.question_type  as question_type,
              q.question_flags as flags,
-             other.str        as other,
-             qualifier.str    as qualifier,
-             intro.str        as intro,
-             info.str         as info
-        FROM tlc_tt_survey_questions q
-       INNER JOIN tlc_tt_question_map m      ON m.survey_id=q.survey_id AND m.question_id=q.question_id
-        LEFT JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
-        LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
-        LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
-        LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
-        LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
+             q.other          as other,
+             q.qualifier      as qualifier,
+             q.intro          as intro,
+             q.info           as info
+        FROM tlc_tts_survey_questions q
+       INNER JOIN tlc_tts_question_map m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
        WHERE q.survey_id=(?)
        ORDER BY section_id, sequence;
     SQL;
@@ -186,7 +172,7 @@ class Surveys
   
   static function _ancestors($survey_id)
   {
-    $query = "SELECT parent_id from tlc_tt_surveys where survey_id=?";
+    $query = "SELECT parent_id from tlc_tts_surveys where survey_id=?";
     $survey_id = MySQLSelectValue($query,'i',$survey_id);
     while($survey_id) {
       yield $survey_id;
@@ -213,7 +199,7 @@ class Surveys
 
       $query = <<<SQL
         SELECT question_id
-          FROM tlc_tt_question_map
+          FROM tlc_tts_question_map
          WHERE survey_id=? $exclude_clause
       SQL;
       $qids = MySQLSelectValues($query,'i',$sid);
@@ -223,21 +209,10 @@ class Surveys
         $in_clause = ' q.question_id in (' . implode(',', $qids) . ')';
 
         $query = <<<SQL
-          SELECT q.question_id    as question_id,
-                 wording.str      as wording,
-                 q.question_type  as question_type,
-                 q.question_flags as flags,
-                 other.str        as other,
-                 qualifier.str    as qualifier,
-                 intro.str        as intro,
-                 info.str         as info
-            FROM tlc_tt_survey_questions q
-           INNER JOIN tlc_tt_strings wording     ON wording.string_id     = q.wording_sid
-            LEFT JOIN tlc_tt_strings other       ON other.string_id       = q.other_sid
-            LEFT JOIN tlc_tt_strings qualifier   ON qualifier.string_id   = q.qualifier_sid
-            LEFT JOIN tlc_tt_strings intro       ON intro.string_id       = q.intro_sid
-            LEFT JOIN tlc_tt_strings info        ON info.string_id        = q.info_sid
-           WHERE q.survey_id=(?) and $in_clause
+          SELECT question_id, wording, question_type, question_flags as flags,
+                 other, qualifier, intro, info
+            FROM tlc_tts_survey_questions
+           WHERE survey_id=(?) and $in_clause
         SQL;
 
         $new_questions = [];
@@ -277,7 +252,7 @@ class Surveys
   {
     $query = <<<SQL
       SELECT question_id, option_id
-      FROM   tlc_tt_question_options qo 
+      FROM   tlc_tts_question_options qo 
       WHERE survey_id=?
       ORDER BY question_id, sequence
     SQL;
@@ -301,9 +276,9 @@ class Surveys
     // - question IDs must be unique across all surveys
     // - option IDs must be unique within each survey
     return [
-      'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_tt_surveys'),
-      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_tt_survey_questions'),
-      'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_tt_survey_options where survey_id=(?)','i',$survey_id),
+      'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_tts_surveys'),
+      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_tts_survey_questions'),
+      'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_tts_survey_options where survey_id=(?)','i',$survey_id),
     ];
   }
 

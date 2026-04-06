@@ -22,7 +22,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
   $query = <<<SQL
     SELECT UNIX_TIMESTAMP(draft)      as draft,
            UNIX_TIMESTAMP(submitted)  as submitted
-      FROM tlc_tt_user_status 
+      FROM tlc_tts_user_status 
      WHERE userid=(?) AND survey_id=(?)
   SQL;
 
@@ -46,7 +46,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
 
   $query = <<<SQL
     SELECT question_id, selected, free_text, qualifier, other
-      FROM tlc_tt_responses
+      FROM tlc_tts_responses
      WHERE userid=(?) AND survey_id=(?) AND draft=(?);
   SQL;
 
@@ -64,7 +64,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
 
   $query = <<<SQL
     SELECT question_id, option_id
-      FROM tlc_tt_response_options
+      FROM tlc_tts_response_options
      WHERE userid=(?) 
        AND survey_id=(?)
        AND draft=(?);
@@ -81,7 +81,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
 
   $query = <<<SQL
     SELECT section_id, feedback
-      FROM tlc_tt_section_feedback
+      FROM tlc_tts_section_feedback
      WHERE userid=(?)
        AND survey_id=(?)
        AND draft=(?);
@@ -105,7 +105,7 @@ function get_all_responses($survey_id)
 {
   $query = <<<SQL
     SELECT question_id, userid, selected, free_text, qualifier, other
-      FROM tlc_tt_responses
+      FROM tlc_tts_responses
      WHERE draft=0 and survey_id=?;
   SQL;
 
@@ -120,8 +120,8 @@ function get_all_responses($survey_id)
 
   $query = <<<SQL
     SELECT ro.question_id, ro. userid,ro.option_id
-      FROM tlc_tt_response_options ro
-      LEFT JOIN tlc_tt_survey_options so on so.survey_id=ro.survey_id and so.option_id=ro.option_id
+      FROM tlc_tts_response_options ro
+      LEFT JOIN tlc_tts_survey_options so on so.survey_id=ro.survey_id and so.option_id=ro.option_id
       WHERE ro.draft=0 and ro.survey_id=?;
   SQL;
 
@@ -135,7 +135,7 @@ function get_all_responses($survey_id)
 
   $query = <<<SQL
     SELECT section_id, userid, feedback
-      FROM tlc_tt_section_feedback
+      FROM tlc_tts_section_feedback
      WHERE draft=0 and survey_id=?;
   SQL;
 
@@ -158,7 +158,7 @@ function withdraw_user_responses($userid,$survey_id)
 
   // remove all existing draft responses
   $queries[] = <<<SQL
-    DELETE from tlc_tt_responses
+    DELETE from tlc_tts_responses
      WHERE userid=(?)
        AND survey_id=(?)
        AND draft=1;
@@ -167,17 +167,17 @@ function withdraw_user_responses($userid,$survey_id)
   // copy any submitted responses to draft versions
   //  (cannot simply update the status as this would break the response option foreign key)
   $queries[] = <<<SQL
-    INSERT into tlc_tt_responses 
+    INSERT into tlc_tts_responses 
            ( userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
     SELECT   userid, survey_id, question_id, 1,     selected, free_text, qualifier, other
-      FROM tlc_tt_responses
+      FROM tlc_tts_responses
      WHERE userid=(?)
        AND survey_id=(?);
   SQL;
 
   // relink the response options from their submitted parent to the draft parent
   $queries[] = <<<SQL
-    UPDATE tlc_tt_response_options
+    UPDATE tlc_tts_response_options
        SET draft=1
      WHERE userid=(?)
        AND survey_id=(?);
@@ -185,7 +185,7 @@ function withdraw_user_responses($userid,$survey_id)
 
   // remove the submitted responses
   $queries[] = <<<SQL
-    DELETE from tlc_tt_responses
+    DELETE from tlc_tts_responses
      WHERE userid=(?)
        AND survey_id=(?)
        AND draft=0;
@@ -193,7 +193,7 @@ function withdraw_user_responses($userid,$survey_id)
 
   // update the user status table
   $queries[] = <<<SQL
-    UPDATE tlc_tt_user_status 
+    UPDATE tlc_tts_user_status 
        SET draft = submitted, submitted=NULL, email_sent=NULL, sent_to=NULL
      WHERE userid=(?)
        AND survey_id=(?);
@@ -221,7 +221,7 @@ function drop_user_draft_responses($userid,$survey_id)
 
   // remove all existing draft responses
   $queries[] = <<<SQL
-    DELETE from tlc_tt_responses
+    DELETE from tlc_tts_responses
      WHERE userid=(?)
        AND survey_id=(?)
        AND draft=1;
@@ -229,7 +229,7 @@ function drop_user_draft_responses($userid,$survey_id)
 
   // update the user status table
   $queries[] = <<<SQL
-    UPDATE tlc_tt_user_status 
+    UPDATE tlc_tts_user_status 
        SET draft = NULL
      WHERE userid=(?)
        AND survey_id=(?);
@@ -254,7 +254,7 @@ function drop_user_draft_responses($userid,$survey_id)
 function restart_user_responses($userid,$survey_id)
 {
   $query = <<<SQL
-    DELETE from tlc_tt_user_status 
+    DELETE from tlc_tts_user_status 
      WHERE userid=(?) 
        AND survey_id=(?)
   SQL;
@@ -271,7 +271,7 @@ function confirmation_email_sent($userid,$survey_id,$email=null)
   if($email) {
     // setter
     $query = <<<SQL
-      UPDATE tlc_tt_user_status
+      UPDATE tlc_tts_user_status
          SET email_sent = CURRENT_TIMESTAMP, sent_to=(?)
        WHERE userid=(?)
          AND survey_id=(?) 
@@ -283,7 +283,7 @@ function confirmation_email_sent($userid,$survey_id,$email=null)
     $query = <<<SQL
     SELECT UNIX_TIMESTAMP(email_sent) as timestamp,
            sent_to                    as address
-      FROM tlc_tt_user_status 
+      FROM tlc_tts_user_status 
      WHERE userid=(?) AND survey_id=(?)
     SQL;
 
@@ -331,14 +331,14 @@ function update_user_responses($userid,$survey_id,$action,$responses)
   // if submitting, remove all responses 
   $action_clause = $draft ? 'AND draft=1' : '';
   $query = <<<SQL
-    DELETE from tlc_tt_responses 
+    DELETE from tlc_tts_responses 
      WHERE userid=(?) AND survey_id=(?)
      $action_clause;
   SQL;
   if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
 
   $query = <<<SQL
-    DELETE from tlc_tt_section_feedback
+    DELETE from tlc_tts_section_feedback
      WHERE userid=(?) AND survey_id=(?)
      $action_clause;
   SQL;
@@ -353,7 +353,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     $update_list = 'draft=NULL, submitted=CURRENT_TIMESTAMP, email_sent=NULL, sent_to=NULL';
   }
   $query = <<<SQL
-    INSERT into tlc_tt_user_status $insert_list
+    INSERT into tlc_tts_user_status $insert_list
     VALUES (?,?,CURRENT_TIMESTAMP)
     ON DUPLICATE KEY UPDATE $update_list;
   SQL;
@@ -367,7 +367,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Freetext questions
     if(preg_match('/^question-freetext-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,free_text)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,free_text)
          VALUES     (?,?,?,$draft,?)
          ON DUPLICATE KEY UPDATE free_text=?;
       SQL;
@@ -377,7 +377,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Boolean questions
     elseif(preg_match('/^question-bool-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,selected)
          VALUES     (?,?,?,$draft,1)
          ON DUPLICATE KEY UPDATE selected=1;
       SQL;
@@ -387,7 +387,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Single and multi select questions
     elseif(preg_match('/^question-select-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,selected)
          VALUES     (?,?,?,$draft,?)
          ON DUPLICATE KEY UPDATE selected=?;
       SQL;
@@ -396,20 +396,20 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     elseif(preg_match('/^question-multi-(\d+)-(\d+)$/',$k,$m)) {
       // need an entry in both the responses and the response options tables
       $query = <<<SQL
-         INSERT IGNORE into tlc_tt_responses (userid,survey_id,question_id,draft)
+         INSERT IGNORE into tlc_tts_responses (userid,survey_id,question_id,draft)
          VALUES     (?,?,?,$draft);
       SQL;
       if(!_update_user_response($query,'sii', $userid, $survey_id, $m[1]) ) { return false; }
 
       $query = <<<SQL
-         INSERT into tlc_tt_response_options (userid,survey_id,question_id,draft,option_id)
+         INSERT into tlc_tts_response_options (userid,survey_id,question_id,draft,option_id)
          VALUES     (?,?,?,$draft,?);
       SQL;
       if(!_update_user_response($query,'siii', $userid, $survey_id, $m[1],$m[2]) ) { return false; }
     }
     elseif(preg_match('/^question-(?:multi|select)-(\d+)-has-other$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,selected)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,selected)
          VALUES     (?,?,?,$draft,0)
          ON DUPLICATE KEY UPDATE selected=0;
       SQL;
@@ -417,7 +417,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     }
     elseif(preg_match('/^question-(?:multi|select)-(\d+)-other/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,other)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,other)
          VALUES     (?,?,?,$draft,?)
          ON DUPLICATE KEY UPDATE other=?;
       SQL;
@@ -427,7 +427,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Add qualifiers
     elseif(preg_match('/^question-qualifier-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_responses (userid,survey_id,question_id,draft,qualifier)
+         INSERT into tlc_tts_responses (userid,survey_id,question_id,draft,qualifier)
          VALUES     (?,?,?,$draft,?)
          ON DUPLICATE KEY UPDATE qualifier=?;
       SQL;
@@ -437,7 +437,7 @@ function update_user_responses($userid,$survey_id,$action,$responses)
     // Section feedback
     elseif(preg_match('/^section-feedback-(\d+)$/',$k,$m)) {
       $query = <<<SQL
-         INSERT into tlc_tt_section_feedback (userid,survey_id,section_id,draft,feedback)
+         INSERT into tlc_tts_section_feedback (userid,survey_id,section_id,draft,feedback)
          VALUES     (?,?,?,$draft,?);
       SQL;
       if(!_update_user_response($query,'siis', $userid, $survey_id, $m[1],$v)) { return false; }
