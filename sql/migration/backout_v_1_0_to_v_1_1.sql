@@ -1,3 +1,22 @@
+drop view if exists tlc_tts_active_roles;
+drop view if exists tlc_tts_active_surveys;
+drop view if exists tlc_tts_closed_surveys;
+drop view if exists tlc_tts_draft_surveys;
+drop view if exists tlc_tts_user_reset_tokens;
+drop view if exists tlc_tts_view_last_user_survey;
+drop view if exists tlc_tts_view_question_options;
+drop view if exists tlc_tts_view_response_options;
+drop view if exists tlc_tts_view_responses_bool;
+drop view if exists tlc_tts_view_responses_freetext;
+drop view if exists tlc_tts_view_responses_select_multi;
+drop view if exists tlc_tts_view_responses_select_one;
+drop view if exists tlc_tts_view_survey_options;
+drop view if exists tlc_tts_view_survey_questions;
+drop view if exists tlc_tts_view_survey_sections;
+drop view if exists tlc_tts_view_surveys;
+drop view if exists tlc_tts_view_unused_options;
+drop view if exists tlc_tts_view_unused_strings;
+
 drop table if exists tlc_tts_access_tokens;
 drop table if exists tlc_tts_reminder_emails;
 drop table if exists tlc_tts_response_options;

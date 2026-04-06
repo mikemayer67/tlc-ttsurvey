@@ -253,3 +253,131 @@ CREATE TABLE tlc_tts_access_tokens (
 );
 INSERT into tlc_tts_access_tokens (userid, token, expires)
 SELECT userid, token, expires FROM tlc_tt_access_tokens;
+
+
+--- The following views all just need to have their prefix updated
+
+CREATE VIEW tlc_tts_draft_surveys
+  AS SELECT * from tlc_tts_surveys
+      WHERE active IS NULL;
+
+CREATE VIEW tlc_tts_active_surveys
+  AS SELECT * from tlc_tts_surveys
+      WHERE active IS NOT NULL AND closed IS NULL;
+
+CREATE VIEW tlc_tts_closed_surveys
+  AS SELECT * from tlc_tts_surveys
+      WHERE closed IS NOT NULL;
+
+CREATE VIEW tlc_tts_user_reset_tokens
+  AS SELECT u.userid, t.token, t.expires
+       FROM tlc_tts_userids u, tlc_tts_reset_tokens t
+      WHERE u.userid = t.userid;
+      
+CREATE VIEW tlc_tts_active_roles
+  AS SELECT r.userid, u.fullname, r.admin, r.content, r.tech, r.summary
+       FROM tlc_tts_roles r
+       LEFT JOIN tlc_tts_userids u ON u.userid=r.userid
+      WHERE r.content=1 OR r.admin=1 OR r.tech=1 OR r.summary=1;
+
+CREATE VIEW tlc_tts_view_survey_questions AS
+SELECT question_id, survey_id, wording, question_type, 
+  CASE WHEN (question_flags & 0x01) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
+  CASE WHEN (question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
+  CASE WHEN (question_flags & 0x08) > 0 THEN 'YES' 
+       WHEN (question_flags & 0x10) > 0 THEN 'NEW' 
+       ELSE 'NO'
+       END AS grouped,
+  CASE WHEN question_type not like 'SELECT%' THEN NULL
+       WHEN (question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
+  other, qualifier, intro, info
+FROM tlc_tts_survey_questions;
+
+CREATE VIEW tlc_tts_view_question_options AS
+SELECT q.survey_id,q.question_id, q.wording, 
+       qo.sequence, qo.option_id, so.option_str, q.question_type
+FROM tlc_tts_survey_questions q
+LEFT JOIN tlc_tts_question_options qo 
+       ON qo.question_id=q.question_id and qo.survey_id=q.survey_id
+LEFT JOIN tlc_tts_survey_options so 
+       ON so.survey_id=qo.survey_id and so.option_id=qo.option_id
+WHERE q.question_type like 'SELECT%';
+
+CREATE VIEW tlc_tts_view_responses_freetext AS
+SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+       q.question_id, q.wording, r.free_text, r.qualifier
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
+         ON q.question_id=r.question_id and q.survey_id=r.survey_id
+ WHERE r.free_text is not NULL
+   AND q.question_type='FREETEXT';
+
+CREATE VIEW tlc_tts_view_responses_bool AS
+SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+       q.question_id, q.wording,
+       CASE WHEN r.selected=0 THEN 'NO' ELSE 'YES' END AS selected,
+       r.qualifier
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
+         ON q.question_id=r.question_id and q.survey_id=r.survey_id
+ WHERE r.selected is not NULL
+   AND q.question_type='BOOL';
+
+CREATE VIEW tlc_tts_view_responses_select_one AS
+SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+       q.question_id, q.wording,
+       r.selected, 
+       CASE WHEN r.selected = 0 THEN r.other ELSE so.option_str END as 'option', 
+       r.qualifier
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
+         ON q.question_id=r.question_id and q.survey_id=r.survey_id
+ LEFT JOIN tlc_tts_question_options qo
+         ON qo.survey_id=q.survey_id and qo.question_id=q.question_id and qo.sequence=r.selected
+ LEFT JOIN tlc_tts_survey_options so
+         ON so.survey_id=qo.survey_id and so.option_id=qo.option_id
+ WHERE r.selected is not NULL
+   AND q.question_type='SELECT_ONE';
+
+CREATE VIEW tlc_tts_view_responses_select_multi AS
+SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+       q.question_id, q.wording,
+       r.other, r.qualifier
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
+         ON q.question_id=r.question_id and q.survey_id=r.survey_id
+ WHERE q.question_type='SELECT_MULTI';
+
+CREATE VIEW tlc_tts_view_response_options AS
+SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
+       q.question_id, q.wording, so.option_str
+  FROM tlc_tts_responses r
+  LEFT JOIN tlc_tts_survey_questions q 
+         ON q.question_id=r.question_id and q.survey_id=r.survey_id
+ LEFT JOIN tlc_tts_response_options ro
+         ON ro.userid=r.userid and ro.survey_id=r.survey_id and ro.question_id=r.question_id
+ LEFT JOIN tlc_tts_survey_options so
+         ON so.survey_id=ro.survey_id and so.option_id=ro.option_id
+ WHERE q.question_type='SELECT_MULTI'
+   AND ro.option_id is not NULL;
+
+CREATE VIEW tlc_tts_view_last_user_survey AS
+SELECT u.userid, su.survey_id, su.title as survey_name
+  FROM tlc_tts_user_status AS u
+  JOIN ( SELECT userid, MAX(submitted) AS max_submitted  
+         FROM tlc_tts_user_status 
+         WHERE survey_id NOT IN (SELECT survey_id FROM tlc_tts_active_surveys) 
+         GROUP BY userid) AS uf
+      ON u.userid = uf.userid AND u.submitted = uf.max_submitted
+  JOIN ( SELECT survey_id,title FROM tlc_tts_surveys ) AS su ON u.survey_id = su.survey_id;
+
+CREATE VIEW tlc_tts_view_unused_options AS
+SELECT so.survey_id,so.option_id
+  FROM tlc_tts_survey_options so
+  LEFT JOIN tlc_tts_question_options qo
+        ON qo.survey_id  = so.survey_id
+       AND qo.option_id  = so.option_id
+ WHERE qo.survey_id IS NULL;
+
+INSERT INTO tlc_tts_version_history (version, change_description)
+VALUES ('1.1.0', 'Migrated Database from version 1.0');

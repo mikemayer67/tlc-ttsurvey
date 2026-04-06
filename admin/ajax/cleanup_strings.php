@@ -1,6 +1,8 @@
 <?php
 namespace tlc\tts;
 
+//@@@ OBE this entire file
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/logger.php'));

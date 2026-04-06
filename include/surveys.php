@@ -30,7 +30,7 @@ class Surveys
 
   static function info($id)
   {
-    $info = MySQLSelectRow("select * from tlc_tt_view_surveys where survey_id=?",'i',$id);
+    $info = MySQLSelectRow("select * from tlc_tts_surveys where survey_id=?",'i',$id);
     if(!$info) { return null; }
 
     // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
