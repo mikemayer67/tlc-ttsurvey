@@ -38,7 +38,7 @@ if($active_survey_id) {
 }
 
 $last_survey = [];
-$rows = MySQLSelectArrays('SELECT userid,survey_id,survey_name from tlc_tt_view_last_user_survey','');
+$rows = MySQLSelectArrays('SELECT userid,survey_id,survey_name from tlc_tts_view_last_user_survey','');
 foreach($rows as $row) { $last_survey[$row[0]] = ['id'=>$row[1], 'name'=>$row[2]]; }
 
 echo "<div class='resizable boxed'>";

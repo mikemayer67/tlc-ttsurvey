@@ -14,7 +14,6 @@ add_hidden_submit('action','cleanup');
 echo "<div class='section-header'>Unused Database Entries</div>";
 echo "<ul class='action-list'>";
 echo "<li><a href='#' class='cleanup options'>Remove all unused select options</a></li>";
-echo "<li><a href='#' class='cleanup strings'>Remove all unused text strings</a></li>";
 echo "</ul>";
 echo "</div>";
 echo "</form>";

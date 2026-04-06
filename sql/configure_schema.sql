@@ -326,4 +326,4 @@ SELECT so.survey_id,so.option_id
  WHERE qo.survey_id IS NULL;
 
 INSERT INTO tlc_tts_version_history (version, change_description)
-VALUES ('1.0.0', 'Initial Database Configuration');
+VALUES ('1.1.0', 'Initial Database Configuration');

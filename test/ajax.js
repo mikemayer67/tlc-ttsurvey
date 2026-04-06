@@ -104,8 +104,6 @@ function all_tests() {
   // admin/obtain_lock
   rval.push(new PassTest('admin.js', 'admin/obtain_admin_lock'));
   // admin/cleanup
-  rval.push(new PassTest('cleanup.js', 'admin/cleanup_strings'));
-  rval.push(new FailTest('cleanup.js', 'admin/cleanup_strings', {nonce:'bad'}));
   rval.push(new PassTest('cleanup.js', 'admin/cleanup_options'));
   rval.push(new FailTest('cleanup.js', 'admin/cleanup_options', {nonce:'bad'}));
   // admin/get_log

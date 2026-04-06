@@ -13,12 +13,12 @@ $response = new AjaxResponse();
 
 start_ob_logging();
 
-$rows = MySQLSelectArrays('select survey_id, option_id from tlc_tt_view_unused_options');
+$rows = MySQLSelectArrays('select survey_id, option_id from tlc_tts_view_unused_options');
 $response->add('count', count($rows));
 
 if($rows)
 {
-  $query = 'delete from tlc_tt_survey_options where survey_id=? and option_id=?';
+  $query = 'delete from tlc_tts_survey_options where survey_id=? and option_id=?';
   foreach($rows as [$sid,$oid]) {
     $rc = MySQLExecute($query,'ii',$sid,$oid);
   }
