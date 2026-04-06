@@ -101,8 +101,7 @@ CREATE TABLE tlc_tts_question_map (
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 INSERT into tlc_tts_question_map (survey_id, section_id, question_seq, question_id)
-SELECT survey_id, section_id, question_seq, question_id
-  FROM tlc_tt_question_map;
+SELECT survey_id, section_id, question_seq, question_id FROM tlc_tt_question_map;
 
 --- No change to the question options table other than prefix
 CREATE TABLE tlc_tts_question_options (
@@ -118,5 +117,139 @@ CREATE TABLE tlc_tts_question_options (
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 INSERT into tlc_tts_question_options (survey_id, question_id, sequence, option_id)
-SELECT survey_id, question_id, sequence, option_id
-  FROM tlc_tt_question_options;
+SELECT survey_id, question_id, sequence, option_id FROM tlc_tt_question_options;
+
+--- No change to the question options table other than prefix
+CREATE TABLE tlc_tts_userids (
+  userid   varchar(24)  PRIMARY KEY,
+  fullname varchar(100) NOT NULL,
+  email    varchar(45)  DEFAULT NULL,
+  password varchar(64)  NOT NULL COMMENT 'hash of the password',
+  anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
+  admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
+);
+INSERT into tlc_tts_userids (userid, fullname, email, password, anonid, admin)
+SELECT userid, fullname, email, password, anonid, admin FROM tlc_tt_userids;
+
+--- No change to the question options table other than prefix
+CREATE TABLE tlc_tts_anonids (
+  anonid    varchar(24) UNIQUE
+);
+INSERT into tlc_tts_anonids (anonid)
+SELECT anonid FROM tlc_tt_anonids;
+
+--- No change to the reset tokrens table other than prefix
+CREATE TABLE tlc_tts_reset_tokens (
+  userid    varchar(24)      NOT NULL PRIMARY KEY,
+  token     varchar(20)      NOT NULL,
+  expires   datetime         NOT NULL,
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_reset_tokens (userid, token, expires)
+SELECT userid, token, expires FROM tlc_tt_reset_tokens;
+
+--- No change to the user roles table other than prefix
+CREATE TABLE tlc_tts_roles (
+  userid    varchar(24)         NOT NULL PRIMARY KEY,
+  admin     tinyint     UNSIGNED NOT NULL DEFAULT 0,
+  content   tinyint     UNSIGNED NOT NULL DEFAULT 0,
+  tech      tinyint     UNSIGNED NOT NULL DEFAULT 0,
+  summary   tinyint     UNSIGNED NOT NULL DEFAULT 0,
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_roles (userid, admin, content, tech, summary)
+SELECT userid, admin, content, tech, summary FROM tlc_tt_roles;
+
+--- No change to the settings table other than prefix
+create table tlc_tts_settings (
+  name  varchar(24)  NOT NULL PRIMARY KEY,
+  value varchar(255) NOT NULL
+);
+INSERT into tlc_tts_settings (name, value)
+SELECT name, value from tlc_tt_settings;
+
+--- No change to the user status table other than prefix
+CREATE TABLE tlc_tts_user_status (
+  userid      varchar(24)          NOT NULL,
+  survey_id   smallint    UNSIGNED NOT NULL,
+  draft       datetime             DEFAULT NULL,
+  submitted   datetime             DEFAULT NULL,
+  email_sent  datetime             DEFAULT NULL,
+  sent_to     varchar(45)          DEFAULT NULL,
+  PRIMARY KEY (userid,survey_id),
+  FOREIGN KEY (userid)    REFERENCES tlc_tts_userids(userid)    ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_user_status (userid, survey_id, draft, submitted, email_sent, sent_to)
+SELECT userid, survey_id, draft, submitted, email_sent, sent_to FROM tlc_tt_user_status;
+
+--- No change to the user response table other than prefix
+CREATE TABLE tlc_tts_responses (
+  userid      varchar(24)          NOT NULL,
+  survey_id   smallint    UNSIGNED NOT NULL,
+  question_id smallint    UNSIGNED NOT NULL,
+  draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
+  selected    smallint    UNSIGNED DEFAULT NULL COMMENT '1/0 or select id based on question type',
+  free_text   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
+  qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
+  other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
+  PRIMARY KEY (userid,survey_id,question_id,draft),
+  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (question_id) REFERENCES tlc_tts_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_responses (userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
+SELECT userid, survey_id, question_id, draft, selected, free_text, qualifier, other from tlc_tt_responses;
+
+--- No change to the section feedback table other than prefix
+CREATE TABLE tlc_tts_section_feedback (
+  userid      varchar(24)          NOT NULL,
+  survey_id   smallint    UNSIGNED NOT NULL,
+  section_id  smallint    UNSIGNED NOT NULL,
+  draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
+  feedback    text                 DEFAULT NULL,
+  PRIMARY KEY (userid,survey_id,section_id,draft),
+  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_section_feedback (userid, survey_id, section_id, draft, feedback)
+SELECT userid, survey_id, section_id, draft, feedback from tlc_tt_section_feedback;
+
+--- No change to the response options table other than prefix
+CREATE TABLE tlc_tts_response_options (
+  userid      varchar(24)          NOT NULL,
+  survey_id   smallint    UNSIGNED NOT NULL,
+  question_id smallint    UNSIGNED NOT NULL,
+  draft       tinyint     UNSIGNED NOT NULL  COMMENT '1=draft response, 0=submitted response',
+  option_id   smallint    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
+  UNIQUE KEY  (userid,survey_id,question_id,draft,option_id),
+  FOREIGN KEY (userid,survey_id,question_id,draft) 
+              REFERENCES tlc_tts_responses (userid,survey_id,question_id,draft)
+              ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
+              ON UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_response_options (userid, survey_id, question_id, draft, option_id)
+SELECT userid, survey_id, question_id, draft, option_id from tlc_tt_response_options;
+
+--- No change to the reminder email table other than prefix
+CREATE TABLE tlc_tts_reminder_emails (
+  userid    varchar(24) NOT NULL,
+  subject   varchar(32) NOT NULL,
+  last_sent datetime    NOT NULL,
+  email     varchar(45) NOT NULL,
+  PRIMARY KEY (userid),
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_reminder_emails (userid, subject, last_sent, email)
+SELECT userid, subject, last_sent, email FROM tlc_tt_reminder_emails;
+
+--- No change to the access token table other than prefix
+CREATE TABLE tlc_tts_access_tokens (
+  userid   varchar(24)  NOT NULL,
+  token    varchar(45)  NOT NULL COMMENT 'access token',
+  expires  datetime     NOT NULL COMMENT 'when the token expires unless renewed',
+  PRIMARY KEY (userid,token),
+  FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
+);
+INSERT into tlc_tts_access_tokens (userid, token, expires)
+SELECT userid, token, expires FROM tlc_tt_access_tokens;
