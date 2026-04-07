@@ -26,7 +26,6 @@ drop table if exists tlc_tts_user_status;
 drop table if exists tlc_tts_settings;
 drop table if exists tlc_tts_roles;
 drop table if exists tlc_tts_reset_tokens;
-drop table if exists tlc_tts_anonids;
 drop table if exists tlc_tts_userids;
 drop table if exists tlc_tts_question_options;
 drop table if exists tlc_tts_question_map;

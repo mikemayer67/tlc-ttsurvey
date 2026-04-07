@@ -7,7 +7,6 @@ drop table if exists tlc_bkp_user_status;
 drop table if exists tlc_bkp_settings;
 drop table if exists tlc_bkp_roles;
 drop table if exists tlc_bkp_reset_tokens;
-drop table if exists tlc_bkp_anonids;
 drop table if exists tlc_bkp_userids;
 drop table if exists tlc_bkp_question_options;
 drop table if exists tlc_bkp_question_map;

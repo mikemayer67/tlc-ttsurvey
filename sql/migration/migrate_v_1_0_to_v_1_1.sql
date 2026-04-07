@@ -125,18 +125,10 @@ CREATE TABLE tlc_tts_userids (
   fullname varchar(100) NOT NULL,
   email    varchar(45)  DEFAULT NULL,
   password varchar(64)  NOT NULL COMMENT 'hash of the password',
-  anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
   admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
 );
-INSERT into tlc_tts_userids (userid, fullname, email, password, anonid, admin)
-SELECT userid, fullname, email, password, anonid, admin FROM tlc_tt_userids;
-
---- No change to the question options table other than prefix
-CREATE TABLE tlc_tts_anonids (
-  anonid    varchar(24) UNIQUE
-);
-INSERT into tlc_tts_anonids (anonid)
-SELECT anonid FROM tlc_tt_anonids;
+INSERT into tlc_tts_userids (userid, fullname, email, password, admin)
+SELECT userid, fullname, email, password, admin FROM tlc_tt_userids;
 
 --- No change to the reset tokrens table other than prefix
 CREATE TABLE tlc_tts_reset_tokens (
