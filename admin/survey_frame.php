@@ -294,6 +294,8 @@ echo "  <div class='content-header'>Section/Question Details</div>";
 echo "  <div class='hint-hint'>Click or hover on any of the entry labels for more info about that entry.</div>";
 
 
+// maxlen values for name, intro and feedback
+// must not exceed the varchar size in tlc_tts_survey_sections
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
@@ -312,6 +314,8 @@ add_viewer_entry('section','feedback');
 echo "  </div>";
 
 
+// maxlen values for wording/infotag, intro, other qualifier, and info 
+// must not exceed the varchar size in tlc_tts_survey_questions
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
 add_type_select();

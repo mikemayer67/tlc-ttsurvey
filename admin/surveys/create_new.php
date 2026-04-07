@@ -4,7 +4,6 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
-require_once(app_file('include/strings.php'));
 require_once(app_file('include/surveys.php'));
 
 class FailedToCreate extends \Exception {}
@@ -17,14 +16,12 @@ function create_new_survey($name,$parent_id,&$error=null)
   try {
     MySQLBeginTransaction();
 
-    $max_id = MySQLSelectValue("select max(survey_id) from tlc_tt_surveys");
+    $max_id = MySQLSelectValue("select max(survey_id) from tlc_tts_surveys");
     $survey_id = $max_id ? 1 + $max_id : 1;
 
-    $title_sid = strings_find_or_create($name);
-    
     $rc = MySQLExecute(
-      "insert into tlc_tt_surveys (survey_id,parent_id,title_sid) values (?,?,?)",
-      'iii', $survey_id, $parent_id, $title_sid
+      "insert into tlc_tts_surveys (survey_id,parent_id,title) values (?,?,?)",
+      'iis', $survey_id, $parent_id, $name
     );
     if(!$rc) { 
       throw new FailedToCreate('Failed to create a new survey status entry in the database');
@@ -52,9 +49,9 @@ function create_new_survey($name,$parent_id,&$error=null)
 function clone_survey_options($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tt_survey_options
+    INSERT into tlc_tts_survey_options
     SELECT $child_id, option_id, text_sid
-      FROM tlc_tt_survey_options
+      FROM tlc_tts_survey_options
      WHERE survey_id=$parent_id
   SQL;
 
@@ -66,9 +63,9 @@ function clone_survey_options($child_id,$parent_id)
 function clone_survey_sections($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tt_survey_sections
-    SELECT $child_id, section_id, sequence, name_sid, collapsible, intro_sid, feedback_sid
-      FROM tlc_tt_survey_sections
+    INSERT into tlc_tts_survey_sections
+    SELECT $child_id, section_id, sequence, name, collapsible, intro, feedback
+      FROM tlc_tts_survey_sections
      WHERE survey_id=$parent_id
   SQL;
 
@@ -81,11 +78,9 @@ function clone_survey_sections($child_id,$parent_id)
 function clone_survey_questions($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tt_survey_questions
-    SELECT question_id, $child_id, 
-           wording_sid, question_type, question_flags,
-           other_sid, qualifier_sid, intro_sid, info_sid
-      FROM tlc_tt_survey_questions
+    INSERT into tlc_tts_survey_questions
+    SELECT question_id, $child_id, wording, question_type, question_flags, other, qualifier, intro, info
+      FROM tlc_tts_survey_questions
      WHERE survey_id=$parent_id
   SQL;
 
@@ -94,9 +89,9 @@ function clone_survey_questions($child_id,$parent_id)
   }
 
   $query = <<<SQL
-    INSERT into tlc_tt_question_map
+    INSERT into tlc_tts_question_map
     SELECT $child_id, section_id, question_seq, question_id
-      FROM tlc_tt_question_map
+      FROM tlc_tts_question_map
      WHERE survey_id=$parent_id
   SQL;
 
@@ -105,9 +100,9 @@ function clone_survey_questions($child_id,$parent_id)
   }
 
   $query = <<<SQL
-    INSERT into tlc_tt_question_options
+    INSERT into tlc_tts_question_options
     SELECT $child_id, question_id, sequence, option_id
-      FROM tlc_tt_question_options
+      FROM tlc_tts_question_options
      WHERE survey_id=$parent_id
   SQL;
 

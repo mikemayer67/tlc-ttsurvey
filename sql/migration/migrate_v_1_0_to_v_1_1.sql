@@ -1,15 +1,17 @@
--- At one point, the version table was a crucial element in the
---   maintenance of database structure.  It is now just a record
---   of the scripts the SQL scripts that were run against it over
---   time.
+--- Copy over existing data from v1.0 (tlc_tt_) tables to v1.1 (tlc_tts_) tables.
+--- This includes removing the string ID table and migrating data accordingly.
+
+--- No change to the version history table other than prefix
 CREATE TABLE tlc_tts_version_history (
   version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
   added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+INSERT into tlc_tts_version_history 
+SELECT * from tlc_tt_version_history;
 
---- string length for title is enforced in the validate_survey_name function
----   in admin/js/surveys/metadata.js
+--- The survey table must be updated to use actual title strings
+---   rather than string IDs
 CREATE TABLE tlc_tts_surveys (
   survey_id   smallint UNSIGNED NOT NULL,
   parent_id   smallint UNSIGNED DEFAULT NULL,
@@ -21,8 +23,12 @@ CREATE TABLE tlc_tts_surveys (
   PRIMARY KEY (survey_id),
   FOREIGN KEY (parent_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE SET NULL
 );
+INSERT into tlc_tts_surveys (survey_id, parent_id, title, created, modified, active, closed)
+SELECT t.survey_id, t.parent_id, s.str, t.created, t.modified, t.active, t.closed
+  FROM tlc_tt_surveys t JOIN tlc_tt_strings s on s.string_id = t.title_sid;
 
---- @@@ TODO... enforce the string length for the option string
+--- The survey options table must be updated to use actual option string
+---  rather than a string ID
 CREATE TABLE tlc_tts_survey_options (
   survey_id  smallint UNSIGNED NOT NULL,
   option_id  smallint UNSIGNED NOT NULL COMMENT 'Provides continuity between surveys',
@@ -30,9 +36,12 @@ CREATE TABLE tlc_tts_survey_options (
   PRIMARY KEY (survey_id,option_id),
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_survey_options (survey_id, option_id, option_str)
+SELECT t.survey_id, t.option_id, s.str
+  FROM tlc_tt_survey_options t JOIN tlc_tt_strings s on s.string_id = t.text_sid;
 
---- string lengths for name, intro, and feedback are enforeced
----   in the Section Editor block in admin/survey_frame.php
+--- The survey sections table must be updated to use actual name, intro, and feedback strings
+---   rather than string IDs
 CREATE TABLE tlc_tts_survey_sections (
   survey_id    smallint UNSIGNED NOT NULL,
   section_id   smallint UNSIGNED NOT NULL,
@@ -43,11 +52,18 @@ CREATE TABLE tlc_tts_survey_sections (
   feedback     varchar(128)      DEFAULT NULL COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
   PRIMARY KEY (survey_id,section_id),
   UNIQUE  KEY (survey_id,sequence),
-  FOREIGN KEY (survey_id)    REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_survey_sections (survey_id, section_id, sequence, name, collapsible, intro, feedback)
+  SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str, sf.str
+    FROM tlc_tt_survey_sections t
+    LEFT JOIN tlc_tt_strings sn on sn.string_id = t.name_sid
+    LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid
+    LEFT JOIN tlc_tt_strings sf on sf.string_id = t.feedback_sid;
+  
 
---- string lengths for wording, other, qualifier, into, and info are enforced
----   in the Question Editor block in admin/survey_frame.php
+--- The survey questions table must be updated to use actual wording, other, qualifier, intro, and info
+---   rather than string IDs
 CREATE TABLE tlc_tts_survey_questions (
   question_id    smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
   survey_id      smallint UNSIGNED NOT NULL,
@@ -61,20 +77,17 @@ CREATE TABLE tlc_tts_survey_questions (
   PRIMARY KEY (question_id,survey_id),
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
--- Notes:
--- There are four Survey question types:
---    INFO      Not a question, exists to provide info to the survey participants.
---    BOOL      Yes/No type question (probably will be implemented as a checkbox)
---    OPTIONS   Multiple choice (option) questions.
---    FREETEXT  Question where the participant can provide a free form written respone
--- For BOOL questions, layout specifies the order of the checkbox and label
---    LEFT      checkbox appears before the question
---    RIGHT     checkbox appears after the question
--- For OPTION questions, layout specifies how the options should appear
---    ROW       options appear in a single row after the question (wrapping if necessary)
---    LCOL      options appear in a left  aligned column with checkboxes before the option label
---    RCOL      options appear in a right aligned column with checkboxes after  the option label
+INSERT into tlc_tts_survey_questions 
+  ( question_id, survey_id, wording, question_type, question_flags, other, qualifier, intro, info )
+  SELECT t.question_id, t.survey_id, sw.str, t.question_type, t.question_flags, so.str, sq.str, si.str, sp.str
+    FROM tlc_tt_survey_questions t
+    LEFT JOIN tlc_tt_strings sw on sw.string_id = t.wording_sid
+    LEFT JOIN tlc_tt_strings so on so.string_id = t.other_sid
+    LEFT JOIN tlc_tt_strings sq on sq.string_id = t.qualifier_sid
+    LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid
+    LEFT JOIN tlc_tt_strings sp on sp.string_id = t.info_sid;
 
+--- No change to the question map table other than prefix
 CREATE TABLE tlc_tts_question_map (
   survey_id     smallint UNSIGNED NOT NULL,
   section_id    smallint UNSIGNED NOT NULL,
@@ -87,7 +100,10 @@ CREATE TABLE tlc_tts_question_map (
   FOREIGN KEY (question_id,survey_id) REFERENCES tlc_tts_survey_questions (question_id,survey_id) 
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_question_map (survey_id, section_id, question_seq, question_id)
+SELECT survey_id, section_id, question_seq, question_id FROM tlc_tt_question_map;
 
+--- No change to the question options table other than prefix
 CREATE TABLE tlc_tts_question_options (
   survey_id   smallint UNSIGNED NOT NULL,
   question_id smallint UNSIGNED NOT NULL,
@@ -100,7 +116,10 @@ CREATE TABLE tlc_tts_question_options (
   FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_question_options (survey_id, question_id, sequence, option_id)
+SELECT survey_id, question_id, sequence, option_id FROM tlc_tt_question_options;
 
+--- No change to the question options table other than prefix
 CREATE TABLE tlc_tts_userids (
   userid   varchar(24)  PRIMARY KEY,
   fullname varchar(100) NOT NULL,
@@ -108,19 +127,28 @@ CREATE TABLE tlc_tts_userids (
   password varchar(64)  NOT NULL COMMENT 'hash of the password',
   anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
   admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
-  );
+);
+INSERT into tlc_tts_userids (userid, fullname, email, password, anonid, admin)
+SELECT userid, fullname, email, password, anonid, admin FROM tlc_tt_userids;
 
+--- No change to the question options table other than prefix
 CREATE TABLE tlc_tts_anonids (
   anonid    varchar(24) UNIQUE
 );
+INSERT into tlc_tts_anonids (anonid)
+SELECT anonid FROM tlc_tt_anonids;
 
+--- No change to the reset tokrens table other than prefix
 CREATE TABLE tlc_tts_reset_tokens (
   userid    varchar(24)      NOT NULL PRIMARY KEY,
   token     varchar(20)      NOT NULL,
   expires   datetime         NOT NULL,
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_reset_tokens (userid, token, expires)
+SELECT userid, token, expires FROM tlc_tt_reset_tokens;
 
+--- No change to the user roles table other than prefix
 CREATE TABLE tlc_tts_roles (
   userid    varchar(24)         NOT NULL PRIMARY KEY,
   admin     tinyint     UNSIGNED NOT NULL DEFAULT 0,
@@ -129,12 +157,18 @@ CREATE TABLE tlc_tts_roles (
   summary   tinyint     UNSIGNED NOT NULL DEFAULT 0,
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_roles (userid, admin, content, tech, summary)
+SELECT userid, admin, content, tech, summary FROM tlc_tt_roles;
 
+--- No change to the settings table other than prefix
 create table tlc_tts_settings (
   name  varchar(24)  NOT NULL PRIMARY KEY,
   value varchar(255) NOT NULL
 );
+INSERT into tlc_tts_settings (name, value)
+SELECT name, value from tlc_tt_settings;
 
+--- No change to the user status table other than prefix
 CREATE TABLE tlc_tts_user_status (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
@@ -146,7 +180,10 @@ CREATE TABLE tlc_tts_user_status (
   FOREIGN KEY (userid)    REFERENCES tlc_tts_userids(userid)    ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_user_status (userid, survey_id, draft, submitted, email_sent, sent_to)
+SELECT userid, survey_id, draft, submitted, email_sent, sent_to FROM tlc_tt_user_status;
 
+--- No change to the user response table other than prefix
 CREATE TABLE tlc_tts_responses (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
@@ -160,7 +197,10 @@ CREATE TABLE tlc_tts_responses (
   FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (question_id) REFERENCES tlc_tts_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_responses (userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
+SELECT userid, survey_id, question_id, draft, selected, free_text, qualifier, other from tlc_tt_responses;
 
+--- No change to the section feedback table other than prefix
 CREATE TABLE tlc_tts_section_feedback (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
@@ -171,7 +211,10 @@ CREATE TABLE tlc_tts_section_feedback (
   FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_section_feedback (userid, survey_id, section_id, draft, feedback)
+SELECT userid, survey_id, section_id, draft, feedback from tlc_tt_section_feedback;
 
+--- No change to the response options table other than prefix
 CREATE TABLE tlc_tts_response_options (
   userid      varchar(24)          NOT NULL,
   survey_id   smallint    UNSIGNED NOT NULL,
@@ -185,7 +228,10 @@ CREATE TABLE tlc_tts_response_options (
   FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_response_options (userid, survey_id, question_id, draft, option_id)
+SELECT userid, survey_id, question_id, draft, option_id from tlc_tt_response_options;
 
+--- No change to the reminder email table other than prefix
 CREATE TABLE tlc_tts_reminder_emails (
   userid    varchar(24) NOT NULL,
   subject   varchar(32) NOT NULL,
@@ -194,7 +240,10 @@ CREATE TABLE tlc_tts_reminder_emails (
   PRIMARY KEY (userid),
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_reminder_emails (userid, subject, last_sent, email)
+SELECT userid, subject, last_sent, email FROM tlc_tt_reminder_emails;
 
+--- No change to the access token table other than prefix
 CREATE TABLE tlc_tts_access_tokens (
   userid   varchar(24)  NOT NULL,
   token    varchar(45)  NOT NULL COMMENT 'access token',
@@ -202,6 +251,11 @@ CREATE TABLE tlc_tts_access_tokens (
   PRIMARY KEY (userid,token),
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
+INSERT into tlc_tts_access_tokens (userid, token, expires)
+SELECT userid, token, expires FROM tlc_tt_access_tokens;
+
+
+--- The following views all just need to have their prefix updated
 
 CREATE VIEW tlc_tts_draft_surveys
   AS SELECT * from tlc_tts_surveys
@@ -326,4 +380,4 @@ SELECT so.survey_id,so.option_id
  WHERE qo.survey_id IS NULL;
 
 INSERT INTO tlc_tts_version_history (version, change_description)
-VALUES ('1.1.0', 'Initial Database Configuration');
+VALUES ('1.1.0', 'Migrated Database from version 1.0');
