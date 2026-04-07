@@ -106,12 +106,7 @@ CREATE TABLE tlc_tts_userids (
   fullname varchar(100) NOT NULL,
   email    varchar(45)  DEFAULT NULL,
   password varchar(64)  NOT NULL COMMENT 'hash of the password',
-  anonid   varchar(64)  NOT NULL COMMENT 'hash of the anonid or userid',
   admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
-  );
-
-CREATE TABLE tlc_tts_anonids (
-  anonid    varchar(24) UNIQUE
 );
 
 CREATE TABLE tlc_tts_reset_tokens (
