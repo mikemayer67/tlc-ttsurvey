@@ -32,7 +32,7 @@ class SummaryBoolBox extends SummaryQuestionBox
 
     $qid       = $question['id'];
     $wording   = $question['wording'];
-    $responses = $responses['questions'][$qid] ?? [];
+    $responses = $responses[$qid] ?? [];
 
     $this->width = $width;
 

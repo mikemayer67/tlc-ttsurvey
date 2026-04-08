@@ -123,7 +123,7 @@ class SectionPanel
     echo "<div class='$class question $indent'>";
     echo "<div class='label'>$wording</div>";
 
-    $responses = $this->responses['questions'][$qid] ?? [];
+    $responses = $this->responses[$qid] ?? [];
     switch($type) {
       case 'bool':
         $this->add_bool_responses($question, $responses);

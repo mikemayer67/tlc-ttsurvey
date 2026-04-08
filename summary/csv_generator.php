@@ -165,7 +165,7 @@ class CSVGenerator
     $rows = [];
     $qid = $question['id'];
     $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses['questions'][$qid] ?? [];
+    $qr = $this->_responses[$qid] ?? [];
     foreach ($qr as $r) {
       if ($r['selected']) {
         $row = [];
@@ -191,7 +191,7 @@ class CSVGenerator
     $rows = [];
     $qid = $question['id'];
     $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses['questions'][$qid] ?? [];
+    $qr = $this->_responses[$qid] ?? [];
     foreach ($qr as $r) {
       $row = [];
       $row['question']    = $wording;
@@ -215,7 +215,7 @@ class CSVGenerator
     $rows = [];
     $qid = $question['id'];
     $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses['questions'][$qid] ?? []; 
+    $qr = $this->_responses[$qid] ?? []; 
     foreach($qr as $r) {
       $row = [];
       $row['question']    = $wording;
@@ -246,7 +246,7 @@ class CSVGenerator
     $rows = [];
     $qid = $question['id'];
     $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses['questions'][$qid] ?? []; 
+    $qr = $this->_responses[$qid] ?? []; 
     foreach($qr as $r) {
       $name = $this->fullname($r['userid']);
       $selected = $r['options'] ?? [];

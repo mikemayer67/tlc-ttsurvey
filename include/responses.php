@@ -95,11 +95,11 @@ function get_all_responses($survey_id)
 
   $rows = MySQLSelectRows($query,'i', $survey_id);
 
-  $questions = [];
+  $responses = [];
   foreach($rows as $row) {
     $qid    = $row['question_id'];
     $userid = $row['userid'];
-    $questions[$qid][$userid] = $row;
+    $responses[$qid][$userid] = $row;
   }
 
   $query = <<<SQL
@@ -114,11 +114,10 @@ function get_all_responses($survey_id)
     $qid    = $row['question_id'];
     $userid = $row['userid'];
     $oid    = $row['option_id'];
-    $questions[$qid][$userid]['options'][] = $oid;
+    $responses[$qid][$userid]['options'][] = $oid;
   }
 
-  // @@@ TODO: change return to just be the questions array.
-  return ['questions'=>$questions];
+  return $responses;
 }
 
 
