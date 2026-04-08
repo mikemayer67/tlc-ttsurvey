@@ -142,17 +142,12 @@ details.section summary span {
   font-weight:700;
 }
 
-.section div.section.intro,
-.section div.section.feedback
+.section div.section.intro
 {
   background:none;
   border:none;
   box-shadow:none;
   font-size:110%;
-}
-
-.section div.section.feedback {
-  padding: 1rem 0.5rem;
 }
 
 .section div.section.intro {
@@ -164,17 +159,6 @@ details.section summary span {
 {
   margin:0;
   padding:0;
-}
-
-.section div.section.feedback div.label {
-  font-weight:600;
-  font-size:110%;
-}
-
-.section div.section.feedback textarea {
-  padding:0.25em 0.5em;
-  background:white;
-  width:100%;
 }
 
 /****************************************

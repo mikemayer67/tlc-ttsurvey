@@ -14,11 +14,6 @@ function input_error(key,value)
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
 
-    case 'feedback':
-      if(len==0) { return ''; }
-      invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
-      break;
-
      case 'intro':
        markdown = true;
        break;
@@ -56,9 +51,6 @@ export default function init(ce,controller)
 
   const _intro             = _box.children('.intro');
   const _intro_value       = _intro.find('textarea');
-
-  const _feedback          = _box.children('.feedback');
-  const _feedback_value    = _feedback.find('input');
 
   const _hints             = _box.find('div.hint');
   const _fields            = _box.find('input,textarea,select');
@@ -149,16 +141,13 @@ export default function init(ce,controller)
     const name        = data.name || '';
     const collapsible = data.collapsible ? 1 : 0;
     const intro       = data.intro || '';
-    const feedback    = data.feedback || '';
 
     _name_value.val(name);
     _collapsible_value.val(collapsible);
     _intro_value.val(intro).trigger('change');
-    _feedback_value.val(feedback);
 
     validate_input('name'    , name);
     validate_input('intro'   , intro);
-    validate_input('feedback', feedback);
 
     _hints.removeClass('locked');
   }

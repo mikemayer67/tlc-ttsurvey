@@ -67,7 +67,6 @@ class SectionPanel
   private $questions = null;
   private $options   = null;
   private $responses = null;
-  private $feedback  = null;
 
   private $indent    = false;
   private $grouped   = false;
@@ -103,9 +102,6 @@ class SectionPanel
       }
       $this->add_question($question);
     }
-
-    // Add Section Feedback, if applicable
-    $this->add_feedback();
 
     echo "</div>";
   }
@@ -155,35 +151,6 @@ class SectionPanel
     $info_text = strip_markdown($question['info']);
     echo "<div class='info text question'>";
     echo "<div class='label'>$info_text</div>";
-    echo "</div>";
-  }
-
-  private function add_feedback()
-  {
-    $feedback = $this->section['feedback'] ?? null;
-    if(!$feedback) { return; }
-
-    $section = $this->section['name'];
-
-    echo "<div class='feedback responses'>";
-
-    echo "<div class='label'>";
-    echo "<span class='section'>$section Feedback</span>";
-    echo "<spane class='question'>$feedback</span>";
-    echo "</div>";
-
-    $responses = $this->responses['sections'][$this->sid] ?? [];
-    if($responses) {
-      echo "<table class='section-feedback'>";
-      foreach($responses as $userid=>$response) {
-        $user = User::from_userid($userid);
-        $name = $user->fullname();
-        echo "<tr><td class='name'>$name:</td><td class='response'>$response</td></tr>";
-      }
-      echo "</table>";
-    } else {
-      echo "<div class='no-feedback'>No responses</div>";
-    }
     echo "</div>";
   }
 

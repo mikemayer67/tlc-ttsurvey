@@ -40,7 +40,7 @@ INSERT into tlc_tts_survey_options (survey_id, option_id, option_str)
 SELECT t.survey_id, t.option_id, s.str
   FROM tlc_tt_survey_options t JOIN tlc_tt_strings s on s.string_id = t.text_sid;
 
---- The survey sections table must be updated to use actual name, intro, and feedback strings
+--- The survey sections table must be updated to use actual name, and intro strings
 ---   rather than string IDs
 CREATE TABLE tlc_tts_survey_sections (
   survey_id    smallint UNSIGNED NOT NULL,
@@ -49,17 +49,15 @@ CREATE TABLE tlc_tts_survey_sections (
   name         varchar(128)                   COMMENT 'Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
   collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
   intro        varchar(512)      DEFAULT NULL COMMENT 'Section intro that will appear in the survey form',
-  feedback     varchar(128)      DEFAULT NULL COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
   PRIMARY KEY (survey_id,section_id),
   UNIQUE  KEY (survey_id,sequence),
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
-INSERT into tlc_tts_survey_sections (survey_id, section_id, sequence, name, collapsible, intro, feedback)
+INSERT into tlc_tts_survey_sections (survey_id, section_id, sequence, name, collapsible, intro)
   SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str, sf.str
     FROM tlc_tt_survey_sections t
     LEFT JOIN tlc_tt_strings sn on sn.string_id = t.name_sid
-    LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid
-    LEFT JOIN tlc_tt_strings sf on sf.string_id = t.feedback_sid;
+    LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid;
   
 
 --- The survey questions table must be updated to use actual wording, other, qualifier, intro, and info
@@ -191,20 +189,6 @@ CREATE TABLE tlc_tts_responses (
 );
 INSERT into tlc_tts_responses (userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
 SELECT userid, survey_id, question_id, draft, selected, free_text, qualifier, other from tlc_tt_responses;
-
---- No change to the section feedback table other than prefix
-CREATE TABLE tlc_tts_section_feedback (
-  userid      varchar(24)          NOT NULL,
-  survey_id   smallint    UNSIGNED NOT NULL,
-  section_id  smallint    UNSIGNED NOT NULL,
-  draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
-  feedback    text                 DEFAULT NULL,
-  PRIMARY KEY (userid,survey_id,section_id,draft),
-  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
-);
-INSERT into tlc_tts_section_feedback (userid, survey_id, section_id, draft, feedback)
-SELECT userid, survey_id, section_id, draft, feedback from tlc_tt_section_feedback;
 
 --- No change to the response options table other than prefix
 CREATE TABLE tlc_tts_response_options (

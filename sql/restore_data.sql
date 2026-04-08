@@ -1,7 +1,6 @@
 delete from tlc_tts_access_tokens;
 delete from tlc_tts_reminder_emails;
 delete from tlc_tts_response_options;
-delete from tlc_tts_section_feedback;
 delete from tlc_tts_responses;
 delete from tlc_tts_user_status;
 delete from tlc_tts_settings;
@@ -28,7 +27,6 @@ insert into tlc_tts_roles            select * from tlc_bkp_roles;
 insert into tlc_tts_settings         select * from tlc_bkp_settings;
 insert into tlc_tts_user_status      select * from tlc_bkp_user_status;
 insert into tlc_tts_responses        select * from tlc_bkp_responses;
-insert into tlc_tts_section_feedback select * from tlc_bkp_section_feedback;
 insert into tlc_tts_response_options select * from tlc_bkp_response_options;
 insert into tlc_tts_reminder_emails  select * from tlc_bkp_reminder_emails;
 insert into tlc_tts_access_tokens    select * from tlc_bkp_access_tokens;

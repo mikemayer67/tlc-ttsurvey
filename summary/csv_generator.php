@@ -30,7 +30,7 @@ class CSVGenerator
       'question'    => 'Question',
       'participant' => 'Participant',
       'selected'    => 'Selection',
-      'notes'       => 'Feedback/Notes',
+      'notes'       => 'Notes',
     ];
     $this->_column_keys = array_keys($this->_column_headers);
 
@@ -138,25 +138,6 @@ class CSVGenerator
           $row['section'] = $section['name'];
           $this->add_row($row);
         }
-      }
-
-      // section feedback
-      $sr = $this->_responses['sections'][$section_id] ?? [];
-      foreach($sr as $userid=>$feedback) {
-        $row = [];
-        $row['refid']       = $section['sequence'];
-        $row['section']     = $section['name'];
-        $row['question']    = $section['feedback'];
-        $row['notes']       = $feedback;
-        $row['participant'] = $this->fullname($userid);
-        $this->add_row($row);
-      }
-      if($section['feedback'] && !$sr) {
-        $row = [];
-        $row['refid']       = $section['sequence'];
-        $row['section']     = $section['name'];
-        $row['question']    = $section['feedback'];
-        $this->add_row($row);
       }
     }
   }

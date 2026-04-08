@@ -173,13 +173,6 @@ The section editor provides 4 fields for configuring how the section is displaye
   to display important information or questions that you don't want the participant
   to miss because they chose not to view this section.
 
-- **Feedback**
-
-  This field provides an optional prompt to allow survey participants to provide
-  general feedback pertinent to this section of the survey.  The prompt will appear
-  in the survey as written.  If this field is left blank, no such feedback block
-  will appear for this section in the survey.
-
 ### Info Block Editor
 
 <img src="img/survey_editor_info_block.png" alt="Info Block Editor" width="450">

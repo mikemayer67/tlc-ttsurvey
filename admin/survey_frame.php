@@ -25,11 +25,6 @@ $hints = [
       '<b>This field is optional.</b>  If provided, it will be displayed in the survey before '.
       'any of the questions or info text within this section.  The text can be stylized using markdown. '.
       "p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
-    'feedback' => ( 
-      '<b>This field is optional.</b>  It sepecifies the label used to introduce a free text entry at the '.
-      'end of the section. If this field is empty, no such free text entry will be included in the survey '.
-      'for this section.'
-    ),
   ],
   'question' => [
     'archive' => (
@@ -88,7 +83,6 @@ $labels = [
     'name'        => 'Name',
     'collapsible' => 'Collapsible',
     'intro'       => 'Intro',
-    'feedback'    => 'Feedback',
   ],
   'question' => [
     'archive'     => 'Archive',
@@ -294,23 +288,20 @@ echo "  <div class='content-header'>Section/Question Details</div>";
 echo "  <div class='hint-hint'>Click or hover on any of the entry labels for more info about that entry.</div>";
 
 
-// maxlen values for name, intro and feedback
+// maxlen values for name and intro
 // must not exceed the varchar size in tlc_tts_survey_sections
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('section','intro',['maxlen'=>512]);
 add_editor_select('section','collapsible',[[1,"YES"],[0,"NO"]], ['type'=>'int']);
-add_editor_input('section','feedback',['maxlen'=>128]);
 echo "</div>";
-
 
 echo "<!--Section Viewer-->";
 echo "<div class='grid section viewer'>";
 add_viewer_entry('section','name');
 add_viewer_entry('section','intro');
 add_viewer_entry('section','collapsible');
-add_viewer_entry('section','feedback');
 echo "  </div>";
 
 

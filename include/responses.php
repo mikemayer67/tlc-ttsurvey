@@ -79,25 +79,9 @@ function get_user_responses($userid,$survey_id,$draft=null)
     $responses[$qid]['selected'][] = $row['option_id'];
   }
 
-  $query = <<<SQL
-    SELECT section_id, feedback
-      FROM tlc_tts_section_feedback
-     WHERE userid=(?)
-       AND survey_id=(?)
-       AND draft=(?);
-  SQL;
-
-  $rows = MySQLSelectRows($query,'sii',$userid, $survey_id, $draft?1:0);
-
-  $feedback = array();
-  foreach($rows as $row) {
-    $feedback[$row['section_id']] = $row['feedback'];
-  }
-
   return [
     'timestamp' => $timestamp,
     'responses' => $responses,
-    'feedback'  => $feedback,
   ];
 }
 
@@ -133,22 +117,8 @@ function get_all_responses($survey_id)
     $questions[$qid][$userid]['options'][] = $oid;
   }
 
-  $query = <<<SQL
-    SELECT section_id, userid, feedback
-      FROM tlc_tts_section_feedback
-     WHERE draft=0 and survey_id=?;
-  SQL;
-
-  $rows = MySQLSelectRows($query,'i', $survey_id);
-
-  $sections = [];
-  foreach($rows as $row) {
-    $sid    = $row['section_id'];
-    $userid = $row['userid'];
-    $sections[$sid][$userid] = $row['feedback'];
-  }
-
-  return ['questions'=>$questions, 'sections'=>$sections];
+  // @@@ TODO: change return to just be the questions array.
+  return ['questions'=>$questions];
 }
 
 
@@ -337,13 +307,6 @@ function update_user_responses($userid,$survey_id,$action,$responses)
   SQL;
   if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
 
-  $query = <<<SQL
-    DELETE from tlc_tts_section_feedback
-     WHERE userid=(?) AND survey_id=(?)
-     $action_clause;
-  SQL;
-  if(!_update_user_response($query,'si', $userid, $survey_id) ) {  return false; }
-
   // update the user status table
   if($draft) {
     $insert_list = '(userid,survey_id,draft)';
@@ -432,15 +395,6 @@ function update_user_responses($userid,$survey_id,$action,$responses)
          ON DUPLICATE KEY UPDATE qualifier=?;
       SQL;
       if(!_update_user_response($query,'siiss', $userid, $survey_id, $m[1],$v,$v)) { return false; }
-    }
-
-    // Section feedback
-    elseif(preg_match('/^section-feedback-(\d+)$/',$k,$m)) {
-      $query = <<<SQL
-         INSERT into tlc_tts_section_feedback (userid,survey_id,section_id,draft,feedback)
-         VALUES     (?,?,?,$draft,?);
-      SQL;
-      if(!_update_user_response($query,'siis', $userid, $survey_id, $m[1],$v)) { return false; }
     }
   }
 

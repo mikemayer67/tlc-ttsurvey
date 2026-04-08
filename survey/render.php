@@ -30,7 +30,6 @@ class RenderEngine
     $this->follows_info = false;
 
     $responses = $kwargs['responses'] ?? [];
-    $feedback  = $kwargs['feedback']  ?? [];
 
     if($state === 'preview')
     {
@@ -60,7 +59,7 @@ class RenderEngine
     $sections = $content['sections'];
     usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
     foreach($sections as $section) {
-      $this->add_section($section,$content,$responses,$feedback);
+      $this->add_section($section,$content,$responses);
     }
 
     if($action) { $this->add_submit_bar($state); }
@@ -118,7 +117,7 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_section($section,$content,$responses,$feedback)
+  private function add_section($section,$content,$responses)
   {
     $sid         = $section['section_id'];
     $name        = $section['name'];
@@ -147,17 +146,6 @@ class RenderEngine
     }
 
     $this->add_questions($sid,$content,$responses);
-
-    $feedback_label = $section['feedback'] ?? false;
-    if( $feedback_label )
-    {
-      echo "<div class='section feedback' $index>";
-      echo "<div class='label'>$feedback_label</div>";
-      echo "<textarea class='section feedback' name='section-feedback-$sid' placeholder='[optional]'>";
-      echo $feedback[$sid] ?? '';
-      echo "</textarea>";
-      echo "</div>";
-    }
 
     echo $closing_tag;
   }
