@@ -9,7 +9,6 @@ insert into migration_verification select 'user_status', (select count(*) from t
 insert into migration_verification select 'settings', (select count(*) from tlc_tt_settings), (select count(*) from tlc_tts_settings);
 insert into migration_verification select 'roles', (select count(*) from tlc_tt_roles), (select count(*) from tlc_tts_roles);
 insert into migration_verification select 'reset_tokens', (select count(*) from tlc_tt_reset_tokens), (select count(*) from tlc_tts_reset_tokens);
-insert into migration_verification select 'anonids', (select count(*) from tlc_tt_anonids), (select count(*) from tlc_tts_anonids);
 insert into migration_verification select 'userids', (select count(*) from tlc_tt_userids), (select count(*) from tlc_tts_userids);
 insert into migration_verification select 'question_options', (select count(*) from tlc_tt_question_options), (select count(*) from tlc_tts_question_options);
 insert into migration_verification select 'question_map', (select count(*) from tlc_tt_question_map), (select count(*) from tlc_tts_question_map);

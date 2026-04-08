@@ -54,7 +54,7 @@ CREATE TABLE tlc_tts_survey_sections (
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 INSERT into tlc_tts_survey_sections (survey_id, section_id, sequence, name, collapsible, intro)
-  SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str, sf.str
+  SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str
     FROM tlc_tt_survey_sections t
     LEFT JOIN tlc_tt_strings sn on sn.string_id = t.name_sid
     LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid;
