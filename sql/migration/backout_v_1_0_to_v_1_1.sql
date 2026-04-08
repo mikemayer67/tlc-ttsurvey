@@ -20,7 +20,6 @@ drop view if exists tlc_tts_view_unused_strings;
 drop table if exists tlc_tts_access_tokens;
 drop table if exists tlc_tts_reminder_emails;
 drop table if exists tlc_tts_response_options;
-drop table if exists tlc_tts_section_feedback;
 drop table if exists tlc_tts_responses;
 drop table if exists tlc_tts_user_status;
 drop table if exists tlc_tts_settings;

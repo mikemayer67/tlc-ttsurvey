@@ -189,7 +189,6 @@ export default function init(ce)
       name:"", 
       intro:"", 
       collapsible:1, 
-      feedback:false,
     };
     const cur_highlight = _tree.cache_selection();
 

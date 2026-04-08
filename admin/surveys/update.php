@@ -101,7 +101,7 @@ function cache_user_responses($survey_id)
 {
   log_dev("Backup responses before temporary drop of survey data");
 
-  $tables = ['user_status','responses','response_options','section_feedback'];
+  $tables = ['user_status','responses','response_options'];
   foreach($tables as $table) {
     $table = 'tlc_tts_' . $table;
     $cache = 'tlc_cache_' . $table;
@@ -147,18 +147,6 @@ function restore_user_responses($survey_id)
   SQL;
   $rc = MySQLExecute($query);
   if($rc === false) { throw new \Exception("Failed to restore user response options"); }
-
-  $query = <<<SQL
-    INSERT INTO tlc_tts_section_feedback
-           (  userid,   survey_id,   section_id,   draft,   feedback )
-    SELECT  c.userid, c.survey_id, c.section_id, c.draft, c.feedback
-      FROM tlc_cache_section_feedback c
-      JOIN tlc_tts_survey_sections s
-        ON s.survey_id=c.survey_id AND s.section_id=c.section_id
-     WHERE c.survey_id=$survey_id;
-  SQL;
-  $rc = MySQLExecute($query);
-  if($rc === false) { throw new \Exception("Failed to restore section feedback"); }
 }
 
 function update_survey_details($survey_id,$details)
@@ -208,7 +196,7 @@ function update_survey_content($survey_id,$content)
 
   $insert = <<<SQL
     INSERT into tlc_tts_survey_sections
-           (survey_id, section_id, sequence, name, collapsible, intro, feedback)
+           (survey_id, section_id, sequence, name, collapsible, intro)
     VALUES ($survey_id,?,?,?,?,?,?)
   SQL;
 
@@ -220,8 +208,7 @@ function update_survey_content($survey_id,$content)
       $section['sequence'],
       $section['name'],
       ($section['collapsible'] ?? null) ? 1 : 0,
-      $section['intro'],
-      $section['feedback']
+      $section['intro']
     );
     if($rc === false) {
       throw new FailedToUpdate("Failed to update survey sections ($section_id)");

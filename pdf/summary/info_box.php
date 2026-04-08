@@ -26,10 +26,6 @@ class SummaryInfoBox extends SummaryQuestionBox
   ) {
     parent::__construct($summaryPDF,$prev);
 
-    // $qid       = $question['id'];
-    // $wording   = $question['wording'];
-    // $user_responses = $responses['questions'][$qid] ?? [];
-
     $this->width = $width;
 
     $info = strip_markdown($question['info']);

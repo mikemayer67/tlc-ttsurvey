@@ -45,7 +45,7 @@ class SummarySelectBox extends SummaryQuestionBox
     $width -= self::indent;
 
     $qid       = $question['id'];
-    $responses = $responses['questions'][$qid] ?? [];
+    $responses = $responses[$qid] ?? [];
 
     $options = array_combine(
       $question['options'],

@@ -31,7 +31,7 @@ CREATE TABLE tlc_tts_survey_options (
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
---- string lengths for name, intro, and feedback are enforeced
+--- string lengths for name, and intro are enforeced
 ---   in the Section Editor block in admin/survey_frame.php
 CREATE TABLE tlc_tts_survey_sections (
   survey_id    smallint UNSIGNED NOT NULL,
@@ -40,7 +40,6 @@ CREATE TABLE tlc_tts_survey_sections (
   name         varchar(128)                   COMMENT 'Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
   collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
   intro        varchar(512)      DEFAULT NULL COMMENT 'Section intro that will appear in the survey form',
-  feedback     varchar(128)      DEFAULT NULL COMMENT 'Text used to prompt for feedback. No feedback allowed if NULL',
   PRIMARY KEY (survey_id,section_id),
   UNIQUE  KEY (survey_id,sequence),
   FOREIGN KEY (survey_id)    REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
@@ -154,17 +153,6 @@ CREATE TABLE tlc_tts_responses (
   PRIMARY KEY (userid,survey_id,question_id,draft),
   FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (question_id) REFERENCES tlc_tts_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
-);
-
-CREATE TABLE tlc_tts_section_feedback (
-  userid      varchar(24)          NOT NULL,
-  survey_id   smallint    UNSIGNED NOT NULL,
-  section_id  smallint    UNSIGNED NOT NULL,
-  draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
-  feedback    text                 DEFAULT NULL,
-  PRIMARY KEY (userid,survey_id,section_id,draft),
-  FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 
 CREATE TABLE tlc_tts_response_options (

@@ -6,7 +6,6 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary_pdf.php'));
 require_once(app_file('pdf/summary/section_header.php'));
-require_once(app_file('pdf/summary/section_feedback.php'));
 require_once(app_file('pdf/summary/info_box.php'));
 require_once(app_file('pdf/summary/bool_box.php'));
 require_once(app_file('pdf/summary/freetext_box.php'));
@@ -48,14 +47,7 @@ class SummaryRootBox extends PDFRootBox
   {
     $box = new SummarySectionHeader($this->ttpdf,$width,$section);
     $this->addChild($box);
-
     $this->add_questions($width, $section, $content, $responses);
-
-    $feedback = $section['feedback'] ?? null;
-    if($feedback) {
-      $box = new SummarySectionFeedback($this->ttpdf, $width, $section, $responses);
-      $this->addChild($box);
-    }
   }
 
   /**

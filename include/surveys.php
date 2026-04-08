@@ -94,7 +94,7 @@ class Surveys
   static function _sections($survey_id)
   {
     $query = <<<SQL
-      SELECT section_id, sequence, name, collapsible, intro, feedback
+      SELECT section_id, sequence, name, collapsible, intro
       FROM   tlc_tts_survey_sections
       WHERE survey_id=(?)
       ORDER BY sequence;

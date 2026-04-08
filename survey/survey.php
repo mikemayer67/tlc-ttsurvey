@@ -45,7 +45,6 @@ if($submitted && $draft)
 {
   $state   = 'draft_updates';
   $render_args['responses'] = $draft['responses'];
-  $render_args['feedback']  = $draft['feedback'];
   $navbar_args['submitted'] = $submitted['timestamp'];
   $navbar_args['draft']     = $draft['timestamp'];
 }
@@ -53,14 +52,12 @@ elseif($submitted)
 {
   $state     = 'submitted';
   $render_args['responses'] = $submitted['responses'];
-  $render_args['feedback']  = $submitted['feedback'];
   $navbar_args['submitted'] = $submitted['timestamp'];
   $navbar_args['reopen']    = $reopen_submitted;
 }
 elseif($draft) {
   $state   = 'draft';
   $render_args['responses'] = $draft['responses'];
-  $render_args['feedback']  = $draft['feedback'];
   $navbar_args['draft']     = $draft['timestamp'];
 }
 else {

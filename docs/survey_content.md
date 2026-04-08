@@ -17,8 +17,6 @@ to help format how it will appear in the survey.
 
   See the figures at the bottom of this page to see examples of closed and open sections.
 
-- Sections may include a feedback block which will add a freetext response field at the end of that section.
-
 ## Info Text
 
 Informational text can be dispersed at any point within a section. Like section introductions, this may
