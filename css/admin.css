@@ -19,6 +19,10 @@ div.noscript div {
   background: white;
 }
 
+#ttt-body form {
+  margin-block-end:0;
+}
+
 
 /***************************************
  * Admin lock
