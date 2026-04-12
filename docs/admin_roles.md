@@ -5,7 +5,7 @@ Each survey participant may be assigned one or more admin roles as follow.
 ## Site Admin
 There is one site admin whose userid and password is set in the app configuration
 file (tlc-ttsurvey.ini).  Additionally a "real" name and email may be provided for
-the site admin via the Settings tab in the [Admin Dashboard)(admin_dashboard.md).
+the site admin via the Settings tab in the [Admin Dashboard](admin_dashboard.md).
 
 The site admin has absolute authority with full access to all features and settings
 availble in the Admin Dashboard.

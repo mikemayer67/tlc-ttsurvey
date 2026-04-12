@@ -68,19 +68,21 @@ if(key_exists('log',$_REQUEST) && in_array('tech',$active_roles)) {
 //   enabled roles.
 
 $tabs = [
-  'settings' => [],
-  'roles' => ['admin'],
-  'surveys' => ['admin','content'],
-  'participants' => ['admin'],
-  'cleanup' => [],
-  'log' => ['admin','tech'],
+  'settings'     => ['label'=>'Settings',     'roles'=>[]],
+  'roles'        => ['label'=>'Roles',        'roles'=>['admin']],
+  'surveys'      => ['label'=>'Surveys',      'roles'=>['admin','content']],
+  'participants' => ['label'=>'Participants', 'roles'=>['admin']],
+  'log'          => ['label'=>'App Log',      'roles'=>['admin','tech']],
+  'cleanup'      => ['label'=>'Maintenance',  'roles'=>[]],
+  'docs'         => ['label'=>'Admin Docs',   'roles'=>['admin','content','tech']],
 ];
 
 if($admin_id || $userid===primary_admin()) {
   $active_tabs = array_keys($tabs);
 } else {
   $active_tabs = [];
-  foreach($tabs as $tab=>$required_roles) {
+  foreach($tabs as $tab=>$tab_props) {
+    $required_roles = $tab_props['roles'];
     if(array_intersect($required_roles,$active_roles)) {
       $active_tabs[] = $tab;
     }
@@ -122,7 +124,8 @@ echo "<div class='tabs'>";
 foreach($active_tabs as $tab)
 {
   $disabled = ($cur_tab === $tab) ? "disabled class='active'" : '';
-  echo "<button $disabled name='tab' value='$tab'>$tab</button>";
+  $label = $tabs[$tab]['label'];
+  echo "<button $disabled name='tab' value='$tab'>$label</button>";
 }
 if($admin_id) {
   echo "<a class='admin logout'>Logout Admin</a>";

@@ -45,11 +45,11 @@ mode could corrupt existing user responses and should be used with caution.*
 Surveys in the closed state show the dates they were created, opened, and closed and provide a 
 "Reopen" link to take the survey back into active state (*but only if there is not a current active survey*).
 
-<img src="img/survey_editor_draft_status.png" alt="Draft Status View", width="450">
+<img src="img/survey_editor_draft_status.png" alt="Draft Status View" width="600">
 
-<img src="img/survey_editor_active_status.png" alt="Active Status View", width="450">
+<img src="img/survey_editor_active_status.png" alt="Active Status View" width="600">
 
-<img src="img/survey_editor_closed_status.png" alt="Closed Status View", width="450">
+<img src="img/survey_editor_closed_status.png" alt="Closed Status View" width="600">
 
 ## Editing a Draft Survey
 
@@ -143,11 +143,11 @@ Sections are shown with 'turn down' arrows to collapse or open sections for easi
 
 Questions are shown with an icon indicating type.
 
-<img src="img/survey_content_navigator.png" alt="Content Navigator" width="200">
+<img src="img/survey_content_navigator.png" alt="Content Navigator" width="300">
 
 ### Section Editor
 
-<img src="img/survey_editor_section.png" alt="Section Editor" width="450">
+<img src="img/survey_editor_section.png" alt="Section Editor" width="600">
 
 The section editor provides 4 fields for configuring how the section is displayed
 
@@ -175,7 +175,7 @@ The section editor provides 4 fields for configuring how the section is displaye
 
 ### Info Block Editor
 
-<img src="img/survey_editor_info_block.png" alt="Info Block Editor" width="450">
+<img src="img/survey_editor_info_block.png" alt="Info Block Editor" width="600">
 
 The editor provides 2 fields for configuring how the info block is displayed
 
@@ -205,7 +205,7 @@ The editor provides 2 fields for configuring how the info block is displayed
 
 ### Simple Checkbox Editor
 
-<img src="img/survey_editor_simple_checkbox.png" alt="Simple Checkbox Editor" width="450">
+<img src="img/survey_editor_simple_checkbox.png" alt="Simple Checkbox Editor" width="600">
 
 The editor provides 6 fields for configuring how the simple checkbox is displayed
 
@@ -247,7 +247,7 @@ The editor provides 6 fields for configuring how the simple checkbox is displaye
 
 ### Single Selection and Multiple Selection Editors
 
-<img src="img/survey_editor_single_select.png" alt="Single Selection Editor" width="450">
+<img src="img/survey_editor_single_select.png" alt="Single Selection Editor" width="600">
 
 The editor provides 8 fields for configuring how both single and multiple selection questions
 are displayed
@@ -304,7 +304,7 @@ are displayed
 
 ### Free Text Editor
 
-<img src="img/survey_editor_free_text.png" alt="Free Text Editor" width="450">
+<img src="img/survey_editor_free_text.png" alt="Free Text Editor" width="600">
 
 The editor provides 4 fields for configuring how the free text question is displayed
 
@@ -333,7 +333,7 @@ The editor provides 4 fields for configuring how the free text question is displ
 
 ## Survey Editor Actions
 
-<img src="img/survey_editor_actions.png" alt="Survey Editor Actions" width="450">
+<img src="img/survey_editor_actions.png" alt="Survey Editor Actions" width="600">
 
 At the bottom of the survey pane, there are 5 buttons shown when working 
 with a draft survey.

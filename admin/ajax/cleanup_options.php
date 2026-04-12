@@ -6,8 +6,6 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/ajax.php'));
 
-log_dev("__Option Cleanup__");
-
 validate_ajax_nonce('admin-cleanup');
 $response = new AjaxResponse();
 
