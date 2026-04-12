@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/docs.php'));
+
 $nonce = gen_nonce('admin-docs');
 
 
@@ -12,16 +14,17 @@ add_hidden_input('nonce',$nonce);
 add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','docs');
 
-$admin_manual = '@@@ Fill this in';
+$topic = 'admin_manual';
+$doc = new DocsPage($topic);
+$doc_title = $doc->title();
+$doc_html = $doc->html();
 
 echo <<<HTML
 <div class='breadcrumbs'>
-  <a href='#' class='breadcrumb' data-page='admin_manual'>Admin Manual</a>
-  <a href='#' class='breadcrumb' data-page='admin_roles'>Admin Roles</a>
-  <a href='#' class='breadcrumb' data-page='admin_roles'>Admin Roles</a>
+  <a href='#' class='breadcrumb' data-topic='$topic'>$doc_title</a>
 </div>
 <div class='content-box'>
-  <textarea id='docs-display' readonly rows=25>$admin_manual</textarea>
+  <div id='docs-display'>$doc_html</div>
 </div>
 HTML;
 

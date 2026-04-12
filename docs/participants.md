@@ -56,14 +56,14 @@ Each participant can manage their profile settings and their submitted responses
 Once logged in a participant can update their profile information or their password via the
 "hamburger" menu at the right end of the navigation bar. 
 
-<img src="img/user_menu.png" alt="User Menu" width="200">
+<img src="img/user_menu.png" alt="User Menu" width="300">
 
 The dialog boxes for updating the profile and password should be completely straightforward
 as shown below.
 
-<img src="img/user_profile_editor.png" alt="User Profile Editor" width="400">
+<img src="img/user_profile_editor.png" alt="User Profile Editor" width="500">
 
-<img src="img/user_password_editor.png" alt="User Profile Editor" width="200">
+<img src="img/user_password_editor.png" alt="User Profile Editor" width="300">
 
 ### Submitted responses
 

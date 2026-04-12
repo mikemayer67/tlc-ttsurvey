@@ -66,4 +66,4 @@ The first shows all collapsible sections closed.  The second shown one open sect
 The app was designed to be responsive to screen size.  The following screenshot shows
 how the survey looks on a small iPhone.
 
-<img src="img/sample_survey_mobile.png" alt="Survey on iPhone" width="300">
+<img src="img/sample_survey_mobile.png" alt="Survey on iPhone" width="400">
