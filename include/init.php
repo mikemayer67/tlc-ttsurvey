@@ -291,17 +291,20 @@ function get_nonce(string $key) : ?string
  * @param string $key used to identify the nonce usage
  * @param string $src either 'POST' or 'GET'
  * @param bool $invalidate true:forget the nonce, false:retain the nonce
- * @return void 
+ * @param bool $dieonfail true: treat this as an API failure
+ * @return bool whether or not the nonce is valid
  */
-function validate_nonce(string $key,string $src='POST',bool $invalidate=true)
+function validate_nonce(string $key,string $src='POST',bool $invalidate=true, bool $dieonfail=true) : bool 
 {
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
-  if($actual !== $expected) {
+  $matches = ($actual === $expected);
+  if(!$matches) {
     log_warning("Invalid nonce: ($key:$actual/$expected)",2);
-    api_die("Invalid nonce: key=$key");
+    if($dieonfail) { api_die("Invalid nonce: key=$key"); }
   }
   if($invalidate) { $_SESSION['nonce'][$key] = null; }
+  return $matches;
 }
 
 /**

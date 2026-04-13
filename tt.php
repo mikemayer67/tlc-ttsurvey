@@ -34,6 +34,12 @@ try
 {
   log_dev("-------------- Start of TT --------------");
 
+  if(key_exists('bug-report',$_POST)) {
+    if(($_POST['action']??'cancel') === 'submit') {
+      require(app_file('include/bug_report.php'));
+    }
+  }
+
   if(key_exists('ajaxtest',$_GET)) {
     require_once(app_file('test/ajax.php'));
   }
