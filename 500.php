@@ -17,18 +17,33 @@ $url = dirname($_SERVER['SCRIPT_NAME']);
 start_fault_page('500');
 
 echo "<div class='ttt-splash'>";
-echo "<a href='".app_uri()."' target='ttt_survey>";
-echo img_tag('500.png','','Something went terribly wrong');
+echo "<a href='".app_uri()."' target='ttt_survey'>";
+$img = img_tag('500.png','','Something went terribly wrong');
+echo $img;
 echo "</a>";
 
-echo "<div class='ttt-caption'>";
-echo "Please contact $contact and let them know something is amiss.";
-echo "</div>";
+$action = app_uri();
+$nonce = gen_nonce('bug-reporting');
 
+echo "<form id='bug-reporting' method='post' action='$action'>";
+echo "<div class='bug-form'>";
+echo "<input type='hidden' name='nonce' value='$nonce'>";
+echo "<input type='hidden' name='bug-report' value='1'>";
 if(isset($errid)) {
-  echo "<div class='ttt-subcaption'>";
-  echo "And if you could mention error<span class='ttt-red'>#$errid</span>, that may be helpful";
-  echo "</div>";
+  echo "<input type='hidden' name='errid' value='$errid'>";
 }
+echo "<div class='instructions'>";
+echo <<<INSTRUCTIONS
+  Please take a minute to tell us what you were trying to do when things went
+  off the rails.  This will help us diagnose and fix the issue.
+INSTRUCTIONS;
+echo "</div>";
+echo "<textarea placeholder='What was going on when this happened?' required></textarea>";
+echo "<div class='submit-bar'>";
+echo "<button type='submit' name='action' value='submit'>Submit</button>";
+echo "<button type='submit' name='action' value='cancel' formnovalidate>No Thanks</button>";
+echo "</div>";
+echo "</div>";
+echo "</form>";
 
 end_page();

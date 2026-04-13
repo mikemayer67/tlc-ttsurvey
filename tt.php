@@ -28,6 +28,8 @@ verify_required_db_version('1.1.0');
 
 session_start();
 
+if(key_exists('errortest',$_GET)) { internal_error("You asked for it!"); }
+
 try
 {
   log_dev("-------------- Start of TT --------------");

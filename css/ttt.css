@@ -645,3 +645,33 @@ div.ttt-splash img {
   font-weight:normal;
   font-style: italic;
 }
+
+/**
+ * bug reporting
+ **/
+
+#bug-reporting div.bug-form {
+  margin-top:1em;
+  width:100%;
+}
+
+#bug-reporting div.bug-form .instructions {
+  font-size:105%;
+  font-weight: bold;
+}
+
+#bug-reporting div.bug-form textarea {
+  font-size:110%;
+  width:100%;
+  resize: vertical;
+}
+
+#bug-reporting div.bug-form .submit-bar {
+  display: flex;
+  flex-direction: row-reverse;
+  gap:8px;
+}
+
+
+
+
