@@ -10,13 +10,22 @@ use PHPMailer\PHPMailer\Exception;
 require_once(app_file('vendor/autoload.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/settings.php'));
+require_once(app_file('include/users.php'));
 require_once(app_file('include/roles.php'));
 
 class SendmailFailure extends \Exception {}
 
 $SendmailLogToken = '';
 
-function sendmail($email,$subject,$text,$html=null)
+/**
+ * Sends email to specified email address or addresses
+ * @param string|[string] $email 
+ * @param string $subject 
+ * @param string $text 
+ * @param null|string $html optional HTML version of the email body
+ * @return true|false 
+ */
+function sendmail(mixed $email,string $subject,string $text,?string $html=null)
 {
   if(!$html) { $html = $text; }
 
@@ -59,7 +68,10 @@ function sendmail($email,$subject,$text,$html=null)
       $mail->addReplyTo($username,$reply_name);
     }
 
-    $mail->addAddress($email);
+    $addresses = is_array($email) ? $email : [$email];
+    foreach($addresses as $address) {
+      $mail->addAddress($address);
+    }
     $mail->Subject = $subject;
 
     if($html) {
@@ -99,11 +111,14 @@ function sendmail($email,$subject,$text,$html=null)
   }
 }
 
-//------------------------------------------------
-// Profile Update Notice
-//------------------------------------------------
-
-function sendmail_profile($email,$userid,$changes)
+/**
+ * Sends a profile change notification to the specified user
+ * @param string $email 
+ * @param string $userid 
+ * @param [string] $changes 
+ * @return true|false 
+ */
+function sendmail_profile(string $email,string $userid,array $changes)
 {
   $message = [];
 
@@ -136,11 +151,14 @@ function sendmail_profile($email,$userid,$changes)
   return sendmail($email, "Profile Update", $text, $html);
 }
 
-//------------------------------------------------
-// Login Recover Information
-//------------------------------------------------
-
-function sendmail_recovery($email,$tokens,&$error=null)
+/**
+ * Sends password recovery information to specified user
+ * @param string $email 
+ * @param [string] $tokens 
+ * @param null|string &$error set to reason on failure to send email
+ * @return false|true 
+ */
+function sendmail_recovery(string $email,array $tokens,?string &$error=null)
 {
   $error = '';
 
@@ -198,11 +216,15 @@ function sendmail_recovery($email,$tokens,&$error=null)
   return sendmail($email, "Profile Update", $text, $html);
 }
 
-//------------------------------------------------
-// Confirmation of submitted responses
-//------------------------------------------------
-
-function sendmail_confirmation($email,$userid,$summary,&$error=null)
+/**
+ * Sends a response submission confirmation notice to the specified user
+ * @param string $email 
+ * @param string $userid 
+ * @param string $summary 
+ * @param null|string &$error set to error reason on failure to send email
+ * @return false|true 
+ */
+function sendmail_confirmation(string $email,string $userid,string $summary, ?string &$error=null)
 {
   $error = '';
 
@@ -235,11 +257,14 @@ function sendmail_confirmation($email,$userid,$summary,&$error=null)
   return sendmail($email, 'Survey Responses Received', $text, $html);
 }
 
-//------------------------------------------------
-// Reminder of unstarted survey
-//------------------------------------------------
-
-function sendmail_no_response($email,$userid,$name)
+/**
+ * Sends an unstarted survey notice to specified user
+ * @param string $email 
+ * @param string $userid 
+ * @param string $name 
+ * @return true|false 
+ */
+function sendmail_no_response(string $email,string $userid,string $name)
 {
   $message = [];
 
@@ -272,11 +297,14 @@ function sendmail_no_response($email,$userid,$name)
   return sendmail($email, 'Survey Reminder', $text, $html);
 }
 
-//------------------------------------------------
-// Reminder of saved draft without submitted responses
-//------------------------------------------------
-
-function sendmail_draft_only($email,$userid,$name)
+/**
+ * Sends an unsubmitted draft notice to specified user
+ * @param string $email 
+ * @param string $userid 
+ * @param string $name 
+ * @return true|false 
+ */
+function sendmail_draft_only(string $email,string $userid,string $name)
 {
   $message = [];
 
@@ -309,11 +337,14 @@ function sendmail_draft_only($email,$userid,$name)
   return sendmail($email, 'Survey Reminder - unsubmitted draft', $text, $html);
 }
 
-//------------------------------------------------
-// Reminder of saved draft and submitted responses
-//------------------------------------------------
-
-function sendmail_unsubmitted_updates($email,$userid,$name)
+/**
+ * Sends an unsubmitted response updates notice to specified user
+ * @param string $email 
+ * @param string $userid 
+ * @param string $name 
+ * @return true|false 
+ */
+function sendmail_unsubmitted_updates(string $email,string $userid, string $name)
 {
   $message = [];
 
@@ -350,6 +381,61 @@ function sendmail_unsubmitted_updates($email,$userid,$name)
   return sendmail($email, 'Survey Reminder - unsubmitted updates', $text, $html);
 }
 
+/**
+ * Sends a bug report to the system admins
+ * @param string $errid error key used to identify the error in the app log
+ * @param null|string $errmsg message written into the app log
+ * @param null|string $usermsg message submitte by reporter
+ * @param null|string $reporter userid of the person that submitted the bug report
+ * @param null|string $issue_url Github issue
+ * @return void 
+ */
+function sendmail_bug_report(
+  string $errid, 
+  ?string $errmsg=null, 
+  ?string $usermsg=null, 
+  ?string $reporter=null, 
+  ?string $issue_url=null,
+  )
+{
+  $email = [admin_email()];
+  
+  $techs = tech_admins();
+  foreach($techs as $tech_userid) {
+    $tech = User::from_userid($tech_userid);
+    $tech_email = $tech->email();
+    if(!in_array($tech_email,$email)) { $email[] = $tech_email; }
+  }
+
+  if($reporter) {
+    $user = User::from_userid($reporter);
+    if($user) { $reporter = $user->fullname(); }
+  }
+  if(!$reporter) {
+    $reporter = "(anonymous)";
+  }
+
+  $message = [];
+  $message[] = [ 'type' => 'key-value', 'key' => 'Reported by', 'value' => $reporter ];
+
+  if($errmsg) {
+    $message[] = ['type' => 'key-value', 'key' => "Log entry [$errid]", 'value' => $errmsg];
+  } else {
+    $message[] = ['type' => 'key-value', 'key' => "Log entry", 'value' => $errid];
+  }
+
+  $message[] = ['type' => 'key-value', 'key' => "User provided info", 'value' => ($usermsg ?? '(none)')];
+
+  if($issue_url) {
+    $message[] = ['type' => 'key-value', 'key' => 'Github issue', 'value' => $issue_url];
+  }
+
+  $text = render_text_message($message);
+  $html = render_html_message($message);
+
+  return sendmail($email, "Survey Bug Reported ($errid)", $text, $html);
+}
+
 //------------------------------------------------------------------------------
 // Email rendering engines
 //------------------------------------------------------------------------------
@@ -366,6 +452,16 @@ function render_text_message($message)
     case 'text':
       $text = parse_text_string($e['text']);
       $rval .= "$text\n";
+      break;
+    case 'key-value':
+      $key = $e['key'];
+      $value = parse_text_string(preg_replace('/\s+/',' ', trim($e['value'])));
+      $sep = ' ';
+      if(strlen($value) > 75) {
+          $sep = "\n    ";
+          $value = wordwrap($value, 80, $sep);
+      }
+      $rval .= "$key:$sep$value\n\n";
       break;
     case 'change':
       $key = $e['key'];
@@ -432,6 +528,12 @@ function render_html_message($message)
     case 'text':
       $text = parse_html_string($e['text']);
       $rval .= "<p>$text</p>\n";
+      break;
+    case 'key-value':
+      $key = $e['key'];
+      $value = parse_html_string(preg_replace('/\s+/',' ', trim($e['value'])));
+      $rval .= "<p style='font-weight:bolder; margin:1em 0 0 0;'>$key</p>\n";
+      $rval .= "<p style='font-weight:normal; margin:0 0 0 2em;'>$value</p>\n";
       break;
     case 'change':
       $key = $e['key'];

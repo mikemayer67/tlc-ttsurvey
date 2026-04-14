@@ -38,7 +38,7 @@ echo <<<INSTRUCTIONS
   off the rails.  This will help us diagnose and fix the issue.
 INSTRUCTIONS;
 echo "</div>";
-echo "<textarea placeholder='What was going on when this happened?' required></textarea>";
+echo "<textarea placeholder='What was going on when this happened?' name='user-input' required></textarea>";
 echo "<div class='submit-bar'>";
 echo "<button class='submit' type='submit' name='action' value='submit'>Submit</button>";
 echo "<button class='cancel' type='submit' name='action' value='cancel' formnovalidate>No Thanks</button>";

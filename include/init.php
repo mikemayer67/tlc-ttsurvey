@@ -39,6 +39,7 @@ function internal_error(string $msg)
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]: $msg",2);
+  $_SESSION['internal-error'][$errid] = $msg;
   http_response_code(500);
   require(app_file("500.php"));
   die;
