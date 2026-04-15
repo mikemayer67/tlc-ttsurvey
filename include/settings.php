@@ -18,6 +18,7 @@ class Settings {
     'log_level'       => 2,
     'smtp_auth'       => 1,  // 0=SMTPS, 1=STARTTLS
     'smtp_debug'      => 0,  // 0=None, 1=Server->Client, 2=Server<->Client, 3=extra
+    'bug_reporting'   => 2,  // 0=disabled, 1=email only, 2=email + GitHub issue
     'summary_flags'   => 0,
   ];
 
@@ -160,6 +161,7 @@ function reminder_freq()    { return get_setting('reminder_freq'); } // hours
 
 // Logging settings
 function log_level()        { return get_setting('log_level', 2);  }
+function bug_reporting()    { return get_setting('bug_reporting',2); }
 
 // SMTP settings
 function smtp_host()        { return get_setting('smtp_host'); }

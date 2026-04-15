@@ -52,6 +52,47 @@ mysql_password = "FILL THIS IN"
 ;mysql_charset = "utf8mb4"
 
 ;;------------------------------------------------------------------------------
+; GitHub issue creation on bug reports (optional)
+;;------------------------------------------------------------------------------
+; When an internal error is encountered, the user will be presented with a
+;   form to allow them to file a bug report.  This report will always be 
+;   emailed to the primary and tech admins.  If you wish to also have a
+;   GitHub issue created, you will need to set the following fields.
+;
+; Note that you will need to set this up on GitHub first to create an
+;   app which will be used for authentication.  This is done via the 
+;   GitHub Apps tab under Developer Settings. 
+;
+; Once the app has been created:
+;   - App ID can be found under the app's General settings
+;   - Installation ID is a little harder to find. 
+;     - go to the app's Install App tab 
+;     - install the app if not already done
+;     - go to the installation settings (gear to right of intall name)
+;     - extract the Installation ID from the URL of the settings page
+;   - Genarate a private key (under the app's General settings)
+;     - save the downloaded file somewhere secure with 0600 permission
+;     - this should be OUTSIDE the survey app's root directory
+;
+; Note that while these instructions assume you are using GitHub, in
+;   reality, any server that conforms to the GitHub REST API for 
+;   issue creation and JWK authentication can be used here.
+;
+; ALL of the fields below must be uncommented andn completed in order 
+;   to enable GitHub issue creation:
+;
+;  github_issue_url:       replace OWNER and REPO with actual values
+;  github_app_id:          (see above for value)
+;  github_installation_id: (see above for value)
+;  github_private_key:     the path to the private key file, not the key itself
+;                          example: $HOME/.ssh/tlc-ttsurvey-issue-app.pem
+;;------------------------------------------------------------------------------
+;github_issue_url = "https://api.github.com/repos/OWNER/REPO/issues"
+;github_app_id = "FILL THIS IN"
+;github_installation_id = "FILL THIS IN"
+;github_private_key = "FILL THIS IN"
+
+;;------------------------------------------------------------------------------
 ;; The following should ONLY be set to falsy value in a development environment.
 ;;   Doing so disables the requirement that https be used for cookies.   
 ;;------------------------------------------------------------------------------
