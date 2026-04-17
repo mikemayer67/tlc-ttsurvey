@@ -5,15 +5,23 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/sendmail.php'));
+require_once(app_file('include/issue_reporter.php'));
 
 function process_bug_report()
 {
+  $level = bug_reporting();
+  if($level === 0 ) { return; }
+
   $errid = $_POST['errid'] ?? null;
   $usermsg = $_POST['user-input'] ?? null;
   $errmsg = $_SESSION['internal-error'][$errid] ?? null;
   $reporter = active_userid();
 
   $issue_url = null;
+  if($level > 1) {
+    $issue_reporter = IssueReporter::instance();
+    $issue_url = $issue_reporter->create_issue($errid, $errmsg, $usermsg, $reporter);
+  }
 
   sendmail_bug_report($errid, $errmsg, $usermsg, $reporter, $issue_url);
 }

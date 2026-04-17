@@ -101,7 +101,6 @@ function write_to_logger($prefix,$msg,$trace_level=1)
 function log_location()
 {
   $trace = debug_backtrace();
-  $pre_re = '/^'.APP_DIR.'\//';
   $file = $trace[1]["file"];
   $line = $trace[1]["line"];
   if(str_starts_with($file,APP_DIR)) {

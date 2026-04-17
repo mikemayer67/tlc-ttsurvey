@@ -82,12 +82,14 @@ mysql_password = "FILL THIS IN"
 ;   to enable GitHub issue creation:
 ;
 ;  github_issue_url:       replace OWNER and REPO with actual values
+;  github_install_url:     application's nstallation url
 ;  github_app_id:          (see above for value)
 ;  github_installation_id: (see above for value)
 ;  github_private_key:     the path to the private key file, not the key itself
 ;                          example: $HOME/.ssh/tlc-ttsurvey-issue-app.pem
 ;;------------------------------------------------------------------------------
 ;github_issue_url = "https://api.github.com/repos/OWNER/REPO/issues"
+;github_install_url = "https://api.github.com/app/installations"
 ;github_app_id = "FILL THIS IN"
 ;github_installation_id = "FILL THIS IN"
 ;github_private_key = "FILL THIS IN"
