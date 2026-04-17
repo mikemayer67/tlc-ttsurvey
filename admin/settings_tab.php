@@ -7,6 +7,7 @@ $nonce = gen_nonce('admin-settings');
 
 require_once(app_file('admin/elements.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('include/issue_reporter.php'));
 
 $users = ['' => "--nobody--"];
 foreach(User::all_users() as $user) {
@@ -59,13 +60,18 @@ add_input_section('Admin',[
   ],
 ]);
 
+$bug_reporting_options = ['disabled','email admins'];
+if(IssueReporter::configured()) {
+  $bug_reporting_options[] = 'email admins and create issue';
+  $bug_reporting_info = 'Issue creation is configured in the survyey config file';
+} else { 
+  $bug_reporting_info = 'Issue creation is not currently enabled. It must be enabled in the survey config file';
+}
+
 add_input_section('Logging',[
   [
     'log_file',
-    'info' => [
-      'Location of the survey app log file on the server',
-      'This can only be changed in the survey config file',
-    ],
+    'info' => 'Location of the survey app log file on the server.  This can only be changed in the survey config file',
     'value' => log_file(),
   ], [
     'log_level',
@@ -76,6 +82,8 @@ add_input_section('Logging',[
       'developer probes',
     ],
     'info' => 'Level of information to include in the survey app log file',
+  ], [
+    'bug_reporting', 'options'=>$bug_reporting_options, 'info'=>$bug_reporting_info,
   ],
 ]);
 

@@ -53,6 +53,7 @@ function start_fault_page($context)
   start_header();
   add_tab_name('ttt_survey');
   add_css_resources($context);
+  add_js_resources($context);
   end_header();
 
   add_navbar($context); 
@@ -102,12 +103,13 @@ function start_header($title=null)
 function add_js_resources($context, ...$extra_js)
 {
   //  - always include jquery
-  //  - add context specific URI if js file exists
   //  - add any extra js that may have been provided
+  //  - add context specific URI if js file exists
   $js_uris = array_merge(
     [ js_uri('jquery-3.7.1.min') ],
     $extra_js,
     file_exists(app_file("$context/js/$context.js")) ? [js_uri($context,$context)] : [],
+    file_exists(app_file("js/$context.js")) ? [js_uri($context)] : [],
   );
   echo "<!-- Javascript -->";
   foreach($js_uris as $js_uri) {
