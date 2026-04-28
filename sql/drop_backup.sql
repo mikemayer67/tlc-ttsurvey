@@ -8,7 +8,7 @@ drop table if exists tlc_bkp_roles;
 drop table if exists tlc_bkp_reset_tokens;
 drop table if exists tlc_bkp_userids;
 drop table if exists tlc_bkp_question_options;
-drop table if exists tlc_bkp_question_map;
+drop table if exists tlc_bkp_content_map;
 drop table if exists tlc_bkp_survey_questions;
 drop table if exists tlc_bkp_survey_sections;
 drop table if exists tlc_bkp_survey_options;

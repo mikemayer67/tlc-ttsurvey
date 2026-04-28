@@ -16,7 +16,7 @@ return [
 CREATE TABLE tlc_tts_version_history (
   version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
-  added datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+  added DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 SQL ],
 
@@ -24,13 +24,13 @@ SQL ],
 //   in admin/js/surveys/metadata.js
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_surveys (
-  survey_id   smallint UNSIGNED NOT NULL,
-  parent_id   smallint UNSIGNED DEFAULT NULL,
-  title       varchar(128) NOT NULL,
-  created     datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  modified    datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  active      datetime DEFAULT NULL,
-  closed      datetime DEFAULT NULL,
+  survey_id   SMALLINT UNSIGNED NOT NULL,
+  parent_id   SMALLINT UNSIGNED DEFAULT NULL,
+  title       VARCHAR(128) NOT NULL,
+  created     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  modified    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  active      DATETIME DEFAULT NULL,
+  closed      DATETIME DEFAULT NULL,
   PRIMARY KEY (survey_id),
   FOREIGN KEY (parent_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE SET NULL
 );
@@ -40,89 +40,92 @@ SQL ],
 // @@@ TODO... enforce the string length for the option string
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_survey_options (
-  survey_id  smallint UNSIGNED NOT NULL,
-  option_id  smallint UNSIGNED NOT NULL COMMENT 'Provides continuity between surveys',
-  option_str varchar(128)      NOT NULL COMMENT 'What will appear in the survey form',
+  survey_id  SMALLINT UNSIGNED NOT NULL,
+  option_id  SMALLINT UNSIGNED NOT NULL COMMENT 'Provides continuity between surveys',
+  option_str VARCHAR(128)      NOT NULL COMMENT 'What will appear in the survey form',
   PRIMARY KEY (survey_id,option_id),
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
 
 
+// Survey sections are used for organizing data.  Sections serve as containers for 
+//  the survey questions and subsections.
+//
+// The current code implementaiton only supports two levels of sections which it 
+//   referes to as "sections" and "groups".  The database is, however, more flexible
+//   than this by design to support future feature development.
+//
 // string lengths for name, and intro are enforeced
 //   in the Section Editor block in admin/survey_frame.php
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_survey_sections (
-  survey_id    smallint UNSIGNED NOT NULL,
-  section_id   smallint UNSIGNED NOT NULL,
-  sequence     smallint UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form.',
-  name         varchar(128)                   COMMENT 'Section name that will appear in the editor and on survey tabs. NULL excludes this section from the survey',
-  collapsible  tinyint  UNSIGNED DEFAULT NULL COMMENT 'Whether to include the name as a section header',
-  intro        varchar(512)      DEFAULT NULL COMMENT 'Section intro that will appear in the survey form',
+  survey_id    SMALLINT UNSIGNED NOT NULL,
+  section_id   SMALLINT UNSIGNED NOT NULL,
+  name         VARCHAR(128)                   COMMENT 'Section name that will appear in the editor and on survey tabs',
+  collapsible  TINYINT  UNSIGNED DEFAULT NULL COMMENT 'Whether or not the section will be rendered as collapsible',
+  intro        VARCHAR(512)      DEFAULT NULL COMMENT 'Introductory text rendered at the top of the section',
   PRIMARY KEY (survey_id,section_id),
-  UNIQUE  KEY (survey_id,sequence),
   FOREIGN KEY (survey_id)    REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
 
-
+// Survey questions are the whole point of the survey and comin in four flavors:
+//    INFO      Not a question, exists to provide info to the survey participants.
+//    BOOL      Yes/No type question (probably will be implemented as a checkbox)
+//    OPTIONS   Multiple choice (option) questions.
+//    FREETEXT  Question where the participant can provide a free form written respone
+//
+//  question_flags is a bitfield with the following masks/values
+//    0x01 :: Alignment      on=RIGHT    off=LEFT
+//    0x02 :: Orientation    on=COLUMN   off=ROW
+//    0x04 :: Has Other      on=YES      off=NO
+//
 // string lengths for wording, other, qualifier, into, and info are enforced
 //   in the Question Editor block in admin/survey_frame.php
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_survey_questions (
-  question_id    smallint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
-  survey_id      smallint UNSIGNED NOT NULL,
-  wording        varchar(128)      DEFAULT NULL       COMMENT 'The wording of this question shown in the survey (except for INFO)',
+  question_id    SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Provides continuity between surveys',
+  survey_id      SMALLINT UNSIGNED NOT NULL,
+  wording        VARCHAR(128)      DEFAULT NULL       COMMENT 'The wording of this question shown in the survey (except for INFO)',
   question_type  ENUM('INFO','BOOL','OPTIONS','FREETEXT','SELECT_MULTI','SELECT_ONE') NOT NULL ,
-  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'See tlc_tts_view_survey_questions for details',
-  other          varchar(45)       DEFAULT NULL       COMMENT 'For OPTIONS type, label to use in the survey for the "other" input field',
-  qualifier      varchar(45)       DEFAULT NULL       COMMENT 'For OPTIONS/BOOL types, provide a text input field with the specified label',
-  intro          varchar(512)      DEFAULT NULL       COMMENT 'For non-INFO types, provides a intro of the question on the survey',
-  info           varchar(1024)     DEFAULT NULL       COMMENT 'Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
+  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'bit1:alignment, bit2:orientation, bit3:other',
+  other          VARCHAR(45)       DEFAULT NULL       COMMENT 'For OPTIONS type, label to use in the survey for the "other" input field',
+  qualifier      VARCHAR(45)       DEFAULT NULL       COMMENT 'For OPTIONS/BOOL types, provide a text input field with the specified label',
+  intro          VARCHAR(512)      DEFAULT NULL       COMMENT 'For noI n-INFO types, provides a intro of the question on the survey',
+  info           VARCHAR(1024)     DEFAULT NULL       COMMENT 'Additional information about the question. For INFO, will appear on the form.  For all others, will appear in pop-ups.',
   PRIMARY KEY (question_id,survey_id),
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
 
-// Notes:
-// There are four Survey question types:
-//    INFO      Not a question, exists to provide info to the survey participants.
-//    BOOL      Yes/No type question (probably will be implemented as a checkbox)
-//    OPTIONS   Multiple choice (option) questions.
-//    FREETEXT  Question where the participant can provide a free form written respone
-// For BOOL questions, layout specifies the order of the checkbox and label
-//    LEFT      checkbox appears before the question
-//    RIGHT     checkbox appears after the question
-// For OPTION questions, layout specifies how the options should appear
-//    ROW       options appear in a single row after the question (wrapping if necessary)
-//    LCOL      options appear in a left  aligned column with checkboxes before the option label
-//    RCOL      options appear in a right aligned column with checkboxes after  the option label
-
+// The survey content map details the ordered content of each section (or subsection)
+//
+// Again, the survey app code only allows for a two-tier question heirarchy, but the
+//   database allows for a more flexible implementation.
   [ __LINE__, <<<SQL
-CREATE TABLE tlc_tts_question_map (
-  survey_id     smallint UNSIGNED NOT NULL,
-  section_id    smallint UNSIGNED NOT NULL,
-  question_seq  smallint UNSIGNED NOT NULL,
-  question_id   smallint UNSIGNED NOT NULL,
-  PRIMARY KEY (survey_id,section_id,question_seq),
-  UNIQUE KEY  (survey_id,question_id),
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_tts_survey_sections (survey_id,section_id)
-              ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (question_id,survey_id) REFERENCES tlc_tts_survey_questions (question_id,survey_id) 
+CREATE TABLE tlc_tts_survey_content (
+  survey_id     SMALLINT UNSIGNED NOT NULL,
+  section_id    SMALLINT UNSIGNED NOT NULL,
+  content_seq   SMALLINT UNSIGNED NOT NULL,
+  content_type  ENUM('SECTION','QUESTION') NOT NULL,
+  content_id    SMALLINT UNSIGNED NOT NULL,
+  PRIMARY KEY (survey_id,section_id,content_seq),
+  UNIQUE KEY  (survey_id,content_type,content_id),
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
 
-
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_question_options (
-  survey_id   smallint UNSIGNED NOT NULL,
-  question_id smallint UNSIGNED NOT NULL,
-  sequence    smallint UNSIGNED NOT NULL,
-  option_id   smallint UNSIGNED NOT NULL,
+  survey_id   SMALLINT UNSIGNED NOT NULL,
+  question_id SMALLINT UNSIGNED NOT NULL,
+  sequence    SMALLINT UNSIGNED NOT NULL,
+  option_id   SMALLINT UNSIGNED NOT NULL,
   PRIMARY KEY (survey_id,question_id,sequence),
   UNIQUE  KEY (survey_id,question_id,option_id), 
-  FOREIGN KEY (survey_id,question_id) REFERENCES tlc_tts_question_map(survey_id,question_id)
+  FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id)
               ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (survey_id,option_id) REFERENCES tlc_tts_survey_options(survey_id,option_id)
               ON UPDATE RESTRICT ON DELETE CASCADE
@@ -132,20 +135,19 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_userids (
-  userid   varchar(24)  PRIMARY KEY,
-  fullname varchar(100) NOT NULL,
-  email    varchar(45)  DEFAULT NULL,
-  password varchar(64)  NOT NULL COMMENT 'hash of the password',
-  admin    tinyint      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
+  userid   VARCHAR(24)  PRIMARY KEY,
+  fullname VARCHAR(100) NOT NULL,
+  email    VARCHAR(45)  DEFAULT NULL,
+  password VARCHAR(64)  NOT NULL COMMENT 'hash of the password',
+  admin    TINYINT      UNSIGNED NOT NULL DEFAULT 0 COMMENT 'has admin permission'
 );
 SQL ],
 
-
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_reset_tokens (
-  userid    varchar(24)      NOT NULL PRIMARY KEY,
-  token     varchar(20)      NOT NULL,
-  expires   datetime         NOT NULL,
+  userid    VARCHAR(24)      NOT NULL PRIMARY KEY,
+  token     VARCHAR(20)      NOT NULL,
+  expires   DATETIME         NOT NULL,
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
@@ -153,11 +155,11 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_roles (
-  userid    varchar(24)         NOT NULL PRIMARY KEY,
-  admin     tinyint     UNSIGNED NOT NULL DEFAULT 0,
-  content   tinyint     UNSIGNED NOT NULL DEFAULT 0,
-  tech      tinyint     UNSIGNED NOT NULL DEFAULT 0,
-  summary   tinyint     UNSIGNED NOT NULL DEFAULT 0,
+  userid    VARCHAR(24)          NOT NULL PRIMARY KEY,
+  admin     TINYINT     UNSIGNED NOT NULL DEFAULT 0,
+  content   TINYINT     UNSIGNED NOT NULL DEFAULT 0,
+  tech      TINYINT     UNSIGNED NOT NULL DEFAULT 0,
+  summary   TINYINT     UNSIGNED NOT NULL DEFAULT 0,
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
@@ -165,20 +167,20 @@ SQL ],
 
   [ __LINE__, <<<SQL
 create table tlc_tts_settings (
-  name  varchar(24)  NOT NULL PRIMARY KEY,
-  value varchar(255) NOT NULL
+  name  VARCHAR(24)  NOT NULL PRIMARY KEY,
+  value VARCHAR(255) NOT NULL
 );
 SQL ],
 
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_user_status (
-  userid      varchar(24)          NOT NULL,
-  survey_id   smallint    UNSIGNED NOT NULL,
-  draft       datetime             DEFAULT NULL,
-  submitted   datetime             DEFAULT NULL,
-  email_sent  datetime             DEFAULT NULL,
-  sent_to     varchar(45)          DEFAULT NULL,
+  userid      VARCHAR(24)          NOT NULL,
+  survey_id   SMALLINT    UNSIGNED NOT NULL,
+  draft       DATETIME             DEFAULT NULL,
+  submitted   DATETIME             DEFAULT NULL,
+  email_sent  DATETIME             DEFAULT NULL,
+  sent_to     VARCHAR(45)          DEFAULT NULL,
   PRIMARY KEY (userid,survey_id),
   FOREIGN KEY (userid)    REFERENCES tlc_tts_userids(userid)    ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (survey_id) REFERENCES tlc_tts_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
@@ -188,14 +190,14 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_responses (
-  userid      varchar(24)          NOT NULL,
-  survey_id   smallint    UNSIGNED NOT NULL,
-  question_id smallint    UNSIGNED NOT NULL,
-  draft       tinyint     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
-  selected    smallint    UNSIGNED DEFAULT NULL COMMENT '1/0 or select id based on question type',
+  userid      VARCHAR(24)          NOT NULL,
+  survey_id   SMALLINT    UNSIGNED NOT NULL,
+  question_id SMALLINT    UNSIGNED NOT NULL,
+  draft       TINYINT     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
+  selected    SMALLINT    UNSIGNED DEFAULT NULL COMMENT '1/0 or select id based on question type',
   free_text   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
   qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
-  other       varchar(128)         DEFAULT NULL COMMENT 'user provided other-option text',
+  other       VARCHAR(128)         DEFAULT NULL COMMENT 'user provided other-option text',
   PRIMARY KEY (userid,survey_id,question_id,draft),
   FOREIGN KEY (userid,survey_id) REFERENCES tlc_tts_user_status(userid,survey_id) ON UPDATE RESTRICT ON DELETE CASCADE,
   FOREIGN KEY (question_id) REFERENCES tlc_tts_survey_questions(question_id) ON UPDATE RESTRICT ON DELETE CASCADE
@@ -205,11 +207,11 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_response_options (
-  userid      varchar(24)          NOT NULL,
-  survey_id   smallint    UNSIGNED NOT NULL,
-  question_id smallint    UNSIGNED NOT NULL,
-  draft       tinyint     UNSIGNED NOT NULL  COMMENT '1=draft response, 0=submitted response',
-  option_id   smallint    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
+  userid      VARCHAR(24)          NOT NULL,
+  survey_id   SMALLINT    UNSIGNED NOT NULL,
+  question_id SMALLINT    UNSIGNED NOT NULL,
+  draft       TINYINT     UNSIGNED NOT NULL  COMMENT '1=draft response, 0=submitted response',
+  option_id   SMALLINT    UNSIGNED NOT NULL  COMMENT 'selection opton for a particular survey quesiton',
   UNIQUE KEY  (userid,survey_id,question_id,draft,option_id),
   FOREIGN KEY (userid,survey_id,question_id,draft) 
               REFERENCES tlc_tts_responses (userid,survey_id,question_id,draft)
@@ -222,10 +224,10 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_reminder_emails (
-  userid    varchar(24) NOT NULL,
-  subject   varchar(32) NOT NULL,
-  last_sent datetime    NOT NULL,
-  email     varchar(45) NOT NULL,
+  userid    VARCHAR(24) NOT NULL,
+  subject   VARCHAR(32) NOT NULL,
+  last_sent DATETIME    NOT NULL,
+  email     VARCHAR(45) NOT NULL,
   PRIMARY KEY (userid),
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
@@ -234,9 +236,9 @@ SQL ],
 
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_tts_access_tokens (
-  userid   varchar(24)  NOT NULL,
-  token    varchar(45)  NOT NULL COMMENT 'access token',
-  expires  datetime     NOT NULL COMMENT 'when the token expires unless renewed',
+  userid   VARCHAR(24)  NOT NULL,
+  token    VARCHAR(45)  NOT NULL COMMENT 'access token',
+  expires  DATETIME     NOT NULL COMMENT 'when the token expires unless renewed',
   PRIMARY KEY (userid,token),
   FOREIGN KEY (userid) REFERENCES tlc_tts_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
@@ -281,10 +283,6 @@ CREATE VIEW tlc_tts_view_survey_questions AS
 SELECT question_id, survey_id, wording, question_type, 
   CASE WHEN (question_flags & 0x01) > 0 THEN 'RIGHT'  ELSE 'LEFT' END AS alignment,
   CASE WHEN (question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
-  CASE WHEN (question_flags & 0x08) > 0 THEN 'YES' 
-       WHEN (question_flags & 0x10) > 0 THEN 'NEW' 
-       ELSE 'NO'
-       END AS grouped,
   CASE WHEN question_type not like 'SELECT%' THEN NULL
        WHEN (question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
   other, qualifier, intro, info

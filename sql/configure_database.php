@@ -80,8 +80,8 @@ function handle_migration() : array
         // simple data copy
         run_sql_script($pdo,'migrate_1.0.0_to_1.1.0');
         // replace question map to structure map
-        require_once('./_config_scripts/question_map.php');
-        restructure_question_map($pdo);
+        require_once('./_config_scripts/content_map.php');
+        populate_content_map($pdo);
       },
       // future data migration steps will go here... for example:
       // '1.1.1' => function(PDO $pdo) {

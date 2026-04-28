@@ -31,9 +31,11 @@ SQL ],
 
 // The survey sections table must be updated to use actual name, and intro strings
 //   rather than string IDs
+// Ordering is now handled by the survey content map.  The migration of section sequence 
+//    values will happen when constructing the content map.
   [ __LINE__, <<<SQL
-INSERT into tlc_tts_survey_sections (survey_id, section_id, sequence, name, collapsible, intro)
-  SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str
+INSERT into tlc_tts_survey_sections (survey_id, section_id, name, collapsible, intro)
+  SELECT t.survey_id, t.section_id, sn.str, t.collapsible, si.str
     FROM tlc_tt_survey_sections t
     LEFT JOIN tlc_tt_strings sn on sn.string_id = t.name_sid
     LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid;
@@ -41,10 +43,20 @@ SQL ],
   
 // The survey questions table must be updated to use actual wording, other, qualifier, intro, and info
 //   rather than string IDs
+// The grouping of question is now handled by the survey content map and no longer by the question_flags.
+//   (retain only the first three bits of the question flags)
   [ __LINE__, <<<SQL
 INSERT into tlc_tts_survey_questions 
   ( question_id, survey_id, wording, question_type, question_flags, other, qualifier, intro, info )
-  SELECT t.question_id, t.survey_id, sw.str, t.question_type, t.question_flags, so.str, sq.str, si.str, sp.str
+  SELECT t.question_id, 
+         t.survey_id, 
+         sw.str, 
+         t.question_type, 
+         t.question_flags & 0x07,
+         so.str, 
+         sq.str, 
+         si.str, 
+         sp.str
     FROM tlc_tt_survey_questions t
     LEFT JOIN tlc_tt_strings sw on sw.string_id = t.wording_sid
     LEFT JOIN tlc_tt_strings so on so.string_id = t.other_sid
@@ -53,19 +65,13 @@ INSERT into tlc_tts_survey_questions
     LEFT JOIN tlc_tt_strings sp on sp.string_id = t.info_sid;
 SQL ],
 
-// No change to the question map table other than prefix
-  [ __LINE__, <<<SQL
-INSERT into tlc_tts_question_map (survey_id, section_id, question_seq, question_id)
-SELECT survey_id, section_id, question_seq, question_id FROM tlc_tt_question_map;
-SQL ],
-
 // No change to the question options table other than prefix
   [ __LINE__, <<<SQL
 INSERT into tlc_tts_question_options (survey_id, question_id, sequence, option_id)
 SELECT survey_id, question_id, sequence, option_id FROM tlc_tt_question_options;
 SQL ],
 
-// No change to the question options table other than prefix
+// No change to the userid table other than prefix
   [ __LINE__, <<<SQL
 INSERT into tlc_tts_userids (userid, fullname, email, password, admin)
 SELECT userid, fullname, email, password, admin FROM tlc_tt_userids;
@@ -119,7 +125,7 @@ INSERT into tlc_tts_access_tokens (userid, token, expires)
 SELECT userid, token, expires FROM tlc_tt_access_tokens;
 SQL ],
 
-// Copy existing version history and add the migration update
+// Copy existing version history.  New migration entry will be added later
   [ __LINE__, <<<SQL
 INSERT INTO tlc_tts_version_history (version, change_description, added)
 SELECT version, description, added FROM tlc_tt_version_history;
