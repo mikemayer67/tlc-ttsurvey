@@ -29,7 +29,7 @@ function handle_migration() : array
   // Notes for version 1.1.0
   //--------------------------------------------------------------------------------
   // - Prior verions was 1.0.0
-  // - New table/view prefix (tlc_tts_)
+  // - New table/view prefix (tlc_srv_)
   //   - v1.0.0 tables had tlc_tt_prefix 
   //   - v1.0.0 tables can remain untouched, sitting alongside the v1.1.0 tables
   // - Most tables remain unchanged otehr than prefix
@@ -108,6 +108,8 @@ function handle_migration() : array
   catch(Exception $e) 
   {
     $pdo->rollback();
+    $drop_all = file_get_contents(__DIR__.'/drop_1.1.0.sql');
+    $pdo->exec($drop_all);
     throw new Exception($e->getMessage() . "\nMigration changes rolled back!\n");
   }
 
@@ -152,7 +154,7 @@ function open_pdo_connection() : PDO
  */
 function verify_pdo_connection($pdo)
 {
-  $testTable = 'tlc_tts_migration_test_' . time();
+  $testTable = 'tlc_srv_migration_test_' . time();
 
   try {
     // Try CREATE
@@ -182,7 +184,7 @@ function current_version(PDO $pdo) : ?string
 {
   $versions = [];
   // query both version tables (which may or may not exist)
-  foreach( ['tlc_tt','tlc_tts'] as $prefix ) {
+  foreach( ['tlc_tt','tlc_srv'] as $prefix ) {
     try { 
       $rows = $pdo->query("select version from {$prefix}_version_history")->fetchAll(PDO::FETCH_COLUMN);
       if($rows) { $versions = array_merge($versions,$rows); }
@@ -207,7 +209,7 @@ function current_version(PDO $pdo) : ?string
 function add_version_to_history(PDO $pdo, string $version, string $description)
 {
   $s = $pdo
-    ->prepare('insert into tlc_tts_version_history (version,change_description) values (?,?)');
+    ->prepare('insert into tlc_srv_version_history (version,change_description) values (?,?)');
   $s->execute([$version,$description]);
 }
 

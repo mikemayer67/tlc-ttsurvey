@@ -26,7 +26,7 @@ class Settings {
 
   static public function load_all()
   {
-    $rows = MySQLSelectValues('select name,value from tlc_tts_settings');
+    $rows = MySQLSelectValues('select name,value from tlc_srv_settings');
 
     foreach($rows as $row) {
       $values[$row[0]] = $row[1];
@@ -79,7 +79,7 @@ class Settings {
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
-    $value = MySQLSelectValue('select value from tlc_tts_settings where name=?','s',$key); 
+    $value = MySQLSelectValue('select value from tlc_srv_settings where name=?','s',$key); 
     if( $value !== null && $value !== '' ) {
       self::$values[$key] = $value;
     }
@@ -90,7 +90,7 @@ class Settings {
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
-    $value = MySQLSelectValue('select value from tlc_tts_settings where name=?','s',$key); 
+    $value = MySQLSelectValue('select value from tlc_srv_settings where name=?','s',$key); 
     if( $value !== null && $value !== '' ) {
       self::$values[$key] = $value;
     } else {
@@ -108,11 +108,11 @@ class Settings {
   {
     if(is_null($value) || $value==='') {
       unset(self::$values[$key]);
-      MySQLExecute('delete from tlc_tts_settings where name=?','s',$key);
+      MySQLExecute('delete from tlc_srv_settings where name=?','s',$key);
     }
     else {
       MySQLExecute(
-        "insert into tlc_tts_settings (name,value) values (?,?) on duplicate key update value=?",
+        "insert into tlc_srv_settings (name,value) values (?,?) on duplicate key update value=?",
         'sss',$key,$value,$value
       );
     }

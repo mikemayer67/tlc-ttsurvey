@@ -46,7 +46,7 @@ elseif($test === 'all')
   $active_survey_id = active_survey_id();
   if($active_survey_id) { echo "<input id='survey-id' type='hidden' value='$active_survey_id'>"; }
 
-  $all_userids = MySQLSelectValues('select userid from tlc_tts_userids','');
+  $all_userids = MySQLSelectValues('select userid from tlc_srv_userids','');
   $all_userids = json_encode($all_userids);
   echo "<input id='all-userids', type='hidden', value='$all_userids'>";
 

@@ -24,10 +24,10 @@ class AccessTokens
   {
     // perform cleanup of expired tokens
     //  needs to happen somewhere... here makes sense
-    MySQLExecute('delete from tlc_tts_access_tokens where expires < CURRENT_TIMESTAMP');
+    MySQLExecute('delete from tlc_srv_access_tokens where expires < CURRENT_TIMESTAMP');
 
     $tokens = MySQLSelectValues(
-      "select token from tlc_tts_access_tokens where userid=?",
+      "select token from tlc_srv_access_tokens where userid=?",
       "s",
       $userid
     );
@@ -116,7 +116,7 @@ class AccessTokens
   private function _add(string $token) : bool
   {
     $query = <<<MYSQL
-      insert into tlc_tts_access_tokens (userid,token,expires)
+      insert into tlc_srv_access_tokens (userid,token,expires)
       values (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
       on duplicate key update
         expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
@@ -135,7 +135,7 @@ class AccessTokens
   private function _remove(string $token)
   {
     $query = <<<MYSQL
-      delete from tlc_tts_access_tokens 
+      delete from tlc_srv_access_tokens 
       where userid=? and token=?
     MYSQL;
     MySQLExecute($query,"ss",$this->_userid,$token);

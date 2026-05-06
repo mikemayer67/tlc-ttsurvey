@@ -130,7 +130,7 @@ function user_status_timestamps(string $userid,string $survey_id) : string
 {
   $query = <<<MYSQL
     select UNIX_TIMESTAMP(draft),UNIX_TIMESTAMP(submitted)
-      from tlc_tts_user_status 
+      from tlc_srv_user_status 
      where userid=? and survey_id=?
   MYSQL;
   $row = MySQLSelectRow($query,'si',$userid,intval($survey_id));

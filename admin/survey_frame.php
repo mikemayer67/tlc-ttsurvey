@@ -289,7 +289,7 @@ echo "  <div class='hint-hint'>Click or hover on any of the entry labels for mor
 
 
 // maxlen values for name and intro
-// must not exceed the varchar size in tlc_tts_survey_sections
+// must not exceed the varchar size in tlc_srv_survey_sections
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
@@ -306,7 +306,7 @@ echo "  </div>";
 
 
 // maxlen values for wording/infotag, intro, other qualifier, and info 
-// must not exceed the varchar size in tlc_tts_survey_questions
+// must not exceed the varchar size in tlc_srv_survey_questions
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
 add_type_select();

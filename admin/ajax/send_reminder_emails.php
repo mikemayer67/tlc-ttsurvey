@@ -38,7 +38,7 @@ $query = <<<SQL
   SELECT userid,
          UNIX_TIMESTAMP(draft)     as draft,
          UNIX_TIMESTAMP(submitted) as submitted
-    FROM tlc_tts_user_status
+    FROM tlc_srv_user_status
    WHERE userid in ($qmarks) and survey_id=$survey_id
   SQL;
 
@@ -92,7 +92,7 @@ foreach($user_status as $userid=>$info)
 
   $query = <<<SQL
     SELECT subject, UNIX_TIMESTAMP(last_sent) as last_sent, email
-      FROM tlc_tts_reminder_emails
+      FROM tlc_srv_reminder_emails
      WHERE userid=?
     SQL;
 
@@ -127,7 +127,7 @@ foreach($user_status as $userid=>$info)
     $email_status['sent'][]   = $userid;
 
     $query = <<<SQL
-      INSERT into tlc_tts_reminder_emails (userid, subject, last_sent, email)
+      INSERT into tlc_srv_reminder_emails (userid, subject, last_sent, email)
       VALUES (?,?,CURRENT_TIMESTAMP,?)
           ON DUPLICATE KEY update subject=?, last_sent=CURRENT_TIMESTAMP, email=?
     SQL; 

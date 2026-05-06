@@ -15,8 +15,8 @@ require_once(app_file("include/validation.php"));
 require_once(app_file("include/sort_keys.php"));
 /**
  * The survey participant information is stored in two mysql tables
- *   tlc_tts_userids: details for each survey participant
- *   tlc_tts_anonids: mapping from userids to anonymous proxy ids
+ *   tlc_srv_userids: details for each survey participant
+ *   tlc_srv_anonids: mapping from userids to anonymous proxy ids
  *
  * The tlc_userids table contains the following columns:
  *   id:
@@ -93,7 +93,7 @@ class User {
   {
     $user = self::$_users[$userid] ?? null;
     if(!$user) {
-      $r = MySQLSelectRow('select * from tlc_tts_userids where userid=?','s',$userid);
+      $r = MySQLSelectRow('select * from tlc_srv_userids where userid=?','s',$userid);
 
       if($r) { 
         $user = new User($r); 
@@ -105,7 +105,7 @@ class User {
 
   public static function from_email($email)
   {
-    $result = MySQLSelectRows('select * from tlc_tts_userids where email=?','s',$email);
+    $result = MySQLSelectRows('select * from tlc_srv_userids where email=?','s',$email);
 
     $users = array();
     foreach($result as $user_data) {
@@ -127,7 +127,7 @@ class User {
   {
     // note this function bypasses the user cache.  It is 
     //   meant to only be used in admin capabilities
-    $result = MySQLSelectRows('select * from tlc_tts_userids');
+    $result = MySQLSelectRows('select * from tlc_srv_userids');
     $users = array();
     foreach($result as $user_data) {
       $users[] = new User($user_data);
@@ -150,7 +150,7 @@ class User {
       return false;
     }
 
-    $result = MySQLExecute('update tlc_tts_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
+    $result = MySQLExecute('update tlc_srv_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
 
     if($result) { $this->_fullname = $fullname; }
 
@@ -187,9 +187,9 @@ class User {
       return false;
     }
     if($email) {
-      $result = MySQLExecute('update tlc_tts_userids set email=? where userid=?','ss',$email,$this->_userid);
+      $result = MySQLExecute('update tlc_srv_userids set email=? where userid=?','ss',$email,$this->_userid);
     } else {
-      $result = MySQLExecute('update tlc_tts_userids set email=NULL where userid=?','s',$this->_userid);
+      $result = MySQLExecute('update tlc_srv_userids set email=NULL where userid=?','s',$this->_userid);
     }
 
     if($result) { $this->_email = $email; }
@@ -308,7 +308,7 @@ class User {
   public function get_password_reset_token($from_wordlist=false)
   {
     // Only one active reset request at a time
-    MySQLExecute("delete from tlc_tts_reset_tokens where userid=?",'s',$this->_userid);
+    MySQLExecute("delete from tlc_srv_reset_tokens where userid=?",'s',$this->_userid);
     if($from_wordlist) {
       require_once(app_file('include/token_words.php'));
       $adj  = $adj4_txt[array_rand($adj4_txt)];
@@ -319,7 +319,7 @@ class User {
     } 
     $expires = time() + 60*pwreset_timeout();
     $expires = gmdate('Y-m-d H:i:s', $expires);
-    $r = MySQLExecute("insert into tlc_tts_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
+    $r = MySQLExecute("insert into tlc_srv_reset_tokens values (?,'$token','$expires')",'s',$this->_userid);
 
     return $r ? $token : null;
   }
@@ -327,14 +327,14 @@ class User {
   public function update_password($token,$password,&$error=null)
   {
     $error = null;
-    $sql = "select token,expires from tlc_tts_user_reset_tokens where userid=?";
+    $sql = "select token,expires from tlc_srv_reset_tokens where userid=?";
     $result = MySQLSelectRow($sql,'s', $this->_userid);
     if(!$result) {
       $error = "No current password reset request";
       return false;
     }
     // You only get one chance per reset request
-    MySQLExecute("delete from tlc_tts_reset_tokens where userid=?",'s',$this->_userid);
+    MySQLExecute("delete from tlc_srv_reset_tokens where userid=?",'s',$this->_userid);
     if( $token !== $result['token'] ) {
       $error = "Invalid reset request";
       return false;
@@ -364,7 +364,7 @@ class User {
     }
     $password = password_hash($password,PASSWORD_DEFAULT);
 
-    $result = MySQLExecute('update tlc_tts_userids set password=? where userid=?', 'ss', $password, $this->_userid);
+    $result = MySQLExecute('update tlc_srv_userids set password=? where userid=?', 'ss', $password, $this->_userid);
 
     if($result) { $this->_password = $password; }
 
@@ -392,7 +392,7 @@ class User {
     if( password_verify( $this->_userid, $this->_anonid ) ) { return null; }
 
     // try to find the existing anonymous proxy id
-    $anonids = MySQLSelectValues('select * from tlc_tts_anonids');
+    $anonids = MySQLSelectValues('select * from tlc_srv_anonids');
     foreach( $anonids as $anonid ) {
       if( password_verify($anonid,$this->_anonid) ) { return $anonid; }
     }
@@ -414,16 +414,16 @@ class User {
 
     MySQLBeginTransaction();
     $anonid = 'anon_' . strtolower(gen_token(10));
-    $result = MySQLExecute('insert into tlc_tts_anonids values (?)','s',$anonid);
+    $result = MySQLExecute('insert into tlc_srv_anonids values (?)','s',$anonid);
     if(!$result) { 
       MySQLRollback();
-      internal_error("Failed to insert $anonid into tlc_tts_anonids"); }
+      internal_error("Failed to insert $anonid into tlc_srv_anonids"); }
 
     $anonid_hash = password_hash($anonid,PASSWORD_DEFAULT);
-    $result = MySQLExecute('update tlc_tts_userids set anonid=? where userid=?','ss',$anonid_hash,$this->_userid);
+    $result = MySQLExecute('update tlc_srv_userids set anonid=? where userid=?','ss',$anonid_hash,$this->_userid);
     if(!$result) { 
       MySQLRollback();
-      internal_error("Failed to add anonid to $this->_userid in tlc_tts_userids");
+      internal_error("Failed to add anonid to $this->_userid in tlc_srv_userids");
     }
 
     MySQLCommit();
@@ -465,13 +465,13 @@ function create_new_user($userid,$fullname,$password,$email=null)
 
   if($email) {
     $r = MySQLExecute(
-      "insert into tlc_tts_userids (userid,fullname,email,password,anonid) values (?,?,?,?,?)",
+      "insert into tlc_srv_userids (userid,fullname,email,password,anonid) values (?,?,?,?,?)",
       "sssss",
       $userid,$fullname,$email,$password,$anonid
     );
   } else {
     $r = MySQLExecute(
-      "insert into tlc_tts_userids (userid,fullname,password,anonid) values (?,?,?,?)",
+      "insert into tlc_srv_userids (userid,fullname,password,anonid) values (?,?,?,?)",
       "ssss",
       $userid,$fullname,$password,$anonid
     );

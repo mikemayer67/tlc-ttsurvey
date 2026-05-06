@@ -11,7 +11,7 @@ class Surveys
 {
   static function active_id()
   {
-    $ids = MySQLSelectValues("select survey_id from tlc_tts_active_surveys");
+    $ids = MySQLSelectValues("select survey_id from tlc_srv_active_surveys");
     if(count($ids)>1) {
       internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
     }
@@ -20,7 +20,7 @@ class Surveys
 
   static function active_title()
   {
-    $titles = MySQLSelectValues("select title from tlc_tts_active_surveys");
+    $titles = MySQLSelectValues("select title from tlc_srv_active_surveys");
     if(count($titles)>1) {
       internal_error("Multiple active surveys found in the database: ".implode(', ',$titles));
     }
@@ -29,7 +29,7 @@ class Surveys
 
   static function info($id)
   {
-    $info = MySQLSelectRow("select * from tlc_tts_surveys where survey_id=?",'i',$id);
+    $info = MySQLSelectRow("select * from tlc_srv_surveys where survey_id=?",'i',$id);
     if(!$info) { return null; }
 
     // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
@@ -43,9 +43,9 @@ class Surveys
   {
     $surveys = [];
 
-    $active = MySQLSelectRows('select * from tlc_tts_active_surveys');
-    $drafts = MySQLSelectRows('select * from tlc_tts_draft_surveys');
-    $closed = MySQLSelectRows('select * from tlc_tts_closed_surveys');
+    $active = MySQLSelectRows('select * from tlc_srv_active_surveys');
+    $drafts = MySQLSelectRows('select * from tlc_srv_draft_surveys');
+    $closed = MySQLSelectRows('select * from tlc_srv_closed_surveys');
 
     $nactive = count($active);
     if($nactive) {
@@ -82,7 +82,7 @@ class Surveys
   {
     $query = <<<SQL
       SELECT option_id, option_str as text
-        FROM tlc_tts_survey_options
+        FROM tlc_srv_survey_options
        WHERE survey_id=(?)
        ORDER BY option_id;
     SQL;
@@ -95,7 +95,7 @@ class Surveys
   {
     $query = <<<SQL
       SELECT section_id, sequence, name, collapsible, intro
-      FROM   tlc_tts_survey_sections
+      FROM   tlc_srv_survey_sections
       WHERE survey_id=(?)
       ORDER BY sequence;
     SQL;
@@ -117,8 +117,8 @@ class Surveys
              q.qualifier      as qualifier,
              q.intro          as intro,
              q.info           as info
-        FROM tlc_tts_survey_questions q
-       INNER JOIN tlc_tts_question_map m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
+        FROM tlc_srv_survey_questions q
+       INNER JOIN tlc_srv_question_map m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
        WHERE q.survey_id=(?)
        ORDER BY section_id, sequence;
     SQL;
@@ -171,7 +171,7 @@ class Surveys
   
   static function _ancestors($survey_id)
   {
-    $query = "SELECT parent_id from tlc_tts_surveys where survey_id=?";
+    $query = "SELECT parent_id from tlc_srv_surveys where survey_id=?";
     $survey_id = MySQLSelectValue($query,'i',$survey_id);
     while($survey_id) {
       yield $survey_id;
@@ -198,7 +198,7 @@ class Surveys
 
       $query = <<<SQL
         SELECT question_id
-          FROM tlc_tts_question_map
+          FROM tlc_srv_question_map
          WHERE survey_id=? $exclude_clause
       SQL;
       $qids = MySQLSelectValues($query,'i',$sid);
@@ -210,7 +210,7 @@ class Surveys
         $query = <<<SQL
           SELECT question_id, wording, question_type, question_flags as flags,
                  other, qualifier, intro, info
-            FROM tlc_tts_survey_questions
+            FROM tlc_srv_survey_questions
            WHERE survey_id=(?) and $in_clause
         SQL;
 
@@ -251,7 +251,7 @@ class Surveys
   {
     $query = <<<SQL
       SELECT question_id, option_id
-      FROM   tlc_tts_question_options qo 
+      FROM   tlc_srv_question_options qo 
       WHERE survey_id=?
       ORDER BY question_id, sequence
     SQL;
@@ -275,9 +275,9 @@ class Surveys
     // - question IDs must be unique across all surveys
     // - option IDs must be unique within each survey
     return [
-      'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_tts_surveys'),
-      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_tts_survey_questions'),
-      'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_tts_survey_options where survey_id=(?)','i',$survey_id),
+      'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_srv_surveys'),
+      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_survey_questions'),
+      'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
     ];
   }
 

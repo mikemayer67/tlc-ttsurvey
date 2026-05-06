@@ -16,11 +16,11 @@ function create_new_survey($name,$parent_id,&$error=null)
   try {
     MySQLBeginTransaction();
 
-    $max_id = MySQLSelectValue("select max(survey_id) from tlc_tts_surveys");
+    $max_id = MySQLSelectValue("select max(survey_id) from tlc_srv_surveys");
     $survey_id = $max_id ? 1 + $max_id : 1;
 
     $rc = MySQLExecute(
-      "insert into tlc_tts_surveys (survey_id,parent_id,title) values (?,?,?)",
+      "insert into tlc_srv_surveys (survey_id,parent_id,title) values (?,?,?)",
       'iis', $survey_id, $parent_id, $name
     );
     if(!$rc) { 
@@ -49,9 +49,9 @@ function create_new_survey($name,$parent_id,&$error=null)
 function clone_survey_options($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tts_survey_options
+    INSERT into tlc_srv_survey_options
     SELECT $child_id, option_id, text_sid
-      FROM tlc_tts_survey_options
+      FROM tlc_srv_survey_options
      WHERE survey_id=$parent_id
   SQL;
 
@@ -63,9 +63,9 @@ function clone_survey_options($child_id,$parent_id)
 function clone_survey_sections($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tts_survey_sections
+    INSERT into tlc_srv_survey_sections
     SELECT $child_id, section_id, sequence, name, collapsible, intro
-      FROM tlc_tts_survey_sections
+      FROM tlc_srv_survey_sections
      WHERE survey_id=$parent_id
   SQL;
 
@@ -78,9 +78,9 @@ function clone_survey_sections($child_id,$parent_id)
 function clone_survey_questions($child_id,$parent_id)
 {
   $query = <<<SQL
-    INSERT into tlc_tts_survey_questions
+    INSERT into tlc_srv_survey_questions
     SELECT question_id, $child_id, wording, question_type, question_flags, other, qualifier, intro, info
-      FROM tlc_tts_survey_questions
+      FROM tlc_srv_survey_questions
      WHERE survey_id=$parent_id
   SQL;
 
@@ -89,9 +89,9 @@ function clone_survey_questions($child_id,$parent_id)
   }
 
   $query = <<<SQL
-    INSERT into tlc_tts_question_map
+    INSERT into tlc_srv_question_map
     SELECT $child_id, section_id, question_seq, question_id
-      FROM tlc_tts_question_map
+      FROM tlc_srv_question_map
      WHERE survey_id=$parent_id
   SQL;
 
@@ -100,9 +100,9 @@ function clone_survey_questions($child_id,$parent_id)
   }
 
   $query = <<<SQL
-    INSERT into tlc_tts_question_options
+    INSERT into tlc_srv_question_options
     SELECT $child_id, question_id, sequence, option_id
-      FROM tlc_tts_question_options
+      FROM tlc_srv_question_options
      WHERE survey_id=$parent_id
   SQL;
 
