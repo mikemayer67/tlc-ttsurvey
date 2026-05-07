@@ -10,15 +10,6 @@ if(!defined('IN_MIGRATION')) {
 // we're just going to return a single array of sql commands
 return [
 
-// Overall app settings not tied to any given survey
-  [ __LINE__, <<<SQL
-create table tlc_srv_settings (
-  name  VARCHAR(24)  NOT NULL PRIMARY KEY,
-  value VARCHAR(255) NOT NULL
-);
-SQL ],
-
-
 // version history is used in database migration to determine what
 //   needs to be constructed and/or copied between database versions.
   [ __LINE__, <<<SQL
@@ -26,6 +17,14 @@ CREATE TABLE tlc_srv_version_history (
   version VARCHAR(32) PRIMARY KEY,
   change_description VARCHAR(512) NOT NULL,
   added DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+SQL ],
+
+// Overall app settings not tied to any given survey
+  [ __LINE__, <<<SQL
+CREATE TABLE Tlc_srv_settings (
+  name  VARCHAR(24)  NOT NULL PRIMARY KEY,
+  value VARCHAR(255) NOT NULL
 );
 SQL ],
 

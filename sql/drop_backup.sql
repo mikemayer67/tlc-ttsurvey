@@ -1,17 +1,18 @@
-drop table if exists tlc_bkp_access_tokens;
-drop table if exists tlc_bkp_reminder_emails;
 drop table if exists tlc_bkp_response_options;
 drop table if exists tlc_bkp_responses;
+drop table if exists tlc_bkp_reminder_emails;
 drop table if exists tlc_bkp_user_status;
-drop table if exists tlc_bkp_settings;
 drop table if exists tlc_bkp_roles;
 drop table if exists tlc_bkp_reset_tokens;
+drop table if exists tlc_bkp_access_tokens;
 drop table if exists tlc_bkp_userids;
 drop table if exists tlc_bkp_question_options;
-drop table if exists tlc_bkp_content_map;
-drop table if exists tlc_bkp_survey_questions;
-drop table if exists tlc_bkp_survey_sections;
 drop table if exists tlc_bkp_survey_options;
+drop table if exists tlc_bkp_group_content;
+drop table if exists tlc_bkp_section_content;
+drop table if exists tlc_bkp_sections;
+drop table if exists tlc_bkp_groups;
+drop table if exists tlc_bkp_questions;
 drop table if exists tlc_bkp_surveys;
+drop table if exists tlc_bkp_settings;
 drop table if exists tlc_bkp_version_history;
-

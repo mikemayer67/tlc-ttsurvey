@@ -130,7 +130,7 @@ function restore_user_responses($survey_id)
            (  userid,   survey_id,   question_id,   draft,   selected,   free_text,   qualifier,   other )
     SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.selected, c.free_text, c.qualifier, c.other
       FROM tlc_cache_responses c
-      JOIN tlc_srv_survey_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
+      JOIN tlc_srv_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
      WHERE c.survey_id=$survey_id;
   SQL;
   $rc = MySQLExecute($query);
@@ -195,7 +195,7 @@ function update_survey_content($survey_id,$content)
   $sections = consolidate_survey_content($content);
 
   $insert = <<<SQL
-    INSERT into tlc_srv_survey_sections
+    INSERT into tlc_srv_sections
            (survey_id, section_id, sequence, name, collapsible, intro)
     VALUES ($survey_id,?,?,?,?,?,?)
   SQL;
@@ -225,7 +225,7 @@ function update_survey_questions($survey_id,$section_id,$questions)
   usort($questions, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
   $insert = <<<SQL
-    INSERT into tlc_srv_survey_questions
+    INSERT into tlc_srv_questions
            (question_id, survey_id, wording,question_type,question_flags, other,qualifier,intro,info)
     VALUES (?,$survey_id,?,?,?,?,?,?,?)
   SQL;

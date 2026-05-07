@@ -69,8 +69,9 @@ class Surveys
   static function content($survey_id)
   {
     $rval = [
-      'options' => self::_options($survey_id),
-      'sections' => self::_sections($survey_id),
+      'options'   => self::_options($survey_id),
+      'sections'  => self::_sections($survey_id),
+      'groups'    => self::_groups($survey_id),
       'questions' => self::_questions($survey_id),
       'next_ids'  => self::next_ids($survey_id),
     ];
@@ -95,7 +96,7 @@ class Surveys
   {
     $query = <<<SQL
       SELECT section_id, sequence, name, collapsible, intro
-      FROM   tlc_srv_survey_sections
+      FROM   tlc_srv_sections
       WHERE survey_id=(?)
       ORDER BY sequence;
     SQL;
@@ -104,12 +105,37 @@ class Surveys
     return $rows ? array_column($rows,null,'section_id') : [];
   }
 
+  static function _groups($survey_id)
+  {
+    $query = <<<SQL
+      SELECT g.group_id   as group_id,
+             m.section_id as section_id,
+             m.sequence   as sequence,
+             g.name       as name
+        FROM tlc_srv_question_groups g
+       INNER JOIN tlc_srv_section_content m ON m.survey_id=g.survey_id AND m.group_id=g.group_id
+       WHERE g.survey_id=(?)
+       ORDER BY section_id, sequence;
+    SQL;
+    $rows = MySQLSelectRows($query, 'i', $survey_id);
+
+    $groups = [];
+    foreach($rows as $row) {
+      $id       = $row['group_id'];
+      $section  = $row['section_id'];
+      $name     = $row['name'];
+      $groups[$section][] = ['id' => $id, 'name'=>$name];
+    }
+
+    return $groups;
+  }
+
   static function _questions($survey_id)
   {
     $query = <<<SQL
       SELECT q.question_id    as question_id,
-             m.section_id     as section,
-             m.question_seq   as sequence,
+             m.group_id       as group_id,
+             m.sequence       as sequence,
              q.wording        as wording,
              q.question_type  as question_type,
              q.question_flags as flags,
@@ -117,10 +143,10 @@ class Surveys
              q.qualifier      as qualifier,
              q.intro          as intro,
              q.info           as info
-        FROM tlc_srv_survey_questions q
-       INNER JOIN tlc_srv_question_map m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
+        FROM tlc_srv_questions q
+       INNER JOIN tlc_srv_group_content m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
        WHERE q.survey_id=(?)
-       ORDER BY section_id, sequence;
+       ORDER BY group_id, sequence;
     SQL;
     $rows = MySQLSelectRows($query, 'i', $survey_id);
   
@@ -142,7 +168,7 @@ class Surveys
       $q = [ 
         'id'       => $id, 
         'type'     => $type,
-        'section'  => $row['section'],
+        'group'    => $row['group_id'],
         'sequence' => $row['sequence'],
       ];
   
@@ -154,8 +180,10 @@ class Surveys
 
       # decode the question_flags bitmap
       $flags = new QuestionFlags( $row['flags'] ?? 0 );
-      $q['grouped'] = $flags->grouped();
       $q['layout']  = $flags->layout($type);
+      if($type === 'INFO') {
+        $q['render_in_group'] = $flags->render_in_group();
+      }
       if(str_starts_with($type,'SELECT')) {
         $q['other_flag'] = $flags->has_other() ? 1 : 0;
       }
@@ -198,7 +226,7 @@ class Surveys
 
       $query = <<<SQL
         SELECT question_id
-          FROM tlc_srv_question_map
+          FROM tlc_srv_group_content
          WHERE survey_id=? $exclude_clause
       SQL;
       $qids = MySQLSelectValues($query,'i',$sid);
@@ -210,7 +238,7 @@ class Surveys
         $query = <<<SQL
           SELECT question_id, wording, question_type, question_flags as flags,
                  other, qualifier, intro, info
-            FROM tlc_srv_survey_questions
+            FROM tlc_srv_questions
            WHERE survey_id=(?) and $in_clause
         SQL;
 
@@ -230,8 +258,10 @@ class Surveys
 
           # decode the question_flags bitmap
           $flags = new QuestionFlags( $row['flags'] ?? 0 );
-          $q['grouped'] = $flags->grouped();
           $q['layout']  = $flags->layout($type);
+          if($type === 'INFO') {
+            $q['render_in_group'] = $flags->render_in_group();
+          }
           if(str_starts_with($type,'SELECT')) {
             $q['other_flag'] = $flags->has_other();
           }
@@ -274,9 +304,10 @@ class Surveys
     // - the results of this query are sent to javascript code on the admin dashboard
     // - question IDs must be unique across all surveys
     // - option IDs must be unique within each survey
+    // - group IDs are fully regenerated on each content update (no need to send to js)
     return [
       'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_srv_surveys'),
-      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_survey_questions'),
+      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_questions'),
       'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
     ];
   }

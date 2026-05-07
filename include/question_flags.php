@@ -9,8 +9,8 @@ class QuestionFlags {
   const MASK_LEFT_RIGHT = 0x0001;  // 0:LEFT  1:RIGHT
   const MASK_ROW_COL    = 0x0002;  // 0:ROW   1:COLUMN
   const MASK_HAS_OTHER  = 0x0004;  // boolean
-  const MASK_WITH_PREV  = 0x0008;  // boolean
-  const MASK_NEW_BOX    = 0x0010;  // boolean
+  // 0x0008 is now OBE and available for reuse
+  const MASK_IN_GROUP   = 0x0010;  // render info block in group
 
   private int $bits = 0;
 
@@ -64,14 +64,9 @@ class QuestionFlags {
     return $this->_buttle(self::MASK_HAS_OTHER,$value);
   }
 
-  public function with_prev(?bool $value=null) : ?bool
+  public function render_in_group(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_WITH_PREV,$value);
-  }
-
-  public function new_box(?bool $value=null) : ?bool
-  {
-    return $this->_buttle(self::MASK_NEW_BOX,$value);
+    return $this->_buttle(self::MASK_IN_GROUP,$value);
   }
 
   public function layout(string $context, ?string $value=null) : ?string
@@ -98,22 +93,6 @@ class QuestionFlags {
     $value = strtoupper($value);
     $this->orient_column( in_array($value, ["RCOL","LCOL"] , true) );
     $this->align_right(   in_array($value, ["RCOL","RIGHT"], true) );
-    return null;
-  }
-
-  public function grouped(?string $value=null) : ?string
-  {
-    if( $value === null ) {
-      // this is the getter
-      if( $this->bits & SELF::MASK_WITH_PREV ) { return "YES"; }
-      if( $this->bits & SELF::MASK_NEW_BOX   ) { return "NEW"; }
-      return "NO";
-    }
-    // this is the setter
-    $value = strtoupper($value);
-    $this->with_prev( $value == "YES" );
-    $this->new_box( in_array($value, ["YES","NEW"], true) );
-
     return null;
   }
 }
