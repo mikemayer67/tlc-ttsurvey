@@ -28,11 +28,12 @@ export default function init(tree)
     // real reason is must be as long as it "looks like" a leaf (duck typing)
 
     const full_text  = (leaf.data('full-text') || '');
-    const is_section = leaf.hasClass('section');
-    const leaf_text  = is_section ? leaf.find('span') : leaf;
+
+    const name_span = leaf.find('span.name').first();
+    const leaf_text = name_span.length > 0 ? name_span : leaf;
 
     if(full_text.length === 0) { 
-      leaf_text.text('');
+      leaf_text.text('???');
       return; 
     }
 
@@ -84,12 +85,8 @@ export default function init(tree)
   self.update_label = function(leaf,text)
   {
     const fulltext   = text?.trim() ?? '';
-    const is_section = leaf.hasClass('section');
-    const leaf_text  = is_section ? leaf.find('span') : leaf;
-
     leaf.data('full-text',fulltext);
     leaf.toggleClass('needs-value',!fulltext);
-
     tend(leaf);
   }
 
@@ -105,9 +102,7 @@ export default function init(tree)
   self.handle_resize = function()
   {
     const leaves = tree.find('li');
-    leaves.each( function(index) { 
-      tend($(this)); 
-    });
+    leaves.each( function(index) { tend($(this)); });
   }
 
   return self;

@@ -67,6 +67,7 @@ function populate_content_map(PDO $pdo)
 
       $section_seq = 0;
       $group_seq = 0;
+      $group_label = 0;
       $in_group = false;
       foreach($question_ids as $question_id) {
         $grouped = $question_is_grouped[$survey_id][$question_id];
@@ -78,7 +79,8 @@ function populate_content_map(PDO $pdo)
           // question is in a group, but we're currently not in a group... start a new group
           $group_id += 1;
           $group_seq = 1;
-          $group_name = "Group_{$section_id}.{$group_seq}";
+          $group_label += 1;
+          $group_name = "Group_{$section_id}.{$group_label}";
           $in_group = true;
         }
         else {

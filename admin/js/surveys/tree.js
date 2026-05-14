@@ -61,25 +61,118 @@ export default function init(ce,controller)
     if(!content.sections)  { return; }
     if(!content.questions) { return; }
 
+    const group_ids = new Set();
+    for (const groups of Object.values(content.groups)) {
+      for (const group of Object.values(groups)) {
+        group_ids.add(group.id);
+      }
+    }
+
+    const qmap = new Map();
+    for( const [question_id,question] of Object.entries(content.questions) ) {
+      const group_id = question.group;
+      const sequence = question.sequence; 
+      if(group_id != null && sequence != null && group_ids.has(group_id)) {
+        if(!qmap.has(group_id)) { qmap.set(group_id,new Array()); }
+        qmap.get(group_id).push(Number(question_id));
+      } else {
+        _bullpen.add(Number(question_id));
+      }
+    }
+
     Object.entries(content.sections)
-    .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
+    .sort( ([,a],[,b]) => a.sequence - b.sequence )
     .forEach( ([sid,section]) => {
-      const [li,ul] = create_section_li(sid,section.name);
-      li.appendTo(_tree);
-
-      Object.entries(content.questions)
-      .filter( ([eid,question]) => question.section == sid )
-      .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
-      .forEach( ([eid,question]) => {
-        create_question_li(eid,question).appendTo(ul);
-      });
+      add_section_to_tree(sid, section, content, qmap);
     });
+//      const [li,ul] = create_section_li(sid,section.name);
+//      li.appendTo(_tree);
+//
+//      const groups = content.groups[sid];
+//      for( const group of Object.values(groups) ) {
+//        const group_id = group.id;
+//        const group_name = group.name;
+//        if(group.name !== null)
+//      }
+//      Object.entries(groups).forEach([,group]) {
+//        const group_id = group.id;
+//        const group_name = group.name;
+//        let group_element = null;
+//        let group_ul = null;
+//        const [group_element,group_ul] = create_group_(group_id,group_name);
+//          li.appendTo(ul);
+//        } else {
+//          [group_element,group_ul] = create_group_div(group_id);
+//        }
+//      });
+//
+//      Object.entries(content.questions)
+//      .filter( ([eid,question]) => question.section == sid )
+//      .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
+//      .forEach( ([eid,question]) => {
+//        create_question_li(eid,question).appendTo(ul);
+//      });
+//    });
+//
+//    Object.entries(content.questions)
+//    .filter( ([qid,question]) => (question.section == null || question.sequence == null) )
+//    .forEach( ([qid,question] ) => { _bullpen.add(Number(qid)) } );
 
-    Object.entries(content.questions)
-    .filter( ([qid,question]) => (question.section == null || question.sequence == null) )
-    .forEach( ([qid,question] ) => { _bullpen.add(Number(qid)) } );
 
     _arborist.handle_resize();
+  }
+
+  function add_section_to_tree(section_id, section, content, qmap)
+  {
+    const [li,ul] = create_section_li(section_id, section.name);
+    li.appendTo(_tree);
+
+    const groups = content.groups[section_id];
+    for( const group of groups ) {
+      const group_id = group.id;
+      const group_name = group.name?.trim();
+      if(group.name) {
+        add_group_to_section(group_id,group_name,ul,content,qmap);
+      } else {
+        add_virtual_group_to_section(group_id,ul,content, qmap);
+      }
+    }
+  }
+
+  function add_group_to_section(group_id, group_name, section_ul, content, qmap)
+  {
+    const qids = qmap.get(group_id);
+
+    const [li, ul] = create_group_li(group_id, group_name);
+    li.appendTo(section_ul);
+
+    for(const qid of qids) {
+      const question = content.questions[qid];
+      create_question_li(qid, question).appendTo(ul);
+    }
+  }
+
+  function add_virtual_group_to_section(group_id, section_ul, content, qmap)
+  {
+    const qids = qmap.get(group_id);
+    if(qids.length!==1) {
+      const what = qids.length > 1 ? "too many questions in" : "empty";
+      const err = new Error();
+      const where = err.stack.split("\n")[0];
+      alert("Something went wrong ("+what+" virtual group):\n"+where);
+      return;
+    }
+
+    const group_ul = $('<ul>');
+    const group_li = $('<li>').addClass('virtual group').attr('data-group', group_id);
+    group_li.append(group_ul);
+
+    const qid = qids[0];
+    const question = content.questions[qid];
+    const question_li = create_question_li(qid, question);
+
+    question_li.appendTo(group_ul);
+    group_li.appendTo(section_ul);
   }
 
   function create_section_li(section_id,name)
@@ -94,30 +187,57 @@ export default function init(ce,controller)
 
     btn.on('click', function(e) {
       e.stopPropagation();
-      const li = $(this).parent().parent();
+      const li = $(this).closest('li.section');
       li.toggleClass('closed');
     });
 
     span.on('click',function(e) {
       e.stopPropagation();
-      // li.section is grandparent of span
-      set_selection($(this).parent().parent());
+      set_selection($(this).closest('li.section'));
+      start_keyboard_navigation(e);
+    });
+
+    const ul = $('<ul>').addClass('groups').appendTo(li);
+    // @@@ will need new name for section children
+    //_question_sorters[section_id] = new Sortable( ul[0],
+    //  {
+    //    group: { 
+    //      name:'questions', 
+    //      pull:true, 
+    //      put: (to, from, dragged) => $(dragged).hasClass('question'),
+    //    },
+    //    animation: 150,
+    //    disabled: true,
+    //    onEnd: handle_drop_question,
+    //  }
+    //);
+
+    return [li,ul];
+  }
+
+  function create_group_li(group_id,name)
+  {
+    const btn  = $('<button>').addClass('toggle');
+    const span = $('<span>').addClass('name');
+    const div  = $('<div>').append(btn,span);
+
+    const li = $('<li>').addClass('real group').attr('data-group',group_id).html(div);
+
+    _arborist.initialize(li,name);
+
+    btn.on('click', function(e) {
+      e.stopPropagation();
+      const li = $(this).closest('li.group');
+      li.toggleClass('closed');
+    });
+
+    span.on('click',function(e) {
+      e.stopPropagation();
+      set_selection($(this).closest('li.group'));
       start_keyboard_navigation(e);
     });
 
     const ul = $('<ul>').addClass('questions').appendTo(li);
-    _question_sorters[section_id] = new Sortable( ul[0],
-      {
-        group: { 
-          name:'questions', 
-          pull:true, 
-          put: (to, from, dragged) => $(dragged).hasClass('question'),
-        },
-        animation: 150,
-        disabled: true,
-        onEnd: handle_drop_question,
-      }
-    );
 
     return [li,ul];
   }
@@ -413,6 +533,8 @@ export default function init(ce,controller)
   // Insertions and Deletions
   //
 
+  // @@@ TODO Revise/Add functions for adding groups
+  // @@@ TODO Add logic for moving question from section to group
   self.add_section = function(section_id, section, where)
   {
     const [new_li,new_ul] = create_section_li(section_id,section.name);
