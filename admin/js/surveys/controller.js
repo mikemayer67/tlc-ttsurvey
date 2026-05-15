@@ -334,7 +334,7 @@ export default function init(ce)
   {
     if(_frame.hasClass('section') && _frame.data('id') === section_id ) { return; }
 
-    _frame.removeClass('question').addClass('section').data('id',section_id);
+    _frame.removeClass('group question').addClass('section').data('id',section_id);
 
     const section = _content.sections[section_id];
     if(self.editable) { _se.show(section_id,section); }
@@ -343,11 +343,23 @@ export default function init(ce)
     _menubar.update_selection();
   }
 
+  self.select_group = function(group_id)
+  {
+    if(_frame.hasClass('group') && _frame.data('id') === group_id ) { return; }
+
+    _frame.removeClass('section question').addClass('group').data('id',group_id);
+
+    const group = _content.groups[group_id];
+    alert("need to add group editor/viewer");
+    _tree.select_group(group_id);
+    _menubar.update_selection();
+  }
+
   self.select_question = function(question_id) 
   {
     if(_frame.hasClass('question') && _frame.data('id') === question_id ) { return; }
 
-    _frame.removeClass('section').addClass('question').data('id',question_id);
+    _frame.removeClass('section group').addClass('question').data('id',question_id);
 
     const question = _content.questions[question_id];
     if(self.editable) { _qe.show(question_id,question,_content.options); }

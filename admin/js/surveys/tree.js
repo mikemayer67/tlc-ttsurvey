@@ -85,39 +85,6 @@ export default function init(ce,controller)
     .forEach( ([sid,section]) => {
       add_section_to_tree(sid, section, content, qmap);
     });
-//      const [li,ul] = create_section_li(sid,section.name);
-//      li.appendTo(_tree);
-//
-//      const groups = content.groups[sid];
-//      for( const group of Object.values(groups) ) {
-//        const group_id = group.id;
-//        const group_name = group.name;
-//        if(group.name !== null)
-//      }
-//      Object.entries(groups).forEach([,group]) {
-//        const group_id = group.id;
-//        const group_name = group.name;
-//        let group_element = null;
-//        let group_ul = null;
-//        const [group_element,group_ul] = create_group_(group_id,group_name);
-//          li.appendTo(ul);
-//        } else {
-//          [group_element,group_ul] = create_group_div(group_id);
-//        }
-//      });
-//
-//      Object.entries(content.questions)
-//      .filter( ([eid,question]) => question.section == sid )
-//      .sort( ([aid,a],[bid,b]) => a.sequence - b.sequence )
-//      .forEach( ([eid,question]) => {
-//        create_question_li(eid,question).appendTo(ul);
-//      });
-//    });
-//
-//    Object.entries(content.questions)
-//    .filter( ([qid,question]) => (question.section == null || question.sequence == null) )
-//    .forEach( ([qid,question] ) => { _bullpen.add(Number(qid)) } );
-
 
     _arborist.handle_resize();
   }
@@ -155,22 +122,25 @@ export default function init(ce,controller)
   function add_virtual_group_to_section(group_id, section_ul, content, qmap)
   {
     const qids = qmap.get(group_id);
+    
+    // by design, there should be exactly one question per virtual group
+    //   if not, add a note to the console.log and move on.
     if(qids.length!==1) {
       const what = qids.length > 1 ? "too many questions in" : "empty";
       const err = new Error();
       const where = err.stack.split("\n")[0];
-      alert("Something went wrong ("+what+" virtual group):\n"+where);
+      console.log("Something went wrong ("+what+" virtual group):\n"+where);
       return;
     }
 
-    const group_ul = $('<ul>');
-    const group_li = $('<li>').addClass('virtual group').attr('data-group', group_id);
-    group_li.append(group_ul);
-
     const qid = qids[0];
     const question = content.questions[qid];
+
+    const group_ul = $('<ul>');
+    const group_li = $('<li>').addClass('virtual group').attr('data-group', group_id);
     const question_li = create_question_li(qid, question);
 
+    group_li.append(group_ul);
     question_li.appendTo(group_ul);
     group_li.appendTo(section_ul);
   }
@@ -215,6 +185,14 @@ export default function init(ce,controller)
     return [li,ul];
   }
 
+  self.update_section = function(section_id,key,value)
+  {
+    if(key === 'name') {
+      const leaf = _tree.find(`.section[data-section=${section_id}]`);
+      _arborist.update_label(leaf, value);
+    }
+  }
+
   function create_group_li(group_id,name)
   {
     const btn  = $('<button>').addClass('toggle');
@@ -240,14 +218,6 @@ export default function init(ce,controller)
     const ul = $('<ul>').addClass('questions').appendTo(li);
 
     return [li,ul];
-  }
-
-  self.update_section = function(section_id,key,value)
-  {
-    if(key === 'name') {
-      const leaf = _tree.find(`.section[data-section=${section_id}]`);
-      _arborist.update_label(leaf, value);
-    }
   }
 
   function create_question_li(question_id,details)
@@ -491,6 +461,13 @@ export default function init(ce,controller)
     e.addClass('selected');
   }
 
+  self.select_group = function(group_id)
+  {
+    const e = _tree.find(`.real.group[data-group=${group_id}]`);
+    _tree.find('.selected').removeClass('selected');
+    e.addClass('selected');
+  }
+
   self.select_question = function(question_id)
   {
     const e = _tree.find(`.question[data-question=${question_id}]`);
@@ -515,6 +492,8 @@ export default function init(ce,controller)
     e.addClass('selected');
     if(e.hasClass('section')) {
       controller.select_section(e.data('section'));
+    } else if(e.hasClass('group')) {
+      controller.select_group(e.data('group'));
     } else {
       controller.select_question(e.data('question'));
     }
@@ -756,6 +735,7 @@ export default function init(ce,controller)
   // Section/Question structure
   //
 
+  // @@@ TODO - add groups to this logic
   self.survey_structure = function() {
     const rval = [];
     const sections = _tree.find('li.section');

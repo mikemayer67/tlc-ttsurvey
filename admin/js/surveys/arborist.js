@@ -101,7 +101,7 @@ export default function init(tree)
 
   self.handle_resize = function()
   {
-    const leaves = tree.find('li');
+    const leaves = tree.find('li').not('.virtual');
     leaves.each( function(index) { tend($(this)); });
   }
 
