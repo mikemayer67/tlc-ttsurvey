@@ -643,40 +643,29 @@ export default function init(ce,controller)
   // Error Markup
   //
 
+  let observerMicrotaskQueued = false;
   const _observer = new MutationObserver((mutations) => {
+    let dirty = false;
     for(const m of mutations) {
       const tgt = $(m.target);
-      switch(m.type) {
-        case 'childList': {
-          if(!tgt.is('ul.questions')) { continue; }
-          break;
-        }
-        case 'attributes': {
-          if(!tgt.is('li.question')) { continue; }
-          if(m.attributeName !== 'class' ) { continue; }
-          break;
-        }
-        default: {
-          continue;
-          break;
-        }
+      if( (m.type === 'childList'  && tgt.is('ul.questions,ul.groups')) ||
+          (m.type === 'attributes' && tgt.is('li.question, li.group')) 
+      ) {
+        dirty = true;
+        break;
       }
-      const section_li = tgt.closest('li.section');
-      if( section_li.length !== 1 ) { continue }
-
-      const item_ok = (
-        section_li
-        .find('li.question')
-        .filter('.error,.needs-value,.needs-type')
-        .length === 0
-      );
-      const children_ok = section_li.find('li.question .error').length === 0;
-      const all_ok      = item_ok && children_ok;
-
-      const child_selected = section_li.find('li.question.selected').length > 0;
-
-      section_li.toggleClass('child-error', !all_ok);
-      section_li.toggleClass('child-selected', all_ok && child_selected);
+    }
+    if(dirty && !observerMicrotaskQueued) {
+      observerMicrotaskQueued = true;
+      queueMicrotask(() => {
+        observerMicrotaskQueued = false;
+        _tree.find('li.section,li.real.group').each((i,e) => {
+          const child_selected = $(e).find('.selected');
+          $(e).toggleClass('child-selected',child_selected.length > 0);
+          const child_error = $(e).find('.error,.needs-value,.needs-type');
+          $(e).toggleClass('child-error',child_error.length > 0);
+        });
+      });
     }
   });
   _observer.observe( $(_tree)[0], {

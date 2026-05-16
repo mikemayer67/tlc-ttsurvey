@@ -33,7 +33,7 @@ export default function init(tree)
     const leaf_text = name_span.length > 0 ? name_span : leaf;
 
     if(full_text.length === 0) { 
-      leaf_text.text('???');
+      leaf_text.text();
       return; 
     }
 
