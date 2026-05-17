@@ -19,22 +19,20 @@ export default function init(ce,controller)
 
   let _keyboardNav = false;
 
-  // sorter for ul.sections
-  const _section_sorter = new Sortable( _tree[0],
-    {
-      group: {
-        name:'sections',
-        pull: false,
-        put: false,
-      },
-      animation: 150,
-      disabled: true,
-      onEnd: handle_drop_section,
-    }
-  );
+  // sorter for ul.sections within a tree
+  const _tree_sorter = new Sortable( _tree[0], {
+    group: {
+      name:'sections',
+      pull: false,
+      put: false,
+    },
+    animation: 150,
+    disabled: true,
+    onEnd: handle_drop_section,
+  });
 
-  // sorters for each of the ul.questions
-  let _question_sorters = {};
+  const _section_sorters = new Map(); // sorters for ul.grups within a section
+  const _group_sorters   = new Map(); // sorters for ul.questions within a group
 
   // reset clears out the tree
   //   section sorter is disabled
@@ -42,9 +40,11 @@ export default function init(ce,controller)
   //   the "drag-n-drop" info box is hidden
   self.reset = function()
   {
-    _section_sorter.option('disabled',true);
-    Object.values(_question_sorters).forEach((s) => s.destroy());
-    _question_sorters = {};
+    _tree_sorter.option('disabled',true);
+    _section_sorters.forEach((sorter) => sorter.destroy());
+    _section_sorters.clear();
+    _group_sorters.forEach((sorter) => sorter.destroy());
+    _group_sorters.clear();
     _tree.empty();
     _info.hide();
     _bullpen.clear();
@@ -134,15 +134,12 @@ export default function init(ce,controller)
     }
 
     const qid = qids[0];
+
+    const [li,ul] = create_virtual_group_li(group_id);
+    li.appendTo(section_ul);
+
     const question = content.questions[qid];
-
-    const group_ul = $('<ul>');
-    const group_li = $('<li>').addClass('virtual group').attr('data-group', group_id);
-    const question_li = create_question_li(qid, question);
-
-    group_li.append(group_ul);
-    question_li.appendTo(group_ul);
-    group_li.appendTo(section_ul);
+    create_question_li(qid, question).appendTo(ul);
   }
 
   function create_section_li(section_id,name)
@@ -168,19 +165,21 @@ export default function init(ce,controller)
     });
 
     const ul = $('<ul>').addClass('groups').appendTo(li);
-    // @@@ will need new name for section children
-    //_question_sorters[section_id] = new Sortable( ul[0],
-    //  {
-    //    group: { 
-    //      name:'questions', 
-    //      pull:true, 
-    //      put: (to, from, dragged) => $(dragged).hasClass('question'),
-    //    },
-    //    animation: 150,
-    //    disabled: true,
-    //    onEnd: handle_drop_question,
-    //  }
-    //);
+
+    _section_sorters.set(
+      section_id, 
+      new Sortable( ul[0], {
+        group: {
+          name: 'groups',
+          pull: true,
+          put: true,
+        },
+        animation: 150,
+        disabled: true,
+        onEnd: handle_drop_group,
+      })
+    );
+    
 
     return [li,ul];
   }
@@ -216,6 +215,44 @@ export default function init(ce,controller)
     });
 
     const ul = $('<ul>').addClass('questions').appendTo(li);
+
+    _group_sorters.set(
+      group_id,
+      new Sortable( ul[0], {
+        group: {
+          name: 'questions',
+          pull: true,
+          put: true,
+        },
+        animation: 150,
+        disabled: true,
+        onEnd: handle_drop_question,
+      })
+    );
+
+    return [li,ul];
+  }
+
+  function create_virtual_group_li(group_id)
+  {
+    const ul = $('<ul>');
+    const li = $('<li>').addClass('virtual group').attr('data-group', group_id);
+
+    li.append(ul);
+
+    _group_sorters.set(
+      group_id,
+      new Sortable( ul[0], {
+        group: {
+          name: 'questions',
+          pull: true,
+          put: false,
+        },
+        animation: 150,
+        disabled: true,
+        onEnd: handle_drop_question,
+      })
+    );
 
     return [li,ul];
   }
@@ -299,8 +336,9 @@ export default function init(ce,controller)
   self.disable = function()
   {
     _info.hide();
-    _section_sorter.option('disabled',true);
-    Object.values(_question_sorters).forEach( (s) => s.option('disabled',true) );
+    _tree_sorter.option('disabled',true);
+    _section_sorters.forEach((sorter)=>sorter.option('disabled',true));
+    _group_sorters.forEach((sorter)=>sorter.option('disabled',true));
   }
 
   // enable_sorting pretty much does what it says
@@ -309,8 +347,9 @@ export default function init(ce,controller)
   self.enable = function()
   {
     _info.show();
-    _section_sorter.option('disabled',false);
-    Object.values(_question_sorters).forEach( (s) => s.option('disabled',false) );
+    _tree_sorter.option('disabled',false);
+    _section_sorters.forEach((sorter)=>sorter.option('disabled',false));
+    _group_sorters.forEach((sorter)=>sorter.option('disabled',false));
   }
 
   //
@@ -408,7 +447,7 @@ export default function init(ce,controller)
     return true;
   }
 
-  // Handle SortableJS onEnd from the ul.sections sorter.
+  // Handle SortableJS onEnd from the tree sorter.
   //   Unpacks the onEnd custom event in order to add the move section action
   //   to the undo manager.
   // It also triggers a SurveyWasReordered custom event
@@ -428,7 +467,29 @@ export default function init(ce,controller)
     return true;
   }
 
-  // Handle SortableJS onEnd from any of the ul.questions sorters.
+  // Handle SortableJS onEnd from any of the section sorters.
+  //   Unpacks the onEnd custom event in order to add the move group action
+  //   to the undo manager.
+  // It also triggers a SurveyWasReordered custom event
+  function handle_drop_group(e)
+  {
+    if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
+
+    const groupId      = $(e.item).data('group');
+    const from_section = $(e.from).parent().data('section');
+    const to_section   = $(e.to).parent().data('section');
+    ce.undo_manager.add( {
+      action:'drop-group',
+      undo() { self.move_group(groupId,from_section,e.oldIndex); },
+      redo() { self.move_group(groupId,to_section,e.newIndex); },
+    });
+
+    set_selection($(e.item));
+    $(document).trigger('SurveyWasReordered');
+    return true;
+  }
+
+  // Handle SortableJS onEnd from any of the group sorters.
   //   Unpacks the onEnd custom event in order to add the move question action
   //   to the undo manager.
   // It also triggers a SurveyWasReordered custom event
@@ -436,13 +497,13 @@ export default function init(ce,controller)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
-    const questionId   = $(e.item).data('question');
-    const from_section = $(e.from).parent().data('section');
-    const to_section   = $(e.to).parent().data('section');
+    const questionId = $(e.item).data('question');
+    const from_group = $(e.from).parent().data('group');
+    const to_group   = $(e.to).parent().data('group');
     ce.undo_manager.add( {
       action:'drop-question',
-      undo() { self.move_question(questionId,from_section,e.oldIndex); },
-      redo() { self.move_question(questionId,to_section,e.newIndex); },
+      undo() { self.move_question(questionId,from_group,e.oldIndex); },
+      redo() { self.move_question(questionId,to_group,e.newIndex); },
     });
 
     set_selection($(e.item));
@@ -513,7 +574,6 @@ export default function init(ce,controller)
   //
 
   // @@@ TODO Revise/Add functions for adding groups
-  // @@@ TODO Add logic for moving question from section to group
   self.add_section = function(section_id, section, where)
   {
     const [new_li,new_ul] = create_section_li(section_id,section.name);
@@ -525,8 +585,8 @@ export default function init(ce,controller)
       new_li.prependTo(_tree);
     }
 
-    // if we got here, editing must be enabled, turn on sorting in new ul.questions
-    _question_sorters[section_id].option('disabled',false);
+    // if we got here, editing must be enabled, turn on sorting
+    _section_sorters.get(section_id).option('disabled',false);
 
     set_selection(new_li);
     $(document).trigger('SurveyWasModified');
@@ -556,13 +616,15 @@ export default function init(ce,controller)
 
   self.remove_section = function(section_id)
   {
-    _question_sorters[section_id].destroy();
-    delete _question_sorters[section_id];
+    _question_sorters.get(section_id)?.destroy();
+    _question_sorters.delete(section_id);
 
     _tree.find(`li.section[data-section=${section_id}]`).remove();
     clear_selection();
     $(document).trigger('SurveyWasModified');
   }
+
+  // @@@ TODO add function to remove groups
 
   self.remove_question = function(question_id)
   {
