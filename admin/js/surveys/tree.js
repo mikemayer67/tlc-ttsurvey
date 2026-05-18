@@ -31,8 +31,8 @@ export default function init(ce,controller)
     onEnd: handle_drop_section,
   });
 
-  const _section_sorters = new Map(); // sorters for ul.grups within a section
-  const _group_sorters   = new Map(); // sorters for ul.questions within a group
+  const _section_sorters = new Map(); // sorters for ul.group elements within a section
+  const _group_sorters   = new Map(); // sorters for ul.question elements within a group
 
   // reset clears out the tree
   //   section sorter is disabled
@@ -52,7 +52,7 @@ export default function init(ce,controller)
 
   // update repopulates the tree based on new survey content
   //   the current tree content is cleared out (via reset)
-  //   a question sorter is attached to each ul.questions
+  //   question sorters are attached to each ul.section and ul.group
   self.update = function(content)
   {
     self.reset();
@@ -121,25 +121,25 @@ export default function init(ce,controller)
 
   function add_virtual_group_to_section(group_id, section_ul, content, qmap)
   {
-    const qids = qmap.get(group_id);
+    const question_ids = qmap.get(group_id);
     
     // by design, there should be exactly one question per virtual group
     //   if not, add a note to the console.log and move on.
-    if(qids.length!==1) {
-      const what = qids.length > 1 ? "too many questions in" : "empty";
+    if(question_ids.length!==1) {
+      const what = question_ids.length > 1 ? "too many questions in" : "empty";
       const err = new Error();
       const where = err.stack.split("\n")[0];
       console.log("Something went wrong ("+what+" virtual group):\n"+where);
       return;
     }
 
-    const qid = qids[0];
+    const question_id = question_ids[0];
 
-    const [li,ul] = create_virtual_group_li(group_id);
+    const [li,ul] = create_virtual_group_li(question_id);
     li.appendTo(section_ul);
 
-    const question = content.questions[qid];
-    create_question_li(qid, question).appendTo(ul);
+    const question = content.questions[question_id];
+    create_question_li(question_id, question).appendTo(ul);
   }
 
   function create_section_li(section_id,name)
@@ -214,7 +214,7 @@ export default function init(ce,controller)
       start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('questions').appendTo(li);
+    const ul = $('<ul>').addClass('questions').attr('data-group',group_id).appendTo(li);
 
     _group_sorters.set(
       group_id,
@@ -233,10 +233,10 @@ export default function init(ce,controller)
     return [li,ul];
   }
 
-  function create_virtual_group_li(group_id)
+  function create_virtual_group_li(question_id)
   {
-    const ul = $('<ul>');
-    const li = $('<li>').addClass('virtual group').attr('data-group', group_id);
+    const li = $('<li>').addClass('virtual group').attr('data-question', question_id);
+    const ul = $('<ul>').addClass('questions').attr('data-question', question_id);
 
     li.append(ul);
 
@@ -331,7 +331,7 @@ export default function init(ce,controller)
   }
 
   // disable_sorting pretty much does what it says
-  //   it disables sorting of both ul.sections and ul.questions
+  //   it enables sorting of section, group, and question elments
   //   it hides the "drag-n-drop" info box
   self.disable = function()
   {
@@ -342,7 +342,7 @@ export default function init(ce,controller)
   }
 
   // enable_sorting pretty much does what it says
-  //   it enables sorting of both ul.sections and ul.questions
+  //   it enables sorting of section, group, and question elments
   //   it shows the "drag-n-drop" info box
   self.enable = function()
   {
