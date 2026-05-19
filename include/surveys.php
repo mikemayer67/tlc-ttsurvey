@@ -7,319 +7,368 @@ require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/question_flags.php'));
 
-class Surveys
+/**
+ * Returns the survey ID of the active survey
+ * @return null|int 
+ */
+function active_survey_id() : ?int 
+{ 
+  $ids = MySQLSelectValues("select survey_id from tlc_srv_active_surveys");
+  if(count($ids)>1) {
+    internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
+  }
+  return $ids[0] ?? false;
+}
+
+/**
+ * Returns the name of the active survey
+ * @return null|string 
+ */
+function active_survey_title() : ?string 
 {
-  static function active_id()
-  {
-    $ids = MySQLSelectValues("select survey_id from tlc_srv_active_surveys");
-    if(count($ids)>1) {
-      internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
-    }
-    return $ids[0] ?? false;
+  $titles = MySQLSelectValues("select title from tlc_srv_active_surveys");
+  if (count($titles) > 1) {
+    internal_error("Multiple active surveys found in the database: " . implode(', ', $titles));
+  }
+  return $titles[0] ?? null;
+}
+
+/**
+ * Returns an associative array containing all of the info about the specified survey
+ *   that is found in the database:  
+ *   - survey_id : ID of the survey iteself
+ *   - id : Same as survey_id, but needed by javascript
+ *   - parent_id : ID of the survey from which this survey was cloned (null if not cloned)
+ *   - title : name of the survey
+ *   - created : date/time the survey was created
+ *   - modified  : date/time the survey content/structure was last modified
+ *   - active : date/time the survey went active (null if not active or closed)
+ *   - closed : date/time the survey was closed (null if still draft or active)
+ * @param int $id, the survey of interest
+ * @return null|array 
+ */
+function survey_info($id) : ?array 
+{
+  $info = MySQLSelectRow("select * from tlc_srv_surveys where survey_id=?", 'i', $id);
+  if (!$info) { return null; }
+  $info['id'] = $info['survey_id']; // need to add this as it is not from database
+  return $info;
+}
+
+/**
+ * Returns for each survey in the dataase an associative array containing the following
+ *   info about each:
+ *   - survey_id : ID of the survey iteself
+ *   - parent_id : ID of the survey from which this survey was cloned (null if not cloned)
+ *   - status : draft, active, or closed
+ *   - title : name of the survey
+ *   - created : date/time the survey was created
+ *   - modified  : date/time the survey content/structure was last modified
+ *   - active : date/time the survey went active (if active or closed)
+ *   - closed : date/time the survey was closed (if closed)
+ *  The order of the returned surveys will always be:
+ *   - active survey (at most one)
+ *   - draft surveys (unspecified order)
+ *   - closed surveys (unspecified order)
+ * @return array 
+ */
+function all_surveys() : array 
+{
+  $surveys = [];
+
+  $active = MySQLSelectRows('select * from tlc_srv_active_surveys');
+  $drafts = MySQLSelectRows('select * from tlc_srv_draft_surveys');
+  $closed = MySQLSelectRows('select * from tlc_srv_closed_surveys');
+
+  $nactive = count($active);
+  if($nactive) {
+    if($nactive>1) { internal_error('Multiple active surveys found'); }
+    $survey = $active[0];
+    $survey['status'] = 'active';
+    $surveys[] = $survey;
+  }
+  foreach($drafts as $survey) {
+    $survey['status'] = 'draft';
+    $surveys[] = $survey;
+  }
+  foreach($closed as $survey) {
+    $survey['status'] = 'closed';
+    $surveys[] = $survey;
   }
 
-  static function active_title()
-  {
-    $titles = MySQLSelectValues("select title from tlc_srv_active_surveys");
-    if(count($titles)>1) {
-      internal_error("Multiple active surveys found in the database: ".implode(', ',$titles));
+  return $surveys;
+}
+
+  /**
+   * Returns an array of the next ID to be used when creating a new survey, question, or option.
+   *   survey:   next available survey ID (must be unique across all surveys)
+   *   question: next available question ID (must be unique across all surveys)
+   *   option:   next available option ID (must be unique within a given survey)
+   * @param int $survey_id 
+   * @return array 
+   */
+function next_survey_ids(int $survey_id) : array
+{
+  return [
+    'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_srv_surveys'),
+    'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_questions'),
+    'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
+  ];
+}
+
+/**
+ * Returns a structured array containing all of the content information for the specified survey
+ * This includes:
+ *   options : selectable response options (shared by all questions in the survey)
+ *     option_id : unique identifier for each option (*array index)
+ *     text : how option appears in the survey form
+ *   sections:
+ *      section_id : unique identifier for each section (*array index) 
+ *      sequence : order this section appears in the survey
+ *      name : name of this section 
+ *      collapsible : truthy/falsey value if the section can be opened/closed in the survey
+ *      intro : optional text to display at top of the section
+ *      content : array of questions/groups in this section (in order)
+ *         type: 'question' or 'group'
+ *         id: question ID or group ID
+ *   groups:
+ *     group_id : unique identifier for each group
+ *     name : group name as it will appear in the survey editor
+ *     content : array of question IDs that appear in the group (in order)
+ *   questions:
+ *     id : unique identifier for each question
+ *     type: 'INFO', 'BOOL', 'SELECT_MULTI', 'SELECT_ONE', or 'FREETEXT'
+ *     wording: how question appears in the survey
+ *     intro: optional introductory text shown before question
+ *     qualifier: (BOOL and SELECT only) label for optional freetext field in response
+ *     other_flag: (SELECT only) if an "other" field will be included in response
+ *     other: (SELECT only) label for "other" field in response
+ *     info: (INFO only) the body of the info message
+ *     popup: (all but INFO) text in popup hint in the survey
+ *     layout:  how responses appear in the survey:
+ *        BOOl: 'LEFT' or 'RIGHT' (checkbox location)
+ *        SELECT: 'ROW', 'RCOL' or 'LCOL'
+ *        default: null
+ *     render_in_group: (INFO only)
+ *     options: (SELECT only) the list of selectable options
+ *   next_ids:
+ *     survey:   next available survey ID (must be unique across all surveys)
+ *     question: next available question ID (must be unique across all surveys)
+ *     option:   next available option ID (must be unique within a given survey)
+ * 
+ * @param int $survey_id : the survey of interest
+ * @return array 
+ */
+function survey_content(int $survey_id) : array
+{
+  return [
+    'options'   => survey_options($survey_id),
+    'sections'  => survey_sections($survey_id),
+    'groups'    => survey_groups($survey_id), 
+    'questions' => survey_questions($survey_id), 
+    'next_ids'  => next_survey_ids($survey_id),
+  ];
+}
+
+/**
+ * Returns array of all options common to all questions in the specified survey
+ * This includes for each option:
+ *   option_id : unique identifier for each option (*array index)
+ *   text : how option appears in the survey form
+ * @param int $survey_id : the survey of intereset
+ * @return array 
+ */
+function survey_options(int $survey_id) : array
+{
+  $query = <<<SQL
+    SELECT option_id, option_str as text
+      FROM tlc_srv_survey_options
+     WHERE survey_id=(?)
+     ORDER BY option_id;
+  SQL;
+  $rows = MySQLSelectRows($query, 'i', $survey_id);
+
+  return $rows ? array_column($rows,'text','option_id') : [];
+}
+
+/**
+ * Returns array of all sections in the specified survey
+ * This includes for each section:
+ *    section_id : unique identifier for each section (*array index) 
+ *    sequence : order this section appears in the survey
+ *    name : name of this section 
+ *    collapsible : truthy/falsey value if the section can be opened/closed in the survey
+ *    intro : optional text to display at top of the section
+ *    content : array of questions/groups in this section (in order)
+ *       type: 'question' or 'group'
+ *       id: question ID or group ID
+ * @param int $survey_id 
+ * @return array 
+ */
+function survey_sections(int $survey_id) : array
+{
+  $query = <<<SQL
+    SELECT section_id, sequence, name, collapsible, intro
+    FROM   tlc_srv_sections
+    WHERE survey_id=(?)
+    ORDER BY sequence;
+  SQL;
+  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  if(!$rows) { return []; }
+
+  $sections = array_column($rows,null,'section_id');
+
+  $query = <<<SQL
+    SELECT section_id, sequence, group_id, question_id
+      FROM tlc_srv_section_content 
+     WHERE survey_id=(?)
+     ORDER BY section_id, sequence
+  SQL;
+  $rows = MySQLSelectArrays($query,'i',$survey_id);
+  foreach($rows as [$section_id,$sequence,$group_id,$question_id]) {
+    if(!is_null($question_id)) {
+      $sections[$section_id]['content'][] = ['type'=>'question', 'id'=>$question_id];
+    } else {
+      $sections[$section_id]['content'][] = ['type'=>'group', 'id'=>$group_id];
     }
-    return $titles[0] ?? null;
   }
 
-  static function info($id)
-  {
-    $info = MySQLSelectRow("select * from tlc_srv_surveys where survey_id=?",'i',$id);
-    if(!$info) { return null; }
+  return $sections;
+}
 
-    // javascript is expecting the survey ID to have the key 'id', not 'survey_id'
-    // PHP is not using the survey_id key, but retaining it just in case this ever changes
-    $info['id'] = $info['survey_id'];
+/**
+ * Returns array of all question groups in the specified survey
+ * This includes for each group:
+ *   group_id : unique identifier for each group
+ *   name : group name as it will appear in the survey editor
+ *   content : array of question IDs that appear in the group (in order)
+ * @param string $survey_id : the survey of interest
+ * @return array 
+ */
+function survey_groups(string $survey_id) : array
+{
+  $query = <<<SQL
+    SELECT group_id, name
+      FROM tlc_srv_question_groups
+     WHERE survey_id=(?)
+  SQL;
+  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  if (!$rows) { return []; }
 
-    return $info;
+  $groups = array_column($rows, null, 'group_id');
+  
+  $query = <<<SQL
+    SELECT group_id, question_id
+      FROM tlc_srv_group_content 
+     WHERE survey_id=(?)
+     ORDER BY group_id, sequence
+  SQL;
+  $rows = MySQLSelectArrays($query,'i',$survey_id);
+  foreach($rows as [$group_id,$question_id]) {
+    $groups[$group_id]['content'][] = $question_id;
   }
 
-  static function get_all()
-  {
-    $surveys = [];
+  return $groups;
+}
 
-    $active = MySQLSelectRows('select * from tlc_srv_active_surveys');
-    $drafts = MySQLSelectRows('select * from tlc_srv_draft_surveys');
-    $closed = MySQLSelectRows('select * from tlc_srv_closed_surveys');
-
-    $nactive = count($active);
-    if($nactive) {
-      if($nactive>1) { internal_error('Multiple active surveys found'); }
-      $survey = $active[0];
-      $survey['status'] = 'active';
-      $surveys[] = $survey;
-    }
-    foreach($drafts as $survey) {
-      $survey['status'] = 'draft';
-      $surveys[] = $survey;
-    }
-    foreach($closed as $survey) {
-      $survey['status'] = 'closed';
-      $surveys[] = $survey;
-    }
-
-    return $surveys;
+/**
+ * Returns array of all questons in the specified survey (and its ancestors)
+ * This includes for each question
+ *   id : unique identifier for each question
+ *   type: 'INFO', 'BOOL', 'SELECT_MULTI', 'SELECT_ONE', or 'FREETEXT'
+ *   wording: how question appears in the survey
+ *   intro: optional introductory text shown before question
+ *   qualifier: (BOOL and SELECT only) label for optional freetext field in response
+ *   other_flag: (SELECT only) if an "other" field will be included in response
+ *   other: (SELECT only) label for "other" field in response
+ *   info: (INFO only) the body of the info message
+ *   popup: (all but INFO) text in popup hint in the survey
+ *   layout:  how responses appear in the survey:
+ *      BOOl: 'LEFT' or 'RIGHT' (checkbox location)
+ *      SELECT: 'ROW', 'RCOL' or 'LCOL'
+ *      default: null
+ *   render_in_group: (INFO only)
+ *   options: (SELECT only) the list of selectable options
+ * @param int $survey_id : the survey of interest
+ * @param Array<int> $exclude : question IDs to not include in query
+ * @return array 
+ */
+function survey_questions(int $survey_id, array $exclude = []) : array
+{
+  $query = <<<SQL
+    SELECT question_id, wording, question_type, question_flags as flags,
+           other, qualifier, intro, info
+      FROM tlc_srv_questions
+     WHERE survey_id=(?)
+  SQL;
+  if($exclude) {
+    $query .= " AND question_id not in (" . implode(',',$exclude) . ")";
   }
+  $rows = MySQLSelectRows($query, 'i', $survey_id);
 
-  static function content($survey_id)
-  {
-    $rval = [
-      'options'   => self::_options($survey_id),
-      'sections'  => self::_sections($survey_id),
-      'groups'    => self::_groups($survey_id),
-      'questions' => self::_questions($survey_id),
-      'next_ids'  => self::next_ids($survey_id),
+  if(!$rows) { return array(); }
+
+  $q_fields = [
+    'INFO'         => ['wording'=>'infotag',                     'info'         ],
+    'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
+    'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+    'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
+    'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
+  ];
+
+  $questions = array();
+  foreach($rows as $row) {
+    $question_id = $row['question_id'];
+    $question_type = $row['question_type'];
+
+    $q = [ 
+      'id'       => $question_id, 
+      'type'     => $question_type,
     ];
 
-    return $rval;
-  }
-
-  static function _options($survey_id)
-  {
-    $query = <<<SQL
-      SELECT option_id, option_str as text
-        FROM tlc_srv_survey_options
-       WHERE survey_id=(?)
-       ORDER BY option_id;
-    SQL;
-    $rows = MySQLSelectRows($query, 'i', $survey_id);
-  
-    return $rows ? array_column($rows,'text','option_id') : [];
-  }
-
-  static function _sections($survey_id)
-  {
-    $query = <<<SQL
-      SELECT section_id, sequence, name, collapsible, intro
-      FROM   tlc_srv_sections
-      WHERE survey_id=(?)
-      ORDER BY sequence;
-    SQL;
-    $rows = MySQLSelectRows($query, 'i', $survey_id);
-  
-    return $rows ? array_column($rows,null,'section_id') : [];
-  }
-
-  static function _groups($survey_id)
-  {
-    $query = <<<SQL
-      SELECT g.group_id   as group_id,
-             m.section_id as section_id,
-             m.sequence   as sequence,
-             g.name       as name
-        FROM tlc_srv_question_groups g
-       INNER JOIN tlc_srv_section_content m ON m.survey_id=g.survey_id AND m.group_id=g.group_id
-       WHERE g.survey_id=(?)
-       ORDER BY section_id, sequence;
-    SQL;
-    $rows = MySQLSelectRows($query, 'i', $survey_id);
-
-    $groups = [];
-    foreach($rows as $row) {
-      $id       = $row['group_id'];
-      $section  = $row['section_id'];
-      $name     = $row['name'];
-      $groups[$section][] = ['id' => $id, 'name'=>$name];
-    }
-
-    return $groups;
-  }
-
-  static function _questions($survey_id)
-  {
-    $query = <<<SQL
-      SELECT q.question_id    as question_id,
-             m.group_id       as group_id,
-             m.sequence       as sequence,
-             q.wording        as wording,
-             q.question_type  as question_type,
-             q.question_flags as flags,
-             q.other          as other,
-             q.qualifier      as qualifier,
-             q.intro          as intro,
-             q.info           as info
-        FROM tlc_srv_questions q
-       INNER JOIN tlc_srv_group_content m ON m.survey_id=q.survey_id AND m.question_id=q.question_id
-       WHERE q.survey_id=(?)
-       ORDER BY group_id, sequence;
-    SQL;
-    $rows = MySQLSelectRows($query, 'i', $survey_id);
-  
-    if(!$rows) { return array(); }
-  
-    $q_fields = [
-      'INFO'         => ['wording'=>'infotag',                     'info'         ],
-      'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
-      'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-      'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-      'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
-    ];
-  
-    $questions = array();
-    foreach($rows as $row) {
-      $id   = $row['question_id'];
-      $type = $row['question_type'];
-  
-      $q = [ 
-        'id'       => $id, 
-        'type'     => $type,
-        'group'    => $row['group_id'],
-        'sequence' => $row['sequence'],
-      ];
-  
-      foreach ($q_fields[$type] ?? [] as $from => $to)
-      {
-        if(is_int($from)) { $from = $to; } // straight copy from row to question
-        $q[$to] = $row[$from];
-      }
-
-      # decode the question_flags bitmap
-      $flags = new QuestionFlags( $row['flags'] ?? 0 );
-      $q['layout']  = $flags->layout($type);
-      if($type === 'INFO') {
-        $q['render_in_group'] = $flags->render_in_group();
-      }
-      if(str_starts_with($type,'SELECT')) {
-        $q['other_flag'] = $flags->has_other() ? 1 : 0;
-      }
-
-      $questions[$id] = $q;
-    }
-  
-    self::_add_question_options($questions,$survey_id);
-    self::_add_archived_questions($survey_id,$questions);
-
-    return $questions;
-  }
-  
-  static function _ancestors($survey_id)
-  {
-    $query = "SELECT parent_id from tlc_srv_surveys where survey_id=?";
-    $survey_id = MySQLSelectValue($query,'i',$survey_id);
-    while($survey_id) {
-      yield $survey_id;
-      $survey_id = MySQLSelectValue($query,'i',$survey_id);
-    }
-  }
-
-  static function _add_archived_questions($survey_id, &$questions)
-  {
-    $exclude = array_keys($questions);
-
-    $q_fields = [
-      'INFO'         => ['wording'=>'infotag',                     'info'         ],
-      'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
-      'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-      'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-      'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
-    ];
-
-    # loop over current survey + up the parent tree
-    foreach(self::_ancestors($survey_id) as $sid)
+    foreach ($q_fields[$question_type] ?? [] as $from => $to)
     {
-      $exclude_clause = $exclude ? ' and question_id not in ('.implode(',',$exclude).')' : "";
+      if(is_int($from)) { $from = $to; } // straight copy from row to question
+      $q[$to] = $row[$from];
+    }
 
+    # decode the question_flags bitmap
+    $flags = new QuestionFlags( $row['flags'] ?? 0 );
+    $q['layout']  = $flags->layout($question_type);
+    if($question_type === 'INFO') {
+      $q['render_in_group'] = $flags->render_in_group();
+    }
+    if(str_starts_with($question_type,'SELECT')) {
+      $q['other_flag'] = $flags->has_other() ? 1 : 0;
+    }
+
+    // add question options
+    if($question_type==='SELECT_MULTI' || $question_type==='SELECT_ONE') {
       $query = <<<SQL
-        SELECT question_id
-          FROM tlc_srv_group_content
-         WHERE survey_id=? $exclude_clause
+        SELECT option_id
+        FROM   tlc_srv_question_options
+        WHERE survey_id=? and question_id=?
+        ORDER BY sequence
       SQL;
-      $qids = MySQLSelectValues($query,'i',$sid);
-
-      if($qids) {
-        # any found, extract their question info
-        $in_clause = ' question_id in (' . implode(',', $qids) . ')';
-
-        $query = <<<SQL
-          SELECT question_id, wording, question_type, question_flags as flags,
-                 other, qualifier, intro, info
-            FROM tlc_srv_questions
-           WHERE survey_id=(?) and $in_clause
-        SQL;
-
-        $new_questions = [];
-        foreach(MySQLSelectRows($query,'i',$sid) as $row) {
-          $qid  = $row['question_id'];
-          $type = $row['question_type'];
-          $q = [
-            'id'   => $qid,
-            'type' => $type,
-          ];
-          foreach ($q_fields[$type] ?? [] as $from => $to)
-          {
-            if(is_int($from)) { $from = $to; } // straight copy from row to question
-            $q[$to] = $row[$from];
-          }
-
-          # decode the question_flags bitmap
-          $flags = new QuestionFlags( $row['flags'] ?? 0 );
-          $q['layout']  = $flags->layout($type);
-          if($type === 'INFO') {
-            $q['render_in_group'] = $flags->render_in_group();
-          }
-          if(str_starts_with($type,'SELECT')) {
-            $q['other_flag'] = $flags->has_other();
-          }
-
-          $new_questions[$qid] = $q;
-          $exclude[] = $qid;
-        }
-
-        self::_add_question_options($new_questions,$sid);
-
-        $questions += $new_questions;
-      }
+      $q['options'] = MySQLSelectValues($query, 'ii', $survey_id,$question_id);
     }
+
+    $questions[$question_id] = $q;
+    
+    // exclude this question from ancestor searches
+    $exclude[] = $question_id;
   }
 
-  static function _add_question_options(&$questions,$survey_id)
+  // add questions found in ancestor surveys that are not in the current survey
+  
+  $query = <<<SQL
+    SELECT parent_id from tlc_srv_surveys where survey_id=?;
+  SQL;
+  $parent_id = MySQLSelectValue($query,'i',$survey_id);
+  if($parent_id !== null) 
   {
-    $query = <<<SQL
-      SELECT question_id, option_id
-      FROM   tlc_srv_question_options qo 
-      WHERE survey_id=?
-      ORDER BY question_id, sequence
-    SQL;
-
-    $rows = MySQLSelectRows($query, 'i', $survey_id);
-    if(!$rows) { return; }
-
-    foreach ($rows as $row) {
-      $qid = $row['question_id'];
-      if(isset($questions[$qid])) {
-        $questions[$qid]['options'][] = $row['option_id'];
-      }
-    }
+    $questions += survey_questions($parent_id,$exclude);
   }
 
-
-  static function next_ids($survey_id) 
-  {
-    // Notes:
-    // - the results of this query are sent to javascript code on the admin dashboard
-    // - question IDs must be unique across all surveys
-    // - option IDs must be unique within each survey
-    // - group IDs are fully regenerated on each content update (no need to send to js)
-    return [
-      'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_srv_surveys'),
-      'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_questions'),
-      'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
-    ];
-  }
-
-};
-
-function active_survey_id()    { return Surveys::active_id();    }
-function active_survey_title() { return Surveys::active_title(); }
-function survey_info($id)      { return Surveys::info($id);      }
-function all_surveys()         { return Surveys::get_all();      }
-
-function next_survey_ids($survey_id) { return Surveys::next_ids($survey_id); }
-
-function survey_content($survey_id)  { return Surveys::content($survey_id);  }
-
+  return $questions;
+}

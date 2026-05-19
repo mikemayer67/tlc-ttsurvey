@@ -83,10 +83,6 @@ SQL ],
 // Question groups are used as a container for questions that inherently go together.  The questions
 //   in a question group will be rendered in such way ss to show they "go together."  These are  
 //   purely for aesthetic layout of the survey form and response summary reports.  
-// Within the survey editor, questions can be either grouped or not grouped.  Within the database,
-//   however, all questions must appear in a group.  Questions that are not grouped in the editor
-//   will be inserted into a "group of one."  These automatically created groups will have a 
-//   NULL value for the group name.
 // Group names exist soley for the purpose of identifiying them in the survey editor in the admin 
 //   dashboard.  They will never appear in the survey or summaries.
 //
@@ -95,7 +91,7 @@ SQL ],
 CREATE TABLE tlc_srv_question_groups (
   survey_id SMALLINT UNSIGNED NOT NULL,
   group_id  SMALLINT UNSIGNED NOT NULL,
-  name      VARCHAR(128)      DEFAULT NULL COMMENT 'Group name used for user defined groups',
+  name      VARCHAR(128)      NOT NULL,
   PRIMARY KEY (survey_id,group_id),
   FOREIGN KEY (survey_id) REFERENCES tlc_srv_surveys(survey_id) ON UPDATE RESTRICT ON DELETE CASCADE
 );
@@ -126,14 +122,18 @@ SQL ],
 // The section content map provides the list and order of the question groups that appear in each section.
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_srv_section_content (
-  survey_id   SMALLINT UNSIGNED NOT NULL,
-  section_id  SMALLINT UNSIGNED NOT NULL,
-  sequence    SMALLINT UNSIGNED NOT NULL,
-  group_id    SMALLINT UNSIGNED NOT NULL,
+  survey_id    SMALLINT UNSIGNED NOT NULL,
+  section_id   SMALLINT UNSIGNED NOT NULL,
+  sequence     SMALLINT UNSIGNED NOT NULL,
+  group_id     SMALLINT UNSIGNED DEFAULT NULL,
+  question_id  SMALLINT UNSIGNED DEFAULT NULL,
   PRIMARY KEY (survey_id,section_id,sequence),
-  UNIQUE KEY  (survey_id,group_id),
-  FOREIGN KEY (survey_id,group_id) REFERENCES tlc_srv_question_groups(survey_id,group_id) ON UPDATE RESTRICT ON DELETE CASCADE,
-  FOREIGN KEY (survey_id,section_id) REFERENCES tlc_srv_sections(survey_id,section_id) ON UPDATE RESTRICT ON DELETE CASCADE
+  UNIQUE KEY  (survey_id,group_id,question_id),
+  FOREIGN KEY (survey_id,section_id)   REFERENCES tlc_srv_sections(survey_id,section_id)      ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (survey_id,group_id)     REFERENCES tlc_srv_question_groups(survey_id,group_id) ON UPDATE RESTRICT ON DELETE CASCADE,
+  FOREIGN KEY (question_id,survey_id)  REFERENCES tlc_srv_questions(question_id,survey_id)    ON UPDATE RESTRICT ON DELETE CASCADE,
+  CHECK ((group_id IS NOT NULL AND question_id IS NULL)
+     OR  (group_id IS     NULL AND question_id IS NOT NULL))
 );
 SQL ],
 

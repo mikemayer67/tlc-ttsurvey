@@ -32,16 +32,10 @@ function populate_content_map(PDO $pdo)
     $question_map[$survey_id][$section_id][$sequence] = $question_id;
   }
 
-  $add_named_group = $pdo->prepare( <<< SQL
+  $add_group = $pdo->prepare( <<< SQL
     INSERT into tlc_srv_question_groups
           (survey_id,group_id,name)
           values (?,?,?)
-  SQL);
-
-  $add_auto_group = $pdo->prepare( <<< SQL
-    INSERT into tlc_srv_question_groups
-          (survey_id,group_id)
-          values (?,?)
   SQL);
 
   $add_group_to_section = $pdo->prepare( <<<SQL
@@ -50,10 +44,16 @@ function populate_content_map(PDO $pdo)
           values (?,?,?,?);
   SQL );
 
-  $add_group_content = $pdo->prepare( <<<SQL
+  $add_question_to_group = $pdo->prepare( <<<SQL
     INSERT into tlc_srv_group_content
            (survey_id, group_id,sequence,question_id)
            values (?,?,?,?);
+  SQL );
+
+  $add_question_to_section = $pdo->prepare( <<<SQL
+    INSERT into tlc_srv_section_content
+          (survey_id, section_id, sequence, question_id)
+          values (?,?,?,?);
   SQL );
 
   foreach( $sections as $survey_id => $section_ids )
@@ -65,43 +65,31 @@ function populate_content_map(PDO $pdo)
       ksort($section_questions);
       $question_ids = array_values($section_questions);
 
-      $section_seq = 0;
-      $group_seq = 0;
-      $group_label = 0;
+      $section_seq = 0;  // sequence within current section
+      $group_seq = 0;    // sequence with current group
+      $group_label = 0;  // group "index" within the current section
       $in_group = false;
       foreach($question_ids as $question_id) {
         $grouped = $question_is_grouped[$survey_id][$question_id];
-        if($in_group && $grouped) {
-          // question is in a group and we're already in a group
-          $group_seq += 1;
-        } 
-        elseif($grouped) {
-          // question is in a group, but we're currently not in a group... start a new group
-          $group_id += 1;
-          $group_seq = 1;
-          $group_label += 1;
-          $group_name = "Group_{$section_id}.{$group_label}";
+        if($grouped) {
+          // question is in a group
+          if(!$in_group) {
+            // but we're currently not in a group... start a new group
+            $group_seq = 0;
+            $group_label += 1;
+            $group_name = "Group_{$section_id}.{$group_label}";
+            $add_group->execute([$survey_id, ++$group_id, $group_name]);
+            $add_group_to_section->execute([$survey_id,$section_id,++$section_seq,$group_id]);
+          }
+          $add_question_to_group->execute([$survey_id,$group_id,++$group_seq,$question_id]);
           $in_group = true;
         }
-        else {
-          // question is not in a group, start a new unnamed group
-          $group_id += 1;
-          $group_seq = 0;
-          $group_name = null;
+        else 
+        {
+          // question is not in a group
+          $add_question_to_section->execute([$survey_id,$section_id,++$section_seq,$question_id]);
           $in_group = false;
         }
-
-        if($group_seq < 2) {
-          // start a new group and add it to the current section
-          if($group_name) {
-            $add_named_group->execute([$survey_id,$group_id,$group_name]);
-          } else {
-            $add_auto_group->execute([$survey_id,$group_id]);
-          }
-          $add_group_to_section->execute([$survey_id,$section_id,++$section_seq,$group_id]);
-        }
-
-        $add_group_content->execute([$survey_id,$group_id,$group_seq,$question_id]);
       }
     }
   }
