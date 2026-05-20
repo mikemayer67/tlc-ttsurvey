@@ -47,7 +47,8 @@ function handle_migration() : array
   $pdo = open_pdo_connection();
   verify_pdo_connection($pdo);
 
-  $cur_version = current_version($pdo);
+  $old_version = current_version($pdo);
+  $cur_version = $old_version;
   $tgt_version = '1.1.0';
 
   // If cur_version is null, this is the initial install
@@ -113,7 +114,7 @@ function handle_migration() : array
     throw new Exception($e->getMessage() . "\nMigration changes rolled back!\n");
   }
 
-  return [true, "Migration from version $cur_version to version $tgt_version complete"];
+  return [true, "Migration from version $old_version to version $tgt_version complete"];
 }
 
 /**

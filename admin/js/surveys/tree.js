@@ -27,7 +27,7 @@ export default function init(ce,controller)
       put: false,
     },
     animation: 150,
-    disabled: true,
+    disabled: false,
     onEnd: handle_drop_section,
   });
 
