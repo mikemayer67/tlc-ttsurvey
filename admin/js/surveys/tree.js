@@ -22,7 +22,7 @@ export default function init(ce,controller)
   // sorter for ul.sections within a tree
   const _tree_sorter = new Sortable( _tree[0], {
     group: {
-      name:'sections',
+      name:'tree',
       pull: false,
       put: false,
     },
@@ -31,8 +31,8 @@ export default function init(ce,controller)
     onEnd: handle_drop_section,
   });
 
-  const _section_sorters = new Map(); // sorters for ul.group elements within a section
-  const _group_sorters   = new Map(); // sorters for ul.question elements within a group
+  const _section_sorters = new Map(); // sorters for group and question elements within a section
+  const _group_sorters   = new Map(); // sorters for question elements within a group
 
   // reset clears out the tree
   //   section sorter is disabled
@@ -59,49 +59,52 @@ export default function init(ce,controller)
 
     if(!content)           { return; }
     if(!content.sections)  { return; }
+    if(!content.groups)    { return; }
     if(!content.questions) { return; }
 
-    const group_ids = new Set();
-    for (const groups of Object.values(content.groups)) {
-      for (const group of Object.values(groups)) {
-        group_ids.add(group.id);
-      }
-    }
-
-    const qmap = new Map();
-    for( const [question_id,question] of Object.entries(content.questions) ) {
-      const group_id = question.group;
-      const sequence = question.sequence; 
-      if(group_id != null && sequence != null && group_ids.has(group_id)) {
-        if(!qmap.has(group_id)) { qmap.set(group_id,new Array()); }
-        qmap.get(group_id).push(Number(question_id));
-      } else {
-        _bullpen.add(Number(question_id));
-      }
+    _bullpen.clear();
+    for( const question_id of Object.keys(content.questions) ) {
+      _bullpen.add(Number(question_id));
     }
 
     Object.entries(content.sections)
     .sort( ([,a],[,b]) => a.sequence - b.sequence )
-    .forEach( ([sid,section]) => {
-      add_section_to_tree(sid, section, content, qmap);
+    .forEach( ([,section]) => {
+      add_section_to_tree(section, content);
     });
 
     _arborist.handle_resize();
   }
 
-  function add_section_to_tree(section_id, section, content, qmap)
+  function add_section_to_tree(section, content)
   {
-    const [li,ul] = create_section_li(section_id, section.name);
-    li.appendTo(_tree);
+    const section_id = section.section_id;
+    const [section_li,section_ul] = create_section_li(section_id, section.name);
+    section_li.appendTo(_tree);
 
-    const groups = content.groups[section_id];
-    for( const group of groups ) {
-      const group_id = group.id;
-      const group_name = group.name?.trim();
-      if(group.name) {
-        add_group_to_section(group_id,group_name,ul,content,qmap);
-      } else {
-        add_virtual_group_to_section(group_id,ul,content, qmap);
+    const items = Object.values(section.content);
+    for(const item of items) {
+      if(item.type === 'question') {
+        const question = content.questions[item.id] ?? null;
+        if(question) {
+          const question_li = create_question_li(question.id,question);
+          question_li.appendTo(section_ul);
+        }
+      }
+      else if(item.type === 'group') 
+      {
+        const group = content.groups[item.id] ?? null;
+        if(group) {
+          const [group_li, group_ul] = create_group_li(group.group_id,group.name);
+          group_li.appendTo(section_ul);
+          for (const question_id of group.content) {
+            const question = content.questions[question_id] ?? null;
+            if (question) {
+              const question_li = create_question_li(question.id, question);
+              question_li.appendTo(group_ul);
+            }
+          }
+        }
       }
     }
   }
@@ -164,19 +167,19 @@ export default function init(ce,controller)
       start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('groups').appendTo(li);
+    const ul = $('<ul>').addClass('section-content').appendTo(li);
 
     _section_sorters.set(
       section_id, 
       new Sortable( ul[0], {
         group: {
-          name: 'groups',
+          name: 'content',
           pull: true,
           put: true,
         },
         animation: 150,
         disabled: true,
-        onEnd: handle_drop_group,
+        onEnd: handle_drop_in_section,
       })
     );
     
@@ -198,7 +201,7 @@ export default function init(ce,controller)
     const span = $('<span>').addClass('name');
     const div  = $('<div>').append(btn,span);
 
-    const li = $('<li>').addClass('real group').attr('data-group',group_id).html(div);
+    const li = $('<li>').addClass('group').attr('data-group',group_id).html(div);
 
     _arborist.initialize(li,name);
 
@@ -214,43 +217,19 @@ export default function init(ce,controller)
       start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('questions').attr('data-group',group_id).appendTo(li);
+    const ul = $('<ul>').addClass('group-content').attr('data-group',group_id).appendTo(li);
 
     _group_sorters.set(
       group_id,
       new Sortable( ul[0], {
         group: {
-          name: 'questions',
+          name: 'content',
           pull: true,
           put: true,
         },
         animation: 150,
         disabled: true,
-        onEnd: handle_drop_question,
-      })
-    );
-
-    return [li,ul];
-  }
-
-  function create_virtual_group_li(question_id)
-  {
-    const li = $('<li>').addClass('virtual group').attr('data-question', question_id);
-    const ul = $('<ul>').addClass('questions').attr('data-question', question_id);
-
-    li.append(ul);
-
-    _group_sorters.set(
-      group_id,
-      new Sortable( ul[0], {
-        group: {
-          name: 'questions',
-          pull: true,
-          put: false,
-        },
-        animation: 150,
-        disabled: true,
-        onEnd: handle_drop_question,
+        onEnd: handle_drop_in_group,
       })
     );
 
@@ -471,7 +450,7 @@ export default function init(ce,controller)
   //   Unpacks the onEnd custom event in order to add the move group action
   //   to the undo manager.
   // It also triggers a SurveyWasReordered custom event
-  function handle_drop_group(e)
+  function handle_drop_in_section(e)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
@@ -493,7 +472,7 @@ export default function init(ce,controller)
   //   Unpacks the onEnd custom event in order to add the move question action
   //   to the undo manager.
   // It also triggers a SurveyWasReordered custom event
-  function handle_drop_question(e)
+  function handle_drop_in_group(e)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
