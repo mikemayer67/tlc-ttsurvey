@@ -109,42 +109,6 @@ export default function init(ce,controller)
     }
   }
 
-  function add_group_to_section(group_id, group_name, section_ul, content, qmap)
-  {
-    const qids = qmap.get(group_id);
-
-    const [li, ul] = create_group_li(group_id, group_name);
-    li.appendTo(section_ul);
-
-    for(const qid of qids) {
-      const question = content.questions[qid];
-      create_question_li(qid, question).appendTo(ul);
-    }
-  }
-
-  function add_virtual_group_to_section(group_id, section_ul, content, qmap)
-  {
-    const question_ids = qmap.get(group_id);
-    
-    // by design, there should be exactly one question per virtual group
-    //   if not, add a note to the console.log and move on.
-    if(question_ids.length!==1) {
-      const what = question_ids.length > 1 ? "too many questions in" : "empty";
-      const err = new Error();
-      const where = err.stack.split("\n")[0];
-      console.log("Something went wrong ("+what+" virtual group):\n"+where);
-      return;
-    }
-
-    const question_id = question_ids[0];
-
-    const [li,ul] = create_virtual_group_li(question_id);
-    li.appendTo(section_ul);
-
-    const question = content.questions[question_id];
-    create_question_li(question_id, question).appendTo(ul);
-  }
-
   function create_section_li(section_id,name)
   {
     const btn  = $('<button>').addClass('toggle');
@@ -225,7 +189,7 @@ export default function init(ce,controller)
         group: {
           name: 'content',
           pull: true,
-          put: true,
+          put(to,from,dragEl,evt) { return !$(dragEl).hasClass('group') },
         },
         animation: 150,
         disabled: true,
@@ -503,7 +467,7 @@ export default function init(ce,controller)
 
   self.select_group = function(group_id)
   {
-    const e = _tree.find(`.real.group[data-group=${group_id}]`);
+    const e = _tree.find(`.group[data-group=${group_id}]`);
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -700,7 +664,7 @@ export default function init(ce,controller)
       observerMicrotaskQueued = true;
       queueMicrotask(() => {
         observerMicrotaskQueued = false;
-        _tree.find('li.section,li.real.group').each((i,e) => {
+        _tree.find('li.section,li.group').each((i,e) => {
           const child_selected = $(e).find('.selected');
           $(e).toggleClass('child-selected',child_selected.length > 0);
           const child_error = $(e).find('.error,.needs-value,.needs-type');
