@@ -28,7 +28,7 @@ export default function init(ce,controller)
     },
     animation: 150,
     disabled: false,
-    onEnd: handle_drop_section,
+    onEnd: handle_drop_in_tree,
   });
 
   const _section_sorters = new Map(); // sorters for group and question elements within a section
@@ -313,11 +313,10 @@ export default function init(ce,controller)
     const all_sections = _tree.children('li.section');
     if( toIndex >= all_sections.length) { return false; }
 
-    const tgt_li  = all_sections.eq(toIndex);
-
     const move_li = all_sections.filter('[data-section='+sectionId+']');
     if( move_li.length !== 1 ) { return false; }
 
+    const tgt_li    = all_sections.eq(toIndex);
     const fromIndex = all_sections.index(move_li);
 
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
@@ -338,54 +337,52 @@ export default function init(ce,controller)
   //   to update the DOM.
   // It triggers a SurveyWasReordered custom event on success
   //   and returns true.  It returns false on failure.
-  self.move_question = function(questionId,toSectionId,toIndex)
+  self.move_group = function(groupId,toSectionId,toIndex)
   {
     // notation:
     //   sul = ul.sections <--- only one of these in the DOM (aka _tree)
-    //   sli = li.section
-    //   eul = ul.questions <--- only one of these per li.section
-    //   eli = li.question
+    //   sli = li.section   <--- 0 or more in ul.sections
+    //   cul = ul.section-content <--- only one of these per li.section
+    //   cli = li.question or li.group <--- 0 or more in ul.section.content
+    //   gli = li.group <--- subset of cli
 
-    const all_eli = _tree.find('li.question');
-    const move_eli = all_eli.filter('[data-question='+questionId+']');
-    if(move_eli.length != 1) {
+    const move_gli = _tree.find('li.group[data-group='+groupId+']');
+    if(move_gli.length != 1) {
       // length should only ever be 1... but just in case it's not
       //   If it's 0, then something broke in the view controller
       //   If it's >1, then something broke in the underlying app logic
       return false;
     }
 
-    // move_eli parent      is ul.questions
-    // move_eli grandparent is li.section
-    const fromSectionId = move_eli.parent().parent().data('section');
+    const fromSectionId = move_gli.closest('li.section').data('section');
 
     const dst_sli = _tree.find('li.section[data-section='+toSectionId+']');
-    const dst_eli = dst_sli.find('li.question');
+    const dst_cul = dst_sli.children('ul.section-content');
+    const dst_cli = dst_cul.children('li.question, li.group');
 
-    const tgt_eli = dst_eli.eq(toIndex);  // could be empty
+    const tgt_cli = dst_cli.eq(toIndex);  // could be empty
 
-    if(toSectionId === fromSectionId) { // moving li.question within its current ul.questions
+    if(toSectionId === fromSectionId) { 
+      // moving li.group within its current ul.section-content
       // the logic is identical to moving sections around in the sections ul
-      if(tgt_eli.length !=1 ) { return false; }  // empty not allowed in this case
+      if(tgt_cli.length !=1 ) { return false; }  // empty not allowed in this case
 
-      const fromIndex = dst_eli.index(move_eli);
-      if(toIndex < fromIndex) { move_eli.insertBefore(tgt_eli); }
-      if(toIndex > fromIndex) { move_eli.insertAfter(tgt_eli); }
+      const fromIndex = dst_cli.index(move_gli);
+      if(toIndex < fromIndex) { move_gli.insertBefore(tgt_cli); }
+      if(toIndex > fromIndex) { move_gli.insertAfter(tgt_cli); }
     }
-    else { // moving li.question to a new ul.questions
-      if(tgt_eli.length === 0) {
-        // allow inserting at dst_eli.length (i.e., append to end), but not beyond it
-        if( toIndex > dst_eli.length ) { return false; } 
-
-        const dst_eul = dst_sli.children('ul.questions').first(); // should only be one and only one
-        move_eli.appendTo(dst_eul);
-      }
-      else {
-        move_eli.insertBefore(tgt_eli);
-      }
+    else if(tgt_cli.length === 0) { 
+      // nothing currently at destination index
+      // only allowed if adding to end of section-content
+      if( toIndex > dst_cli.length ) { return false; } 
+      move_gli.appendTo(dst_cul);
+    }
+    else {
+      // insert before element currenty at destination index
+      move_gli.insertBefore(tgt_cli);
     }
 
-    set_selection(move_eli);
+    set_selection(move_gli);
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -394,7 +391,7 @@ export default function init(ce,controller)
   //   Unpacks the onEnd custom event in order to add the move section action
   //   to the undo manager.
   // It also triggers a SurveyWasReordered custom event
-  function handle_drop_section(e)
+  function handle_drop_in_tree(e)
   {
     if(e.oldIndex === e.newIndex) { return false; }
 
@@ -418,14 +415,28 @@ export default function init(ce,controller)
   {
     if(e.from === e.to && e.oldIndex === e.newIndex) { return false; }
 
-    const groupId      = $(e.item).data('group');
-    const from_section = $(e.from).parent().data('section');
-    const to_section   = $(e.to).parent().data('section');
-    ce.undo_manager.add( {
-      action:'drop-group',
-      undo() { self.move_group(groupId,from_section,e.oldIndex); },
-      redo() { self.move_group(groupId,to_section,e.newIndex); },
-    });
+    const to_section = $(e.to).closest('li.section').data('section');
+    
+    if($(e.from).hasClass('section-content')) {
+      // dragging from a section
+      const from_section = $(e.from).closest('li.section').data('section');
+      if($(e.item).hasClass('question')) {
+        // dragging a question
+      }
+      else {
+        // dragging a group
+        const groupId = $(e.item).data('group');
+        ce.undo_manager.add( {
+          action:'drop-group',
+          undo() { self.move_group(groupId, from_section, e.oldIndex); },
+          redo() { self.move_group(groupId, to_section, e.newIndex); },
+        });
+      }
+    }
+    else {
+      // must be dragging from a group (ergo must be dragging a question)
+
+    }
 
     set_selection($(e.item));
     $(document).trigger('SurveyWasReordered');

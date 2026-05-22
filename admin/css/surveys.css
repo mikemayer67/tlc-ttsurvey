@@ -426,7 +426,7 @@
 /*
  * Section backgrounds
  *
- * (container here means section or real group)
+ * (container here means section or group)
  * container selected,       no error no child errors => dark yellow  ffe41f
  * container selected,          error or child errors => dark pink    ffc0c0
  * container child selected, no error no child errors => light yellow fff5b0
@@ -441,7 +441,7 @@
  */
 
 #ttt-body #survey-tree li.section.selected > div,
-#ttt-body #survey-tree li.real.group.selected > div 
+#ttt-body #survey-tree li.group.selected > div 
 {
   background-color:#ffe41f;  /* from TLC logo */
 }
@@ -452,8 +452,7 @@
 
 #ttt-body #survey-tree li.section.selected.error  > div,
 #ttt-body #survey-tree li.section.selected.child-error  > div,
-#ttt-body #survey-tree li.section.real.group.selected.error  > div,
-#ttt-body #survey-tree li.section.real.group.selected.child-error  > div,
+#ttt-body #survey-tree li.section.group.selected.child-error  > div,
 #ttt-body #survey-tree li.question.selected.error {
   background-color:#ffc0c0;  /* dark pink */
 }
@@ -469,7 +468,7 @@
 }
 
 #ttt-body #survey-tree li.section.error > div,
-#ttt-body #survey-tree li.real.group.error > div,
+#ttt-body #survey-tree li.group.error > div,
 #ttt-body #survey-tree li.question.error
 {
   color:#b00; 
