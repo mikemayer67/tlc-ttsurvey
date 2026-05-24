@@ -104,14 +104,37 @@ function cache_user_responses($survey_id)
   $tables = ['user_status','responses','response_options'];
   foreach($tables as $table) {
     $table = 'tlc_srv_' . $table;
-    $cache = 'tlc_cache_' . $table;
+    $cache = $table . '_cache';
 
-    $query = "drop table if exists $cache";
+    validate_cache_table($table,$cache);
+
+    $query = "delete from $cache";
     MySQLExecute($query);
 
-    $query = "create table $cache as select * from $table where survey_id=$survey_id";
+    $query = "insert into $cache select * from $table where survey_id=$survey_id";
     $rc = MySQLExecute($query);
     if($rc === false) { throw new \Exception("Failed to cache $table"); }
+  }
+}
+
+function validate_cache_table($table,$cache)
+{
+  log_dev("...validating cache table $cache");
+
+  $query = <<<SQL
+    SELECT count(*) FROM (
+      SELECT column_name,ordinal_position,data_type,count(*) AS test FROM ( 
+        SELECT 'source' AS context,column_name,ordinal_position,data_type FROM information_schema.columns WHERE table_name=?
+        UNION
+        SELECT 'cache' AS context,column_name,ordinal_position,data_type FROM information_schema.columns WHERE table_name=?
+      ) column_map
+      GROUP BY column_map.column_name,column_map.ordinal_position,column_map.data_type
+    ) column_degeneracy
+    WHERE column_degeneracy.test != 2
+  SQL;
+  $mismatch_count = MySQLSelectValue($query,'ss',$table,$cache);
+  if($mismatch_count !== 0) {
+    internal_error("Cache table $cache has $mismatch_count columns differences from $table");
   }
 }
 

@@ -52,6 +52,8 @@
 --       version's if block describing what the changes are and why they
 --       were made.
 
+INVALID STATEMENT TO MAKE SURE THIS SCRIPT WILL NOT RUN;
+
 
 -- HERE WE GO... 
 

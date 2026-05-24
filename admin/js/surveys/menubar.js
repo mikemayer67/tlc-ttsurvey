@@ -1,3 +1,19 @@
+
+/**
+ * Controller used to manage the survey panel menubar
+ * 
+ * @typedef {Object} MenubarController
+ * @property { (show:boolean) => void } show
+ * @property { () => void } hide
+ * @property { () => void } updates_selection Updates selection based on navigation tree
+ */
+
+/**
+ * Initializes a MenubarController object
+ * @param {object} ce Container of shared "global" variables
+ * @param {SurveyViewController} controller TODO add JSDoc to controller
+ * @returns {NavTreeController}
+ */
 export default function init(ce,controller)
 {
   const _mbar = $('#content-editor div.menubar');
@@ -278,6 +294,6 @@ export default function init(ce,controller)
   return {
     show(v=true) { if(v) { _mbar.show() } else { _mbar.hide() } },
     hide()       { _mbar.hide() },
-    update_selection:update_selection,
+    update_selection,
   };
 }

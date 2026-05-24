@@ -9,6 +9,12 @@ import ui_config       from './views/ui_config.js';
 import { deepCopy }    from '../utils.js';
 import setup_resizer   from '../resizer.js';
 
+/**
+ * Support function that sets up the event handlers that manage the popup hints
+ *   used in the viewer and editor panes.  These all trigger off of the element
+ *   labels in the viewer/editor pane.  
+ * @returns {void}
+ */
 function setup_hint_handler() 
 {
   const triggers = $('#editor-frame').find('.viewer, .editor').find('div.label span')
@@ -17,7 +23,8 @@ function setup_hint_handler()
 
   triggers.on('mouseenter', function(e) {
     if(_timeout_id) { clearTimeout(_timeout_id) }
-    const hint = $(this).parent().next().children('div.hint');
+    const hint_id = $(this).closest('div.label').data('hint');
+    const hint = $(`#${hint_id}`);
     _timeout_id = setTimeout( function() { 
       hint.addClass('hover') 
     }, 250 );
@@ -28,17 +35,65 @@ function setup_hint_handler()
       clearTimeout(_timeout_id);
       _timeout_id = null;
     }
-    const hint = $(this).parent().next().children('div.hint');
+    const hint_id = $(this).closest('div.label').data('hint');
+    const hint = $(`#${hint_id}`);
     hint.removeClass('hover');
   });
 
   triggers.on('click', function(e) {
-    const hint = $(this).parent().next().children('div.hint');
+    const hint_id = $(this).closest('div.label').data('hint');
+    const hint = $(`#${hint_id}`);
     hint.toggleClass('locked');
   });
 }
 
+/**
+ * Controller used to manage all content in the Survey view in the Admin Dashboard
+ * 
+ * Oversees other controllers which each manage portions of the view:
+ *   - NavTreeController handles the navigation tree
+ *   - MenubarController handles the survey editor menubar
+ *   - TODO: flesh this out with additional sub controllers
+ * 
+ * @typedef {Object} SuveyViewController
+ * @property { boolean } editable Current survey can be edited
+ * @property { () => void } enable_edits 
+ * @property { () => void } disable_edits
+ * @property { () => void } show_content Shows the content editor/viewer
+ * @property { () => void } hide_content Hides the content editor/viewer
+ * @property { (content:object) => void } udpate_content 
+ * @property { () => boolean } can_submit
+ * @property { () => {options:object, sections:object, questions:object, next_ids:object} } content
+ * @property { (section_id:number, key:string) => null|number|string } cur_section_data
+ * @property { (group_id:number, key:string) => null|number|string } cur_group_data
+ * @property { (question_id:number, key:string) => null|number|string } cur_question_data
+ * @property { (section_id:nnumber, key:string, value:null|number|string) => void } update_section_data
+ * @property { (group_id:nnumber, key:string, value:null|number|string) => void } update_group_data
+ * @property { (question_id:nnumber, key:string, value:null|number|string) => void } update_question_data
+ * @property { (content_type:"section"|"group"|"question", content_id:number, has_error:boolean) => void } toggle_content_error
+ * @property { (question_id:number, type:string, old_type:string) => void } update_question_type
+ * @property { (where:{section_id:number, offset:number}) => void } add_new_section
+ * @property { (where:{TODO: update attributes ... see tree::add_question}) => void } add_new_question
+ * @property { (data:object) => void } clone_question
+ * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_section
+ * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_question
+ * @property { (section_id:number) => void } select_section
+ * @property { (group_id:number) => void } select_group
+ * @property { (question_id:number) => void } select_question
+ * @property { () => void } clear_selection
+ * @property { () => Map<number,object} } unused_questions
+ * @property { (old_id:number, new_id:number) => void } replace_question
+ * @property { () => object } all _options
+ * @property { (value:string) => number } add_option
+ * @property { (id:number, value:string) => void } update_option
+ * @property { (sectionId:number, toIndex:number) => boolean } move_section
+ */
 
+/**
+ * Initializes a SurveyViewController
+ * @param {object} ce Container of shared "global" variables
+ * @returns {SurveyViewCtontroller}
+ */
 export default function init(ce)
 {
   const _box   = $('#content-editor');
@@ -70,6 +125,10 @@ export default function init(ce)
 
   // editor content
 
+  /**
+   * Updates all of the survey views with new survey content
+   * @param {Object} content All the sruvey content and structure
+   */
   self.update_content = function(content) 
   {
     _tree.reset();
@@ -104,10 +163,20 @@ export default function init(ce)
     ce.undo_manager?.empty();
   };
 
+  /**
+   * Returns whether or not the controller is ok with submitting the survey updates.
+   *   Queries the subcontrollers and returns true only if all concur with submitting 
+   * @returns {boolean}
+   */
   self.can_submit = function() {
     return _tree.can_submit();
   };
 
+  /**
+   * Returns the data structure encapsulating the current survey content/structure
+   * in a format usable for submitting it via an AJAX call to the server.
+   * @returns {{options:object, sections:object, questions:object, next_ids:object}}
+   */
   self.content = function()
   {
     const structure = _tree.survey_structure();
@@ -135,31 +204,93 @@ export default function init(ce)
     return rval;
   }
 
+  /**
+   * Returns the current value in the survey editor for the specified section property 
+   * @param {number} section_id 
+   * @param {string} key 
+   * @returns {null|number|string}
+   */
   self.cur_section_data = function(section_id, key)
   {
     return _content.sections[section_id]?.[key];
   }
 
+  /**
+   * Returns the current value in the survey editor for the specified group property 
+   * @param {number} group_id 
+   * @param {string} key 
+   * @returns {null|number|string}
+   */
+  self.cur_group_data = function(group_id, key)
+  {
+    return _content.groups[group_id]?.[key];
+  }
+
+  /**
+   * Returns the current value in the survey editor for the specified question property 
+   * @param {number} question_id 
+   * @param {string} key 
+   * @returns {null|number|string}
+   */
   self.cur_question_data = function(question_id, key)
   {
     return _content.questions[question_id]?.[key];
   }
 
+  /**
+   * Updates the value of the specified section property in the editor and navigation tree
+   * @param {number} section_id 
+   * @param {string} key 
+   * @param {null|number|string} value 
+   */
   self.update_section_data = function(section_id, key, value)
   {
     _content.sections[section_id][key] = value;
     _tree.update_section(section_id,key,value);
   }
 
+  /**
+   * Updates the value of the specified group property in the editor and navigation tree
+   * @param {number} group_id 
+   * @param {string} key 
+   * @param {null|number|string} value 
+   */
+  self.update_group_data = function(group_id, key, value)
+  {
+    _content.groups[group_id][key] = value;
+    _tree.update_group(group_id,key,value);
+  }
+
+  /**
+   * Updates the value of the specified question property in the editor and navigation tree
+   * @param {number} question_id 
+   * @param {string} key 
+   * @param {null|number|string} value 
+   */
   self.update_question_data = function(question_id, key, value)
   {
     _content.questions[question_id][key] = value;
     _tree.update_question(question_id,key,value);
   }
 
-  self.toggle_section_error  = function(section_id, error) { _tree.toggle_error('section', section_id, error); }
-  self.toggle_question_error = function(question_id,error) { _tree.toggle_error('question',question_id,error); }
+  /**
+   * Toggles the error state of theh specified element in the survey content
+   * This function simply notifies the subcontrollers of the error state.
+   * @param {"section"|"group"|"question"} content_type 
+   * @param {number} content_id 
+   * @param {boolean} has_error 
+   */
+  self.toggle_content_error  = function(content_type, content_id, has_error) {
+    _tree.toggle_error(content_type, content_id, has_error);
+  }
 
+  /**
+   * Modifies question property attributes based on new question type 
+   *   and notifies the navigation tree of the change
+   * @param {number} question_id 
+   * @param {string} type 
+   * @param {string} old_type 
+   */
   self.update_question_type = function(question_id,type,old_type) {
     const question = _content.questions[question_id];
     question['type'] = type;
@@ -181,6 +312,12 @@ export default function init(ce)
 
   // insertion handlers
   
+  /**
+   * Adds a new section to the survey content, notifies the navigation tree
+   *   of the new section, and registers the addition with the undo manager
+   * @param {{section_id:number, offset:number}} where 
+   * @returns {void}
+   */
   self.add_new_section = function(where)
   {
     const new_section_id = _next_section_id++;
@@ -190,14 +327,14 @@ export default function init(ce)
       intro:"", 
       collapsible:1, 
     };
-    const cur_highlight = _tree.cache_selection();
+    const cur_highlight = _tree.current_selection();
 
     _content.sections[ new_section_id ] = new_section;
 
     ce.undo_manager.add_and_exec( {
       action:'add-new-section',
       redo() {
-        _tree.add_section( new_section_id, new_section, where );
+        _tree.add_section( new_section_id, new_section.name, where );
       },
       undo() {
         _tree.remove_section(new_section_id);
@@ -206,11 +343,19 @@ export default function init(ce)
     });
   };
 
+  // TODO: Add add_new_group method
+
+  /**
+   * Adds a new question to the survey content, notifies the navigation tree
+   *   of the new question, and registers the addition with the undo manager
+   * @param {{TODO: update attributes ... see tree::add_question }} where 
+   * @returns {void}
+   */
   self.add_new_question = function(where)
   {
     const new_question_id = _next_question_id++;
     const new_question = { id:new_question_id, type:null };
-    const cur_highlight = _tree.cache_selection();
+    const cur_highlight = _tree.current_selection();
 
     _content.questions[ new_question_id ] = new_question;
 
@@ -226,6 +371,13 @@ export default function init(ce)
     });
   };
 
+  /**
+   * Creates a new question as a clone of an existing one, adds it to the
+   *   survey content and navigation tree, and registers this action with
+   *   the undo manager.
+   * 
+   * @param {object} data Question details
+   */
   self.clone_question = function(data)
   {
     if( data.parent_id in _content.questions ) {
@@ -233,7 +385,7 @@ export default function init(ce)
       const new_question = deepCopy( _content.questions[data.parent_id] );
       new_question.wording = null;
       new_question.id = new_question_id;
-      const cur_highlight = _tree.cache_selection();
+      const cur_highlight = _tree.current_selection();
 
       _content.questions[new_question_id] = new_question; 
 
@@ -258,6 +410,12 @@ export default function init(ce)
 
   // deletion handlers
 
+  /**
+   * Removes the specified section element from the survey content and
+   *   navigation tree and registers the deletion with the undo manager.
+   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @returns {void}
+   */
   self.delete_section = function(to_delete) 
   {
     if( to_delete.length !== 1 ) { return; }
@@ -267,7 +425,7 @@ export default function init(ce)
     const questions = to_delete.find('li.question');
     const question_ids = questions.map( function() { return $(this).data('question') } ).get();
 
-    const cur_highlight = _tree.cache_selection();
+    const cur_highlight = _tree.current_selection();
     const was_closed = to_delete.hasClass('closed');
 
     const prev = to_delete.prev();
@@ -283,7 +441,7 @@ export default function init(ce)
         _tree.remove_section(section_id);
       },
       undo() {
-        const [tgt_li,tgt_ul] = _tree.add_section(section_id,section,where);
+        const [tgt_li,tgt_ul] = _tree.add_section(section_id,section.name,where);
         tgt_li.toggleClass('closed',was_closed);
         question_ids.forEach( (question_id) => {
           _tree.add_question(
@@ -295,9 +453,16 @@ export default function init(ce)
         _tree.restore_selection(cur_highlight);
       },
     });
-
   }
 
+  // TODO: Add delete_group
+
+  /**
+   * Removes the specified question element from the survey content and
+   *   navigation tree and registers the deletion with the undo manager.
+   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @returns {void}
+   */
   self.delete_question = function(to_delete) 
   {
     if( to_delete.length !== 1 ) { return; }
@@ -305,7 +470,7 @@ export default function init(ce)
     const question_id = to_delete.data('question');
     const question = _content.questions[question_id];
 
-    const cur_highlight = _tree.cache_selection();
+    const cur_highlight = _tree.current_selection();
 
     const prev = to_delete.prev();
     const where = {};
@@ -330,6 +495,12 @@ export default function init(ce)
 
   // selection handlers
 
+  /**
+   * Sets the specified section as the active selection in the navigation
+   *   tree and notifies the menubar
+   * @param {number} section_id 
+   * @returns {void}
+   */
   self.select_section = function(section_id) 
   {
     if(_frame.hasClass('section') && _frame.data('id') === section_id ) { return; }
@@ -343,6 +514,12 @@ export default function init(ce)
     _menubar.update_selection();
   }
 
+  /**
+   * Sets the specified group as the active selection in the navigation
+   *   tree and notifies the menubar
+   * @param {number} group_id 
+   * @returns {void}
+   */
   self.select_group = function(group_id)
   {
     if(_frame.hasClass('group') && _frame.data('id') === group_id ) { return; }
@@ -355,6 +532,12 @@ export default function init(ce)
     _menubar.update_selection();
   }
 
+  /**
+   * Sets the specified question as the active selection in the navigation
+   *   tree and updates the menubar
+   * @param {number} question_id 
+   * @returns {void}
+   */
   self.select_question = function(question_id) 
   {
     if(_frame.hasClass('question') && _frame.data('id') === question_id ) { return; }
@@ -368,23 +551,38 @@ export default function init(ce)
     _menubar.update_selection();
   }
 
+  /**
+   * Unset active selection
+   * @returns {void}
+   */
   self.clear_selection = function()
   {
-    _frame.removeClass('section question');
+    _frame.removeClass('section group question');
     _menubar.update_selection();
   }
 
   // content methods
 
+  /**
+   * Returns a Map of the all content questions not currently in
+   *   use in the survey.
+   * @returns {Map<number,object>}
+   */
   self.unused_questions = function() 
   {
-    const rval = {};
+    const rval = new Map();
     for( const qid of _tree.bullpen() ) {
-      rval[qid] = _content.questions[qid];
+      rval.set(Number(qid), _content.questions[qid]);
     }
     return rval;
   }
 
+  /**
+   * Swaps out one question in the navigation tree for another
+   * @param {number} old_id ID of the question to be replaced
+   * @param {number} new_id ID of the question replacing it
+   * @returns 
+   */
   self.replace_question = function(old_id, new_id) 
   {
     const old_data = _content.questions[old_id];
@@ -393,10 +591,21 @@ export default function init(ce)
     return new_data;
   }
 
+  /**
+   * Returns all option values defined for the current survey
+   * @returns {object} 
+   * 
+   */
   self.all_options = function() {
     return _content.options;
   }
 
+  /**
+   * Adds a new option string to the survey content and returns its
+   *   option ID
+   * @param {string} new_value 
+   * @returns {number} Option ID assigned to the new option 
+   */
   self.add_option = function(new_value) {
     const new_id = _content.next_ids.option;
     _content.options[new_id] = new_value;
@@ -404,6 +613,12 @@ export default function init(ce)
     return new_id;
   }
 
+  /**
+   * Updates the option value for the specified option ID
+   * @param {number} id 
+   * @param {string} value 
+   * @returns {void}
+   */
   self.update_option = function(id,value) {
     _content.options[id] = value;
   }
@@ -411,7 +626,8 @@ export default function init(ce)
   // pass-trhough handlers
 
   self.move_section  = _tree.move_section;
-  self.move_question = _tree.move_question;
+  // TODO: add support for moving questions and groups
+  // self.move_question = _tree.move_question;
 
   // return controller object
 

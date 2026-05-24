@@ -135,4 +135,8 @@ INSERT into tlc_srv_response_options (userid, survey_id, question_id, draft, opt
 SELECT userid, survey_id, question_id, draft, option_id from tlc_tt_response_options;
 SQL ],
 
+// Note that none of the cache tables are migrated.  This is on purpose.
+//  These serve only as "temporary housing" while updating survey structure
+//  via the admin dashboard.  This data is ephemoral.
+
 ];

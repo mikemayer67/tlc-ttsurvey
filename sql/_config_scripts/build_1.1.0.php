@@ -246,7 +246,7 @@ CREATE TABLE tlc_srv_reminder_emails (
 );
 SQL ],
 
-// Finally participant responses
+// And now, participant responses
 //   (it's nice to have a structured survey, but without responses, what's the point?)
 
   [ __LINE__, <<<SQL
@@ -280,6 +280,12 @@ CREATE TABLE tlc_srv_response_options (
               ON UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],
+
+// Finally, build the cache tables that are used as temporary housing
+//  during "remodeling" of the survey structure in the admin dashboard
+  [ __LINE__, 'CREATE TABLE tlc_srv_user_status_cache      AS SELECT * FROM tlc_srv_user_status'      ],
+  [ __LINE__, 'CREATE TABLE tlc_srv_responses_cache        AS SELECT * FROM tlc_srv_responses'        ],
+  [ __LINE__, 'CREATE TABLE tlc_srv_response_options_cache AS SELECT * FROM tlc_srv_response_options' ],
 
 // Now that we have tables defined, let's create some views
 //   Some views are simply useful for database administration

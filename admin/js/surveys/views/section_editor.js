@@ -129,7 +129,7 @@ export default function init(ce,controller)
     }
 
     const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_section_error(_cur_id,has_error);
+    controller.toggle_content_error('section',_cur_id,has_error);
   }
 
 

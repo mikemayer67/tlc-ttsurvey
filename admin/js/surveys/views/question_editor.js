@@ -102,16 +102,16 @@ export default function init(ce,controller)
   function set_error(key,msg)
   {
     _errors[key] = msg;
-    controller.toggle_question_error(_cur_id,true);
+    controller.toggle_content_error('question',_cur_id,true);
   }
   function clear_error(key) {
     delete _errors[key];
     const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_question_error(_cur_id,has_error);
+    controller.toggle_content_error('question',_cur_id,has_error);
   }
   function reset_errors() {
     _errors = {}
-    controller.toggle_question_error(_cur_id,false);
+    controller.toggle_content_error('question',_cur_id,false);
   }
 
   const self = {
@@ -413,20 +413,20 @@ export default function init(ce,controller)
   function show_new(id,data)
   {
     const bullpen = controller.unused_questions();
-    if(Object.keys(bullpen).length) {
+    if(bullpen.size > 0) {
       _archive_select.find('option:not(:first)').remove();
-      Object.entries(bullpen).forEach( ([id,data]) => {
-        if(data.type) {
-          let wording = data.type === "INFO"
+      for([id,data] of bullpen) {
+        if(!data.type) { continue; }
+        
+        let wording = data.type === "INFO"
           ? data.infotag || data.info || ''
           : data.wording || '';
 
-          if(wording.length > 64) {
-            wording = wording.slice(0,64) + '...';
-          }
-          _archive_select.append(new Option( wording, id ));
+        if (wording.length > 64) {
+          wording = wording.slice(0, 64) + '...';
         }
-      });
+        _archive_select.append(new Option(wording, id));
+      }
       _archive_select.val('').on('change',id,handle_archive);
       _archive.show();
     }
