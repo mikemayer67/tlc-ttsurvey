@@ -106,6 +106,8 @@ echo <<<HTML
     <button class='add question below' title='Insert new survey item below'><span class=icon></span></button>
     <button class='add question above' title='Insert new survey item above'><span class=icon></span></button>
     <button class='add question clone' title='Duplicate survey item'><span class=icon></span></button>
+    <button class='add group' title='Start new grouping'><span class=icon></span></button>
+    <button class='remove group' title='Remove grouping'><span class=icon></span></button>
     <button class='delete' title='Delete selection'><span class=icon></span></button>
     <button class='undo' title='Undo edit'><span class=icon></span></button>
     <button class='redo' title='Redo edit'><span class=icon></span></button>

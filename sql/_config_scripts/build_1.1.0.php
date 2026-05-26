@@ -22,7 +22,7 @@ SQL ],
 
 // Overall app settings not tied to any given survey
   [ __LINE__, <<<SQL
-CREATE TABLE Tlc_srv_settings (
+CREATE TABLE tlc_srv_settings (
   name  VARCHAR(24)  NOT NULL PRIMARY KEY,
   value VARCHAR(255) NOT NULL
 );

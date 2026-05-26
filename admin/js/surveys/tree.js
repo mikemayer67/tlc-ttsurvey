@@ -30,7 +30,7 @@ import arborist from './arborist.js';
  *   where:{section_id:number, offset:number}
  *   ) => [jQuery<HTMLLIElement>,jQuery<HTMLULElement>] 
  * } add_section
- * @property { (TODO: add param list) => jQuery<HTMLLIElement> } add_question
+ * @property { (question_id:number, question:Object) => jQuery<HTMLLIElement> } add_question
  * @property { (section_id) => void } remove_section
  * @property { (group_id) => void } remove_group
  * @property { (question_id) => void } remove_question
@@ -40,6 +40,7 @@ import arborist from './arborist.js';
  * @property { () => boolean } can_submit
  * @property { () => Set<number> } bullpen
  * @property { (old_id:number, new_id:number, old_data:object, new_data:object) => void} replace_question
+ * @property { () => Object } survey_structure TODO: flesh out return type
  */
 
 /**
@@ -201,7 +202,7 @@ export default function init(ce,controller)
 
     const li = $('<li>')
       .addClass('section closed')
-      .attr('data-section',section_id)
+      .attr('data-item-id',section_id)
       .data('type','section')
       .html(div);
 
@@ -253,7 +254,7 @@ export default function init(ce,controller)
   self.update_section = function(section_id,key,value)
   {
     if(key === 'name') {
-      const leaf = _tree.find(`.section[data-section=${section_id}]`);
+      const leaf = _tree.find(`.section[data-item-id=${section_id}]`);
       _arborist.update_label(leaf, value);
     }
   }
@@ -281,7 +282,7 @@ export default function init(ce,controller)
 
     const li = $('<li>')
       .addClass('group')
-      .attr('data-group',group_id)
+      .attr('data-item-id',group_id)
       .data('type','group')
       .html(div);
 
@@ -299,7 +300,7 @@ export default function init(ce,controller)
       start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('group-content').attr('data-group',group_id).appendTo(li);
+    const ul = $('<ul>').addClass('group-content').attr('data-item-id',group_id).appendTo(li);
 
     _group_sorters.set(
       group_id,
@@ -335,7 +336,7 @@ export default function init(ce,controller)
   {
     const leaf = $('<li>')
       .addClass('question')
-      .attr('data-question',question_id)
+      .attr('data-item-id',question_id)
       .data('type','question');
 
     let wording = details.wording;
@@ -372,7 +373,7 @@ export default function init(ce,controller)
    */
   self.update_question_type = function(question_id,new_type,old_type)
   {
-    const leaf = _tree.find(`.question[data-question=${question_id}]`);
+    const leaf = _tree.find(`.question[data-item-id=${question_id}]`);
     _arborist.update_type(leaf,new_type,old_type);
   }
 
@@ -394,7 +395,7 @@ export default function init(ce,controller)
    */
   self.update_question = function(question_id,key,value)
   {
-    const leaf  = _tree.find(`.question[data-question=${question_id}]`);
+    const leaf  = _tree.find(`.question[data-item-id=${question_id}]`);
 
     if(key === 'wording') {
       _arborist.update_label(leaf,value);
@@ -472,7 +473,7 @@ export default function init(ce,controller)
     const all_sections = _tree.children('li.section');
     if( toIndex >= all_sections.length) { return false; }
 
-    const move_li = all_sections.filter('[data-section='+sectionId+']');
+    const move_li = all_sections.filter('[data-item-id='+sectionId+']');
     if( move_li.length !== 1 ) { return false; }
 
     const tgt_li    = all_sections.eq(toIndex);
@@ -480,6 +481,8 @@ export default function init(ce,controller)
 
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
+
+    move_li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
 
     set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
@@ -504,7 +507,7 @@ export default function init(ce,controller)
   self.move_to_container = function(itemType,itemId,toType,toId,toIndex)
   {
     // Find the <li> element of the item to be moved.
-    const move_li = _tree.find(`li.${itemType}[data-${itemType}=${itemId}]`);
+    const move_li = _tree.find(`li.${itemType}[data-item-id=${itemId}]`);
     if(move_li.length != 1) {
       // length should only ever be 1... but just in case it's not
       //   If it's 0, then something broke in the view controller
@@ -517,12 +520,12 @@ export default function init(ce,controller)
     //       its ID
     const from_li = move_li.closest('ul').closest('li');
     const fromType = from_li.hasClass('section') ? 'section' : 'group'; 
-    const fromId = from_li.data(fromType);
+    const fromId = from_li.data('item-id');
 
     // Find: the <li> for the destination container
     //       the <ul> that holds its content
     //       the content of that <ul>
-    const to_li = _tree.find(`li.${toType}[data-${toType}=${toId}]`);
+    const to_li = _tree.find(`li.${toType}[data-item-id=${toId}]`);
     const to_ul = to_li.children('ul');
     const content = to_ul.children('li');
 
@@ -553,13 +556,15 @@ export default function init(ce,controller)
     { 
       // there is currently nothing at the destination index
       // only allowed if adding to end of the container
-      if( toIndex > to_li.length ) { return false; } 
+      if( toIndex > content.length ) { return false; } 
       move_li.appendTo(to_ul);
     }
     else {
       // insert before element currenty at destination index
       move_li.insertBefore(tgt_li);
     }
+
+    move_li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
 
     set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
@@ -577,7 +582,7 @@ export default function init(ce,controller)
   {
     if(evt.oldIndex === evt.newIndex) { return false; }
 
-    const sectionId = $(evt.item).data('section');
+    const sectionId = $(evt.item).data('item-id');
     ce.undo_manager.add( {
       action:'drop-in-tree',
       undo() { self.move_section(sectionId,evt.oldIndex); },
@@ -601,15 +606,15 @@ export default function init(ce,controller)
     if(evt.from === evt.to && evt.oldIndex === evt.newIndex) { return false; }
 
     const item_type = $(evt.item).data('type');
-    const item_id   = $(evt.item).data(item_type);
+    const item_id   = $(evt.item).data('item-id');
 
     const to_li     = $(evt.to).closest('li');
     const to_type   = to_li.data('type');
-    const to_id     = to_li.data(to_type);
+    const to_id     = to_li.data('item-id');
     
     const from_li   = $(evt.from).closest('li');
     const from_type = from_li.data('type');
-    const from_id   = from_li.data(from_type);
+    const from_id   = from_li.data('item-id');
 
     ce.undo_manager.add({
       action: 'drop-in-section',
@@ -633,7 +638,7 @@ export default function init(ce,controller)
    */
   self.select_section = function(section_id)
   {
-    const e = _tree.find(`.section[data-section=${section_id}]`);
+    const e = _tree.find(`.section[data-item-id=${section_id}]`);
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -645,7 +650,7 @@ export default function init(ce,controller)
    */
   self.select_group = function(group_id)
   {
-    const e = _tree.find(`.group[data-group=${group_id}]`);
+    const e = _tree.find(`.group[data-item-id=${group_id}]`);
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -657,7 +662,7 @@ export default function init(ce,controller)
    */
   self.select_question = function(question_id)
   {
-    const e = _tree.find(`.question[data-question=${question_id}]`);
+    const e = _tree.find(`.question[data-item-id=${question_id}]`);
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -687,11 +692,11 @@ export default function init(ce,controller)
     _tree.find('.selected').removeClass('selected');
     $li.addClass('selected');
     if($li.hasClass('section')) {
-      controller.select_section($li.data('section'));
+      controller.select_section($li.data('item-id'));
     } else if($li.hasClass('group')) {
-      controller.select_group($li.data('group'));
+      controller.select_group($li.data('item-id'));
     } else {
-      controller.select_question($li.data('question'));
+      controller.select_question($li.data('item-id'));
     }
   }
 
@@ -719,7 +724,7 @@ export default function init(ce,controller)
   {
     const [new_li,new_ul] = create_section_li(section_id,section_name);
     if(where.section_id) {
-      const existing_li = _tree.find(`li.section[data-section=${where.section_id}]`);
+      const existing_li = _tree.find(`li.section[data-item-id=${where.section_id}]`);
       if(where.offset < 0) { new_li.insertBefore(existing_li); }
       else                 { new_li.insertAfter(existing_li); }
     } else {
@@ -749,12 +754,12 @@ export default function init(ce,controller)
   {
     const new_li = create_question_li(question_id,question);
     if(where.section_id) {
-      const section_li = _tree.find(`li.section[data-section=${where.section_id}]`);
+      const section_li = _tree.find(`li.section[data-item-id=${where.section_id}]`);
       const questions_ul = section_li.children('ul.questions');
       if(where.at_end) { new_li.appendTo(questions_ul);  }
       else             { new_li.prependTo(questions_ul); }
     } else {
-      const existing_li = _tree.find(`li.question[data-question=${where.question_id}]`);
+      const existing_li = _tree.find(`li.question[data-item-id=${where.question_id}]`);
       if(where.offset < 0) { new_li.insertBefore(existing_li); }
       else                 { new_li.insertAfter(existing_li); }
     }
@@ -778,7 +783,7 @@ export default function init(ce,controller)
     _question_sorters.get(section_id)?.destroy();
     _question_sorters.delete(section_id);
 
-    _tree.find(`li.section[data-section=${section_id}]`).remove();
+    _tree.find(`li.section[data-item-id=${section_id}]`).remove();
     clear_selection();
     $(document).trigger('SurveyWasModified');
   }
@@ -804,7 +809,7 @@ export default function init(ce,controller)
    */
   self.remove_question = function(question_id)
   {
-    _tree.find(`li.question[data-question=${question_id}]`).remove();
+    _tree.find(`li.question[data-item-id=${question_id}]`).remove();
     clear_selection();
     _bullpen.add(Number(question_id));
     $(document).trigger('SurveyWasModified');
@@ -820,7 +825,7 @@ export default function init(ce,controller)
     if( curSelection ) {
       return {
         item_type: curSelection.data('type'),
-        item_id: curSelection.data(item_type)
+        item_id: curSelection.data('item-id')
       };
     } else {
       return null;
@@ -837,7 +842,7 @@ export default function init(ce,controller)
     if(selection) {
       const item_type = selection.item_type;
       const item_id   = selection.item_id;
-      set_selection(_tree.find(`li.${item_type}[data-${item_type}=${item_id}]`));
+      set_selection(_tree.find(`li.${item_type}[data-item-id=${item_id}]`));
     }
   }
 
@@ -949,7 +954,7 @@ export default function init(ce,controller)
    * @param {boolean} has_error 
    */
   self.toggle_error = function(item_type,item_id,has_error) {
-    const item = _tree.find(`li.${item_type}[data-${item_type}=${item_id}]`);
+    const item = _tree.find(`li.${item_type}[data-item-id=${item_id}]`);
     item.toggleClass('error',has_error)
   }
 
@@ -966,11 +971,6 @@ export default function init(ce,controller)
   // 
   // Question Handling
   //
-
-  // TODO: delete this function if it isn't actually missed
-  //self.all_questions = function() {
-  //  return new Set( _tree.find('li.question').map((_,el) => Number($(el).data('question'))));
-  //}
 
   /**
    * Returns the array of all question IDs that are not current in the tree
@@ -989,10 +989,10 @@ export default function init(ce,controller)
    * @returns 
    */
   self.replace_question = function(old_id, new_id, old_data, new_data) {
-    const leaf = _tree.find(`li.question[data-question=${old_id}]`);
+    const leaf = _tree.find(`li.question[data-item-id=${old_id}]`);
     if(leaf.length !== 1) { return; }
 
-    leaf.data('question',new_id).attr('data-question',new_id);
+    leaf.data('question',new_id).attr('data-item-id',new_id);
 
     if(new_data.type === 'INFO') {
       _arborist.update_label(leaf,new_data.infotag || new_data.info);
@@ -1022,9 +1022,9 @@ export default function init(ce,controller)
     const sections = _tree.find('li.section');
     sections.each( function(index) {
       const section = $(this);
-      const section_id = section.data('section');
+      const section_id = section.data('item-id');
       const question_ids = section.find('li.question').map( function() {
-        return $(this).data('question');
+        return $(this).data('item-id');
       }).get();
       rval.push( {section_id:section_id, question_ids:question_ids} );
     });

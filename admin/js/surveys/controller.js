@@ -76,6 +76,7 @@ function setup_hint_handler()
  * @property { (where:{TODO: update attributes ... see tree::add_question}) => void } add_new_question
  * @property { (data:object) => void } clone_question
  * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_section
+ * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_group
  * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_question
  * @property { (section_id:number) => void } select_section
  * @property { (group_id:number) => void } select_group
@@ -83,10 +84,11 @@ function setup_hint_handler()
  * @property { () => void } clear_selection
  * @property { () => Map<number,object} } unused_questions
  * @property { (old_id:number, new_id:number) => void } replace_question
- * @property { () => object } all _options
  * @property { (value:string) => number } add_option
  * @property { (id:number, value:string) => void } update_option
- * @property { (sectionId:number, toIndex:number) => boolean } move_section
+ * @property { (section_id:number, to_index:number) => boolean } move_section
+ * @property { (groupId:number, to_section_id:number, to_index:number) => boolean } move_group
+ * @property { (question_id:number, to_type:"section"|"group", to_id:number, to_index:number) => void } move_question
  */
 
 /**
@@ -144,10 +146,10 @@ export default function init(ce)
       _tree.update(_content);
 
       if(self.editable) {
-        const sections = $('#survey-tree li.section').map(function() { 
-          return Number($(this).data('section')); 
+        const section_ids = $('#survey-tree li.section').map(function() { 
+          return Number($(this).data('item-id')); 
         }).get();
-        _next_section_id = 1 + (sections.length ? Math.max(...sections) : 0);
+        _next_section_id = 1 + (section_ids.length ? Math.max(...section_ids) : 0);
         _next_question_id = _content.next_ids.question;
         _tree.enable(); 
       }
@@ -419,11 +421,11 @@ export default function init(ce)
   self.delete_section = function(to_delete) 
   {
     if( to_delete.length !== 1 ) { return; }
-    const section_id = to_delete.data('section');
+    const section_id = to_delete.data('item-id');
     const section = _content.sections[section_id];
 
     const questions = to_delete.find('li.question');
-    const question_ids = questions.map( function() { return $(this).data('question') } ).get();
+    const question_ids = questions.map( function() { return $(this).data('item-id') } ).get();
 
     const cur_highlight = _tree.current_selection();
     const was_closed = to_delete.hasClass('closed');
@@ -432,7 +434,7 @@ export default function init(ce)
     const where = {};
     if(prev.length === 1 ) { 
       where.offset = 1;
-      where.section_id = prev.data('section');
+      where.section_id = prev.data('item-id');
     }
 
     ce.undo_manager.add_and_exec({
@@ -455,7 +457,16 @@ export default function init(ce)
     });
   }
 
-  // TODO: Add delete_group
+  /**
+   * Removes the specified group element from the survey content and
+   *   navigation tree and registers the deletion with the undo manager.
+   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @returns {void}
+   */
+  self.delete_group = function(to_delete) 
+  {
+    alert('implement controller::delete_group');
+  }
 
   /**
    * Removes the specified question element from the survey content and
@@ -467,7 +478,7 @@ export default function init(ce)
   {
     if( to_delete.length !== 1 ) { return; }
 
-    const question_id = to_delete.data('question');
+    const question_id = to_delete.data('item-id');
     const question = _content.questions[question_id];
 
     const cur_highlight = _tree.current_selection();
@@ -476,9 +487,9 @@ export default function init(ce)
     const where = {};
     if( prev.length === 1 ) {
       where.offset=1;
-      where.question_id = prev.data('question');
+      where.question_id = prev.data('item-id');
     } else {
-      where.section_id = to_delete.parent().parent().data('section');
+      where.section_id = to_delete.closest('li.section').data('item-id');
     }
 
     ce.undo_manager.add_and_exec({
@@ -623,13 +634,44 @@ export default function init(ce)
     _content.options[id] = value;
   }
 
-  // pass-trhough handlers
+  /**
+   * Moves a section to a new location in the tree
+   *
+   * @param {number} sectionId Unique identifier for the section being moved
+   * @param {number} toIndex New position in the tree
+   * @returns {boolean} true on success, false on failure
+   * @fires SurveyWasReordered on success
+   */
+  self.move_section = function(section_id,to_index) {
+    return _tree.move_section(section_id,to_index);
+  }
 
-  self.move_section  = _tree.move_section;
-  // TODO: add support for moving questions and groups
-  // self.move_question = _tree.move_question;
+
+  /**
+   * Moves a group to a new location in a section
+   * 
+   * @param {number} group_id
+   * @param {number} to_section_id
+   * @param {number} to_index
+   * @returns {boolean}  true on success, false on failure
+   * @fires SurveyWasReordered on success
+   */
+  self.move_group = function(group_id, to_section_id, to_index) {
+    return _tree.move_to_container('group', group_id, 'section', to_section_id, to_index);
+  }
+
+  /**
+   * Moves a question to a new location in a section or group 
+   * 
+   * @param {number} question_id 
+   * @param {"section"|"group"} toType
+   * @param {number} toId
+   * @param {number} toIndex 
+   */
+  self.move_question = function(question_id, toType, toId, toIndex) {
+    return _tree.move_to_container('question',question_id,toType,toId,toIndex);
+  }
 
   // return controller object
-
   return self;
 };

@@ -233,6 +233,7 @@
 }
 
 #ttt-body #content-editor div.menubar button.up,
+#ttt-body #content-editor div.menubar button.add.group,
 #ttt-body #content-editor div.menubar button.add.below,
 #ttt-body #content-editor div.menubar button.delete
 {
@@ -257,8 +258,10 @@
 
 #ttt-body .menubar .up                 .icon {background-image:url('../../img/icons8/up.png');}
 #ttt-body .menubar .down               .icon {background-image:url('../../img/icons8/down.png');}
-#ttt-body .menubar .add.section.below  .icon {background-image:url('../../img/icons8/add_list.png');}
-#ttt-body .menubar .add.section.above  .icon {background-image:url('../../img/icons8/add_list_above.png');}
+#ttt-body .menubar .add.section.below  .icon {background-image:url('../../img/tlc/add_section.png');}
+#ttt-body .menubar .add.section.above  .icon {background-image:url('../../img/tlc/add_section_above.png');}
+#ttt-body .menubar .add.group          .icon {background-image:url('../../img/tlc/grouped.png');}
+#ttt-body .menubar .remove.group       .icon {background-image:url('../../img/tlc/ungrouped.png');}
 #ttt-body .menubar .add.question.below .icon {background-image:url('../../img/icons8/add_row.png');}
 #ttt-body .menubar .add.question.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
 #ttt-body .menubar .add.question.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
