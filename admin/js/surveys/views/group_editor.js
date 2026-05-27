@@ -1,5 +1,9 @@
-import { update_character_count, validate_markdown } from '../../utils.js';
+import { validate_markdown } from '../../utils.js';
 
+// The architecture of the group_editor mirrors that of the section_editor even though
+//   groups only hava a single attribute (name).
+// This was done for consistency with the section and question editors and to
+//   make extension easier if any other group attributes are added.
 
 function input_error(key,value) 
 {
@@ -13,10 +17,6 @@ function input_error(key,value)
       required = true;
       invalid_char_regex = /([^\p{L}\p{N}\s.,!?;:'"()\-–—_@#%&*/\\\[\]{}<>|=+~`^$])/u;
       break;
-
-     case 'intro':
-       markdown = true;
-       break;
 
     default:
       break;
@@ -42,24 +42,16 @@ function input_error(key,value)
 export default function init(ce,controller)
 {
   const _frame             = $('#editor-frame');
-  const _box               = _frame.find('div.grid.section.editor');
+  const _box               = _frame.find('div.grid.group.editor');
 
   const _name              = _box.children('.name');
   const _name_value        = _name.find('input');
 
-  const _collapsible       = _box.children('.collapsible');
-  const _collapsible_value = _collapsible.find('select');
-
-  const _intro             = _box.children('.intro');
-  const _intro_value       = _intro.find('textarea');
-
   const _hints             = _box.find('div.hint');
-  const _fields            = _box.find('input,textarea,select');
 
-  let _cur_id = null;  // This is the current section ID displayed in the editor
+  let _cur_id = null;  // This is the current group ID displayed in the editor
   let _errors = {};
 
-  _intro_value.on('input change', update_character_count);
   _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 
@@ -99,7 +91,7 @@ export default function init(ce,controller)
   function handle_update(key,value)
   {
     create_or_update_undo(key,value);
-    controller.update_section_data(_cur_id,key,value);
+    controller.update_group_data(_cur_id,key,value);
     $(document).trigger('SurveyWasModified');
   }
 
@@ -118,7 +110,7 @@ export default function init(ce,controller)
     const error = input_error(key,value);
 
     const span = _box.children('.value.'+key).find('span.error');
-    const input = _box.find('.section.'+key);
+    const input = _box.find('.group.'+key);
     if(error) { 
       span.text(error);
       _errors[key] = error;
@@ -130,7 +122,7 @@ export default function init(ce,controller)
     }
 
     const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_content_error('section',_cur_id,has_error);
+    controller.toggle_content_error('group',_cur_id,has_error);
   }
 
 
@@ -139,25 +131,17 @@ export default function init(ce,controller)
     _cur_id = id;
     _errors = {};
 
-    _frame.find('div.content-header').text('Section Editor');
+    _frame.find('div.content-header').text('Group Editor');
 
-    const name        = data.name || '';
-    const collapsible = data.collapsible ? 1 : 0;
-    const intro       = data.intro || '';
-
+    const name = data.name || '';
     _name_value.val(name);
-    _collapsible_value.val(collapsible);
-    _intro_value.val(intro).trigger('change');
-
-    validate_input('name'    , name);
-    validate_input('intro'   , intro);
-
+    validate_input('name', name);
     _hints.removeClass('locked');
   }
 
   //---------------------------------------------------------------------------------------
   // The following function handles the creation or updating of undo/redo actions
-  //   associated with changes to section data.  As we don't want to create an action
+  //   associated with changes to group data.  As we don't want to create an action
   //   for every keystroke in an <input> fieled, these changes are accumulated in a
   //   single undo action.
   //
@@ -172,11 +156,6 @@ export default function init(ce,controller)
   //
   // The first two of these rules are handled automatically by using the undo manager's
   //    head() method.  This will return null if there is anything on the redo stack.
-  //
-  // * In an earlier implementation of the undo actions for section input changes, an
-  //   attempt was made to accumulate all changes for a given section into a single
-  //   action regardless of the particular input field.   This became problematic
-  //   over time and was abandoned.
   //---------------------------------------------------------------------------------------
 
   function create_or_update_undo(key,value)
@@ -184,8 +163,8 @@ export default function init(ce,controller)
     const cur_undo = ce.undo_manager.head();
 
     const can_accumulate = (
-      ( cur_undo?.action === 'section-input-change' ) &&
-      ( cur_undo?.section_id === _cur_id ) &&
+      ( cur_undo?.action === 'group-input-change' ) &&
+      ( cur_undo?.group_id === _cur_id ) &&
       ( cur_undo?.key === key ) &&
       ( cur_undo?.redone !== true )
     );
@@ -203,28 +182,28 @@ export default function init(ce,controller)
     else {
       // Accumulation not allowed, create a new undo action
 
-      function apply_action(section_id, value)
+      function apply_action(group_id, value)
       {
-        controller.select_section(section_id);
+        controller.select_group(group_id);
         validate_input(key,value);
-        _box.find('.section.'+key).val(value);
-        controller.update_section_data(section_id,key,value);
+        _box.find('.group.'+key).val(value);
+        controller.update_group_data(group_id,key,value);
         $(document).trigger('SurveyWasModified');
       }
 
       ce.undo_manager.add({
-        action: 'section-input-change',
-        section_id: _cur_id,
+        action: 'group-input-change',
+        group_id: _cur_id,
         key: key,
-        old_value: controller.cur_section_data(_cur_id,key),
+        old_value: controller.cur_group_data(_cur_id,key),
         new_value: value,
         redone: false,
         undo() {
-          apply_action(this.section_id, this.old_value);
+          apply_action(this.group_id, this.old_value);
         },
         redo() {
           this.redone = true;
-          apply_action(this.section_id, this.new_value);
+          apply_action(this.group_id, this.new_value);
         }
       });
     }

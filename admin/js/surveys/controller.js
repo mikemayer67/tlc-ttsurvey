@@ -2,6 +2,8 @@ import tree            from './tree.js';
 import menubar         from './menubar.js';
 import section_viewer  from './views/section_viewer.js';
 import section_editor  from './views/section_editor.js';
+import group_viewer    from './views/group_viewer.js';
+import group_editor    from './views/group_editor.js';
 import question_viewer from './views/question_viewer.js';
 import question_editor from './views/question_editor.js';
 import ui_config       from './views/ui_config.js';
@@ -114,8 +116,10 @@ export default function init(ce)
   const _tree     = tree(ce,self);
   const _menubar  = menubar(ce,self);
   const _sv       = section_viewer(ce,self);
+  const _gv       = group_viewer(ce,self);
   const _qv       = question_viewer(ce,self);
   const _se       = section_editor(ce,self);
+  const _ge       = group_editor(ce,self);
   const _qe       = question_editor(ce,self);
 
   let _content = null;
@@ -134,7 +138,8 @@ export default function init(ce)
   self.update_content = function(content) 
   {
     _tree.reset();
-    _frame.removeClass('section question');
+    _frame.find('div.content-header').text('');
+    _frame.removeClass('section question group');
     _frame.toggleClass('editable',self.editable).toggleClass('locked',!self.editable);
 
     if(content) {
@@ -538,7 +543,8 @@ export default function init(ce)
     _frame.removeClass('section question').addClass('group').data('id',group_id);
 
     const group = _content.groups[group_id];
-    alert("need to add group editor/viewer");
+    if(self.editable) { _ge.show(group_id,group); }
+    else              { _gv.show(group_id,group); }
     _tree.select_group(group_id);
     _menubar.update_selection();
   }
@@ -569,6 +575,7 @@ export default function init(ce)
   self.clear_selection = function()
   {
     _frame.removeClass('section group question');
+    _frame.find('div.content-header').text(" ");
     _menubar.update_selection();
   }
 

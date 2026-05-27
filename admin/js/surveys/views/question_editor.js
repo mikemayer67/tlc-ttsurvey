@@ -55,7 +55,8 @@ function input_error(key,value)
 
 export default function init(ce,controller)
 {
-  const _box = $('#editor-frame div.grid.question.editor');
+  const _frame             = $('#editor-frame');
+  const _box               = _frame.find('div.grid.question.editor');
 
   const _inputs          = _box.find('input');
   const _textareas       = _box.find('textarea');
@@ -241,6 +242,8 @@ export default function init(ce,controller)
     _cur_id = id;
 
     reset_errors();
+
+    _frame.find('div.content-header').text('Question Editor');
 
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
@@ -670,8 +673,5 @@ export default function init(ce,controller)
   // Finally, return the question editor public interface 
   //   (which is rather small considering all tht happens internally)
 
-  return {
-    show:show,
-  };
-
+  return { show };
 }

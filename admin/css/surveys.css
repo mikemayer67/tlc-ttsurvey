@@ -211,7 +211,7 @@
   background-color:#ccc;
   margin: 0.5em 0.5em 0 0.5em;;
   border: solid black 1px;
-  padding 0.2em 0.5em;
+  padding: 0.2em 0.5em;
 
   display:flex;
   flex-direction:row;
@@ -317,6 +317,7 @@
   background-color:#888;
   margin: 2px;
   padding: 2px 0.5em;
+  height: 1.75em;
 }
 #ttt-body #content-editor .hint-hint {
   float:right;
@@ -403,17 +404,16 @@
   overflow:hidden;
 }
 
-#ttt-body #survey-tree .incomplete {
-}
-
-#ttt-body #survey-tree li.section.needs-value div span,
+#ttt-body #survey-tree li.section.needs-value > div span,
+#ttt-body #survey-tree li.group.needs-value > div span,
 #ttt-body #survey-tree li.question.needs-value,
 #ttt-body #survey-tree li.question.needs-type
 {
   color:#b00;
   font-style:italic;
 }
-#ttt-body #survey-tree li.section.needs-value span::before {
+#ttt-body #survey-tree li.section.needs-value > div span::before,
+#ttt-body #survey-tree li.group.needs-value > div span::before {
   content:"[needs name]";
 }
 #ttt-body #survey-tree li.question.needs-value::after {
@@ -529,8 +529,10 @@
 }
 
 #editor-frame.section.locked        div.grid.section.viewer  { display:grid; }
+#editor-frame.group.locked          div.grid.group.viewer    { display:grid; }
 #editor-frame.question.locked       div.grid.question.viewer { display:grid; }
 #editor-frame.section:not(.locked)  div.grid.section.editor  { display:grid; }
+#editor-frame.group:not(.locked)    div.grid.group.editor    { display:grid; }
 #editor-frame.question:not(.locked) div.grid.question.editor { display:grid; }
 
 #editor-frame .label span {

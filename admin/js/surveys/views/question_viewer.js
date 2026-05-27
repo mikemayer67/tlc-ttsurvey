@@ -2,7 +2,8 @@ import ui_config from './ui_config.js';
 
 export default function init(ce)
 {
-  const _box = $('#editor-frame div.grid.question.viewer');
+  const _frame             = $('#editor-frame');
+  const _box               = _frame.find('div.grid.question.viewer');
 
   const _type              = _box.children('.type');
   const _type_value        = _type.find('div.text');
@@ -36,6 +37,8 @@ export default function init(ce)
 
   function show(id,data,options)
   {
+    _frame.find('div.content-header').text('Question Details');
+
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
     //   question type.
@@ -122,8 +125,6 @@ export default function init(ce)
     }
   }
 
-  return {
-    show:show,
-  };
+  return { show };
 }
 

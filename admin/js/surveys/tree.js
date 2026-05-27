@@ -8,6 +8,7 @@ import arborist from './arborist.js';
  * @property { () => void } reset
  * @property { (content:object) => void } update
  * @property { (section_id:number, key:string, value:number|string)  => void } update_section
+ * @property { (group_id:number, key:string, value:number|string)  => void } update_group
  * @property { (question_id:number, new_type:string, old_type:string) => void } update_question_type
  * @property { (question_id:number, key:string, value:number|string)  => void } update_question
  * @property { () => void } disable
@@ -320,6 +321,27 @@ export default function init(ce,controller)
   }
 
   /**
+   * Updates a property associated with a group entry in the tree.
+   * 
+   * The only property that has an affect on the tree is the group name.
+   * They key/value design exists so that the caller doesn't need to know
+   *   which keys drive a change in the tree.
+   * 
+   * @param {number} group_id ID of the group to be updated
+   * @param {string} key Property to be updated
+   * @param {number|string} value New value for the property
+   * @returns {void}
+   */
+  self.update_group = function(group_id,key,value)
+  {
+    if(key === 'name') {
+      const leaf = _tree.find(`.group[data-item-id=${group_id}]`);
+      _arborist.update_label(leaf, value);
+    }
+  }
+
+
+  /**
    * Creates an <li> element for the specified question
    *   It has no child content other than name text
    *   It does have a class added to indicate the type of question.  
@@ -482,8 +504,6 @@ export default function init(ce,controller)
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
-    move_li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
-
     set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
     return true;
@@ -563,8 +583,6 @@ export default function init(ce,controller)
       // insert before element currenty at destination index
       move_li.insertBefore(tgt_li);
     }
-
-    move_li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
 
     set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
@@ -698,6 +716,8 @@ export default function init(ce,controller)
     } else {
       controller.select_question($li.data('item-id'));
     }
+
+    $li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
   }
 
   _box.on('click', function(e) {

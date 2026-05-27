@@ -90,7 +90,6 @@ export default function init(ce)
     const can_submit = (
       dirty &&
       ( ce.form.find('.invalid-value').length === 0) &&
-      ( ce.form.find('.incomplete').length    === 0) &&
       ( ce.controller.can_submit() )
     );
 

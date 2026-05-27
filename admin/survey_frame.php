@@ -26,6 +26,10 @@ $hints = [
       'any of the questions or info text within this section.  The text can be stylized using markdown. '.
       "p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
   ],
+  'group' => [
+    'name' => ( 
+      'Name used to identify this group. It will only be used in the Admin Dashboard'),
+  ],
   'question' => [
     'archive' => (
       'Adds an existing question into the survey.  This option should be used whenever possible as it '.
@@ -83,6 +87,9 @@ $labels = [
     'name'        => 'Name',
     'collapsible' => 'Collapsible',
     'intro'       => 'Intro',
+  ],
+  'group' => [
+    'name'        => 'Name',
   ],
   'question' => [
     'archive'     => 'Archive',
@@ -295,7 +302,7 @@ function add_other_input($wargs=[])
 //
 
 echo "<div id='editor-frame'>";
-echo "  <div class='content-header'>Section/Question Details</div>";
+echo "  <div class='content-header'></div>";
 echo "  <div class='hint-hint'>Click or hover on any of the entry labels for more info about that entry.</div>";
 
 // maxlen values for name and intro
@@ -312,6 +319,19 @@ echo "<div class='grid section viewer'>";
 add_viewer_entry('section','name');
 add_viewer_entry('section','intro');
 add_viewer_entry('section','collapsible');
+echo "  </div>";
+
+
+// maxlen values for name
+// must not exceed the varchar size in tlc_srv_groups
+echo "<!--Group Editor-->";
+echo "<div class='grid group editor'>";
+add_editor_input('group','name',['required'=>true, 'maxlen'=>128]);
+echo "</div>";
+
+echo "<!--Group Viewer-->";
+echo "<div class='grid group viewer'>";
+add_viewer_entry('section','name');
 echo "  </div>";
 
 
