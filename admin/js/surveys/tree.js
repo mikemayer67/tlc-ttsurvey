@@ -45,6 +45,16 @@ import arborist from './arborist.js';
  */
 
 /**
+ * @typedef {Object} WhereHints
+ * @property { number } [ref_id] ID of the item relative to which position a new item
+ * @property { "question" | "group" } [ref_type] type of the reference item
+ * @property { number } [section_id] ID of the section into which insert the new item
+ * @property { number } [group_id] ID of the group into which insert the new item
+ * @property { 1 | -1 } [offset] Where to put the item relative to the ref item 
+ * @property { boolean } [at_end] Insert item at the end of the section/group
+ */
+
+/**
  * Initializes a NavTreeController object
  * @param {object} ce Container of shared "global" variables
  * @param {SurveyViewController} controller TODO add JSDoc to controller
@@ -167,6 +177,7 @@ export default function init(ce,controller)
         const group = content.groups[item.id] ?? null;
         if(group) {
           const [group_li, group_ul] = create_group_li(group.group_id,group.name);
+
           group_li.appendTo(section_ul);
           for (const question_id of group.content) {
             const question = content.questions[question_id] ?? null;
@@ -255,7 +266,7 @@ export default function init(ce,controller)
   self.update_section = function(section_id,key,value)
   {
     if(key === 'name') {
-      const leaf = _tree.find(`.section[data-item-id=${section_id}]`);
+      const leaf = _tree.find('.section[data-item-id='+section_id+']');
       _arborist.update_label(leaf, value);
     }
   }
@@ -335,7 +346,7 @@ export default function init(ce,controller)
   self.update_group = function(group_id,key,value)
   {
     if(key === 'name') {
-      const leaf = _tree.find(`.group[data-item-id=${group_id}]`);
+      const leaf = _tree.find('.group[data-item-id='+group_id+']');
       _arborist.update_label(leaf, value);
     }
   }
@@ -395,7 +406,7 @@ export default function init(ce,controller)
    */
   self.update_question_type = function(question_id,new_type,old_type)
   {
-    const leaf = _tree.find(`.question[data-item-id=${question_id}]`);
+    const leaf = _tree.find('.question[data-item-id='+question_id+']');
     _arborist.update_type(leaf,new_type,old_type);
   }
 
@@ -417,7 +428,7 @@ export default function init(ce,controller)
    */
   self.update_question = function(question_id,key,value)
   {
-    const leaf  = _tree.find(`.question[data-item-id=${question_id}]`);
+    const leaf  = _tree.find('.question[data-item-id='+question_id+']');
 
     if(key === 'wording') {
       _arborist.update_label(leaf,value);
@@ -527,7 +538,7 @@ export default function init(ce,controller)
   self.move_to_container = function(itemType,itemId,toType,toId,toIndex)
   {
     // Find the <li> element of the item to be moved.
-    const move_li = _tree.find(`li.${itemType}[data-item-id=${itemId}]`);
+    const move_li = _tree.find('li.'+itemType+'[data-item-id='+itemId+']');
     if(move_li.length != 1) {
       // length should only ever be 1... but just in case it's not
       //   If it's 0, then something broke in the view controller
@@ -545,7 +556,7 @@ export default function init(ce,controller)
     // Find: the <li> for the destination container
     //       the <ul> that holds its content
     //       the content of that <ul>
-    const to_li = _tree.find(`li.${toType}[data-item-id=${toId}]`);
+    const to_li = _tree.find('li.'+toType+'[data-item-id='+toId+']');
     const to_ul = to_li.children('ul');
     const content = to_ul.children('li');
 
@@ -656,7 +667,7 @@ export default function init(ce,controller)
    */
   self.select_section = function(section_id)
   {
-    const e = _tree.find(`.section[data-item-id=${section_id}]`);
+    const e = _tree.find('.section[data-item-id='+section_id+']');
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -668,7 +679,7 @@ export default function init(ce,controller)
    */
   self.select_group = function(group_id)
   {
-    const e = _tree.find(`.group[data-item-id=${group_id}]`);
+    const e = _tree.find('.group[data-item-id='+group_id+']');
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -680,7 +691,7 @@ export default function init(ce,controller)
    */
   self.select_question = function(question_id)
   {
-    const e = _tree.find(`.question[data-item-id=${question_id}]`);
+    const e = _tree.find('.question[data-item-id='+question_id+']');
     _tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
@@ -737,14 +748,14 @@ export default function init(ce,controller)
    * Adds a new section <li> element to the navigation tree DOM
    * @param {number} section_id ID of section to add
    * @param {string} section_name Name of section to add
-   * @param {{section_id:number, offset:number}} where 
+   * @param {WhereHints} where 
    * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
    */
   self.add_section = function(section_id, section_name, where)
   {
     const [new_li,new_ul] = create_section_li(section_id,section_name);
     if(where.section_id) {
-      const existing_li = _tree.find(`li.section[data-item-id=${where.section_id}]`);
+      const existing_li = _tree.find('li.section[data-item-id='+where.section_id+']');
       if(where.offset < 0) { new_li.insertBefore(existing_li); }
       else                 { new_li.insertAfter(existing_li); }
     } else {
@@ -761,29 +772,66 @@ export default function init(ce,controller)
   }
 
   /**
+   * Adds a new group <li> element to the navigation tree DOM
+   * @param {number} group_id ID of group to add
+   * @param {string} group_name Name of group to add
+   * @param {WhereHints} where 
+   * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
+   */
+  self.add_group = function(group_id, group_name, where)
+  {
+    const [new_li,new_ul] = create_group_li(group_id,group_name);
+
+    if(where.ref_id) {
+      const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
+      if(where.offset < 0) { new_li.insertBefore(ref_li); }
+      else                 { new_li.insertAfter(ref_li); }
+    }
+    else if(where.section_id) {
+      const existing_li = _tree.find('li.section[data-item-id='+where.section_id+']');
+      if(where.offset < 0) { new_li.insertBefore(existing_li); }
+      else                 { new_li.insertAfter(existing_li); }
+    }
+
+    // if we got here, editing must be enabled, turn on sorting
+    _group_sorters.get(group_id).option('disabled',false);
+
+    set_selection(new_li);
+    $(document).trigger('SurveyWasModified');
+
+    return [new_li,new_ul];
+  }
+
+  /**
    * TODO: update to include groups
    * TODO: update the following param list
    * TODO: add add_question to the API prologue
    * Adds a new question <li> element to the navigation tree DOM
    * @param {number} question_id ID of question to add
    * @param {object} question Details about question to add
-   * @param {*} where 
+   * @param {WhereHints} where 
    * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
    */
   self.add_question = function(question_id, question, where)
   {
     const new_li = create_question_li(question_id,question);
-    if(where.section_id) {
-      const section_li = _tree.find(`li.section[data-item-id=${where.section_id}]`);
-      const questions_ul = section_li.children('ul.questions');
-      if(where.at_end) { new_li.appendTo(questions_ul);  }
-      else             { new_li.prependTo(questions_ul); }
-    } else {
-      const existing_li = _tree.find(`li.question[data-item-id=${where.question_id}]`);
-      if(where.offset < 0) { new_li.insertBefore(existing_li); }
-      else                 { new_li.insertAfter(existing_li); }
+    if(where.ref_id) {
+      const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
+      if(where.offset < 0) { new_li.insertBefore(ref_li); }
+      else                 { new_li.insertAfter(ref_li); }
     }
-
+    else if(where.section_id) {
+      const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
+      const content_ul = section_li.children('ul.section-content');
+      if(where.at_end) { new_li.appendTo(content_ul);  }
+      else             { new_li.prependTo(content_ul); }
+    } 
+    else if(where.group_id) {
+      const group_li = _tree.find('li.group[data-item-id='+where.group_id+']');
+      const content_ul = group_li.children('ul.group-content');
+      if(where.at_end) { new_li.appendTo(content_ul);  }
+      else             { new_li.prependTo(content_ul); }
+    }
     set_selection(new_li);
     $(document).trigger('SurveyWasModified');
 
@@ -800,10 +848,22 @@ export default function init(ce,controller)
    */
   self.remove_section = function(section_id)
   {
-    _question_sorters.get(section_id)?.destroy();
-    _question_sorters.delete(section_id);
+    const section_li = _tree.find('li.section[data-item-id='+section_id+']');
 
-    _tree.find(`li.section[data-item-id=${section_id}]`).remove();
+    const question_ids = section_li.find('li.question').data('item-id');
+    for(question_id of question_ids) {
+      self.remove.question(question_id);
+    }
+
+    const group_ids = section_li.find('li.group').data('item-id');
+    for(group_id of group_ids) {
+      self.remove.group(group_id);
+    }
+
+    _section_sorters.get(section_id)?.destroy();
+    _section_sorters.delete(section_id);
+
+    section_li.remove();
     clear_selection();
     $(document).trigger('SurveyWasModified');
   }
@@ -816,8 +876,18 @@ export default function init(ce,controller)
    */
   self.remove_group = function(group_id)
   {
-    // TODO: flesh this out
+    const group_li = _tree.find('li.group[data-item-id='+group_id+']');
+
+    const questions = group_li.find('li.question');
+    questions.each( function () {
+      const question_id = $(this).data('item-id');
+      self.remove_question(question_id);
+    });
+    _group_sorters.get(group_id)?.destroy();
+    _group_sorters.delete(group_id);
+
     clear_selection();
+    group_li.remove();
     $(document).trigger('SurveyWasModified');
   }
 
@@ -829,7 +899,7 @@ export default function init(ce,controller)
    */
   self.remove_question = function(question_id)
   {
-    _tree.find(`li.question[data-item-id=${question_id}]`).remove();
+    _tree.find('li.question[data-item-id='+question_id+']').remove();
     clear_selection();
     _bullpen.add(Number(question_id));
     $(document).trigger('SurveyWasModified');
@@ -862,7 +932,7 @@ export default function init(ce,controller)
     if(selection) {
       const item_type = selection.item_type;
       const item_id   = selection.item_id;
-      set_selection(_tree.find(`li.${item_type}[data-item-id=${item_id}]`));
+      set_selection(_tree.find('li.'+item_type+'[data-item-id='+item_id+']'));
     }
   }
 
@@ -939,7 +1009,7 @@ export default function init(ce,controller)
     let dirty = false;
     for(const m of mutations) {
       const tgt = $(m.target);
-      if( (m.type === 'childList'  && tgt.is('ul.questions,ul.groups')) ||
+      if( (m.type === 'childList'  && tgt.is('ul.group-content,ul.section-content')) ||
           (m.type === 'attributes' && tgt.is('li.question, li.group')) 
       ) {
         dirty = true;
@@ -974,7 +1044,7 @@ export default function init(ce,controller)
    * @param {boolean} has_error 
    */
   self.toggle_error = function(item_type,item_id,has_error) {
-    const item = _tree.find(`li.${item_type}[data-item-id=${item_id}]`);
+    const item = _tree.find('li.'+item_type+'[data-item-id='+item_id+']');
     item.toggleClass('error',has_error)
   }
 
@@ -1009,7 +1079,7 @@ export default function init(ce,controller)
    * @returns 
    */
   self.replace_question = function(old_id, new_id, old_data, new_data) {
-    const leaf = _tree.find(`li.question[data-item-id=${old_id}]`);
+    const leaf = _tree.find('li.question[data-item-id='+old_id+']');
     if(leaf.length !== 1) { return; }
 
     leaf.data('question',new_id).attr('data-item-id',new_id);

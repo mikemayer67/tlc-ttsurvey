@@ -40,7 +40,7 @@ export default function init(tree)
     const maxWidth = leaf[0].clientWidth - 32; // to account for right-margin and type icon in ::before
     if(maxWidth <= 0) {
       // tree is too narrow to show leaf labels
-      leaf_text.text();
+      leaf_text.text('');
       return;
     }
 
@@ -78,6 +78,7 @@ export default function init(tree)
 
   self.initialize = function(leaf,text,type)
   {
+    // leaf.text(text);
     self.update_label(leaf,text);
     self.update_type(leaf,type);
   }

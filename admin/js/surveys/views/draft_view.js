@@ -126,7 +126,7 @@ export default function init(ce)
   {
     let found_change = false;
     Object.entries(_last_saved).forEach(([key,value]) => {
-      const e = ce.form.find(`[name=${key}]`);
+      const e = ce.form.find('[name='+key+']');
       if( value !== e.val() ) {
         found_change = true; 
         return false;  // no need to continue loop
@@ -150,7 +150,7 @@ export default function init(ce)
   function handle_revert()
   {
     for( let key in _last_saved ) {
-      ce.form.find(`[name="${key}"]`).val(_last_saved[key]);
+      ce.form.find('[name='+key+']').val(_last_saved[key]);
     }
 
     const content = ce.survey_data.content( ce.cur_survey.id );

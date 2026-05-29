@@ -72,7 +72,7 @@ export default function init(ce)
     _survey_status.html(status.charAt(0).toUpperCase() + status.slice(1));
 
     _survey_actions.hide();
-    _survey_actions.filter(`.${status}`).show();
+    _survey_actions.filter('.'+status).show();
 
     // update the info bar and editor to reflect the selected survey
     ce.metadata.update_for_survey(ce.cur_survey);
@@ -119,7 +119,7 @@ export default function init(ce)
   {
     const id = ce.cur_survey.id;
     const name = ce.cur_survey.title;
-    _survey_select.find(`option[value=${id}]`).html(name);
+    _survey_select.find('option[value='+id+']').html(name);
   }
 
   // event handlers

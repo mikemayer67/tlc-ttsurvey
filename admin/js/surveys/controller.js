@@ -26,7 +26,7 @@ function setup_hint_handler()
   triggers.on('mouseenter', function(e) {
     if(_timeout_id) { clearTimeout(_timeout_id) }
     const hint_id = $(this).closest('div.label').data('hint');
-    const hint = $(`#${hint_id}`);
+    const hint = $('#' + hint_id);
     _timeout_id = setTimeout( function() { 
       hint.addClass('hover') 
     }, 250 );
@@ -38,13 +38,13 @@ function setup_hint_handler()
       _timeout_id = null;
     }
     const hint_id = $(this).closest('div.label').data('hint');
-    const hint = $(`#${hint_id}`);
+    const hint = $('#' + hint_id);
     hint.removeClass('hover');
   });
 
   triggers.on('click', function(e) {
     const hint_id = $(this).closest('div.label').data('hint');
-    const hint = $(`#${hint_id}`);
+    const hint = $('#' + hint_id);
     hint.toggleClass('locked');
   });
 }
@@ -470,7 +470,48 @@ export default function init(ce)
    */
   self.delete_group = function(to_delete) 
   {
-    alert('implement controller::delete_group');
+    if( to_delete.length !== 1 ) { return; }
+    const group_id = to_delete.data('item-id');
+    const group    = _content.groups[group_id];
+
+    const question_lis = to_delete.find('li.question');
+    const question_ids = question_lis.map(
+      function () { return $(this).data('item-id'); } 
+    );
+
+    const cur_highlight = _tree.current_selection();
+    const was_closed = to_delete.hasClass('closed');
+
+    const prev = to_delete.prev();
+    const where = {};
+    if(prev.length === 1) {
+      where.ref_id   = prev.data('item-id');
+      where.ref_type = prev.data('type');
+      where.offset   = 1;
+    } else {
+      const section = to_delete.closest('li.section');
+      where.section_id = section.data('item-id');
+    }
+
+    ce.undo_manager.add_and_exec({
+      action: 'delete-group',
+      redo() { 
+        _tree.remove_group(group_id);
+      },
+      undo() {
+        const [group_li,group_ul] = _tree.add_group(group_id, group.name, where);
+        group_li.toggleClass('closed',was_closed);
+        question_ids.each( function () {
+          const question_id = this;
+          _tree.add_question(
+            question_id, 
+            _content.questions[question_id],
+            {group_id, at_end:true},
+          )
+        });
+        _tree.restore_selection(cur_highlight);
+      },
+    });
   }
 
   /**
@@ -491,10 +532,16 @@ export default function init(ce)
     const prev = to_delete.prev();
     const where = {};
     if( prev.length === 1 ) {
-      where.offset=1;
-      where.question_id = prev.data('item-id');
+      where.ref_id   = prev.data('item-id');
+      where.ref_type = prev.data('type');
+      where.offset   = 1;
     } else {
-      where.section_id = to_delete.closest('li.section').data('item-id');
+      const container = to_delete.closest('ul').closest('li');
+      if(container.data('type') === 'group') {
+        where.group_id = container.data('item-id');
+      } else {
+        where.section_id = container.data('item-id');
+      }
     }
 
     ce.undo_manager.add_and_exec({

@@ -28,7 +28,7 @@ function input_error(key,value)
   
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
-    if(invalid_char) { return `invalid char (${invalid_char})`; }
+    if(invalid_char) { return 'invalid char ('+invalid_char+')'; }
   }
 
   if(markdown) {
