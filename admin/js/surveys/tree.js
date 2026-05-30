@@ -788,9 +788,10 @@ export default function init(ce,controller)
       else                 { new_li.insertAfter(ref_li); }
     }
     else if(where.section_id) {
-      const existing_li = _tree.find('li.section[data-item-id='+where.section_id+']');
-      if(where.offset < 0) { new_li.insertBefore(existing_li); }
-      else                 { new_li.insertAfter(existing_li); }
+      const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
+      const content_ul  = section_li.children('ul.section-content');
+      if(where.at_end) { new_li.appendTo(content_ul); }
+      else             { new_li.prependTo(content_ul); }
     }
 
     // if we got here, editing must be enabled, turn on sorting
@@ -850,14 +851,20 @@ export default function init(ce,controller)
   {
     const section_li = _tree.find('li.section[data-item-id='+section_id+']');
 
-    const question_ids = section_li.find('li.question').data('item-id');
-    for(question_id of question_ids) {
-      self.remove.question(question_id);
+    const question_lis = section_li.find('li.question');
+    const question_ids = question_lis.map(
+      function() { return $(this).data('item-id'); }
+    );
+    for(const question_id of question_ids) {
+      self.remove_question(question_id);
     }
 
-    const group_ids = section_li.find('li.group').data('item-id');
-    for(group_id of group_ids) {
-      self.remove.group(group_id);
+    const group_lis = section_li.find('li.group');
+    const group_ids = group_lis.map(
+      function() { return $(this).data('item-id'); }
+    );
+    for(const group_id of group_ids) {
+      self.remove_group(group_id);
     }
 
     _section_sorters.get(section_id)?.destroy();

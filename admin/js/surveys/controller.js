@@ -77,9 +77,9 @@ function setup_hint_handler()
  * @property { (where:{section_id:number, offset:number}) => void } add_new_section
  * @property { (where:{TODO: update attributes ... see tree::add_question}) => void } add_new_question
  * @property { (data:object) => void } clone_question
- * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_section
- * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_group
- * @property { (to_delete:jQuery<HTMLLIElement>) => void } delete_question
+ * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_section
+ * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_group
+ * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_question
  * @property { (section_id:number) => void } select_section
  * @property { (group_id:number) => void } select_group
  * @property { (question_id:number) => void } select_question
@@ -420,27 +420,58 @@ export default function init(ce)
   /**
    * Removes the specified section element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @param {jQuery<HTMLLIElement>} delete_li 
    * @returns {void}
    */
-  self.delete_section = function(to_delete) 
+  self.delete_section = function(delete_li) 
   {
-    if( to_delete.length !== 1 ) { return; }
-    const section_id = to_delete.data('item-id');
+    if( delete_li.length !== 1 ) { return; }
+    const section_id = delete_li.data('item-id');
     const section = _content.sections[section_id];
 
-    const questions = to_delete.find('li.question');
-    const question_ids = questions.map( function() { return $(this).data('item-id') } ).get();
-
     const cur_highlight = _tree.current_selection();
-    const was_closed = to_delete.hasClass('closed');
+    const was_closed = delete_li.hasClass('closed');
 
-    const prev = to_delete.prev();
     const where = {};
-    if(prev.length === 1 ) { 
-      where.offset = 1;
+    const prev = delete_li.prev();
+    if(prev.length) {
       where.section_id = prev.data('item-id');
     }
+
+    const section_content = delete_li.find('li.question, li.group');
+ 
+    const undo_tasks = [];
+    section_content.each( function() {
+      const item_li = $(this);
+      const item_type = item_li.data('type');
+      const item_id   = item_li.data('item-id');
+      if(item_type === 'group') {
+        const group = _content.groups[item_id];
+        undo_tasks.push({
+          func: _tree.add_group,
+          args:[item_id,group.name, {section_id,at_end:true}]
+        });
+      } else if(item_type === 'question') {
+        const question = _content.questions[item_id];
+        const in_group = item_li.closest('li.group');
+        if(in_group.length) {
+          const group_id = in_group.data('item-id');
+          undo_tasks.push({
+            func: _tree.add_question, 
+            args: [item_id, question, { group_id, at_end:true }]
+          });
+        } else {
+          undo_tasks.push({ 
+            func: _tree.add_question, 
+            args: [item_id, question, { section_id,at_end:true }]
+          });
+        }
+      }
+    });
+    undo_tasks.push({
+      func: _tree.restore_selection,
+      args: [cur_highlight]
+    });
 
     ce.undo_manager.add_and_exec({
       action:'delete-section',
@@ -450,14 +481,9 @@ export default function init(ce)
       undo() {
         const [tgt_li,tgt_ul] = _tree.add_section(section_id,section.name,where);
         tgt_li.toggleClass('closed',was_closed);
-        question_ids.forEach( (question_id) => {
-          _tree.add_question(
-            question_id,
-            _content.questions[question_id],
-            { section_id:section_id, at_end:true },
-          );
-        });
-        _tree.restore_selection(cur_highlight);
+        for(const {func,args} of undo_tasks) {
+          func(...args);
+        }
       },
     });
   }
@@ -465,31 +491,31 @@ export default function init(ce)
   /**
    * Removes the specified group element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @param {jQuery<HTMLLIElement>} delete_li 
    * @returns {void}
    */
-  self.delete_group = function(to_delete) 
+  self.delete_group = function(delete_li) 
   {
-    if( to_delete.length !== 1 ) { return; }
-    const group_id = to_delete.data('item-id');
+    if( delete_li.length !== 1 ) { return; }
+    const group_id = delete_li.data('item-id');
     const group    = _content.groups[group_id];
 
-    const question_lis = to_delete.find('li.question');
+    const question_lis = delete_li.find('li.question');
     const question_ids = question_lis.map(
       function () { return $(this).data('item-id'); } 
     );
 
     const cur_highlight = _tree.current_selection();
-    const was_closed = to_delete.hasClass('closed');
+    const was_closed = delete_li.hasClass('closed');
 
-    const prev = to_delete.prev();
+    const prev = delete_li.prev();
     const where = {};
     if(prev.length === 1) {
       where.ref_id   = prev.data('item-id');
       where.ref_type = prev.data('type');
       where.offset   = 1;
     } else {
-      const section = to_delete.closest('li.section');
+      const section = delete_li.closest('li.section');
       where.section_id = section.data('item-id');
     }
 
@@ -517,26 +543,26 @@ export default function init(ce)
   /**
    * Removes the specified question element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} to_delete 
+   * @param {jQuery<HTMLLIElement>} delete_li 
    * @returns {void}
    */
-  self.delete_question = function(to_delete) 
+  self.delete_question = function(delete_li) 
   {
-    if( to_delete.length !== 1 ) { return; }
+    if( delete_li.length !== 1 ) { return; }
 
-    const question_id = to_delete.data('item-id');
+    const question_id = delete_li.data('item-id');
     const question = _content.questions[question_id];
 
     const cur_highlight = _tree.current_selection();
 
-    const prev = to_delete.prev();
+    const prev = delete_li.prev();
     const where = {};
     if( prev.length === 1 ) {
       where.ref_id   = prev.data('item-id');
       where.ref_type = prev.data('type');
       where.offset   = 1;
     } else {
-      const container = to_delete.closest('ul').closest('li');
+      const container = delete_li.closest('ul').closest('li');
       if(container.data('type') === 'group') {
         where.group_id = container.data('item-id');
       } else {
