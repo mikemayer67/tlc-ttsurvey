@@ -186,13 +186,36 @@ export default function init(ce)
    */
   self.content = function()
   {
-    const structure = _tree.survey_structure();
     const rval = {
       options: _content?.options ?? {},
       sections: {},
+      groups: {},
       questions: {},
       next_ids: _content?.next_ids ?? {},
     };
+
+    let new_group_id = 0;
+
+    // Create a new data object based on the section, group, and question
+    //   data in _content, but a layout based on the current survey navigation
+    //   tree.  The new content data object should have the same structure as
+    //   the existing _content data.
+    
+    // @@@ WORK HERE... 
+    // Loop over the first layer of the tree structure, i.e. the section data
+    const tree_structure = _tree.survey_structure();
+    let section_seq = 0;
+    let 
+    tree_structure.each( () => {
+      // clone the section data from the existing content data
+      //   and update its sequence based on the current survey tree
+      // we will update the section content shortly
+      const new_section = deepCopy(_content.sections[section.section_id]);
+      new_section.sequence = 1 + section_idx;
+
+      // add the cloned section to the new content data
+      rval.sections.push(new_section);
+    });
 
     structure.forEach( (s,s_idx) => {
       const sid            = s.section_id;

@@ -1114,16 +1114,30 @@ export default function init(ce,controller)
    * Returns the survey structure as defined by the navigation tree
    * @returns {object} TODO: flesh out the return type once groups have been added
    */
-  self.survey_structure = function() {
-    const rval = [];
-    const sections = _tree.find('li.section');
-    sections.each( function(index) {
-      const section = $(this);
-      const section_id = section.data('item-id');
-      const question_ids = section.find('li.question').map( function() {
-        return $(this).data('item-id');
-      }).get();
-      rval.push( {section_id:section_id, question_ids:question_ids} );
+  self.survey_structure = function() 
+  {
+    const section_lis = _tree.find('li.section');
+    const rval = section_lis.map( function () {
+      const section_li = $(this);
+      const section_id = section_li.data('item-id');
+
+      const content_lis = section_li.find('li.group, li.question').not('li.group li.question');
+      const section_content = content_lis.map( function() {
+        const item_li = $(this);
+        const item_id = item_li.data('item-id');
+        const item_type = item_li.data('type');
+
+        if( item_type === 'question') {
+          return {question_id:item_id};
+        } else {
+          const question_lis = item_li.find('li.question');
+          const group_content = question_lis.map( function() {
+            return $(this).data('item-id');
+          });
+          return {group_id:item_id, content:group_content};
+        }
+      });
+      return {section_id, content:section_content};
     });
 
     return rval;

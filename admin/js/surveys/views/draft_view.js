@@ -59,7 +59,7 @@ export default function init(ce)
 
     ce.controller.enable_edits();
     ce.controller.update_content(content);
-    _last_saved = current_values();
+    _saved_name = _survey_name.val().trim();
     validate_all();
   }
 
@@ -111,31 +111,11 @@ export default function init(ce)
   $(document).on('SurveyWasReordered',update_submit_revert);
   $(document).on('SurveyWasModified',update_submit_revert);
 
-
-  function current_values()
-  {
-    var rval = {}
-    ce.form.find('.watch').each( function(index) {
-      const e = $(this);
-      rval[ e.attr('name') ] = e.val();
-    });
-    return rval;
-  }
-
   function has_changes()
   {
-    let found_change = false;
-    Object.entries(_last_saved).forEach(([key,value]) => {
-      const e = ce.form.find('[name='+key+']');
-      if( value !== e.val() ) {
-        found_change = true; 
-        return false;  // no need to continue loop
-      }
-    });
-    if(found_change) { return true; }
-
+    const cur_name = _survey_name.val().trim();
+    if( cur_name !== _saved_name )   { return true; }
     if( ce.undo_manager?.hasUndo() ) { return true; }
-
     return false;
   }
 
@@ -149,10 +129,8 @@ export default function init(ce)
 
   function handle_revert()
   {
-    for( let key in _last_saved ) {
-      ce.form.find('[name='+key+']').val(_last_saved[key]);
-    }
-
+    _survey_name.val(_survey_name);
+    
     const content = ce.survey_data.content( ce.cur_survey.id );
     ce.controller.update_content(content);
 
@@ -162,8 +140,7 @@ export default function init(ce)
 
   function handle_submit()
   {
-    const cur_values = current_values();
-    var survey_name = cur_values.survey_name.trim();
+    var survey_name = _survey_name.val().trim();
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
     const content = ce.controller.content();
@@ -186,8 +163,7 @@ export default function init(ce)
     })
     .done( function(data,status,jqXHR) {
       if(data.success) {
-        _last_saved = cur_values;
-        _last_saved.survey_name = '';
+        _saved_name = '';
 
         ce.cur_survey.title = survey_name;
         ce.survey_data.content(ce.cur_survey.id,data.content);
@@ -217,7 +193,7 @@ export default function init(ce)
   }
 
 
-  var _last_saved = current_values();
+  var _saved_name = _survey_name.val().trim();
 
   return {
     state:'draft',
