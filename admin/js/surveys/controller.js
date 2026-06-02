@@ -194,8 +194,6 @@ export default function init(ce)
       next_ids: _content?.next_ids ?? {},
     };
 
-    let new_group_id = 0;
-
     // Create a new data object based on the section, group, and question
     //   data in _content, but a layout based on the current survey navigation
     //   tree.  The new content data object should have the same structure as
@@ -204,30 +202,34 @@ export default function init(ce)
     // @@@ WORK HERE... 
     // Loop over the first layer of the tree structure, i.e. the section data
     const tree_structure = _tree.survey_structure();
-    let section_seq = 0;
-    tree_structure.each( () => {
+    tree_structure.each( function(section_index) {
       // clone the section data from the existing content data
-      //   and update its sequence based on the current survey tree
+      //   and update its section ID based on the current survey tree
       // we will update the section content shortly
-      const new_section = deepCopy(_content.sections[section.section_id]);
-      new_section.sequence = 1 + section_idx;
+      const new_section = deepCopy(_content.sections[this.section_id]);
+      const new_section_id =  1 + section_index;
+      new_section.section_id = new_section_id;
 
-      // add the cloned section to the new content data
-      rval.sections.push(new_section);
-    });
-
-    structure.forEach( (s,s_idx) => {
-      const sid            = s.section_id;
-      const new_s          = deepCopy( _content.sections[sid] );
-      new_s.sequence       = s_idx+1;
-      rval.sections[s_idx] = new_s;
-
-      s.question_ids.forEach( (qid,q_idx) => {
-        const new_q         = deepCopy( _content.questions[qid] );
-        new_q.sequence      = q_idx+1;
-        new_q.section       = sid;
-        rval.questions[qid] = new_q;
+      // populate the new section's content as well as fleshing out the
+      //   groups and questions attributes of the rval
+      new_section.content = this.content.map( function(item_index) {
+        if(this.question_id) {
+          const new_question = deepCopy(_content.questions[this.question_id]);
+          rval.questions[this.question_id] = new_question;
+          return { type:'question', id:this.question_id };
+        } else if(this.group_id) {
+          const new_group = deepCopy(_content.groups[this.group_id]);
+          new_group.content = Array.from(this.content);
+          rval.groups[this.group_id] = new_group;
+          this.content.each( function(question_index) {
+            const question_id = this;
+            const new_question = deepCopy(_content.questions[question_id]);
+            rval.questions[question_id] = new_question;
+          });
+          return { type:'group', id:this.group_id};
+        }
       });
+      rval.sections[new_section_id] = new_section;
     });
 
     return rval;
