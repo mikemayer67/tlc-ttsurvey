@@ -205,7 +205,6 @@ export default function init(ce)
     // Loop over the first layer of the tree structure, i.e. the section data
     const tree_structure = _tree.survey_structure();
     let section_seq = 0;
-    let 
     tree_structure.each( () => {
       // clone the section data from the existing content data
       //   and update its sequence based on the current survey tree

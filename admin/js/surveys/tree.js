@@ -138,7 +138,7 @@ export default function init(ce,controller)
     }
 
     Object.entries(content.sections)
-    .sort( ([,a],[,b]) => a.sequence - b.sequence )
+    .sort( ([,a],[,b]) => a.section_id - b.section_id )
     .forEach( ([,section]) => {
       add_section_to_tree(section, content);
     });

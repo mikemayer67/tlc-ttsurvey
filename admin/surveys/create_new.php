@@ -64,7 +64,7 @@ function clone_survey_sections($child_id,$parent_id)
 {
   $query = <<<SQL
     INSERT into tlc_srv_sections
-    SELECT $child_id, section_id, sequence, name, collapsible, intro
+    SELECT $child_id, section_id, name, collapsible, intro
       FROM tlc_srv_sections
      WHERE survey_id=$parent_id
   SQL;

@@ -208,10 +208,10 @@ function survey_options(int $survey_id) : array
 function survey_sections(int $survey_id) : array
 {
   $query = <<<SQL
-    SELECT section_id, sequence, name, collapsible, intro
+    SELECT section_id, name, collapsible, intro
     FROM   tlc_srv_sections
     WHERE survey_id=(?)
-    ORDER BY sequence;
+    ORDER BY section_id;
   SQL;
   $rows = MySQLSelectRows($query, 'i', $survey_id);
   if(!$rows) { return []; }
