@@ -62,9 +62,11 @@ SQL ],
 
 // The survey sections table must be updated to use actual name, and intro strings
 //   rather than string IDs
+// Section ID and sequence are being merged into a single field, retain the old
+//   sequence ID as the new section ID
   [ __LINE__, <<<SQL
-INSERT into tlc_srv_sections (survey_id, section_id, sequence, name, collapsible, intro)
-  SELECT t.survey_id, t.section_id, t.sequence, sn.str, t.collapsible, si.str
+INSERT into tlc_srv_sections (survey_id, section_id, name, collapsible, intro)
+  SELECT t.survey_id, t.sequence, sn.str, t.collapsible, si.str
     FROM tlc_tt_survey_sections t
     LEFT JOIN tlc_tt_strings sn on sn.string_id = t.name_sid
     LEFT JOIN tlc_tt_strings si on si.string_id = t.intro_sid;

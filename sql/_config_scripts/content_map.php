@@ -15,9 +15,11 @@ if(!defined('IN_MIGRATION')) {
 function populate_content_map(PDO $pdo)
 {
   $sections = [];
-  $query = 'SELECT survey_id,section_id FROM tlc_tt_survey_sections';
-  foreach ($pdo->query($query, PDO::FETCH_NUM) as [$survey_id, $section_id] ) {
-    $sections[$survey_id][] = $section_id;
+  $section_remap = [];
+  $query = 'SELECT survey_id,section_id,sequence FROM tlc_tt_survey_sections';
+  foreach ($pdo->query($query, PDO::FETCH_NUM) as [$survey_id, $old_section_id, $new_section_id] ) {
+    $sections[$survey_id][] = $old_section_id;
+    $section_remap[$survey_id][$old_section_id] = $new_section_id;
   }
 
   $question_is_grouped = [];
@@ -56,12 +58,13 @@ function populate_content_map(PDO $pdo)
           values (?,?,?,?);
   SQL );
 
-  foreach( $sections as $survey_id => $section_ids )
+  foreach( $sections as $survey_id => $old_section_ids )
   {
     $group_id = 0;
 
-    foreach($section_ids as $section_id) {
-      $section_questions = $question_map[$survey_id][$section_id] ?? [];
+    foreach($old_section_ids as $old_section_id) {
+      $new_section_id = $section_remap[$survey_id][$old_section_id];
+      $section_questions = $question_map[$survey_id][$old_section_id] ?? [];
       ksort($section_questions);
       $question_ids = array_values($section_questions);
 
@@ -79,7 +82,7 @@ function populate_content_map(PDO $pdo)
             $group_label += 1;
             $group_name = "Group_{$section_id}.{$group_label}";
             $add_group->execute([$survey_id, ++$group_id, $group_name]);
-            $add_group_to_section->execute([$survey_id,$section_id,++$section_seq,$group_id]);
+            $add_group_to_section->execute([$survey_id,$new_section_id,++$section_seq,$group_id]);
           }
           $add_question_to_group->execute([$survey_id,$group_id,++$group_seq,$question_id]);
           $in_group = true;
@@ -87,7 +90,7 @@ function populate_content_map(PDO $pdo)
         else 
         {
           // question is not in a group
-          $add_question_to_section->execute([$survey_id,$section_id,++$section_seq,$question_id]);
+          $add_question_to_section->execute([$survey_id,$new_section_id,++$section_seq,$question_id]);
           $in_group = false;
         }
       }

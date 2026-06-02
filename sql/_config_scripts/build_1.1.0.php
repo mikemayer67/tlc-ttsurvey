@@ -107,7 +107,6 @@ SQL ],
 CREATE TABLE tlc_srv_sections (
   survey_id    SMALLINT UNSIGNED NOT NULL,
   section_id   SMALLINT UNSIGNED NOT NULL,
-  sequence     SMALLINT UNSIGNED NOT NULL     COMMENT 'Order this section will appear in the survey form',
   name         VARCHAR(128)      NOT NULL     COMMENT 'Section name that will appear in the editor and on survey tabs',
   collapsible  TINYINT  UNSIGNED DEFAULT NULL COMMENT 'Whether or not the section will be rendered as collapsible',
   intro        VARCHAR(512)      DEFAULT NULL COMMENT 'Introductory text rendered at the top of the section',
