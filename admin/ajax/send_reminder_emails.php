@@ -32,7 +32,7 @@ catch(\Throwable $e)
 
 $user_status = array_fill_keys( $userids, ['draft'=>null, 'submitted'=>null] );
 
-$qmarks = '?' . str_repeat(',?',count($userids)-1);
+$qmarks = implode(',', array_fill(0, count($userids), '?'));
 $types  = str_repeat('s',count($userids));
 $query = <<<SQL
   SELECT userid,

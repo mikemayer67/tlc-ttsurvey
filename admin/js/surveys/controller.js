@@ -199,7 +199,6 @@ export default function init(ce)
     //   tree.  The new content data object should have the same structure as
     //   the existing _content data.
     
-    // @@@ WORK HERE... 
     // Loop over the first layer of the tree structure, i.e. the section data
     const tree_structure = _tree.survey_structure();
     tree_structure.each( function(section_index) {
