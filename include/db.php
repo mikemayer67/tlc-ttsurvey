@@ -76,13 +76,13 @@ function MySQLBeginTransaction() { MySQLConnection()->begin_transaction(); }
  * Rolls back a mysqli transaction
  * @return void 
  */
-function MySQLRollback()         { MySQLConnection()->rollback();          }
+function MySQLRollback() { MySQLConnection()->rollback(); }
 
 /**
  * Commits a mysqli transaction
  * @return void 
  */
-function MySQLCommit()           { MySQLConnection()->commit();            }
+function MySQLCommit() { MySQLConnection()->commit(); }
 
 
 /**
@@ -292,180 +292,6 @@ function MySQLSelectValue(string $query,?string $types=null,...$params) : ?strin
   $row = MySQLSelectArray($query,$types,...$params);
   return $row[0] ?? null;
 }
-
-class MySQLPreparedSelect
-{
-  private string $query;
-  private string $types;
-  private int    $n_params;
-
-  private mysqli      $conn;
-  private mysqli_stmt $stmt;
-
-  /**
-   * MySQLPreparedSelect constructor
-   * @param string $query Prepared statement query string (with ? pararameter placeholders)
-   * @param string $types Prepared statement parameter types
-   * @return void 
-   * 
-   * @note This class is only to be used with SELECT queries.  Any other type
-   *       of query triggers internal error handling
-   */
-  public function __construct(string $query, string $types='')
-  {
-    if (! preg_match("/^\s*select/i", $query)) {
-      internal_error(
-        "MySQLPreparedSelect only works with SELECT queries:\n" .
-        "query: $query"
-      );
-    }
-
-    $this->n_params = substr_count($query,"?");
-    if( strlen($types) !== $this->n_params) {
-      internal_error(
-        "MySQLPrpeparedSelect mismatch between placeholders and type:\n" .
-        "query: $query\ntypes: $types"
-      );
-    }
-
-    $this->query = $query;
-    $this->types = $types;
-    $this->conn  = MySQLConnection();
-    $this->stmt = $this->conn->prepare($query);
-  }
-
-  /**
-   * Executes the prepared statement and returns the result
-   * @param bool $all true:returns all rows, false:returns first row only
-   * @param int $mode MYSQLI_ASSOC, MYSQLI_NUM, or MYSQLI_BOTH
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    If $all = true,  list of rows
-   *    If $all = false, single row or empty array
-   */
-  private function _exec(bool $all, int $mode, ...$params) : false|array
-  {
-    $n_input_params = count($params);
-    if($n_input_params !== $this->n_params) {
-      internal_error(
-        "Prepared statement called with wrong number of arguments:\n" .
-        "query: ".$this->query."\nexpected ".$this->n_params." params, received $n_input_params"
-      );
-    }
-
-    if($this->n_params) {
-      $this->stmt->bind_param($this->types, ...$params);
-    }
-
-    $result = null;
-    if($this->stmt->execute()) {
-      $result = $this->stmt->get_result();
-    }
-
-    if($result) {
-      if($all) { return $result->fetch_all($mode);   }
-      else     { return $result->fetch_array($mode); }
-    }
-
-    log_dev(
-      "Failed MySQLPreparedSelect::_exec($all,$mode,$this->query,$this->types,".count($params)." params)\n" .
-      "stmt error: $this->stmt->error\n".
-      "conn error: $this->conn->error"
-    );
-    return false;
-  }
-
-  /**
-   * Executes the prepared statement and returns all results as an array of associative arrays
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    [] if no matching rows were found by the query
-   *    array of row data as associative arrays
-   */
-  public function fetchAllAssoc(...$params) : false|array 
-  {
-    return $this->_exec(true, MYSQLI_ASSOC, ...$params);
-  }
-
-  /**
-   * Executes the prepared statement and returns the first result as an associateive array
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    [] if no matching rows were found by the query
-   *    associative array corresponding to the first matched row
-   */
-  public function fetchOneAssoc(...$params) : false|array 
-  {
-    return $this->_exec(false, MYSQLI_ASSOC, ...$params);
-  }
-
-  /**
-   * Executes the prepared statement and returns all results as an array of indexed arrays
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    [] if no matching rows were found by the query
-   *    array of row data as indexed arrays
-   */
-  public function fetchAllIndexed(...$params) : false|array 
-  {
-    return $this->_exec(true, MYSQLI_NUM, ...$params);
-  }
-
-  /**
-   * Executes the prepared statement and returns the first result as an indexed array
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    [] if no matching rows were found by the query
-   *    associative array corresponding to the first matched row
-   */
-  public function fetchOneIndexed(...$params) : false|array 
-  {
-    return $this->_exec(false, MYSQLI_NUM, ...$params);
-  }
-
-  /**
-   * Executes the prepared statement and returns the first value from each row
-   * @param array $params Prepared statement parameter values
-   * @return false|array 
-   *    false if query failed to execute
-   *    [] if no matching rows were found by the query
-   *    array of values as strings
-   * 
-   * @note this function only returns the first value from each row, even if the query
-   *   selects more than a single column
-   */
-  public function fetchColumn(...$params) : false|array
-  {
-    $rows = $this->fetchAllIndexed(...$params);
-    
-    if($rows === false) { return false; }
-    if(!$rows) { return []; }
-
-    $values = array();
-    foreach($rows as $row) { $values[] = $row[0] ?? null; }
-    return $values;
-  }
-
-  /**
-   * Executes the prepared statement and returns the first value from the first row
-   * @param array $params Prepared statement parameter values
-   * @return null|string Value from query
-   * 
-   * @note this function only returns the first value from the row, even if the query
-   *   selects more than a single column
-   */
-  public function fetchValue(...$params) : ?string
-  {
-    $row = $this->fetchOneIndexed(...$params);
-    return $row[0] ?? null;
-  }
-}
-
 
 
 /**

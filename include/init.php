@@ -29,16 +29,20 @@ function api_die(string $msg='')
  *   returns the http 500 error status and splash screen,
  *   and then terminates PHP
  * @param string $msg 
+ * @param int $trace How far up the callstack to report error (default=0)
  * @return void 
+ * 
+ * @note $trace=0 means to log the caller of internal_error, 
+ *       $trace=1 means to log the caller of the caller, etc.
  */
-function internal_error(string $msg)
+function internal_error(string $msg, int $trace=0)
 {
   // avoid recursion if internal error occurred while rendering 500.php
   if(defined('RENDERING_ERR_PHP')) { return; }
 
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $msg",2);
+  log_error("[$errid]: $msg",2+$trace);
   $_SESSION['internal-error'][$errid] = $msg;
   http_response_code(500);
   require(app_file("500.php"));
