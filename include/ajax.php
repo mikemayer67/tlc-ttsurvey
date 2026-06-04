@@ -44,7 +44,7 @@ function send_ajax_bad_request(string $error)
 {
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]BAD_REQUEST: $error",2);
+  log_error("[$errid]BAD_REQUEST: $error",1);
   send_ajax_response(['reason'=>$error],400);
 }
 
@@ -58,7 +58,7 @@ function send_ajax_unauthorized(string $error)
 {
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]UNAUTHORIZED: $error",2);
+  log_error("[$errid]UNAUTHORIZED: $error",1);
   send_ajax_response(['reason'=>$error],401);
 }
 
@@ -66,15 +66,15 @@ function send_ajax_unauthorized(string $error)
  * Returns a 403 (FORBIDDEN) error on an AJAX call
  *   For the survey app, this means that a bad/expired nonce was encountered
  * @param string $error 
- * @param int $level trace level for logging (2 logs immediate caller)
+ * @param int $level trace level for logging (0 logs immediate caller)
  * @return void 
  */
-function send_ajax_bad_nonce(string $error, int $level=2)
+function send_ajax_bad_nonce(string $error, int $level=0)
 {
   require_once('include/logger.php');
   require_once('include/cookiejar.php');
   $userid = active_userid();
-  log_warning("Bad nonce [$userid]: $error",$level);
+  log_warning("Bad nonce [$userid]: $error",1+$level);
   send_ajax_response(['reason'=>"Invalid nonce"],403);
 }
 
@@ -87,7 +87,7 @@ function send_ajax_internal_error(string $error)
 {
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $error",2);
+  log_error("[$errid]: $error",1);
   send_ajax_response(['reason'=>$error],500);
 }
 
@@ -102,8 +102,8 @@ function validate_ajax_nonce(string $key)
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual   = $_POST['nonce'];
   if($actual !== $expected) {
-    // pass trace level of 3 (log caller of this function, not this function)
-    send_ajax_bad_nonce("expected=$expected, actual=$actual",3);
+    // pass trace level of 1 (log caller of this function, not this function)
+    send_ajax_bad_nonce("expected=$expected, actual=$actual",1);
   }
 }
 

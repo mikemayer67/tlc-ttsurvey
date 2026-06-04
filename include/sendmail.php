@@ -91,14 +91,14 @@ function sendmail(mixed $email,string $subject,string $text,?string $html=null)
   {
     global $SendmailLogToken;
     $SendmailLogToken = gen_token(4);
-    log_error("[$SendmailLogToken] Failed to send email: ".$e->getMessage(),0);
+    log_error("[$SendmailLogToken] Failed to send email: ".$e->getMessage());
     return false;
   }
   catch (Exception $e) 
   {
     global $SendmailLogToken;
     $SendmailLogToken = gen_token(4);
-    log_error("[$SendmailLogToken] Failed to send email {$mail->ErrorInfo}",0);
+    log_error("[$SendmailLogToken] Failed to send email {$mail->ErrorInfo}");
     return false;
   }
   finally
