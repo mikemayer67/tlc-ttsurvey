@@ -327,14 +327,13 @@ class User {
   public function update_password($token,$password,&$error=null)
   {
     $error = null;
-    $sql = "select token,expires from tlc_srv_reset_tokens where userid=?";
-    $result = MySQLFetchOneAssoc($sql,'s', $this->_userid);
+    $result = MySQLFetchOneAssoc('select token,expires from tlc_srv_reset_tokens where userid=?','s', $this->_userid);
     if(!$result) {
       $error = "No current password reset request";
       return false;
     }
     // You only get one chance per reset request
-    MySQLExecute("delete from tlc_srv_reset_tokens where userid=?",'s',$this->_userid);
+    MySQLExecute('delete from tlc_srv_reset_tokens where userid=?','s',$this->_userid);
     if( $token !== $result['token'] ) {
       $error = "Invalid reset request";
       return false;
