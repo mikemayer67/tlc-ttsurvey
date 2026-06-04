@@ -26,7 +26,7 @@ class Settings {
 
   static public function load_all()
   {
-    $rows = MySQLSelectValues('select name,value from tlc_srv_settings');
+    $rows = MySQLFetchColumn('select name,value from tlc_srv_settings');
 
     foreach($rows as $row) {
       $values[$row[0]] = $row[1];
@@ -79,7 +79,7 @@ class Settings {
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
-    $value = MySQLSelectValue('select value from tlc_srv_settings where name=?','s',$key); 
+    $value = MySQLFetchValue('select value from tlc_srv_settings where name=?','s',$key); 
     if( $value !== null && $value !== '' ) {
       self::$values[$key] = $value;
     }
@@ -90,7 +90,7 @@ class Settings {
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
-    $value = MySQLSelectValue('select value from tlc_srv_settings where name=?','s',$key); 
+    $value = MySQLFetchValue('select value from tlc_srv_settings where name=?','s',$key); 
     if( $value !== null && $value !== '' ) {
       self::$values[$key] = $value;
     } else {

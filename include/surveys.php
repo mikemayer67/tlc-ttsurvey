@@ -13,7 +13,7 @@ require_once(app_file('include/question_flags.php'));
  */
 function active_survey_id() : ?int 
 { 
-  $ids = MySQLSelectValues("select survey_id from tlc_srv_active_surveys");
+  $ids = MySQLFetchColumn("select survey_id from tlc_srv_active_surveys");
   if(count($ids)>1) {
     internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
   }
@@ -26,7 +26,7 @@ function active_survey_id() : ?int
  */
 function active_survey_title() : ?string 
 {
-  $titles = MySQLSelectValues("select title from tlc_srv_active_surveys");
+  $titles = MySQLFetchColumn("select title from tlc_srv_active_surveys");
   if (count($titles) > 1) {
     internal_error("Multiple active surveys found in the database: " . implode(', ', $titles));
   }
@@ -49,7 +49,7 @@ function active_survey_title() : ?string
  */
 function survey_info($id) : ?array 
 {
-  $info = MySQLSelectRow("select * from tlc_srv_surveys where survey_id=?", 'i', $id);
+  $info = MySQLFetchOneAssoc("select * from tlc_srv_surveys where survey_id=?", 'i', $id);
   if (!$info) { return null; }
   $info['id'] = $info['survey_id']; // need to add this as it is not from database
   return $info;
@@ -76,9 +76,9 @@ function all_surveys() : array
 {
   $surveys = [];
 
-  $active = MySQLSelectRows('select * from tlc_srv_active_surveys');
-  $drafts = MySQLSelectRows('select * from tlc_srv_draft_surveys');
-  $closed = MySQLSelectRows('select * from tlc_srv_closed_surveys');
+  $active = MySQLFetchAllAssoc('select * from tlc_srv_active_surveys');
+  $drafts = MySQLFetchAllAssoc('select * from tlc_srv_draft_surveys');
+  $closed = MySQLFetchAllAssoc('select * from tlc_srv_closed_surveys');
 
   $nactive = count($active);
   if($nactive) {
@@ -110,9 +110,9 @@ function all_surveys() : array
 function next_survey_ids(int $survey_id) : array
 {
   return [
-    'survey'   => 1 + MySQLSelectValue('select max(survey_id)   from tlc_srv_surveys'),
-    'question' => 1 + MySQLSelectValue('select max(question_id) from tlc_srv_questions'),
-    'option'   => 1 + MySQLSelectValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
+    'survey'   => 1 + MySQLFetchValue('select max(survey_id)   from tlc_srv_surveys'),
+    'question' => 1 + MySQLFetchValue('select max(question_id) from tlc_srv_questions'),
+    'option'   => 1 + MySQLFetchValue('select max(option_id)   from tlc_srv_survey_options where survey_id=(?)','i',$survey_id),
   ];
 }
 
@@ -186,7 +186,7 @@ function survey_options(int $survey_id) : array
      WHERE survey_id=(?)
      ORDER BY option_id;
   SQL;
-  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
 
   return $rows ? array_column($rows,'text','option_id') : [];
 }
@@ -213,7 +213,7 @@ function survey_sections(int $survey_id) : array
     WHERE survey_id=(?)
     ORDER BY section_id;
   SQL;
-  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
   if(!$rows) { return []; }
 
   $sections = array_column($rows,null,'section_id');
@@ -224,7 +224,7 @@ function survey_sections(int $survey_id) : array
      WHERE survey_id=(?)
      ORDER BY section_id, sequence
   SQL;
-  $rows = MySQLSelectArrays($query,'i',$survey_id);
+  $rows = MySQLFetchAllIndexed($query,'i',$survey_id);
   foreach($rows as [$section_id,$sequence,$group_id,$question_id]) {
     if(!is_null($question_id)) {
       $sections[$section_id]['content'][] = ['type'=>'question', 'id'=>$question_id];
@@ -252,7 +252,7 @@ function survey_groups(string $survey_id) : array
       FROM tlc_srv_question_groups
      WHERE survey_id=(?)
   SQL;
-  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
   if (!$rows) { return []; }
 
   $groups = array_column($rows, null, 'group_id');
@@ -263,7 +263,7 @@ function survey_groups(string $survey_id) : array
      WHERE survey_id=(?)
      ORDER BY group_id, sequence
   SQL;
-  $rows = MySQLSelectArrays($query,'i',$survey_id);
+  $rows = MySQLFetchAllIndexed($query,'i',$survey_id);
   foreach($rows as [$group_id,$question_id]) {
     $groups[$group_id]['content'][] = $question_id;
   }
@@ -304,7 +304,7 @@ function survey_questions(int $survey_id, array $exclude = []) : array
   if($exclude) {
     $query .= " AND question_id not in (" . implode(',',$exclude) . ")";
   }
-  $rows = MySQLSelectRows($query, 'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
 
   if(!$rows) { return array(); }
 
@@ -350,7 +350,7 @@ function survey_questions(int $survey_id, array $exclude = []) : array
         WHERE survey_id=? and question_id=?
         ORDER BY sequence
       SQL;
-      $q['options'] = MySQLSelectValues($query, 'ii', $survey_id,$question_id);
+      $q['options'] = MySQLFetchColumn($query, 'ii', $survey_id,$question_id);
     }
 
     $questions[$question_id] = $q;
@@ -364,7 +364,7 @@ function survey_questions(int $survey_id, array $exclude = []) : array
   $query = <<<SQL
     SELECT parent_id from tlc_srv_surveys where survey_id=?;
   SQL;
-  $parent_id = MySQLSelectValue($query,'i',$survey_id);
+  $parent_id = MySQLFetchValue($query,'i',$survey_id);
   if($parent_id !== null) 
   {
     $questions += survey_questions($parent_id,$exclude);

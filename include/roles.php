@@ -8,7 +8,7 @@ require_once(app_file('include/settings.php'));
 
 function survey_roles()
 {
-  return MySQLSelectRows('select * from tlc_srv_active_roles');
+  return MySQLFetchAllAssoc('select * from tlc_srv_active_roles');
 }
 
 function add_user_role($userid,$role)
@@ -47,7 +47,7 @@ function user_roles($userid)
 
 function assigned_roles($userid)
 {
-  $roles =  MySQLSelectRow(
+  $roles =  MySQLFetchOneAssoc(
     'select admin,content,tech,summary from tlc_srv_roles where userid=?','s',$userid
   );
   $rval = [];

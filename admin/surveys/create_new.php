@@ -16,7 +16,7 @@ function create_new_survey($name,$parent_id,&$error=null)
   try {
     MySQLBeginTransaction();
 
-    $max_id = MySQLSelectValue("select max(survey_id) from tlc_srv_surveys");
+    $max_id = MySQLFetchValue("select max(survey_id) from tlc_srv_surveys");
     $survey_id = $max_id ? 1 + $max_id : 1;
 
     $rc = MySQLExecute(

@@ -31,14 +31,14 @@ if($active_survey_id) {
      WHERE survey_id=(?)
   SQL;
 
-  $rows = MySQLSelectRows($query,'i',$active_survey_id);
+  $rows = MySQLFetchAllAssoc($query,'i',$active_survey_id);
   foreach($rows as $row) {
     $user_status[$row['userid']] = ['draft'=>$row['draft'], 'submitted'=>$row['submitted']];
   }
 }
 
 $last_survey = [];
-$rows = MySQLSelectArrays('SELECT userid,survey_id,survey_name from tlc_srv_view_last_user_survey','');
+$rows = MySQLFetchAllIndexed('SELECT userid,survey_id,survey_name from tlc_srv_view_last_user_survey','');
 foreach($rows as $row) { $last_survey[$row[0]] = ['id'=>$row[1], 'name'=>$row[2]]; }
 
 echo "<div class='resizable boxed'>";

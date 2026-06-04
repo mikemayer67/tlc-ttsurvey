@@ -26,7 +26,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
      WHERE userid=(?) AND survey_id=(?)
   SQL;
 
-  $status = MySQLSelectRow($query,'si', $userid, $survey_id);
+  $status = MySQLFetchOneAssoc($query,'si', $userid, $survey_id);
   if (!$status || !is_array($status)) { return []; }
 
   if(is_null($draft))
@@ -50,7 +50,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
      WHERE userid=(?) AND survey_id=(?) AND draft=(?);
   SQL;
 
-  $rows = MySQLSelectRows($query, 'sii', $userid, $survey_id, $draft?1:0);
+  $rows = MySQLFetchAllAssoc($query, 'sii', $userid, $survey_id, $draft?1:0);
 
   $responses = array();
   foreach( $rows as $row ) {
@@ -70,7 +70,7 @@ function get_user_responses($userid,$survey_id,$draft=null)
        AND draft=(?);
   SQL;
 
-  $rows = MySQLSelectRows($query, 'sii', $userid, $survey_id, $draft?1:0);
+  $rows = MySQLFetchAllAssoc($query, 'sii', $userid, $survey_id, $draft?1:0);
   foreach($rows as $row) {
     $qid = $row['question_id'];
     if(!array_key_exists($qid,$responses)) {
@@ -93,7 +93,7 @@ function get_all_responses($survey_id)
      WHERE draft=0 and survey_id=?;
   SQL;
 
-  $rows = MySQLSelectRows($query,'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query,'i', $survey_id);
 
   $responses = [];
   foreach($rows as $row) {
@@ -109,7 +109,7 @@ function get_all_responses($survey_id)
       WHERE ro.draft=0 and ro.survey_id=?;
   SQL;
 
-  $rows = MySQLSelectRows($query,'i', $survey_id);
+  $rows = MySQLFetchAllAssoc($query,'i', $survey_id);
   foreach($rows as $row) {
     $qid    = $row['question_id'];
     $userid = $row['userid'];
@@ -256,7 +256,7 @@ function confirmation_email_sent($userid,$survey_id,$email=null)
      WHERE userid=(?) AND survey_id=(?)
     SQL;
 
-    $row = MySQLSelectRow($query,'si', $userid, $survey_id);
+    $row = MySQLFetchOneAssoc($query,'si', $userid, $survey_id);
 
     if(!$row || empty($row['timestamp'])) {
       return []; 

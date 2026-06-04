@@ -133,7 +133,7 @@ function user_status_timestamps(string $userid,string $survey_id) : string
       from tlc_srv_user_status 
      where userid=? and survey_id=?
   MYSQL;
-  $row = MySQLSelectRow($query,'si',$userid,intval($survey_id));
+  $row = MySQLFetchOneAssoc($query,'si',$userid,intval($survey_id));
   return $row ? implode(':',$row) : 'null:null';
 }
 

@@ -11,7 +11,7 @@ $response = new AjaxResponse();
 
 start_ob_logging();
 
-$rows = MySQLSelectArrays('select survey_id, option_id from tlc_srv_view_unused_options');
+$rows = MySQLFetchAllIndexed('select survey_id, option_id from tlc_srv_view_unused_options');
 $response->add('count', count($rows));
 
 if($rows)

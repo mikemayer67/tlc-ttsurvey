@@ -26,7 +26,7 @@ class AccessTokens
     //  needs to happen somewhere... here makes sense
     MySQLExecute('delete from tlc_srv_access_tokens where expires < CURRENT_TIMESTAMP');
 
-    $tokens = MySQLSelectValues(
+    $tokens = MySQLFetchColumn(
       "select token from tlc_srv_access_tokens where userid=?",
       "s",
       $userid

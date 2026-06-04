@@ -93,7 +93,7 @@ class User {
   {
     $user = self::$_users[$userid] ?? null;
     if(!$user) {
-      $r = MySQLSelectRow('select * from tlc_srv_userids where userid=?','s',$userid);
+      $r = MySQLFetchOneAssoc('select * from tlc_srv_userids where userid=?','s',$userid);
 
       if($r) { 
         $user = new User($r); 
@@ -105,7 +105,7 @@ class User {
 
   public static function from_email($email)
   {
-    $result = MySQLSelectRows('select * from tlc_srv_userids where email=?','s',$email);
+    $result = MySQLFetchAllAssoc('select * from tlc_srv_userids where email=?','s',$email);
 
     $users = array();
     foreach($result as $user_data) {
@@ -127,7 +127,7 @@ class User {
   {
     // note this function bypasses the user cache.  It is 
     //   meant to only be used in admin capabilities
-    $result = MySQLSelectRows('select * from tlc_srv_userids');
+    $result = MySQLFetchAllAssoc('select * from tlc_srv_userids');
     $users = array();
     foreach($result as $user_data) {
       $users[] = new User($user_data);
@@ -328,7 +328,7 @@ class User {
   {
     $error = null;
     $sql = "select token,expires from tlc_srv_reset_tokens where userid=?";
-    $result = MySQLSelectRow($sql,'s', $this->_userid);
+    $result = MySQLFetchOneAssoc($sql,'s', $this->_userid);
     if(!$result) {
       $error = "No current password reset request";
       return false;
@@ -392,7 +392,7 @@ class User {
     if( password_verify( $this->_userid, $this->_anonid ) ) { return null; }
 
     // try to find the existing anonymous proxy id
-    $anonids = MySQLSelectValues('select * from tlc_srv_anonids');
+    $anonids = MySQLFetchColumn('select * from tlc_srv_anonids');
     foreach( $anonids as $anonid ) {
       if( password_verify($anonid,$this->_anonid) ) { return $anonid; }
     }

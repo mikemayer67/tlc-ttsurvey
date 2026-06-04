@@ -42,7 +42,7 @@ $query = <<<SQL
    WHERE userid in ($qmarks) and survey_id=$survey_id
   SQL;
 
-$rows = MySQLSelectRows($query,$types,...$userids);
+$rows = MySQLFetchAllAssoc($query,$types,...$userids);
 foreach($rows as $row)
 {
   $userid    = $row['userid'];
@@ -96,7 +96,7 @@ foreach($user_status as $userid=>$info)
      WHERE userid=?
     SQL;
 
-  $hist = MySQLSelectRow($query,'s',$userid);
+  $hist = MySQLFetchOneAssoc($query,'s',$userid);
 
   if( $hist && $hist['subject'] === $subject ) {
     $last_sent = $hist['last_sent'];
