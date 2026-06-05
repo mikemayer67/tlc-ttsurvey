@@ -111,17 +111,18 @@ class AccessTokens
    */
   private function _add(string $token) : bool
   {
-    $query = <<<MYSQL
-      insert into tlc_srv_access_tokens (userid,token,expires)
-      values (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
-      on duplicate key update
+    $query = <<<SQL
+      INSERT INTO tlc_srv_access_tokens (userid,token,expires)
+      VALUES (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
+      ON duplicate KEY UPDATE
         expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
-    MYSQL;
-    $r = MySQLExecute($query,"ss",$this->_userid,$token);
-    if($r === false) { return false; }
-
-    $this->_tokens[] = $token;
-    return true;
+    SQL;
+    if( MySQLExecute($query,"ss",$this->_userid,$token) ) {
+      $this->_tokens[] = $token;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
@@ -130,10 +131,7 @@ class AccessTokens
    */
   private function _remove(string $token)
   {
-    $query = <<<MYSQL
-      delete from tlc_srv_access_tokens 
-      where userid=? and token=?
-    MYSQL;
+    $query = 'DELETE FROM tlc_srv_access_tokens WHERE userid=? AND token=?';
     MySQLExecute($query,"ss",$this->_userid,$token);
 
     $tokens = $this->_tokens;

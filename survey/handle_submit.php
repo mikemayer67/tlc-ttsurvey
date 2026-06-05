@@ -50,7 +50,24 @@ if($modified) {
   die();
 }
 
-$result = update_user_responses($userid,$survey_id,$action,$_POST);
+unset($_SESSION['ui-cache-id']);
+
+switch($action) 
+{
+  case 'delete':
+    drop_user_draft_responses($userid,$survey_id);
+    break;
+  case 'save':
+    $_SESSION['ui-cache-id'] = $_POST['ui-cache-id'];
+    update_user_responses($userid,$survey_id,$_POST,draft:true);
+    break;
+  case 'submit':
+    update_user_responses($userid,$survey_id,$_POST,draft:false);
+    break;
+  default:
+    internal_error("Invalid update_user_responses action ($action)");
+    break;
+}
 
 if(empty($_POST['js_enabled'])) {
   // We cannot use javascript to send an async AJAX call to send the email, so we need

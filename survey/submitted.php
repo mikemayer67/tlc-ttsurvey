@@ -55,7 +55,7 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
 
   $user       = User::from_userid($userid);
   $email      = $user->email();
-  $email_sent = confirmation_email_sent($userid,$survey_id);
+  $email_sent = get_confirmation_email_timestamp($userid,$survey_id);
 
   $queued_email = $_SESSION['queued-confirmation-email'] ?? false;
   if($queued_email && !$email) {
@@ -146,7 +146,7 @@ function send_confirmation_email($userid,$survey_id,$email,$content,$submitted)
   $error = '';
   sendmail_confirmation($email,$userid,'',$error);
   if(empty($error)) {
-    confirmation_email_sent($userid,$survey_id,$email);
+    set_confirmation_email_timestamp($userid,$survey_id,$email);
     $_SESSION['queued-confirmation-email'] = false;
   }
 }

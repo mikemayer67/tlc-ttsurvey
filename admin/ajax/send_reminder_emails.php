@@ -132,9 +132,7 @@ foreach($user_status as $userid=>$info)
           ON DUPLICATE KEY update subject=?, last_sent=CURRENT_TIMESTAMP, email=?
     SQL; 
 
-    $values = [$userid, $subject, $email, $subject, $email];
-
-    MySQLExecute($query,'sssss',...$values);
+    MySQLExecute($query,'sssss',$userid, $subject, $email, $subject, $email);
   }
   else
   { 

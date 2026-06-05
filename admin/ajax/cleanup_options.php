@@ -16,9 +16,9 @@ $response->add('count', count($rows));
 
 if($rows)
 {
-  $query = 'delete from tlc_srv_survey_options where survey_id=? and option_id=?';
+  $query = new MySQLPreparedExec('delete from tlc_srv_survey_options where survey_id=? and option_id=?','ii');
   foreach($rows as [$sid,$oid]) {
-    $rc = MySQLExecute($query,'ii',$sid,$oid);
+    $rc = $query->run($sid,$oid);
   }
 }
 
