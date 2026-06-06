@@ -21,6 +21,8 @@ sql/live_backups
 !sql/restore_data.sql
 !sql/drop_backup.sql
 
+archive/*
+
 .vscode/*
 vendor
 
