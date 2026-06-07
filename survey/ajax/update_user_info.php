@@ -33,24 +33,17 @@ $response->add('email_error',$email_valid ? '' : $error);
 
 if($name_valid && $email_valid) 
 {
-  MySQLBeginTransaction();
-  if( $name !== $user->fullname() ) {
-    $error = '';
-    if( !$user->set_fullname($name,$error) ) {
-      // already validated the name, so there is no reason to be here...
-      MySQLRollback();
-      send_ajax_internal_error("Failed to update fullname: $error");
-    }
+  try {
+    MySQLBeginTransaction();
+    if ($name !== $user->fullname()) { $user->set_fullname($name); }
+    if ($email !== $user->email())   { $user->set_email($email);   }
+    MySQLCommit();
   }
-  if( $email !== $user->email() ) {
-    $error = '';
-    if( !$user->set_email($email,$error) ) {
-      // already validated the email, so there is no reason to be here...
-      MySQLRollback();
-      send_ajax_internal_error("Failed to update email: $error");
-    }
+  catch(\Exception $e)
+  {
+    MySQLRollback();
+    send_ajax_internal_error("Failed to update user info: ".$e->getMessage());
   }
-  MySQLCommit();
 }
 else
 {

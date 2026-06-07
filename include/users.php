@@ -1,6 +1,10 @@
 <?php
 namespace tlc\tts;
 
+use Exception;
+use InvalidArgumentException;
+use mysqli_sql_exception;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file("include/db.php"));
@@ -39,14 +43,19 @@ require_once(app_file("include/sort_keys.php"));
  **/
 
 class User {
-  private $_userid   = null;
-  private $_fullname = null;
-  private $_email    = null;
-  private $_password = null;
+  private ?string $_userid   = null;
+  private ?string $_fullname = null;
+  private ?string $_email    = null;
+  private ?string $_password = null;
 
   private static $_users = array();
 
-  private function __construct($user_data)
+  /**
+   * User constructor
+   * @param array $user_data 
+   * @return void 
+   */
+  private function __construct(array $user_data)
   {
     // user_data input is expected to be an associative array
     //
@@ -65,13 +74,25 @@ class User {
   public function fullname()     { return $this->_fullname; }
   public function email()        { return $this->_email ?? null; }
 
-  public static function lookup($key) 
+  /**
+   * Looks up a user by either email address or userid
+   *   by email if the $needle contains the '@' character
+   *   by userid otherwise
+   * @param string $needle (userid or email address) 
+   * @return null|User|array<User>
+   */
+  public static function lookup(string $needle) : null|array|User
   {
-    if(strstr($key,"@")) { return self::from_email($key); }
-    else                 { return self::from_userid($key); }
+    if(strstr($needle,"@")) { return self::from_email($needle); }
+    else                    { return self::from_userid($needle); }
   }
 
-  public static function from_userid($userid)
+  /**
+   * Looks up a user by userid
+   * @param string $userid 
+   * @return null|User 
+   */
+  public static function from_userid(string $userid) : ?User
   {
     $user = self::$_users[$userid] ?? null;
     if(!$user) {
@@ -85,11 +106,17 @@ class User {
     return $user;
   }
 
-  public static function from_email($email)
+  /**
+   * Looks up all users with the specified email address
+   *   this allows for multiple logins with the same email 
+   * @param string $email 
+   * @return array 
+   */
+  public static function from_email(string $email) : array
   {
     $result = MySQLFetchAllAssoc('select * from tlc_srv_userids where email=?','s',$email);
 
-    $users = array();
+    $users = [];
     foreach($result as $user_data) {
       $userid = strtolower($user_data['userid']);
 
@@ -105,12 +132,16 @@ class User {
     return $users;
   }
 
-  public static function all_users()
+  /**
+   * Returns all registered users
+   * @return array<User> 
+   */
+  public static function all_users() : array
   {
     // note this function bypasses the user cache.  It is 
     //   meant to only be used in admin capabilities
     $result = MySQLFetchAllAssoc('select * from tlc_srv_userids');
-    $users = array();
+    $users = [];
     foreach($result as $user_data) {
       $users[] = new User($user_data);
     }
@@ -119,175 +150,164 @@ class User {
 
   // Full Name
 
-  public function set_fullname($fullname,&$error=0)
+  /**
+   * Sets the user's fullname in the database 
+   * @param string $fullname 
+   * @return bool true=name updated, false=no change necessary
+   * @throws InvalidArgumentException on invalid fullname argument
+   * @throws mysqli_sql_exception on MySQL error
+   */
+  public function set_fullname(string $fullname) : bool
   {
-    // Note this function will return:
-    //   false if there was an issue with the update command
-    //   0     if the command was ok, but no database update was needed
-    //   1     if the command was ok and the fullname was updated
-
     $error = null;
     if(!adjust_and_validate_user_input('fullname',$fullname,$error)) {
-      log_warning("Cannot update full name for $this->_userid: invalid name ($fullname)");
-      return false;
+      throw new InvalidArgumentException("Invalid fullname ($fullname): $error");
     }
-
-    $result = MySQLExecute('update tlc_srv_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
-
-    if($result) { $this->_fullname = $fullname; }
-
-    return $result;
+    $changed = MySQLExecute('update tlc_srv_userids set fullname=? where userid=?','ss',$fullname,$this->_userid);
+    if($changed) { $this->_fullname = $fullname; }
+    return $changed > 0;
   }
-
-  public function set_fullname_and_notify($fullname,&$error=0)
-  {
-    $old_fullname = $this->_fullname;
-    $rval = $this->set_fullname($fullname,$error);
-
-    if($rval) { 
-      if($email = $this->email()) {
-        require_once app_file('include/sendmail.php');
-        sendmail_profile($email, $this->userid(), ['name'=>[$old_fullname,$fullname]]);
-      }
-    }
-    return $rval;
-  }
-
 
   // Email
 
-  public function set_email($email,&$error=0)
+  /**
+   * Sets or clears the user's email address in the database
+   * @param null|string $email (will clear email on falsey value)
+   * @return bool true=email updated (or cleared), false = no change necessary
+   * @throws InvalidArgumentException on invalid email argument
+   * @throws mysqli_sql_exception on MySQL error
+   */
+  public function set_email(?string $email) : bool
   {
-    // Note this function will return: 
-    //   false if there was an issue with the update command
-    //   0     if the command was ok, but no database update was needed
-    //   1     if the command was ok and the email address was updated
-
     $error = null;
     if(!adjust_and_validate_user_input('email',$email,$error)) {
-      log_warning("Cannot update email for $this->_userid: invalid email ($email)");
-      return false;
+      throw new InvalidArgumentException("Invalid email: $error");
     }
     if($email) {
-      $result = MySQLExecute('update tlc_srv_userids set email=? where userid=?','ss',$email,$this->_userid);
+      $changed = MySQLExecute('update tlc_srv_userids set email=? where userid=?','ss',$email,$this->_userid);
     } else {
-      $result = MySQLExecute('update tlc_srv_userids set email=NULL where userid=?','s',$this->_userid);
+      $changed = MySQLExecute('update tlc_srv_userids set email=NULL where userid=?','s',$this->_userid);
     }
 
-    if($result) { $this->_email = $email; }
-
-    return $result;
+    if($changed) { $this->_email = $email; }
+    return $changed > 0;
   }
 
-  public function set_email_and_notify($email,&$error=0)
-  {
-    $old_email = $this->_email;
-    $rval = $this->set_email($email,$error);
-
-    if($rval) { 
-      if($email) {
-        require_once app_file('include/sendmail.php');
-        log_info("Sent updated email address to new address: $email");
-        sendmail_profile($email, $this->userid(), ['email'=>[$old_email,$email]]);
-      }
-      if($old_email) {
-        require_once app_file('include/sendmail.php');
-        log_info("Sent updated email address to old address: $old_email");
-        sendmail_profile($old_email, $this->userid(), ['email'=>[$old_email,$email]]);
-      }
-    }
-
-    return $rval;
-  }
-
-  public function clear_email()            { return $this->set_email(null);            }
-  public function clear_email_and_notify() { return $this->set_email_and_notify(null); }
+  /**
+   * Clears the user's email in the database
+   * @return bool true=email cleared), false = no change necessary
+   * @throws mysqli_sql_exception on MySQL error
+   * @return bool 
+   */
+  public function clear_email() : bool { return $this->set_email(null);            }
 
   // Profile (fullname + email)
 
-  public function update_profile($fullname,$email,&$error=0)
+  /**
+   * Sets updates the user fullname and email address as needed
+   * @param string $fullname 
+   * @param null|string $email (will clear email on falsey value)
+   * @return bool true=name or email updated, false=no change necessary
+   * @throws InvalidArgumentException on invalid fullname or email argument
+   * @throws mysqli_sql_exception on MySQL error
+   */
+  public function update_profile(string $fullname,?string $email=null) : bool
   {
-    // $fullname should NOT be falsey... this will cause the update to fail
-    // $email MAY be falsey... this will remove the email from the profile
-    //
-    // Note this function will return: 
-    //   false if there was an issue with the update command
-    //   0     if the command was ok, but no database update was needed
-    //   true  if the command was ok and the either name or email address was updated
-
     // Grab the current values for fullname and email in case we need to reset them
     $old_fullname = $this->_fullname;
     $old_email    = $this->_email;
     
-    // We're going to call two functions which modify the database.  If the second one
-    //  fails, we're going to want to undo the first one.
-    MySQLBeginTransaction();
-
-    $fullname_updated = $this->set_fullname($fullname); 
-    $email_updated    = $this->set_email($email); 
-
-    if( ($fullname_updated === false) || ($email_updated === false) ) {
-      // A return value of false indicates an issue with the user input or the update query
-      // A return value of 0 indicates that the update query was valid, but there was no change 
-      //   required in the database values.  This is ok
+    $rval = false;
+    try {
+      MySQLBeginTransaction();
+      $rval = $rval || $this->set_fullname($fullname); 
+      $rval = $rval || $this->set_email($email); 
+      MySQLCommit();
+    }
+    catch(Exception $e) {
       MySQLRollback();
       $this->_fullname = $old_fullname;
       $this->_email    = $old_email;
-      return false;
-    } else {
-      // The queries were successful (even if they had no change)
-      //   Issue a commit to close the current transaction
-      MySQLCommit();
+      $rval = false;
     }
+    return $rval;
+  }
 
-    if(!($fullname_updated || $email_updated)) {
-      // neither was updated, but there was no error, per se.  return 0
-      return 0;
+  /**
+   * Sets updates the user fullname and email address as needed and sends an
+   *   email notification (if address is known) to both the new and old (if 
+   *   changed) email addresses
+   * 
+   * @param string $fullname 
+   * @param null|string $email (will clear email on falsey value)
+   * @return bool true=name or email updated, false=no change necessary
+   * @throws InvalidArgumentException on invalid fullname or email argument
+   * @throws mysqli_sql_exception on MySQL error
+   * 
+   * @note return value only pertains to whether or not profile data changed in
+   *       the database.  As the sendmail functions are asynchronous and as the 
+   *       intent is to indicate changes in the database, the result of the sendmail
+   *       function calls is NOT included in the return value.
+   */
+  public function update_profile_and_notify(string $fullname,?string $email=null) : bool
+  {
+    $old_fullname = $this->_fullname;
+    $old_email    = $this->_email;
+
+    $changed = $this->update_profile($fullname,$email);
+    if(!$changed) { return false; }
+
+    require_once app_file('include/sendmail.php');
+
+    // determine if this is a change to the user's email address
+    $is_new_email = ($email !== $old_email);
+
+    // Send profile update notification to new (possibly existing) email address
+    if($email) {
+      $to = $is_new_email ? 'to new address' : 'to';
+      log_info("Sending updated profile $to: $email");
+      sendmail_profile($email, $this->userid(), [
+        'name' =>[$old_fullname, $fullname],
+        'email'=>[$old_email,$email]
+      ]);
+    }
+    // If this is a new email address, send update notification to old address 
+    //   (if known) as well (just in case this change wasn't authorized)
+    if($is_new_email && $old_email) {
+      log_info("Sending updated profile to old address: $old_email");
+      require_once app_file('include/sendmail.php');
+      sendmail_profile($old_email, $this->userid(), [
+        'name' =>[$old_fullname, $fullname],
+        'email'=>[$old_email,$email]
+      ]);
     }
 
     return true;
   }
 
-  public function update_profile_and_notify($fullname,$email,&$error=0)
-  {
-    $old_fullname = $this->_fullname;
-    $old_email    = $this->_email;
-
-    $rval = $this->update_profile($fullname,$email,$error);
-
-    if($rval) {
-      $is_new_email = ($email !== $old_email);
-      if($email) {
-        $to = $is_new_email ? 'to new address' : 'to';
-        log_info("Sending updated profile $to: $email");
-        require_once app_file('include/sendmail.php');
-        sendmail_profile($email, $this->userid(), [
-          'name' =>[$old_fullname, $fullname],
-          'email'=>[$old_email,$email]
-        ]);
-      }
-      if($old_email && $is_new_email) {
-        log_info("Sending updated profile to old address: $old_email");
-        require_once app_file('include/sendmail.php');
-        sendmail_profile($old_email, $this->userid(), [
-          'name' =>[$old_fullname, $fullname],
-          'email'=>[$old_email,$email]
-        ]);
-      }
-    }
-
-    return $rval;
-  }
-
 
   // Password
 
-  public function validate_password($password)
+  /**
+   * Verifies that the specified passsword matches the hashed password
+   *   in the database. (see php's validate_password)
+   * @param string $password 
+   * @return bool 
+   */
+  public function validate_password(string $password) : bool
   {
     return password_verify($password,$this->_password);
   }
 
-  public function get_password_reset_token($from_wordlist=false)
+  /**
+   * Generates a random token to be used for a password reset request.
+   *   The caller may request that the token be somewhat memorable
+   *   (a 4 character adjective followed by a 6 character noun) or
+   *   fully random.
+   * @param bool $from_wordlist true=adj+noun, false=fully random
+   * @return string 
+   */
+  public function get_password_reset_token(bool $from_wordlist=false) : string
   {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_srv_reset_tokens where userid=?",'s',$this->_userid);
@@ -306,7 +326,17 @@ class User {
     return $r ? $token : null;
   }
 
-  public function update_password($token,$password,&$error=null)
+  /**
+   * Attempts to perfom a password reset given a reset token and a new password
+   * @param string $token 
+   * @param string $password 
+   * @param null|string &$error On failure, indicates the reason for failure
+   * @return bool true=password updated and notification sent, false=failed to update password
+   * @note success does not necessarily mean a notification was sent, only that an attempt
+   *       was made to send it.  If the email address is incorrect or there is an issue with
+   *       the SMTP server, this method will still return true.
+   */
+  public function update_password(string $token,string $password,?string &$error=null) : bool
   {
     $error = null;
     $result = MySQLFetchOneAssoc('select token,expires from tlc_srv_reset_tokens where userid=?','s', $this->_userid);
@@ -327,34 +357,50 @@ class User {
       return false;
     }
 
-    return $this->set_password_and_notify($password,$error);
+    $rval = $this->set_password_and_notify($password);
+    if(!$rval) { $error = 'Invalid password'; }
+
+    return $rval;
   }
 
-  public function set_password($password,&$error=0)
+  /**
+   * Sets the user's password to the specified value
+   * @param string $password 
+   * @return bool true=success, false=invalid password
+   */
+  public function set_password(string $password) : bool
   {
     // Note this function will return: 
     //   false if there was an issue with the update command
     //   0     if the command was ok, but no database update was needed
     //   1     if the command was ok and the password was updated
 
-    $error = null;
     if(!adjust_and_validate_user_input('password',$password) ) {
       log_info("Cannot update password for $this->_userid: invalid password");
-      $error = 'invalid password';
       return false;
     }
     $password = password_hash($password,PASSWORD_DEFAULT);
 
-    $result = MySQLExecute('update tlc_srv_userids set password=? where userid=?', 'ss', $password, $this->_userid);
-
-    if($result) { $this->_password = $password; }
-
-    return $result;
+    try {
+      MySQLExecute('update tlc_srv_userids set password=? where userid=?', 'ss', $password, $this->_userid);
+      $this->_password = $password;
+      return true;
+    } catch(mysqli_sql_exception $e) {
+      internal_error("Mysterious failure to update password in database: ".$e->getMessage());
+      // won't actually return, but to keep the linter happy...
+      return false;
+    }
   }
 
-  public function set_password_and_notify($password,&$error=0)
+  /**
+   * Sets the user's password and notifies them of the change 
+   *   (if they provided an email address)
+   * @param string $password 
+   * @return bool 
+   */
+  public function set_password_and_notify(string $password) : bool
   {
-    $rval = $this->set_password($password,$error);
+    $rval = $this->set_password($password);
 
     if($rval) { 
       $email = $this->email();
@@ -368,7 +414,15 @@ class User {
 }
 
 
-function create_new_user($userid,$fullname,$password,$email=null)
+/**
+ * Creates a new userid and associated access token
+ * @param string $userid 
+ * @param string $fullname 
+ * @param string $password 
+ * @param null|string $email 
+ * @return null|User 
+ */
+function create_new_user(string $userid,string $fullname,string $password,?string $email=null) : ?User
 {
   $userid = strtolower($userid);
 
@@ -391,41 +445,49 @@ function create_new_user($userid,$fullname,$password,$email=null)
     internal_error("Error while creating new user: email $error");
   }
 
-  $token    = gen_token();
-  $password = password_hash($password,PASSWORD_DEFAULT);
+  try {
+    MySQLBeginTransaction();
 
-  MySQLBeginTransaction();
+    $token    = gen_token();
+    $password = password_hash($password, PASSWORD_DEFAULT);
 
-  if($email) {
-    $r = MySQLExecute(
-      "insert into tlc_srv_userids (userid,fullname,email,password) values (?,?,?,?)",
-      "ssss",
-      $userid,$fullname,$email,$password
-    );
-  } else {
-    $r = MySQLExecute(
-      "insert into tlc_srv_userids (userid,fullname,password) values (?,?,?)",
-      "sss",
-      $userid,$fullname,$password
-    );
+    if ($email) {
+      MySQLExecute(
+        "insert into tlc_srv_userids (userid,fullname,email,password) values (?,?,?,?)",
+        "ssss", $userid, $fullname, $email, $password
+      );
+    } else {
+      MySQLExecute(
+        "insert into tlc_srv_userids (userid,fullname,password) values (?,?,?)",
+        "sss", $userid, $fullname, $password
+      );
+    }
+
+    $token = generate_access_token($userid);
+    if (!$token) {
+      internal_error("Error while creating new user: could not create access token for $userid");
+    }
+
+    MySQLCommit();
+
+    $new_user = User::from_userid($userid);
   }
-  if(!$r) { 
+  catch(\Exception $e) {
     MySQLRollback();
-    return null;
+    log_warning("Failed to create new user: $e->");
+    $new_user = null;
   }
-
-  $token = generate_access_token($userid);
-  if(!$token) {
-    MySQLRollback();
-    return null;
-  }
-
-  MySQLCommit();
-  // Construct and return the new User instance
-  return User::from_userid($userid);
+  return $new_user;
 }
 
-function validate_user_password($userid,$password)
+/**
+ * Verifies that the specified password for the spececified user matches
+ *   the hashed password in the database.
+ * @param string $userid 
+ * @param string $password 
+ * @return bool 
+ */
+function validate_user_password(string $userid,string $password) : bool
 {
   $userid = strtolower($userid);
 

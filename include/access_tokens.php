@@ -1,6 +1,8 @@
 <?php
 namespace tlc\tts;
 
+use mysqli_sql_exception;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file("include/db.php"));
@@ -94,7 +96,7 @@ class AccessTokens
   /**
    * Invalidates the specified token and generates a replacment
    * @param string $userid 
-   * @param string $token to be invalidated
+   * @param string $old_token to be invalidated
    * @return string the new token (empty on failure)
    */
   public static function regenerate(string $userid, string $old_token) : string
@@ -106,21 +108,26 @@ class AccessTokens
   // Private internal implementations of the public interface
 
   /**
+   * Private function for adding a new access token
    * @param string $token 
    * @return bool 
    */
   private function _add(string $token) : bool
   {
-    $query = <<<SQL
-      INSERT INTO tlc_srv_access_tokens (userid,token,expires)
-      VALUES (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
-      ON duplicate KEY UPDATE
-        expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
-    SQL;
-    if( MySQLExecute($query,"ss",$this->_userid,$token) ) {
-      $this->_tokens[] = $token;
+    try {
+      $query = <<<SQL
+        INSERT INTO tlc_srv_access_tokens (userid,token,expires)
+        VALUES (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
+        ON duplicate KEY UPDATE
+          expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
+      SQL;
+      MySQLExecute($query, "ss", $this->_userid, $token);
       return true;
-    } else {
+    }
+    catch(mysqli_sql_exception $e) {
+      if($e->getCode() != MYSQL_FK_CONSTRAINT_VIOLATION) {
+        internal_error("Failed to add access_token: ".$e->getMessage());
+      }
       return false;
     }
   }
@@ -157,7 +164,7 @@ function validate_access_token($userid,$token)
 /**
  * Generate a new access token for the specified userid
  * @param string $userid 
- * @return string 
+ * @return string (empty on failure) 
  */
 function generate_access_token(string $userid) : string
 {

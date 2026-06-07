@@ -9,6 +9,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once app_file('include/logger.php');
 
+define('MYSQL_FK_CONSTRAINT_VIOLATION',1452);
+
 /**
  * Returns a singleton mysqli connection (constructing it if necessary) based 
  *   on the connection credentials in the config .ini file.

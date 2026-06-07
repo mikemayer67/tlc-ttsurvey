@@ -47,7 +47,7 @@ function get_survey_state($survey_id)
     FROM tlc_srv_surveys
     WHERE survey_id=?
   SQL;
-  return MySQLSelectValue($query,'i',$survey_id);
+  return MySQLFetchValue($query,'i',$survey_id);
 }
 
 function update_survey($survey_id, $content, $title)
@@ -65,7 +65,7 @@ function update_survey($survey_id, $content, $title)
     //  - survey content is retrieved below
     //  - user response data is cached in database
     
-    $details = MySQLSelectRow("select * from tlc_srv_surveys where survey_id=$survey_id");
+    $details = MySQLFetchOneAssoc('select * from tlc_srv_surveys where survey_id=$survey_id');
     if($title) {
       $details['title'] = $title;
     }
@@ -132,7 +132,7 @@ function validate_cache_table($table,$cache)
     ) column_degeneracy
     WHERE column_degeneracy.test != 2
   SQL;
-  $mismatch_count = MySQLSelectValue($query,'ss',$table,$cache);
+  $mismatch_count = MySQLFetchValue($query,'ss',$table,$cache);
   if($mismatch_count !== 0) {
     internal_error("Cache table $cache has $mismatch_count columns differences from $table");
   }
@@ -219,8 +219,8 @@ function update_survey_content($survey_id,$content)
 
   $insert = <<<SQL
     INSERT into tlc_srv_sections
-           (survey_id, section_id, sequence, name, collapsible, intro)
-    VALUES ($survey_id,?,?,?,?,?,?)
+           (survey_id, section_id, name, collapsible, intro)
+    VALUES ($survey_id,?,?,?,?,?)
   SQL;
 
   foreach( $sections as $section ) {
@@ -228,7 +228,6 @@ function update_survey_content($survey_id,$content)
     $rc = MySQLExecute(
       $insert, 'iisiss',
       $section_id,
-      $section['sequence'],
       $section['name'],
       ($section['collapsible'] ?? null) ? 1 : 0,
       $section['intro']
