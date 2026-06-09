@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-log_dev("-------------- Start of Preview --------------");
+log_mark("-------------- Start of Preview --------------");
 
 validate_and_retain_nonce('preview');
 

@@ -10,7 +10,7 @@ require_once(app_file('survey/submitted.php'));
 
 $action = $_POST['action'] ?? 'cancel';
 
-log_dev("-------------- Handle Submit: $action --------------");
+log_mark("-------------- Handle Submit: $action --------------");
 
 // Go ahead and handle the cancel button immediately by simply going back to the main entry point
 if($action === 'cancel')

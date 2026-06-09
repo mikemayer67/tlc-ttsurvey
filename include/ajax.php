@@ -103,7 +103,6 @@ function validate_ajax_nonce(string $key)
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual   = $_POST['nonce'];
   if($actual !== $expected) {
-    // pass trace level of 1 (log caller of this function, not this function)
     send_ajax_bad_nonce("expected=$expected, actual=$actual");
   }
 }

@@ -8,7 +8,7 @@ require_once(app_file('include/roles.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
-log_dev("-------------- Start of Admin Dashboard --------------");
+log_mark("-------------- Start of Admin Dashboard --------------");
 
 // If an explicit request was made to login as site admin,
 //   handle that now.  No need to verify existing admin/user roles.

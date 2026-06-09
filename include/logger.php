@@ -70,6 +70,7 @@ function write_to_logger(string $prefix,string $msg,bool $includeTrace=true)
   case "WARNING": $level = 1; break;
   case "TODO":
   case "INFO":    $level = 2; break;
+  case "MARKER":
   case "DEV":     $level = 3; break;
   default:        
     log_warning("Invalid logging prefix: $prefix"); 
@@ -116,6 +117,15 @@ function todo(string $msg) {
  */
 #[ExcludeFromLogTrace]
 function log_dev(string $msg) { write_to_logger("DEV",$msg); }
+
+/**
+ * Adds a DEV level entry in the log file without trace logging
+ * @param mixed $msg 
+ * @return void 
+ * @note only adds entry if current logging level is development
+ */
+#[ExcludeFromLogTrace]
+function log_mark(string $msg) { write_to_logger("MARKER",$msg,includeTrace:false); }
 
 /**
  * Adds a INFO level entry in the log file

@@ -34,11 +34,6 @@ function api_die(string $msg='')
  *   returns the http 500 error status and splash screen,
  *   and then terminates PHP
  * @param string $msg 
- * @param int $trace How far up the callstack to report error (default=0)
- * @return void 
- * 
- * @note $trace=0 means to log the caller of internal_error, 
- *       $trace=1 means to log the caller of the caller, etc.
  */
 #[ExcludeFromLogTrace]
 function internal_error(string $msg)
