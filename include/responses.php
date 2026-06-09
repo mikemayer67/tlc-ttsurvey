@@ -205,13 +205,13 @@ function withdraw_user_responses(string $userid,int $survey_id) : bool
 
   try {
     foreach ($queries as $query) {
-      MySQLExecute($query, 'si', $userid, $survey_id);
+      $stmt = new MySQLPreparedExec($query,'si',onException:'rethrow',rollbackOnException:true);
+      $stmt->run($userid,$survey_id);
     }
   }
   catch(mysqli_sql_exception $e) 
   {
     log_warning("Failed to withdraw responses from $userid: " . $e->getMessage());
-    MySQLRollback();
     return false;
   }
 
@@ -254,13 +254,13 @@ function drop_user_draft_responses(string $userid,int $survey_id) : bool
 
   try {
     foreach ($queries as $query) {
-      MySQLExecute($query, 'si', $userid, $survey_id);
+      $stmt = new MySQLPreparedExec($query,'si',onException:'rethrow',rollbackOnException:true);
+      $stmt->run($userid,$survey_id);
     }
   }
   catch(mysqli_sql_exception $e) 
   {
     log_warning("Failed to remove draft responses for $userid: " . $e->getMessage());
-    MySQLRollback();
     return false;
   }
 
@@ -283,7 +283,8 @@ function restart_user_responses(string $userid,int $survey_id) : bool
   SQL;
 
   try {
-    MySQLExecute($query, 'si', $userid, $survey_id);
+    $stmt = new MySQLPreparedExec($query, 'si', onException: 'rethrow', rollbackOnException: false);
+    $stmt->run($userid, $survey_id);
   } 
   catch(mysqli_sql_exception $e) 
   {
@@ -315,7 +316,7 @@ function set_confirmation_email_timestamp(string $userid,int $survey_id,string $
  * Getter for the timestamp for the last confirmation email sent
  * @param string $userid 
  * @param int $survey_id 
- * @return array{timestamp:int, address:string}|[]
+ * @return array{timestamp:int, address:string}|array{}
  */
 function get_confirmation_email_timestamp(string $userid,int $survey_id) : array
 {

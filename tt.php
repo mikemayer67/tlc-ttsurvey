@@ -30,6 +30,8 @@ session_start();
 
 if(key_exists('errortest',$_GET)) { internal_error("You asked for it!"); }
 
+write_to_logger("INFO", "Testing logTrace from main");
+
 try
 {
   log_dev("-------------- Start of TT --------------");

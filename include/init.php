@@ -7,8 +7,12 @@ define('APP_URI', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/') . '/');
 define('PKG_NAME', 'tlc-ttsurvey');
 
 // Error handling 
+class BadInput extends \Exception {}
 
-class BadInput      extends \Exception {}
+// Logging trace
+use Attribute;
+#[Attribute(Attribute::TARGET_CLASS|Attribute::TARGET_FUNCTION|Attribute::TARGET_METHOD)]
+class ExcludeFromLogTrace {}
 
 /**
  * Adds the API usage error (with optional message) to the error log 
@@ -16,6 +20,7 @@ class BadInput      extends \Exception {}
  * @param string $msg 
  * @return never 
  */
+#[ExcludeFromLogTrace]
 function api_die(string $msg='') 
 {
   error_log("API Error[$msg]: ".print_r($_SERVER,true));
@@ -35,14 +40,15 @@ function api_die(string $msg='')
  * @note $trace=0 means to log the caller of internal_error, 
  *       $trace=1 means to log the caller of the caller, etc.
  */
-function internal_error(string $msg, int $trace=0)
+#[ExcludeFromLogTrace]
+function internal_error(string $msg)
 {
   // avoid recursion if internal error occurred while rendering 500.php
   if(defined('RENDERING_ERR_PHP')) { return; }
 
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $msg",2+$trace);
+  log_error("[$errid]: $msg");
   $_SESSION['internal-error'][$errid] = $msg;
   http_response_code(500);
   require(app_file("500.php"));
@@ -56,6 +62,7 @@ function internal_error(string $msg, int $trace=0)
  * @param string $msg 
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function validation_error(string $msg)
 {
   // avoid recursion if internal error occurred while rendering 500.php
@@ -63,7 +70,7 @@ function validation_error(string $msg)
 
   require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_warning("[$errid]: $msg",2);
+  log_warning("[$errid]: $msg");
   http_response_code(405);
   require(app_file("405.php"));
   die;
@@ -83,7 +90,12 @@ function app_file(string $path) : string { return APP_DIR . "/$path"; }
  */
 function app_uri(?string $q=null) : string  { return ($q ? "tt.php?$q" : "tt.php"); }
 
-function app_repo() {
+/**
+ * Returns the URL of the remote git repository for the survey app project
+ * @return null|string 
+ */
+function app_repo() : ?string
+{
   static $repo_url = null;
   if(is_null($repo_url)) {
     $git_config_file = app_file('.git/config');
@@ -299,13 +311,14 @@ function get_nonce(string $key) : ?string
  * @param bool $dieonfail true: treat this as an API failure
  * @return bool whether or not the nonce is valid
  */
+#[ExcludeFromLogTrace]
 function validate_nonce(string $key,string $src='POST',bool $invalidate=true, bool $dieonfail=true) : bool 
 {
   $expected = $_SESSION['nonce'][$key] ?? null;
   $actual = (strtolower($src)==='get') ? ($_GET['ttt'] ?? null) : ($_POST['nonce'] ?? null);
   $matches = ($actual === $expected);
   if(!$matches) {
-    log_warning("Invalid nonce: ($key:$actual/$expected)",2);
+    log_warning("Invalid nonce: ($key:$actual/$expected)");
     if($dieonfail) { api_die("Invalid nonce: key=$key"); }
   }
   if($invalidate) { $_SESSION['nonce'][$key] = null; }
@@ -321,6 +334,7 @@ function validate_nonce(string $key,string $src='POST',bool $invalidate=true, bo
  * @param bool $invalidate true:forget the nonce, false:retain the nonce
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function validate_get_nonce(string $key,bool $invalidate=true)
 { 
   validate_nonce($key,'GET',$invalidate);
@@ -332,10 +346,9 @@ function validate_get_nonce(string $key,bool $invalidate=true)
  * If the nonce fails to validate, api_die will be invoked, terminating PHP
  * @param string $key used to identify the nonce usage
  * @param string $src either 'POST' or 'GET'
- * @param string $key 
- * @param string $src 
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function validate_and_retain_nonce(string $key,string $src='POST') 
 { 
   validate_nonce($key,$src,false);
@@ -348,6 +361,7 @@ function validate_and_retain_nonce(string $key,string $src='POST')
  * @param string $key used to identify the nonce usage
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function validate_and_retain_get_nonce(string $key)
 { 
   validate_nonce($key,'GET',false);

@@ -15,7 +15,7 @@ class Settings {
     'pwreset_timeout' => 15,
     'pwreset_length'  => 10,
     'reminder_freq'   => 24, // hours
-    'log_level'       => 2,
+    'log_level'       => 0,  // error level logging on startup
     'smtp_auth'       => 1,  // 0=SMTPS, 1=STARTTLS
     'smtp_debug'      => 0,  // 0=None, 1=Server->Client, 2=Server<->Client, 3=extra
     'bug_reporting'   => 2,  // 0=disabled, 1=email only, 2=email + GitHub issue
@@ -26,10 +26,14 @@ class Settings {
 
   static public function load_all()
   {
-    $rows = MySQLFetchColumn('select name,value from tlc_srv_settings');
+    // seed all values with defaults
+    self::$values = self::$defaults;
+
+    // updates all values with database stored values
+    $rows = MySQLFetchAllIndexed('select name,value from tlc_srv_settings');
 
     foreach($rows as $row) {
-      $values[$row[0]] = $row[1];
+      self::$values[$row[0]] = $row[1];
     }
   }
 

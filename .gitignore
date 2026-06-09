@@ -22,6 +22,7 @@ sql/live_backups
 !sql/drop_backup.sql
 
 archive/*
+MAMP*
 
 .vscode/*
 vendor

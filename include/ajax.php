@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once('include/logger.php');
+
 /**
  * Packages a response from AJAX call and sends it to the browser
  * @param array $data will be json encoded in response to browser
@@ -40,11 +42,11 @@ function send_ajax_failure(string $message, bool $die=true)
  * @param string $error 
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function send_ajax_bad_request(string $error)
 {
-  require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]BAD_REQUEST: $error",1);
+  log_error("[$errid]BAD_REQUEST: $error");
   send_ajax_response(['reason'=>$error],400);
 }
 
@@ -54,11 +56,11 @@ function send_ajax_bad_request(string $error)
  * @param string $error 
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function send_ajax_unauthorized(string $error)
 {
-  require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]UNAUTHORIZED: $error",1);
+  log_error("[$errid]UNAUTHORIZED: $error");
   send_ajax_response(['reason'=>$error],401);
 }
 
@@ -66,28 +68,27 @@ function send_ajax_unauthorized(string $error)
  * Returns a 403 (FORBIDDEN) error on an AJAX call
  *   For the survey app, this means that a bad/expired nonce was encountered
  * @param string $error 
- * @param int $level trace level for logging (0 logs immediate caller)
  * @return void 
  */
-function send_ajax_bad_nonce(string $error, int $level=0)
+#[ExcludeFromLogTrace]
+function send_ajax_bad_nonce(string $error)
 {
-  require_once('include/logger.php');
   require_once('include/cookiejar.php');
   $userid = active_userid();
-  log_warning("Bad nonce [$userid]: $error",1+$level);
+  log_warning("Bad nonce [$userid]: $error");
   send_ajax_response(['reason'=>"Invalid nonce"],403);
 }
 
 /**
  * Siminar to the internal_error function, but intended for use from within AJAX calls
- * @param string $msg 
+ * @param string $error
  * @return void 
  */
+#[ExcludeFromLogTrace]
 function send_ajax_internal_error(string $error)
 {
-  require_once('include/logger.php');
   $errid = bin2hex(random_bytes(3));
-  log_error("[$errid]: $error",1);
+  log_error("[$errid]: $error");
   send_ajax_response(['reason'=>$error],500);
 }
 
@@ -103,7 +104,7 @@ function validate_ajax_nonce(string $key)
   $actual   = $_POST['nonce'];
   if($actual !== $expected) {
     // pass trace level of 1 (log caller of this function, not this function)
-    send_ajax_bad_nonce("expected=$expected, actual=$actual",1);
+    send_ajax_bad_nonce("expected=$expected, actual=$actual");
   }
 }
 

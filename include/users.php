@@ -189,7 +189,7 @@ class User {
       $changed = MySQLExecute('update tlc_srv_userids set email=NULL where userid=?','s',$this->_userid);
     }
 
-    if($changed) { $this->_email = $email; }
+    if($changed > 0) { $this->_email = $email; }
     return $changed > 0;
   }
 
@@ -382,7 +382,8 @@ class User {
     $password = password_hash($password,PASSWORD_DEFAULT);
 
     try {
-      MySQLExecute('update tlc_srv_userids set password=? where userid=?', 'ss', $password, $this->_userid);
+      $update = new MySQLPreparedExec('update tlc_srv_userids set password=? where userid=?', 'ss', onException:'rethrow');
+      $update->run($password, $this->_userid);
       $this->_password = $password;
       return true;
     } catch(mysqli_sql_exception $e) {
