@@ -24,19 +24,6 @@ class Settings {
 
   static private $values = array();
 
-  static public function load_all()
-  {
-    // seed all values with defaults
-    self::$values = self::$defaults;
-
-    // updates all values with database stored values
-    $rows = MySQLFetchAllIndexed('select name,value from tlc_srv_settings');
-
-    foreach($rows as $row) {
-      self::$values[$row[0]] = $row[1];
-    }
-  }
-
   static public function update(...$kv) {
     if(count($kv) == 1) {
       $kv = $kv[0];
@@ -122,8 +109,6 @@ class Settings {
     }
   }
 };
-
-Settings::load_all();
 
 // fix timezone
 date_default_timezone_set(Settings::get('timezone'));

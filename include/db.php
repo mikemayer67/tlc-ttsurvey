@@ -415,7 +415,7 @@ class MySQLPreparedSelect extends MySQLPreparedStatement
     $result = $this->stmt->get_result();
     $rval = $result->fetch_column(0);
     $result->free();
-    return $rval;
+    return $rval !== false ? $rval : null;
   }
 }
 
@@ -506,12 +506,12 @@ function MySQLFetchOneIndexed(string $query,string $types='',...$params) : array
 #[ExcludeFromLogTrace]
 function MySQLFetchColumn(string $query,string $types='',...$params) : array
 {
-  $stmt = new MySQLPreparedSelect($query);
+  $stmt = new MySQLPreparedSelect($query,$types);
   return $stmt->fetchColumn(...$params);
 }
 
 /**
- * Executes a SELECT query and returns first value from first row 
+ * Executes a SELECT query and returns first value from ,first row 
  * @param string $query Prepared statement query string (with ? pararameter placeholders)
  * @param string $types Prepared statement parameter types (default='')
  * @param array $params Prepared statement parameter values
