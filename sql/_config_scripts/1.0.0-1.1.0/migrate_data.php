@@ -97,8 +97,8 @@ SQL ],
 
 // No change to the access token table other than prefix
   [ __LINE__, <<<SQL
-INSERT into tlc_srv_access_tokens (userid, token, expires)
-SELECT userid, token, expires FROM tlc_tt_access_tokens;
+INSERT into tlc_srv_access_tokens (userid, env_id, token, expires)
+SELECT userid, concat('OLD-',substring(token,1,20)), token, expires FROM tlc_tt_access_tokens;
 SQL ],
 
 // No change to the reset tokrens table other than prefix

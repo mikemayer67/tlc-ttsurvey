@@ -79,9 +79,9 @@ function handle_migration() : array
     $migrations = [
       '1.1.0' => function (PDO $pdo) {
         // simple data copy
-        run_sql_script($pdo,'migrate_1.0.0_to_1.1.0');
+        run_sql_script($pdo,'1.0.0-1.1.0/migrate_data');
         // replace question map to structure map
-        require_once('./_config_scripts/content_map.php');
+        require_once('./_config_scripts/1.0.0-1.1.0/content_map.php');
         populate_content_map($pdo);
       },
       // future data migration steps will go here... for example:

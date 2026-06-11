@@ -11,10 +11,12 @@ require_once(app_file('include/access_tokens.php'));
  *   - active token stores a temporary copy of the user's access token
  * Persistent cookies:
  *   - access tokens stores a cache of user access tokens (when requested)
+ *   - browser ID token is used to map access tokens to browswer environment
  **/
 const ACTIVE_USER_COOKIE = 'ttt-active-user';
 const ACTIVE_TOKEN_COOKIE = 'ttt-active-token';
 const ACCESS_TOKENS_COOKIE = 'ttt-access-tokens';
+const ENV_ID_COOKIE = 'ttt-browser-id';
 
 $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
 $secure_cookies = (
@@ -39,6 +41,7 @@ class CookieJar
 {
   // the singleton
   private static ?CookieJar $_instance = null;
+  private static string     $_env_id = '';
 
   // the singleton's attributes
   private string $_active_userid;
@@ -58,6 +61,8 @@ class CookieJar
     $this->_active_userid = $_COOKIE[ACTIVE_USER_COOKIE]  ?? "";
     $this->_active_token  = $_COOKIE[ACTIVE_TOKEN_COOKIE] ?? "";
 
+    self::$_env_id = $_COOKIE[ENV_ID_COOKIE] ?? gen_token(24);
+
     // manage/renew persistent cookies
     $tokens = $_COOKIE[ACCESS_TOKENS_COOKIE] ?? [];
     if($tokens) {
@@ -70,6 +75,7 @@ class CookieJar
     }
     $this->_access_tokens = $tokens;
     $this->_cache_access_tokens();
+    $this->_refresh_env_id_cookie();
   }
 
   private function _set_session_cookie(string $key,string $value)
@@ -92,7 +98,19 @@ class CookieJar
     );
   }
 
+  private function _refresh_env_id_cookie()
+  {
+    $expires = time() + 86400*365*2;   // 2 years
+    setcookie( ENV_ID_COOKIE, self::$_env_id, ['expires' => $expires, ...SECURE_COOKIE_OPTIONS]);
+  }
+
   // Active Userid and Access Token (session level)
+
+  /**
+   * Getter for the env_id for use with access token authentication
+   * @return string
+   */
+  public static function browser_env_id() : string { return self::$_env_id; }
 
   /**
    * Getter for the active userid cookie

@@ -193,9 +193,10 @@ SQL ],
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_srv_access_tokens (
   userid   VARCHAR(24)  NOT NULL,
+  env_id   VARCHAR(25)  NOT NULL COMMENT 'browser environment token',
   token    VARCHAR(45)  NOT NULL COMMENT 'access token',
   expires  DATETIME     NOT NULL COMMENT 'when the token expires unless renewed',
-  PRIMARY KEY (userid,token),
+  PRIMARY KEY (userid,env_id),
   FOREIGN KEY (userid) REFERENCES tlc_srv_userids(userid) on UPDATE RESTRICT ON DELETE CASCADE
 );
 SQL ],

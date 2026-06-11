@@ -24,11 +24,18 @@ class AccessTokens
    */
   private function __construct(string $userid)
   {
+    $env_id = CookieJar::browser_env_id();
+
     // perform cleanup of expired tokens
     //  needs to happen somewhere... here makes sense
     MySQLExecute('delete from tlc_srv_access_tokens where expires < CURRENT_TIMESTAMP');
 
-    $tokens = MySQLFetchColumn('select token from tlc_srv_access_tokens where userid=?','s',$userid);
+    $query = <<<SQL
+      SELECT token FROM tlc_srv_access_tokens
+       WHERE userid=?
+         AND (env_id=? OR env_id LIKE 'OLD-%')
+    SQL;
+    $tokens = MySQLFetchColumn($query,'ss',$userid,$env_id);
     $this->_userid = $userid;
     $this->_tokens = $tokens ? $tokens : array();
 
@@ -114,14 +121,22 @@ class AccessTokens
    */
   private function _add(string $token) : bool
   {
+    $env_id = CookieJar::browser_env_id();
+
     try {
       $query = <<<SQL
-        INSERT INTO tlc_srv_access_tokens (userid,token,expires)
-        VALUES (?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
+        DELETE FROM tlc_srv_access_tokens
+         WHERE USERID=? AND ENV_ID=?
+      SQL;
+      MySQLExecute($query, 'ss', $this->_userid, $env_id);
+
+      $query = <<<SQL
+        INSERT INTO tlc_srv_access_tokens (userid, env_id, token, expires)
+        VALUES (?,?,?,CURRENT_TIMESTAMP + INTERVAL 18 MONTH)
         ON duplicate KEY UPDATE
           expires = CURRENT_TIMESTAMP + INTERVAL 18 MONTH
       SQL;
-      MySQLExecute($query, "ss", $this->_userid, $token);
+      MySQLExecute($query, "sss", $this->_userid, $env_id, $token);
       return true;
     }
     catch(mysqli_sql_exception $e) {
@@ -138,8 +153,10 @@ class AccessTokens
    */
   private function _remove(string $token)
   {
-    $query = 'DELETE FROM tlc_srv_access_tokens WHERE userid=? AND token=?';
-    MySQLExecute($query,"ss",$this->_userid,$token);
+    $env_id = CookieJar::browser_env_id();
+
+    $query = 'DELETE FROM tlc_srv_access_tokens WHERE userid=? AND env_id=? AND token=?';
+    MySQLExecute($query,"sss",$this->_userid, $env_id, $token);
 
     $tokens = $this->_tokens;
     $tokens = array_filter($tokens, fn($t) => $t !== $token);
