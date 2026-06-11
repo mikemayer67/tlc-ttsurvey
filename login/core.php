@@ -45,7 +45,7 @@ if($page)
 if( $form=$_POST['form']??null ) {
   $handler_path = "login/{$form}_handler.php";
   if(!file_exists(app_file($handler_path))) {
-    internal_error("Unimplemented form handler ($form / $handler)");
+    internal_error("Unimplemented form handler ($form / $handler_path)");
   }
   $handler = safe_app_file($handler_path);
   require($handler);

@@ -1,6 +1,8 @@
 <?php
 namespace tlc\tts;
 
+use Nette\Utils\Strings;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/db.php'));
@@ -24,49 +26,31 @@ class Settings {
 
   static private $values = array();
 
-  static public function update(...$kv) {
-    if(count($kv) == 1) {
-      $kv = $kv[0];
-      foreach($kv as $k=>$v) {
-        self::set($k,$v);
-      }
-    } else {
-      while(count($kv)>1) {
-        $k = array_shift($kv);
-        $v = array_shift($kv);
-        self::set($k,$v);
-      }
+  static public function update(array $kv) {
+    foreach($kv as $key=>$value) {
+      self::set($key, $value);
     }
   }
 
-  static public function validate(...$args) { 
-    if( count($args) == 1 ) {
-      $kv = $args[0];
-    } else {
-      $kv = array();
-      while(count($args) > 1) {
-        $k = array_shift($args);
-        $v = array_shift($args);
-        $kv[$k] = $v;
-      }
-    }
+  static public function validate(array $kv) 
+  { 
     $errors = array();
-    $error='';
     foreach($kv as $key=>$value) {
       $vfunc = "tlc\\tts\\validate_$key";
       if(function_exists($vfunc)) {
+        $error = '';
         if(!$vfunc($value,$error)) { $errors[$key] = $error; }
       }
     }
     return $errors;
   }
 
-  static public function default($key) 
+  static public function default(string $key) : null|string|float 
   { 
     return self::$defaults[$key] ?? null; 
   }
   
-  static public function raw($key) 
+  static public function raw(string $key) : ?string
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
@@ -77,7 +61,7 @@ class Settings {
     return $value;
   }
 
-  static public function get($key) 
+  static public function get(string $key) : null|string|float
   {
     if(key_exists($key,self::$values)) { return self::$values[$key]; }
 
@@ -90,12 +74,12 @@ class Settings {
     return $value;
   }
 
-  static public function clear($key)
+  static public function clear(string $key)
   {
     self::set($key,null);
   }
 
-  static public function set($key,$value) 
+  static public function set(string $key,null|string|float $value) : void
   {
     if(is_null($value) || $value==='') {
       unset(self::$values[$key]);
@@ -118,10 +102,10 @@ MySQLExecute("SET time_zone = '".date('P')."'");
 // Convenience Accessors
 //
 
-function get_setting($key)        { return Settings::get($key);      } 
-function set_setting($key,$value) { Settings::set($key,$value);      }
-function clear_setting($key)      { Settings::clear($key);           } 
-function setting_default($key)    { return Settings::default($key);  }
+function get_setting(string $key)              { return Settings::get($key);      } 
+function set_setting(string $key,mixed $value) { Settings::set($key,$value);      }
+function clear_setting(string $key)            { Settings::clear($key);           } 
+function setting_default(string $key)          { return Settings::default($key);  }
 
 // App Look-and-Feel settings
 function app_name()            { return get_setting('app_name'); }
@@ -149,8 +133,8 @@ function pwreset_length()   { return min(20,max(4, get_setting('pwreset_length')
 function reminder_freq()    { return get_setting('reminder_freq'); } // hours
 
 // Logging settings
-function log_level()        { return get_setting('log_level', 2);  }
-function bug_reporting()    { return get_setting('bug_reporting',2); }
+function log_level()        { return get_setting('log_level'); }
+function bug_reporting()    { return get_setting('bug_reporting'); }
 
 // SMTP settings
 function smtp_host()        { return get_setting('smtp_host'); }
@@ -182,13 +166,13 @@ date_default_timezone_set(timezone());
 // Validation functions
 //
 
-function _fix_validate_value(&$value)
+function _fix_validate_value(?string &$value)
 {
   if(isset($value)) { $value = trim($value); }
   else              { $value = ''; }
 }
 
-function validate_timezone($timezone,&$error=null) {
+function validate_timezone(string $timezone,?string &$error=null) {
   $error = '';
   _fix_validate_value($timezone);
   if($timezone==='') { return true; }
@@ -198,7 +182,7 @@ function validate_timezone($timezone,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_admin_name($name, &$error = null): bool {
+function validate_admin_name(string $name,?string &$error = null): bool {
   $error = '';
   _fix_validate_value($name);
   if($name==='') { return true; }
@@ -208,7 +192,7 @@ function validate_admin_name($name, &$error = null): bool {
   return strlen($error) == 0;
 }
 
-function validate_admin_email($email,&$error=null) {
+function validate_admin_email(string $email,?string &$error=null) {
   $error = '';
   _fix_validate_value($email);
   if($email==='') { return true; }
@@ -218,7 +202,7 @@ function validate_admin_email($email,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_pwreset_timeout($timeout,&$error=null) {
+function validate_pwreset_timeout(string|float $timeout,?string &$error=null) {
   $error = '';
   _fix_validate_value($timeout);
   if($timeout==='') { return true; }
@@ -231,7 +215,7 @@ function validate_pwreset_timeout($timeout,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_pwreset_length($len,&$error=null) {
+function validate_pwreset_length(string|float $len,?string &$error=null) {
   $error = '';
   _fix_validate_value($len);
   if($len==='') { return true; }
@@ -246,7 +230,7 @@ function validate_pwreset_length($len,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_smtp_host($host,&$error=null) {
+function validate_smtp_host(string $host,?string &$error=null) {
   $error = '';
   _fix_validate_value($host);
   if( $host === '' ) { $error = "missing"; }
@@ -256,21 +240,21 @@ function validate_smtp_host($host,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_smtp_username($name,&$error=null) {
+function validate_smtp_username(string $name,?string &$error=null) {
   $error = '';
   _fix_validate_value($name);
   if($name==='') { $error = 'missing'; }
   return strlen($error) == 0;
 }
 
-function validate_smtp_password($password,&$error=null) {
+function validate_smtp_password(string $password,?string &$error=null) {
   $error = '';
   _fix_validate_value($password);
   if($password==='') { $error = 'missing'; }
   return strlen($error) == 0;
 }
 
-function validate_smtp_port($port,&$error=null) {
+function validate_smtp_port(string|float $port,?string &$error=null) {
   $error = '';
   _fix_validate_value($port);
   if($port==='') { return true; }
@@ -284,7 +268,7 @@ function validate_smtp_port($port,&$error=null) {
   return strlen($error) == 0;
 }
 
-function validate_smtp_reply_email($email,&$error=null) {
+function validate_smtp_reply_email(string $email,?string &$error=null) {
   $error = '';
   _fix_validate_value($email);
   if($email==='') { return true; }

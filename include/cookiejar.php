@@ -136,7 +136,7 @@ class CookieJar
    * Updates the active userid and token cookies
    * @param string $userid
    * @param string $token
-   * @param string $remember
+   * @param bool $remember
    * @return void 
    */
   public static function set_active_userid(string $userid,string $token, bool $remember)

@@ -11,7 +11,7 @@ function survey_roles()
   return MySQLFetchAllAssoc('select * from tlc_srv_active_roles');
 }
 
-function add_user_role($userid,$role)
+function add_user_role(string $userid,string $role)
 {
   $userid = strtolower($userid);
 
@@ -19,13 +19,13 @@ function add_user_role($userid,$role)
   return MySQLExecute($query,'ss',$userid,$userid);
 }
 
-function drop_user_role($userid,$role)
+function drop_user_role(string $userid,string $role)
 {
   $query = "update tlc_srv_roles set $role=0 where userid=?";
   return MySQLExecute($query,'s',$userid);
 }
 
-function lookup_userids_by_role($role)
+function lookup_userids_by_role(string $role)
 {
   $roles = survey_roles();
   $rval = Array();
@@ -39,13 +39,13 @@ function survey_admins()  { return lookup_userids_by_role('admin'); }
 function content_admins() { return lookup_userids_by_role('content'); }
 function tech_admins()    { return lookup_userids_by_role('tech'); }
 
-function user_roles($userid)
+function user_roles(string $userid)
 {
   if( $userid === primary_admin() ) { return ['admin', 'content', 'tech', 'summary']; }
   return assigned_roles($userid);
 }
 
-function assigned_roles($userid)
+function assigned_roles(string $userid)
 {
   $roles =  MySQLFetchOneAssoc(
     'select admin,content,tech,summary from tlc_srv_roles where userid=?','s',$userid
@@ -60,7 +60,7 @@ function assigned_roles($userid)
   return $rval;
 }
 
-function has_summary_access($userid)
+function has_summary_access(string $userid)
 {
   if($userid===primary_admin()) { return true; }
 
@@ -78,7 +78,7 @@ function has_summary_access($userid)
 //  return in_array($userid, lookup_userids_by_role($role));
 //}
 
-function admin_contacts($role='admin')
+function admin_contacts(string $role='admin')
 {
   if($role == 'admin') {
     $contacts = array();

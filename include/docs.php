@@ -5,9 +5,12 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('vendor/autoload.php'));
 
+
 use League\CommonMark\Environment\Environment;
-use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
+use League\CommonMark\MarkdownConverter;
+
 
 require_once(app_file('include/logger.php'));
 
@@ -70,8 +73,10 @@ class DocsPage
     // convert markdown to html
 
     $environment = new Environment();
+    $environment->addExtension(new CommonMarkCoreExtension());
     $environment->addExtension(new GithubFlavoredMarkdownExtension());
-    $converter = new CommonMarkConverter([], $environment);
+    
+    $converter = new MarkdownConverter($environment);
 
     $this->_html = $converter->convert($md)->getContent();
   }

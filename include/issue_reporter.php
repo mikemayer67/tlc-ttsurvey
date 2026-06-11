@@ -146,7 +146,7 @@ class IssueReporter
     return $data . '.' . $this->base64url($signature);
   }
 
-  private function base64url($data)
+  private function base64url(string $data)
   {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
   }
@@ -157,7 +157,7 @@ class IssueReporter
    * @param mixed $data 
    * @return string 
    */
-  private static function base64url_encode($data) : string 
+  private static function base64url_encode(string $data) : string 
   {
     $rval = base64_encode($data);
     $rval = strtr($rval, '+/', '-_');

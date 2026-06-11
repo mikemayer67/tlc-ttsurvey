@@ -290,7 +290,7 @@ function survey_groups(string $survey_id) : array
  *   render_in_group: (INFO only)
  *   options: (SELECT only) the list of selectable options
  * @param int $survey_id : the survey of interest
- * @param Array<int> $exclude : question IDs to not include in query
+ * @param array<int> $exclude : question IDs to not include in query
  * @return array 
  */
 function survey_questions(int $survey_id, array $exclude = []) : array

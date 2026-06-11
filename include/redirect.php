@@ -65,9 +65,10 @@ class RedirectDataWriter
  */
 class RedirectDataReader
 {
-  private static $instance_ = null;
-  private $page = null;
-  private $data = null;
+  private static ?RedirectDataReader $instance_ = null;
+  
+  private ?string $page = null;
+  private ?array  $data = null;
 
   public static function instance() : RedirectDataReader
   {

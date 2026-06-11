@@ -9,8 +9,6 @@ class QuestionFlags {
   const MASK_LEFT_RIGHT = 0x0001;  // 0:LEFT  1:RIGHT
   const MASK_ROW_COL    = 0x0002;  // 0:ROW   1:COLUMN
   const MASK_HAS_OTHER  = 0x0004;  // boolean
-  // 0x0008 is now OBE and available for reuse
-  const MASK_IN_GROUP   = 0x0010;  // render info block in group
 
   private int $bits = 0;
 
@@ -23,50 +21,85 @@ class QuestionFlags {
     return $this->bits;
   }
 
-  private function _buttle($mask,$value,$on=1) : ?bool
+  /**
+   * Getter/Setter for right alignment
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
+  public function align_right(?bool $value=null) : ?bool
   {
-    // on=1 : attribute is set when bit is on
-    // on=0 : attribute is set when bit is off
-    if( $value === null ) {
-      // this is the getter
-      $value = ($this->bits & $mask) == $mask;
-      return $on ? $value : !$value;
+    if($value === null) { // getter
+      return ($this->bits & self::MASK_LEFT_RIGHT) === self::MASK_LEFT_RIGHT;
+    } 
+    elseif($value) { // set align right
+      $this->bits |= self::MASK_LEFT_RIGHT;
+    } 
+    else { // clear align right
+      $this->bits &= ~self::MASK_LEFT_RIGHT;
     }
-    // this is the setter
-    $value = $on ? $value : !$value;
-    if($value) { $this->bits |=  $mask; }
-    else       { $this->bits &= ~$mask; }
     return null;
   }
 
-  public function align_right(?bool $value=null) : ?bool
-  {
-    return $this->_buttle(self::MASK_LEFT_RIGHT,$value,1);
-  }
-
+  /**
+   * Getter/Setter for left alignment
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
   public function align_left(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_LEFT_RIGHT,$value,0);
+    if($value === null) { return !$this->align_right(); }
+    else                { $this->align_right(!$value);  }
+    return null;
   }
 
+  /**
+   * Getter/Setter for column orientation
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
   public function orient_column(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_ROW_COL,$value,1);
+    if($value === null) { // getter
+      return ($this->bits & self::MASK_ROW_COL) === self::MASK_ROW_COL;
+    } 
+    elseif($value) { // set align right
+      $this->bits |= self::MASK_ROW_COL;
+    } 
+    else { // clear align right
+      $this->bits &= ~self::MASK_ROW_COL;
+    }
+    return null;
   }
 
+  /**
+   * Getter/Setter for row orientation
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
   public function orient_row(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_ROW_COL,$value,0);
+    if($value === null) { return !$this->orient_column(); }
+    else                { $this->orient_column(!$value);  }
+    return null;
   }
 
+  /**
+   * Getter/Setter for "has other"
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
   public function has_other(?bool $value=null) : ?bool
   {
-    return $this->_buttle(self::MASK_HAS_OTHER,$value);
-  }
-
-  public function render_in_group(?bool $value=null) : ?bool
-  {
-    return $this->_buttle(self::MASK_IN_GROUP,$value);
+    if($value === null) { // getter
+      return ($this->bits & self::MASK_HAS_OTHER) === self::MASK_HAS_OTHER;
+    } 
+    elseif($value) { // set align right
+      $this->bits |= self::MASK_HAS_OTHER;
+    } 
+    else { // clear align right
+      $this->bits &= ~self::MASK_HAS_OTHER;
+    }
+    return null;
   }
 
   public function layout(string $context, ?string $value=null) : ?string

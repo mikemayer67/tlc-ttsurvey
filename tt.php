@@ -105,7 +105,7 @@ try
   // Handle any explicit redirect request
   $redirect_page = get_redirect_page();
   if($redirect_page) {
-    $page = safe_app_file("{$page}.php");
+    $page = safe_app_file("{$redirect_page}.php");
     if(!file_exists($page)) { internal_error("Unimplemented redirect page encountered ($page)"); }
     require($page);
     die();
@@ -132,12 +132,6 @@ try
       "<div>If you wish to change your password, select 'change password' from the user profile maneu.</div>"
     );
   };
-
-  if(key_exists('forget',$_REQUEST)) {
-    require_once(app_file('include/cookiejar.php'));
-    CookieJar::forget_access_token($userid);
-    // .. no reason to abort at this point... 
-  }
 
   // If response data is being submitted, handle updating the database
   if(key_exists('submit',$_POST) && key_exists('action',$_POST)) {

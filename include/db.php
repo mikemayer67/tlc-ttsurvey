@@ -78,6 +78,7 @@ class MySQLConnection
       return $this->conn->prepare($query);
     } catch(mysqli_sql_exception $e) {
       internal_error("Failed to prepare statement: ".$e->getMessage());
+      die(); // not necessary, but it keeps the linter quiet
     }
   }
 

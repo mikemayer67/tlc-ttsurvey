@@ -19,7 +19,7 @@ $SendmailLogToken = '';
 
 /**
  * Sends email to specified email address or addresses
- * @param string|[string] $email 
+ * @param string|array{string} $email 
  * @param string $subject 
  * @param string $text 
  * @param null|string $html optional HTML version of the email body
@@ -115,7 +115,7 @@ function sendmail(mixed $email,string $subject,string $text,?string $html=null)
  * Sends a profile change notification to the specified user
  * @param string $email 
  * @param string $userid 
- * @param [string] $changes 
+ * @param array{string} $changes 
  * @return true|false 
  */
 function sendmail_profile(string $email,string $userid,array $changes)
@@ -154,7 +154,7 @@ function sendmail_profile(string $email,string $userid,array $changes)
 /**
  * Sends password recovery information to specified user
  * @param string $email 
- * @param [string] $tokens 
+ * @param array{string} $tokens 
  * @param null|string &$error set to reason on failure to send email
  * @return false|true 
  */
@@ -440,7 +440,7 @@ function sendmail_bug_report(
 // Email rendering engines
 //------------------------------------------------------------------------------
 
-function render_text_message($message)
+function render_text_message(array $message)
 {
   $rval = '';
   foreach($message as $e) {
@@ -516,7 +516,7 @@ function render_text_message($message)
   return $rval;
 }
 
-function render_html_message($message)
+function render_html_message(array $message)
 {
   $rval = "<div style='margin-left:1em;'>\n";
   foreach($message as $e) {
@@ -589,21 +589,21 @@ function render_html_message($message)
   return $rval;
 }
 
-function parse_text_string($text)
+function parse_text_string(string $text)
 {
   $text = str_replace('<<br>>',"",$text);
   $text = preg_replace('/\[\[(.*?)\]\]/','$1',$text);
   return $text;
 }
 
-function parse_html_string($text)
+function parse_html_string(string $text)
 {
   $text = str_replace('<<br>>',"<div style='margin-top:1em;'></div>",$text);
   $text = preg_replace('/\[\[(.*?)\]\]/','<a href="$1">$1</a>',$text);
   return $text;
 }
 
-function render_text_contacts($contacts)
+function render_text_contacts(array $contacts)
 {
   $rval = '';
   foreach($contacts as $contact) {
@@ -615,7 +615,7 @@ function render_text_contacts($contacts)
   return $rval;
 }
 
-function render_html_contacts($contacts)
+function render_html_contacts(array $contacts)
 {
   $links = [];
 
