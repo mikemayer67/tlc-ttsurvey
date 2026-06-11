@@ -9,6 +9,8 @@ class QuestionFlags {
   const MASK_LEFT_RIGHT = 0x0001;  // 0:LEFT  1:RIGHT
   const MASK_ROW_COL    = 0x0002;  // 0:ROW   1:COLUMN
   const MASK_HAS_OTHER  = 0x0004;  // boolean
+  // 0x0008 is now OBE and available for reuse
+  const MASK_IN_GROUP   = 0x0010;  // render info block in group
 
   private int $bits = 0;
 
@@ -98,6 +100,25 @@ class QuestionFlags {
     } 
     else { // clear align right
       $this->bits &= ~self::MASK_HAS_OTHER;
+    }
+    return null;
+  }
+
+  /**
+   * Getter/Setter for "render in grup"
+   * @param null|bool $value (null=getter, bool=setter)
+   * @return null|bool setter:null, getter:bool
+   */
+  public function render_in_group(?bool $value=null) : ?bool
+  {
+    if($value === null) { // getter
+      return ($this->bits & self::MASK_IN_GROUP) === self::MASK_IN_GROUP;
+    } 
+    elseif($value) { // set align right
+      $this->bits |= self::MASK_IN_GROUP;
+    } 
+    else { // clear align right
+      $this->bits &= ~self::MASK_IN_GROUP;
     }
     return null;
   }

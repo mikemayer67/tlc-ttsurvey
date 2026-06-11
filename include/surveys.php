@@ -17,7 +17,7 @@ function active_survey_id() : ?int
   if(count($ids)>1) {
     internal_error("Multiple active surveys found in the database: ".implode(', ',$ids));
   }
-  return $ids[0] ?? false;
+  return $ids[0] ?? null;
 }
 
 /**
