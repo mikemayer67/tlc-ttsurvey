@@ -227,7 +227,7 @@ export default function init(ce)
           });
           return { type:'group', id:this.group_id};
         }
-      });
+      }).get();
       rval.sections[new_section_id] = new_section;
     });
 

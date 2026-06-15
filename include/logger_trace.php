@@ -115,6 +115,9 @@ function includeMethodInLogTrace(string $class, string $method) : bool
  */
 function includeFunctionInLogTrace(string $function) : bool
 {
+  if( str_ends_with($function, '{closure}') ) { 
+    return false; }
+
   // Seed the include cache with language constructs that appear as "functions" 
   //   in backtraces but are not reflectable
   static $include = [

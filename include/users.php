@@ -370,27 +370,20 @@ class User {
    */
   public function set_password(string $password) : bool
   {
-    // Note this function will return: 
-    //   false if there was an issue with the update command
-    //   0     if the command was ok, but no database update was needed
-    //   1     if the command was ok and the password was updated
-
     if(!adjust_and_validate_user_input('password',$password) ) {
       log_info("Cannot update password for $this->_userid: invalid password");
       return false;
     }
     $password = password_hash($password,PASSWORD_DEFAULT);
 
-    try {
-      $update = new MySQLPreparedExec('update tlc_srv_userids set password=? where userid=?', 'ss', onException:'rethrow');
-      $update->run($password, $this->_userid);
-      $this->_password = $password;
-      return true;
-    } catch(mysqli_sql_exception $e) {
-      internal_error("Mysterious failure to update password in database: ".$e->getMessage());
-      // won't actually return, but to keep the linter happy...
-      return false;
-    }
+    // this should never fail unless we are in a bad state, do don't bother handling exceptions
+    $result = MySQLExecute(
+      'update tlc_srv_userids set password=? where userid=?',
+       'ss',$password, $this->_userid
+    );
+
+    $this->_password = $password;
+    return true;
   }
 
   /**

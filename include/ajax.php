@@ -6,34 +6,32 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once('include/logger.php');
 
 /**
- * Packages a response from AJAX call and sends it to the browser
- * @param array $data will be json encoded in response to browser
+ * Packages a response from AJAX call, sets it to the broswer, and then dies
+ * @param array $data 
  * @param int $http_code 
- * @param bool $die function ends with a call to die unless set to false
- * @return void
+ * @return never 
  */
-function send_ajax_response(array $data, int $http_code=200, bool $die=true)
+function send_ajax_response(array $data, int $http_code=200) : never
 {
   http_response_code($http_code);
   header('Content-Type: application/json; charset=utf-8');
   $rval = json_encode($data);
   echo $rval;
 
-  if($die) { die(); }
+  die();
 }
 
 /**
- * Packages a response to a valid request that failed for some valid reason
+ * Sends a response from AJAX call indicating acceptable failure of a valid call
  * The response will contain only two keys:
  *   success: false
  *   reason:  the provided error message
  * @param string $message 
- * @param bool $die function ends with a call to die unless set to false
- * @return void 
+ * @return never
  */
-function send_ajax_failure(string $message, bool $die=true)
+function send_ajax_failure(string $message) : never
 {
-  send_ajax_response(['success'=>false, 'reason'=>$message], 200, $die);
+  send_ajax_response(['success'=>false, 'reason'=>$message], 200);
 }
 
 /**
@@ -43,21 +41,21 @@ function send_ajax_failure(string $message, bool $die=true)
  * @return void 
  */
 #[ExcludeFromLogTrace]
-function send_ajax_bad_request(string $error)
+function send_ajax_bad_request(string $error) : never
 {
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]BAD_REQUEST: $error");
   send_ajax_response(['reason'=>$error],400);
+  die();
 }
 
 /**
  * Returns a 401 (UNAUTHORIZED) error on an AJAX call
  *   This indicates missing/expired login credentials
  * @param string $error 
- * @return void 
  */
 #[ExcludeFromLogTrace]
-function send_ajax_unauthorized(string $error)
+function send_ajax_unauthorized(string $error) : never
 {
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]UNAUTHORIZED: $error");
@@ -68,10 +66,9 @@ function send_ajax_unauthorized(string $error)
  * Returns a 403 (FORBIDDEN) error on an AJAX call
  *   For the survey app, this means that a bad/expired nonce was encountered
  * @param string $error 
- * @return void 
  */
 #[ExcludeFromLogTrace]
-function send_ajax_bad_nonce(string $error)
+function send_ajax_bad_nonce(string $error) : never
 {
   require_once('include/cookiejar.php');
   $userid = active_userid();
@@ -82,10 +79,9 @@ function send_ajax_bad_nonce(string $error)
 /**
  * Siminar to the internal_error function, but intended for use from within AJAX calls
  * @param string $error
- * @return void 
  */
 #[ExcludeFromLogTrace]
-function send_ajax_internal_error(string $error)
+function send_ajax_internal_error(string $error) : never
 {
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]: $error");
@@ -195,9 +191,8 @@ class AjaxResponse
 
   /**
    * Sends the ajax response to the browser after adding success status to the data
-   * @return void 
    */
-  public function send()
+  public function send() : never
   {
     $this->_data['success'] = $this->_success;
     send_ajax_response($this->_data);

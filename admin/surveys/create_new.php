@@ -28,11 +28,11 @@ function create_new_survey(string $name,?int $parent_id,?string &$error=null) : 
     $max_id = MySQLFetchValue("select max(survey_id) from tlc_srv_surveys");
     $survey_id = $max_id ? 1 + $max_id : 1;
 
-    $insert = new MySQLPreparedExec(
+    MySQLExecuteWithExceptionHandler(
       "insert into tlc_srv_surveys (survey_id,parent_id,title) values (?,?,?)",
-      'iis', onException:'die', rollbackOnException:true
+      fn($e) => throw new FailedToCreate($e->getMessage()),
+      'iis', $survey_id, $parent_id, $name
     );
-    $insert->run($survey_id, $parent_id, $name);
 
     if($parent_id) { clone_survey($survey_id,$parent_id); }
 
@@ -57,17 +57,19 @@ function create_new_survey(string $name,?int $parent_id,?string &$error=null) : 
  */
 function clone_survey(int $child_id,int $parent_id) : void
 {
+  todo("THIS FUNCTION IS NEEDS TO BE FIXED TO WORK WITH NEW ARCHITECTURE");
+
   $query = <<<SQL
     INSERT into tlc_srv_survey_options
     SELECT ?, option_id, text_sid
       FROM tlc_srv_survey_options
      WHERE survey_id=?
   SQL;
-  $insert = new MySQLPreparedExec($query,'ii',onException:'fail');
-  $result = $insert->run($child_id,$parent_id);
-  if($result === false) {
-    throw new FailedToCreate('Failed to copy survey options from cloned survey');
-  }
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy survey options from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
 
   $query = <<<SQL
     INSERT into tlc_srv_sections
@@ -75,11 +77,11 @@ function clone_survey(int $child_id,int $parent_id) : void
       FROM tlc_srv_sections
      WHERE survey_id=?
   SQL;
-  $insert = new MySQLPreparedExec($query,'ii',onException:'fail');
-  $result = $insert->run($child_id,$parent_id);
-  if($result === false) {
-    throw new FailedToCreate('Failed to copy survey sections from cloned survey');
-  }
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy survey sections from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
 
   $query = <<<SQL
     INSERT into tlc_srv_questions
@@ -87,11 +89,11 @@ function clone_survey(int $child_id,int $parent_id) : void
       FROM tlc_srv_questions
      WHERE survey_id=?
   SQL;
-  $insert = new MySQLPreparedExec($query,'ii',onException:'fail');
-  $result = $insert->run($child_id,$parent_id);
-  if($result === false) {
-    throw new FailedToCreate('Failed to copy survey questions from cloned survey');
-  }
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy survey questions from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
 
   $query = <<<SQL
     INSERT into tlc_srv_question_map
@@ -99,11 +101,11 @@ function clone_survey(int $child_id,int $parent_id) : void
       FROM tlc_srv_question_map
      WHERE survey_id=?
   SQL;
-  $insert = new MySQLPreparedExec($query,'ii',onException:'fail');
-  $result = $insert->run($child_id,$parent_id);
-  if($result === false) {
-    throw new FailedToCreate('Failed to copy question map from cloned survey');
-  }
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy question map from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
 
   $query = <<<SQL
     INSERT into tlc_srv_question_options
@@ -111,10 +113,9 @@ function clone_survey(int $child_id,int $parent_id) : void
       FROM tlc_srv_question_options
      WHERE survey_id=?
   SQL;
-  $insert = new MySQLPreparedExec($query,'ii',onException:'fail');
-  $result = $insert->run($child_id,$parent_id);
-  if($result === false) {
-    throw new FailedToCreate('Failed to copy question options from cloned survey');
-  }
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy question options from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
 }
-

@@ -105,7 +105,13 @@ function write_to_logger(string $prefix,string $msg,bool $includeTrace=true)
  */
 #[ExcludeFromLogTrace]
 function todo(string $msg) {
-  write_to_logger("TODO",$msg);
+  static $history = [];
+  $trace = debug_backtrace();
+  $key = $trace[0]['file'].'|'.$trace[0]['file'];
+  if(!array_key_exists($key,$history)) {
+    write_to_logger("TODO", $msg);
+    $history[$key]=true;
+  }
 }
 
 /**

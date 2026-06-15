@@ -5,6 +5,8 @@ use mysqli;
 use mysqli_stmt;
 use mysqli_sql_exception;
 
+use Closure;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once app_file('include/logger.php');
@@ -71,15 +73,11 @@ class MySQLConnection
    * Returns a prepared statement for the specified query string
    * @param string $query 
    * @return mysqli_stmt 
+   * @throws mysqli_sql_exception
    */
   public function prepare(string $query) : mysqli_stmt
   {
-    try {
-      return $this->conn->prepare($query);
-    } catch(mysqli_sql_exception $e) {
-      internal_error("Failed to prepare statement: ".$e->getMessage());
-      die(); // not necessary, but it keeps the linter quiet
-    }
+    return $this->conn->prepare($query);
   }
 
   /**
@@ -188,34 +186,48 @@ class MySQLPreparedStatement
   protected mysqli_stmt $stmt;
 
   /**
+   * @var null|Closure(mysqli_sql_exception,array):void
+   */
+  protected ?Closure $onException = null;
+
+  /**
    * MySQLPreparedStatement constructor
    * @param string $query Prepared statement query string (with ? pararameter placeholders)
    * @param string $types Prepared statement parameter types
+   * @param null|callable(mysqli_sql_exception,array $params):void $onException
    * @return void 
-   * 
-   * @note $logDepth=0 should be used when working directly with a MySQLPreparedStatement instance
-   *       $logDepth should be increased by 1 for each additional call stack layer between the
-   *                 caller and the MySQLPreparedStatement instance
    */
-  protected function __construct(string $query, string $types)
+  protected function __construct(string $query, string $types, ?callable $onException = null)
   {
     $this->n_params = substr_count($query,"?");
     if( strlen($types) !== $this->n_params) {
       internal_error("Mismatch between prepared statement and types length");
     }
 
-    $this->query = $query;
-    $this->types = $types;
-    $this->conn  = MySQLConnection::instance();
-    $this->stmt = $this->conn->prepare($query);
+    if($onException !== null ) {
+      $this->onException = Closure::fromCallable($onException);
+    }
+
+    try {
+      $this->query = $query;
+      $this->types = $types;
+      $this->conn  = MySQLConnection::instance();
+      $this->stmt = $this->conn->prepare($query);
+    }
+    catch(mysqli_sql_exception $e)
+    {
+      $handler = $this->onException;
+      if($handler !== null) { $handler($e,[]); }
+      else { internal_error($e->getMessage()); }
+    }
   }
 
   /**
    * Binds and executes the prepared statement with the supplied parameters
    * @param array $params Prepared statement parameter values
-   * @return void
+   * @return bool
    */
-  protected function _bind_and_exec(...$params)
+  protected function _bind_and_exec(...$params) : bool
   {
     if( count($params) !== $this->n_params) {
       internal_error("Mismatch between prepared statement and parameter count");
@@ -225,8 +237,17 @@ class MySQLPreparedStatement
         $this->stmt->bind_param($this->types, ...$params);
       }
       $this->stmt->execute();
-    } catch(mysqli_sql_exception $e) {
-      internal_error($e->getMessage());
+      return true;
+    } 
+    catch(mysqli_sql_exception $e) {
+      $handler = $this->onException;
+      if($handler) { 
+        $handler($e,$params);
+      } else {
+        MySQLRollback(safe:true);
+        internal_error($e->getMessage());
+      }
+      return false;
     }
   }
 }
@@ -234,31 +255,16 @@ class MySQLPreparedStatement
 #[ExcludeFromLogTrace]
 class MySQLPreparedExec extends MySQLPreparedStatement
 {
-  private string $onException;
-  private bool   $rollbackOnException;
-
   /**
    * MySQLPreparedExec constructor
    * @param string $query Prepared statement query string (with ? pararameter placeholders)
    * @param string $types Prepared statement parameter types
-   * @param 'die|rethrow|fail' $onException (see note 1 below)
-   * @param bool $rollbackOnException (see note 2 below)
-   * @return void 
+   * @param null|callable(mysqli_sql_exception,array $params):void $onException
    * 
    * @note This class cannot be used with SELECT queries.  Doing so
    *       triggers internal error handling
-   * 
-   * @note 1) $onException determines what to do on mysqli_sql_exception in run()
-   *          'die'     => invoke internal_error (log and die)
-   *          'rethrow' => the exception is rethrown
-   *          'fail'    => run() returns false
-   *       [default = 'die']  
-   * 
-   * @note 2) If $rollbackOnException is true, any mysqli_sql_exceptions that are caught will
-   *       trigger a call to MySQLRollback.  This occurs regardless of how $rethrowException is set.
-   *       [default = true]
    */
-  public function __construct(string $query, string $types='', string $onException='die', bool $rollbackOnException=true)
+  public function __construct(string $query, string $types='', ?callable $onException = null)
   {
     if (preg_match("/^\s*select/i", $query)) {
       internal_error(
@@ -266,37 +272,28 @@ class MySQLPreparedExec extends MySQLPreparedStatement
         "Use MySQLPreparedSelect instead"
       );
     }
-    parent::__construct($query,$types);
-    
-    $this->onException = $onException;
-    $this->rollbackOnException = $rollbackOnException;
+    parent::__construct($query,$types,$onException);
 
+    if($onException !== null) {
+      $this->onException = Closure::fromCallable($onException);
+    }
   }
 
   /**
    * Executes the prepared statement
    * @param array $params Prepared statement parameter values
-   * @return bool|int Number of affected rows
-   * @throws mysqli_sql_exception, but only if rethrowException was set to false
-   * @note that a return value of false indicates a mysqli_sql_exception was caught
-   *       (but not rethrown)
+   * @return ?int Number of affected rows
+   * @throws mysqli_sql_exception if not handled by $onException
+   * @note This method returns null if an exception was encountered.
+   *       A return value of 0 indicates that statement ran fine, but
+   *       that there was no resulting change in the database.
    */
-  public function run(...$params) : bool|int
+  public function run(...$params) : ?int
   {
-    try {
-      $this->_bind_and_exec(...$params);
-      return $this->stmt->affected_rows;
-    }
-    catch(mysqli_sql_exception $e) {
-      if($this->rollbackOnException) { $this->conn->rollback_safe(); }
-      if($this->onException === 'die')     {
-        internal_error("MySQLPreparedExec::run failed: " . $e->getMessage());
-      }
-      if($this->onException === 'rethrow') { 
-        throw $e; 
-      }
-      return false;
-    }
+    $result = $this->_bind_and_exec(...$params);
+    if(!$result) { return null; }
+
+    return $this->stmt->affected_rows;
   }
 }
 
@@ -425,16 +422,34 @@ class MySQLPreparedSelect extends MySQLPreparedStatement
  * @param string $query Prepared statement query string (with ? pararameter placeholders)
  * @param string $types Prepared statement parameter types (default='')
  * @param array $params Prepared statement parameter values
- * @return int Number of affected rows
+ * @return int Number of affected rows (null on exception)
  *
  * @note This function will rollback the transaction (if open) and invoke internal_error 
- *       if the database query raises an exception. If you need more control than this,
- *       use MySQLPrepareExec instead of this function
+ *       if the database query raises an exception.  Use either MySQLPreparedExec or 
+ *       MySQLExecuteWithExceptionHandler if you need to handle the exception without dying.
  */
 #[ExcludeFromLogTrace]
 function MySQLExecute(string $query,string $types='', ...$params) : int
 {
   $stmt = new MySQLPreparedExec($query,$types);
+  return $stmt->run(...$params);
+}
+
+/**
+ * Execute a non-SELECT MySQL query and returns number of affected rows or handles exception
+ * @param string $query Prepared statement query string (with ? pararameter placeholders)
+ * @param callable(mysqli_sql_exception, array):void $onException
+ * @param string $types Prepared statement parameter types (default='')
+ * @param mixed ...$params Prepared statement parameter values
+ * @return null|int Number of affected rows (null on exception)
+ *
+ * @note This function will invoke the provided exception handler and return null if
+ *       an exception is raised during the execution of the MySQL statement.
+ */
+#[ExcludeFromLogTrace]
+function MySQLExecuteWithExceptionHandler(string $query, callable $onException, string $types='', ...$params) : ?int
+{
+  $stmt = new MySQLPreparedExec($query,$types,onException:$onException);
   return $stmt->run(...$params);
 }
 

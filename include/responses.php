@@ -162,62 +162,69 @@ function get_all_responses(int $survey_id) : array
  */
 function withdraw_user_responses(string $userid,int $survey_id) : bool
 {
+  // Build the exception handler in case any of the prepared statements fail
+  $exception_handler = function(mysqli_sql_exception $e) use ($userid) {
+    log_warning("Failed to withdraw responses from $userid: " . $e->getMessage());
+    MySQLRollback();
+  };
+
   // Build a list of all the SQL commands to withdraw the user's responses
-  $queries = [];
+  $statements = [
+    // remove all existing draft responses
+    new MySQLPreparedExec(
+      'DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=1',
+      'si', $exception_handler
+    ),
+    // copy any submitted responses to draft versions
+    //  (cannot simply update the status as this would break the response option foreign key)
+    new MySQLPreparedExec( 
+      <<<SQL
+        INSERT into tlc_srv_responses 
+              ( userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
+        SELECT   userid, survey_id, question_id, 1,     selected, free_text, qualifier, other
+          FROM tlc_srv_responses
+        WHERE userid=? AND survey_id=?
+      SQL, 
+      'si', $exception_handler
+    ),
+    // relink the response options from their submitted parent to the draft parent
+    new MySQLPreparedExec(
+      'UPDATE tlc_srv_response_options SET draft=1 WHERE userid=? AND survey_id=?',
+      'si', $exception_handler
+    ),
+    // remove the submitted responses
+    new MySQLPreparedExec(
+      'DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=0',
+      'si', $exception_handler
+    ),
+    // update the user status table
+    new MySQLPreparedExec(
+      <<<SQL
+        UPDATE tlc_srv_user_status 
+          SET draft = submitted, submitted=NULL, email_sent=NULL, sent_to=NULL
+        WHERE userid=? AND survey_id=?;
+      SQL,
+      'si', $exception_handler
+    ),
+  ];
 
-  // remove all existing draft responses
-  $queries[] = <<<SQL
-    DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=1;
-  SQL;
-
-  // copy any submitted responses to draft versions
-  //  (cannot simply update the status as this would break the response option foreign key)
-  $queries[] = <<<SQL
-    INSERT into tlc_srv_responses 
-          ( userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
-    SELECT   userid, survey_id, question_id, 1,     selected, free_text, qualifier, other
-      FROM tlc_srv_responses
-    WHERE userid=? AND survey_id=?;
-  SQL;
-
-  // relink the response options from their submitted parent to the draft parent
-  $queries[] = <<<SQL
-    UPDATE tlc_srv_response_options SET draft=1 WHERE userid=? AND survey_id=?;
-  SQL;
-
-  // remove the submitted responses
-  $queries[] = <<<SQL
-    DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=0;
-  SQL;
-
-  // update the user status table
-  $queries[] = <<<SQL
-    UPDATE tlc_srv_user_status 
-      SET draft = submitted, submitted=NULL, email_sent=NULL, sent_to=NULL
-    WHERE userid=? AND survey_id=?;
-  SQL;
-
-  // And now loop over the SQL commands and execute them.
-  //   If ANY of these fail, rollback any successful prior commands
-  //   and immediately return false
+  // And now loop over the SQL statements and execute them.
   
   MySQLBeginTransaction();
 
-  try {
-    foreach ($queries as $query) {
-      $stmt = new MySQLPreparedExec($query,'si',onException:'rethrow',rollbackOnException:true);
-      $stmt->run($userid,$survey_id);
+  $success = true;
+  foreach ($statements as $stmt) {
+    if($stmt->run($userid,$survey_id) === null) {
+      $success = false;
+      break;
     }
   }
-  catch(mysqli_sql_exception $e) 
-  {
-    log_warning("Failed to withdraw responses from $userid: " . $e->getMessage());
-    return false;
-  }
 
-  // Commit the changes and return true.
-  MySQLCommit();
-  return true;
+  // on failure, rollback will occur in the exception handler
+  // on sucess, we can now commit the changes
+  if($success) { MySQLCommit(); }
+
+  return $success;
 }
 
 
@@ -233,40 +240,43 @@ function withdraw_user_responses(string $userid,int $survey_id) : bool
  */
 function drop_user_draft_responses(string $userid,int $survey_id) : bool
 {
-  // Build a list of SQL commands to purge a user's responses
-  $queries = [];
+  // Build the exception handler in case any of the prepared statements fail
+  $exception_handler = function(mysqli_sql_exception $e) use ($userid) {
+    log_warning("Failed to withdraw responses from $userid: " . $e->getMessage());
+    MySQLRollback();
+  };
 
-  // remove all existing draft responses
-  $queries[] = <<<SQL
-    DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=1;
-  SQL;
+  // Build a list of all the SQL commands to withdraw the user's responses
+  $statements = [
+    // remove all existing draft responses
+    new MySQLPreparedExec(
+      'DELETE from tlc_srv_responses WHERE userid=? AND survey_id=? AND draft=1',
+      'si', $exception_handler
+    ),
+    // update the user status table
+    new MySQLPreparedExec(
+      'UPDATE tlc_srv_user_status SET draft = NULL WHERE userid=? AND survey_id=?',
+      'si', $exception_handler
+    ),
+  ];
 
-  // update the user status table
-  $queries[] = <<<SQL
-    UPDATE tlc_srv_user_status SET draft = NULL WHERE userid=? AND survey_id=?;
-  SQL;
-
-  // And now loop over the SQL commands and execute them.
-  //   If ANY of these fail, rollback any successful prior commands
-  //   and immediately return false
+  // And now loop over the SQL statements and execute them.
   
   MySQLBeginTransaction();
 
-  try {
-    foreach ($queries as $query) {
-      $stmt = new MySQLPreparedExec($query,'si',onException:'rethrow',rollbackOnException:true);
-      $stmt->run($userid,$survey_id);
+  $success = true;
+  foreach ($statements as $stmt) {
+    if($stmt->run($userid,$survey_id) === null) {
+      $success = false;
+      break;
     }
   }
-  catch(mysqli_sql_exception $e) 
-  {
-    log_warning("Failed to remove draft responses for $userid: " . $e->getMessage());
-    return false;
-  }
 
-  // Commit the changes and return true.
-  MySQLCommit();
-  return true;
+  // on failure, rollback will occur in the exception handler
+  // on sucess, we can now commit the changes
+  if($success) { MySQLCommit(); }
+
+  return $success;
 }
 
 
@@ -278,20 +288,10 @@ function drop_user_draft_responses(string $userid,int $survey_id) : bool
  */
 function restart_user_responses(string $userid,int $survey_id) : bool
 {
-  $query = <<<SQL
-    DELETE from tlc_srv_user_status WHERE userid=?  AND survey_id=?
-  SQL;
-
-  try {
-    $stmt = new MySQLPreparedExec($query, 'si', onException: 'rethrow', rollbackOnException: false);
-    $stmt->run($userid, $survey_id);
-  } 
-  catch(mysqli_sql_exception $e) 
-  {
-    log_warning("Failed to drop all responses for $userid: " . $e->getMessage());
-    return false;
-  }
-  return true;
+  return MySQLExecute(
+    'DELETE from tlc_srv_user_status WHERE userid=?  AND survey_id=?','si',
+    fn($e) => log_warning("Failed to drop all responses for $userid: " . $e->getMessage())
+  ) !== null;
 }
 
 
