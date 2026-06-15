@@ -163,8 +163,8 @@ export default function init(ce,controller)
     const [section_li,section_ul] = create_section_li(section_id, section.name);
     section_li.appendTo(_tree);
 
-    const items = Object.values(section.content);
-    for(const item of items) {
+    const section_content = section.content ?? [];
+    for(const item of section_content) {
       if(item.type === 'question') {
         const question = content.questions[item.id] ?? null;
         if(question) {
@@ -179,7 +179,8 @@ export default function init(ce,controller)
           const [group_li, group_ul] = create_group_li(group.group_id,group.name);
 
           group_li.appendTo(section_ul);
-          for (const question_id of group.content) {
+          const group_content = group.content ?? [];
+          for (const question_id of group_content) {
             const question = content.questions[question_id] ?? null;
             if (question) {
               const question_li = create_question_li(question.id, question);
