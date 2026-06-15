@@ -36,8 +36,6 @@ SQL ],
 // The survey questions table must be updated to use actual wording, other, qualifier, intro, and info
 //   rather than string IDs
 // The grouping of question is now handled by the survey content map and no longer by the question_flags.
-//   But we do want to retain the "show info as grouped" flag. 
-//   So... strip the bit masked by 0x08 (i.e. keep the bits masked by 0x17).
   [ __LINE__, <<<SQL
 INSERT into tlc_srv_questions 
   ( question_id, survey_id, wording, question_type, question_flags, other, qualifier, intro, info )
@@ -45,7 +43,7 @@ INSERT into tlc_srv_questions
          t.survey_id, 
          sw.str, 
          t.question_type, 
-         t.question_flags & 0x17,
+         t.question_flags & 0x07,
          so.str, 
          sq.str, 
          si.str, 

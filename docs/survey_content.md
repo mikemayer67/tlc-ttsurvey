@@ -19,9 +19,13 @@ to help format how it will appear in the survey.
 
 ## Info Text
 
-Informational text can be dispersed at any point within a section. Like section introductions, this may
-contain [markdown](https://markdownguide.offshoot.io/basic-syntax/) to control how its text will appear 
+Informational text can be dispersed at any point within a section or group. Like section introductions, this 
+may contain [markdown](https://markdownguide.offshoot.io/basic-syntax/) to control how its text will appear 
 in the survey.
+
+Info text within a section will be rendered in the survey without a question box around it.  If you wish to
+have the text appear within a question box, it must be included as part of a group, which may contain only
+that info text if that is the desire.
 
 ## Questions
 

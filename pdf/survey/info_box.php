@@ -23,8 +23,6 @@ class SurveyInfoBox extends PDFBox
 
     $info = $question['info'];
 
-    $this->new_group = strtoupper($question['grouped']??"") === "NEW";
-
     $this->width = $max_width;
     $this->height = 0;
 

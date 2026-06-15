@@ -91,6 +91,7 @@ class SectionPanel
     $sid  = $this->sid;
     echo "<div id='panel-$sid' class='panel panel-$sid'>";
 
+    todo("Update the following as question.grouped no longer exists");
     $this->indent = false;
     foreach($this->questions as $question) {
       if($question['grouped'] === 'NO') {

@@ -324,10 +324,6 @@ function add_survey_questions(int $survey_id,array $questions) : void
     $flags->layout($type, $question['layout']??"");
     $flags->has_other($other_flag);
 
-    todo("Update info group handling: enum->bool");
-    $grouped = $question['grouped'] ?? "NO";
-    $flags->render_in_group($grouped !== "NO");
-
     $insert_question->run(
       $question_id, $survey_id,
       $wording, $type, $flags->get_bits(), 

@@ -83,9 +83,6 @@ export default function init(ce,controller)
   const _intro           = _box.children('.intro');
   const _intro_value     = _intro.find('textarea');
 
-  const _grouped         = _box.children('.grouped');
-  const _grouped_value   = _grouped.find('select');
-
   const _info            = _box.children('.info');
   const _info_value      = _info.find('textarea');
   const _popup           = _box.children('.popup');
@@ -149,7 +146,6 @@ export default function init(ce,controller)
     .on('change',handle_checkbox);
 
   _layout_value.on('change', handle_select_change);
-  _grouped_value.on('change', handle_select_change);
 
   function handle_input(e) 
   {
@@ -263,13 +259,6 @@ export default function init(ce,controller)
       _type_value.text( typeLabels[data.type] ).show();
       _type_select.hide();
 
-      _grouped_value.empty();
-      ["NO","YES"].forEach( (value) => {
-        const label = ui_config.grouped.label[value];
-        const opt   = $('<option></option>').attr('value',value).text(label);
-        _grouped_value.append(opt);
-      });
-
       _show_handlers[data.type]?.(data);
     } 
     else 
@@ -282,22 +271,12 @@ export default function init(ce,controller)
   {
     _infotag.show();
     _info.show();
-    _grouped.show();
 
     const infotag = data.infotag || '';
     const info    = data.info    || '';
-    const grouped = data.grouped || 'NO';
-
-    _grouped_value.empty();
-    ["NO","YES","NEW"].forEach( (value) => {
-      const label = ui_config.grouped.info_label[value];
-      const opt   = $('<option></option>').attr('value',value).text(label);
-      _grouped_value.append(opt);
-    });
 
     _infotag_value.val(infotag).trigger('change');
     _info_value.val(data.info).trigger('change');
-    _grouped_value.val(grouped);
 
     validate_input('infotag', infotag);
     validate_input('info', info);
@@ -309,8 +288,6 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
-    const grouped = data.grouped || 0;
-    _grouped.show();
     _popup.show();
 
     _layout_value.empty();
@@ -330,7 +307,6 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording'  , wording);
@@ -343,17 +319,14 @@ export default function init(ce,controller)
   {
     _wording.show();
     _intro.show();
-    _grouped.show();
     _popup.show();
 
     const wording = data.wording || '';
     const intro   = data.intro || '';
-    const grouped = data.grouped || 0;
     const popup   = data.popup || '';
 
     _wording_value.val(wording);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording', wording);
@@ -367,7 +340,6 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
-    _grouped.show();
     _other.show();
     _popup.show();
 
@@ -382,7 +354,6 @@ export default function init(ce,controller)
     const layout     = data.layout || ui_config.layout.select_default;
     const qualifier  = data.qualifier || '';
     const intro      = data.intro || '';
-    const grouped = data.grouped || 0;
     const other_flag = data.other_flag || false;
     const other      = data.other || '';
     const popup      = data.popup || '';
@@ -391,7 +362,6 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
     _other_flag.prop('checked',other_flag);
     _other_value.val(other);
     _popup_value.val(popup);

@@ -336,7 +336,6 @@ export default function init(ce)
       delete question.layout;
       delete question.options;
     }
-    question.grouped = ui_config.grouped.default_value;
     _tree.update_question_type(question_id,type,old_type);
   }
 

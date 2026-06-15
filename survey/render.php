@@ -168,6 +168,7 @@ class RenderEngine
     });
 
     # determine which questions can be put into a grid
+    todo("Update the following as question.grouped no longer exists");
     $prev = $questions[0];
     $prev['grid'] = false;
     $prev_can_grid = str_starts_with($prev['type']??'',"SELECT") && ($prev['grouped']==='YES');
@@ -199,6 +200,7 @@ class RenderEngine
   {
     $type = strtolower($question['type']);
 
+    todo("Update the following as question.grouped no longer exsits");
     $this->start_box($type,$question['grouped']);
 
     switch($type) {
@@ -222,6 +224,7 @@ class RenderEngine
 
   private function start_box($type,$grouped)
   {
+    todo("Possibly update this to remove second function parameter");
     $need_close = false;
     $need_open  = false;
 

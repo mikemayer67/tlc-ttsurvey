@@ -60,7 +60,6 @@ SQL ],
 //   0x01 :: Alignment      on=RIGHT    off=LEFT
 //   0x02 :: Orientation    on=COLUMN   off=ROW
 //   0x04 :: Has Other      on=YES      off=NO
-//   0x10 :: Grouped        on=YES      off=NO  // applies only to INFO 
 //
 // string lengths for wording, other, qualifier, into, and info are enforced
 //   in the Question Editor block in admin/survey_frame.php
@@ -70,7 +69,7 @@ CREATE TABLE tlc_srv_questions (
   survey_id      SMALLINT UNSIGNED NOT NULL,
   wording        VARCHAR(128)      DEFAULT NULL       COMMENT 'The wording of this question shown in the survey (except for INFO)',
   question_type  ENUM('INFO','BOOL','OPTIONS','FREETEXT','SELECT_MULTI','SELECT_ONE') NOT NULL ,
-  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'bit1:alignment, bit2:orientation, bit3:other, bit4:grouped',
+  question_flags INT               NOT NULL DEFAULT 0 COMMENT 'bit0:alignment, bit1:orientation, bit2:other',
   other          VARCHAR(45)       DEFAULT NULL       COMMENT 'For OPTIONS type, label to use in the survey for the "other" input field',
   qualifier      VARCHAR(45)       DEFAULT NULL       COMMENT 'For OPTIONS/BOOL types, provide a text input field with the specified label',
   intro          VARCHAR(512)      DEFAULT NULL       COMMENT 'For noI n-INFO types, provides a intro of the question on the survey',
@@ -324,8 +323,6 @@ SELECT question_id, survey_id, wording, question_type,
   CASE WHEN (question_flags & 0x02) > 0 THEN 'COLUMN' ELSE 'ROW'  END AS orientation,
   CASE WHEN question_type not like 'SELECT%' THEN NULL
        WHEN (question_flags & 0x04) > 0 THEN 'YES' ELSE 'NO' END AS has_other,
-  CASE WHEN question_type != 'INFO' THEN NULL
-       WHEN (question_flags & 0x08) > 0 THEN 'YES' ELSE 'NO' END AS show_in_group,
   other, qualifier, intro, info
 FROM tlc_srv_questions;
 SQL ],

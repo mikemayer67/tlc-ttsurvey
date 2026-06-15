@@ -20,9 +20,6 @@ export default function init(ce)
   const _intro             = _box.children('.intro');
   const _intro_value       = _intro.find('div.text');
 
-  const _grouped           = _box.children('.grouped');
-  const _grouped_value     = _grouped.find('div.text');
-
   const _info              = _box.children('.info');
   const _info_value        = _info.find('div.text');
   const _popup             = _box.children('.popup');
@@ -53,8 +50,6 @@ export default function init(ce)
       case 'INFO': {
         _info.show();
         _info_value.text(data.info || '');
-        _grouped.show();
-        _grouped_value.text( ui_config.grouped.info_label[data.grouped] );
         break;
       }
       case 'BOOL': {
@@ -66,8 +61,6 @@ export default function init(ce)
         _qualifier_value.text(data.qualifier || '');
         _intro.show();
         _intro_value.text(data.intro || '');
-        _grouped.show();
-        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -77,8 +70,6 @@ export default function init(ce)
         _wording_value.text(data.wording || '');
         _intro.show();
         _intro_value.text(data.intro || '');
-        _grouped.show();
-        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         break;
@@ -93,8 +84,6 @@ export default function init(ce)
         _qualifier_value.text(data.qualifier || '');
         _intro.show();
         _intro_value.text(data.intro || '');
-        _grouped.show();
-        _grouped_value.text( ui_config.grouped.label[data.grouped] );
         _popup.show();
         _popup_value.text(data.popup || '');
         _options.show();

@@ -66,6 +66,7 @@ class SummaryRootBox extends PDFRootBox
     $questions = array_filter($questions, fn($a) => ($a['section']??null) === $sid );
     uasort($questions,fn($a,$b) => $a['sequence'] <=> $b['sequence']);
 
+    todo("Update all the following as question.grouped no longer exists");
     $grouped = false;
     $prev    = null;
     $width   = $max_width;

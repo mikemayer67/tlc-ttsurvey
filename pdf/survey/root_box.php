@@ -75,6 +75,7 @@ class SurveyRootBox extends PDFRootBox
     });
 
     // group the questions into groups that should not break between pages.
+    todo("Update the following as question.grouped no longer exists");
     $groups = [];
     $group = [];
     foreach($questions as $question) {
