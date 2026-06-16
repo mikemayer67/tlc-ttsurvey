@@ -418,7 +418,7 @@ export default function init(ce)
 
       _content.questions[new_question_id] = new_question; 
 
-      const where = { offset:1, question_id:data.parent_id };
+      const where = { offset:1, ref_type:'question', ref_id:data.parent_id };
 
       ce.undo_manager.add_and_exec( {
         action:'clone-question',

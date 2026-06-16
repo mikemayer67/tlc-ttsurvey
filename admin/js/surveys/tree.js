@@ -1110,7 +1110,6 @@ export default function init(ce,controller)
   // Section/Question structure
   //
 
-  // TODO - add groups to this logic
   /**
    * Returns the survey structure as defined by the navigation tree
    * @returns {object} TODO: flesh out the return type once groups have been added
