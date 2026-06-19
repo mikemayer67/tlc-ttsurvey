@@ -170,6 +170,7 @@ export default function init(ce,controller)
         if(question) {
           const question_li = create_question_li(question.id,question);
           question_li.appendTo(section_ul);
+          _bullpen.delete(question.id);
         }
       }
       else if(item.type === 'group') 
@@ -185,6 +186,7 @@ export default function init(ce,controller)
             if (question) {
               const question_li = create_question_li(question.id, question);
               question_li.appendTo(group_ul);
+              _bullpen.delete(question.id);
             }
           }
         }

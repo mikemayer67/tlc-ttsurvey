@@ -422,10 +422,12 @@ export default function init(ce,controller)
       redo() {
         const data = controller.replace_question(old_id,new_id);
         show(new_id,data);
+        $(document).trigger('SurveyWasModified');
       },
       undo() {
         const data = controller.replace_question(new_id,old_id);
         show(old_id,data);
+        $(document).trigger('SurveyWasModified');
       },
     });
   }
