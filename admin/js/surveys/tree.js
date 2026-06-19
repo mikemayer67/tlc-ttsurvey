@@ -819,8 +819,14 @@ export default function init(ce,controller)
     const new_li = create_question_li(question_id,question);
     if(where.ref_id) {
       const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
-      if(where.offset < 0) { new_li.insertBefore(ref_li); }
-      else                 { new_li.insertAfter(ref_li); }
+      if(where.offset < 0) { 
+        new_li.insertBefore(ref_li); 
+      } else if(where.ref_type === 'question') { 
+        new_li.insertAfter(ref_li); 
+      } else {
+        const content_ul = ref_li.children('ul.group-content');
+        new_li.prependTo(content_ul);
+      }
     }
     else if(where.section_id) {
       const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');

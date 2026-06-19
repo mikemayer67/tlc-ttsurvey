@@ -383,12 +383,12 @@ export default function init(ce,controller)
     show_select_one(data);
   }
 
-  function show_new(id,data)
+  function show_new(new_id,new_data)
   {
     const bullpen = controller.unused_questions();
     if(bullpen.size > 0) {
       _archive_select.find('option:not(:first)').remove();
-      for([id,data] of bullpen) {
+      for(const [id,data] of bullpen) {
         if(!data.type) { continue; }
         
         let wording = data.type === "INFO"
@@ -400,12 +400,12 @@ export default function init(ce,controller)
         }
         _archive_select.append(new Option(wording, id));
       }
-      _archive_select.val('').on('change',id,handle_archive);
+      _archive_select.val('').on('change',new_id,handle_archive);
       _archive.show();
     }
 
     _type_value.hide();
-    _type_select.val('').on('change',[id,data],handle_type).show();
+    _type_select.val('').on('change',[new_id,new_data],handle_type).show();
   }
 
   //

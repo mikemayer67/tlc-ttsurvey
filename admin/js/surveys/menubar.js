@@ -374,11 +374,9 @@ export default function init(ce,controller)
   function request_new_question(delta) {
     const curSelection = _tree.find('li.selected');
     if(curSelection.length === 1) { 
-      controller.add_new_question({
-        offset:delta,
-        section_id:curSelection.data('item-id'),
-        question_id:curSelection.data('item-id'),
-      });
+      const ref_id = curSelection.data('item-id');
+      const ref_type = curSelection.data('type');
+      controller.add_new_question({offset:delta, ref_type, ref_id});
     }
   }
 
