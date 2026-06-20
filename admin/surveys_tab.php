@@ -99,18 +99,18 @@ echo <<<HTML
 <div id='content-editor'>
 
   <div class='menubar'>
-    <button class='up' title='Move selection up'><span class=icon></span></button>
-    <button class='down' title='Move selection down'><span class=icon></span></button>
-    <button class='add section below' title='Insert new section below'><span class=icon></span></button>
-    <button class='add section above' title='Insert new section above'><span class=icon></span></button>
-    <button class='add question below' title='Insert new survey item below'><span class=icon></span></button>
-    <button class='add question above' title='Insert new survey item above'><span class=icon></span></button>
-    <button class='add question clone' title='Duplicate survey item'><span class=icon></span></button>
-    <button class='add group' title='Start new grouping'><span class=icon></span></button>
-    <button class='remove group' title='Remove grouping'><span class=icon></span></button>
-    <button class='delete' title='Delete selection'><span class=icon></span></button>
-    <button class='undo' title='Undo edit'><span class=icon></span></button>
-    <button class='redo' title='Redo edit'><span class=icon></span></button>
+    <button class='up' data-hint='Move selection up'><span class=icon></span></button>
+    <button class='down' data-hint='Move selection down'><span class=icon></span></button>
+    <button class='add section below' data-hint='Insert new section below'><span class=icon></span></button>
+    <button class='add section above' data-hint='Insert new section above'><span class=icon></span></button>
+    <button class='add question below' data-hint='Insert new survey item below'><span class=icon></span></button>
+    <button class='add question above' data-hint='Insert new survey item above'><span class=icon></span></button>
+    <button class='add question clone' data-hint='Duplicate survey item'><span class=icon></span></button>
+    <button class='add group' data-hint='Start new grouping'><span class=icon></span></button>
+    <button class='remove group' data-hint='Remove grouping'><span class=icon></span></button>
+    <button class='delete' data-hint='Delete selection'><span class=icon></span></button>
+    <button class='undo' data-hint='Undo edit'><span class=icon></span></button>
+    <button class='redo' data-hint='Redo edit'><span class=icon></span></button>
   </div>
   
   <div class='body'>

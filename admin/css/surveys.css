@@ -224,12 +224,57 @@
   height: 30px;
   margin: 3px 0;
 }
+#ttt-body #content-editor div.menubar button:hover {
+  background-color:rgb(200, 200, 200);
+}
 #ttt-body #content-editor div.menubar button:disabled {
   border: 1px solid black;
   box-shadow: none;
   background-color:#ddd;
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+#ttt-body #content-editor div.menubar button {
+  position: relative;
+}
+
+#ttt-body #content-editor div.menubar button::after
+{
+  content: attr(data-hint);
+
+  position: absolute;
+  left: 15%;
+  top: 110%;
+  width: 90px;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition: opacity 0.15s;
+  transition-delay: 0s;
+
+  font-size: 75%;
+  white-space: wrap;
+  line-height:0.95;
+
+  padding: 1px 3px;
+
+  background: #6f6f6f;
+  color: white;
+  border: solid 1px black;
+  border-radius: 4px;
+
+  z-index: 1000;
+}
+
+
+#ttt-body #content-editor div.menubar button:hover::after,
+#ttt-body #content-editor div.menubar button:focus::after {
+  opacity: 1;
+  visibility: visible;
+
+  transition-delay: 0.5s;
 }
 
 #ttt-body #content-editor div.menubar button.up,
