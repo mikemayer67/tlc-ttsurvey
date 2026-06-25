@@ -15,34 +15,89 @@ import arborist from './arborist.js';
  * @property { () => void } enable
  * @property { (sectionId:number, toIndex:number) => boolean } move_section
  * @property { (
- *   itemType:"group"|"question",
- *   itemId:number,
- *   toType:"section"|"group",
- *   toId:number,
- *   toIndex:number
- *   ) => boolean 
- * } move_to_container
+ *   itemType: ContentType
+ *   itemId: number,
+ *   toType: ContainerType
+ *   toId: number,
+ *   toIndex: number
+ * ) => boolean } move_to_container
  * @property { (section_id:number) => void } select_section
  * @property { (group_id:number) => void } select_group
  * @property { (question_id:number) => void } select_question
- * @property { ( 
- *   section_id:number, 
- *   section_name:string, 
- *   where:{section_id:number, offset:number}
- *   ) => [jQuery<HTMLLIElement>,jQuery<HTMLULElement>] 
- * } add_section
+ * @property { () => void } clear_selection
+ * @property { (
+ *   section_id: number, 
+ *   section_name: string, 
+ *   where: WhereToAddSection
+ * ) => jQueryTreeNodePair } add_section
+ * @property { (
+ *   group_id:number, 
+ *   group_name:string,
+ *   where: WhereToAddGroup
+ *   ) => jQueryTreeNodePair
+ * } add_group
  * @property { (question_id:number, question:Object) => jQuery<HTMLLIElement> } add_question
  * @property { (section_id) => void } remove_section
  * @property { (group_id) => void } remove_group
  * @property { (question_id) => void } remove_question
- * @property { () => {null | {item_type:"section"|"group"|"question", item_id:number}} } current_selection
- * @property { (null | {item_type:"section"|"group"|"question", item_id:number}) => void } restore_selection
- * @property { (item_type:"section"|"group"|"question", item_id:number, has_error:boolean) => void } toggle_error
+ * @property { () => {null|ItemSelection}} } current_selection
+ * @property { (null|ItemSelection) => void } restore_selection
+ * @property { (item_type:ItemType, item_id:number, has_error:boolean) => void } toggle_error
  * @property { () => boolean } can_submit
  * @property { () => Set<number> } bullpen
  * @property { (old_id:number, new_id:number, old_data:object, new_data:object) => void} replace_question
  * @property { () => Object } survey_structure TODO: flesh out return type
  */
+
+/**
+ * @typedef {"section"|"group"} ContainerType
+ */
+
+/**
+ * @typedef {"group"|"question"} ContentType
+ */
+
+/**
+ * @typedef {"section"|"group"|"question"} ItemType
+ */
+
+/**
+ * @typedef {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]} jQueryTreeNodePair
+ */
+
+/**
+ * @typedef {[HTMLLIElement,HTMLULElement]} DOMTreeNodePair
+ */
+
+/**
+ * @typedef {Object} ItemSelection
+ * @property {ItemType} item_type
+ * @property {number} item_id
+ */
+
+/**
+ * @typedef {Object} WhereToAddSection
+ * @property { number } section_id ID of the existing section used to position new section
+ * @property {-1|1} offset Where to put the new section: -1=before, 1=after relative to existing section
+ */
+
+/**
+ * @typedef {AddGroupToSection|AddGroupRelativeTo} WhereToAddGroup
+ */
+
+/**
+ * @typedef {Object} AddGroupToSection
+ * @property {number} section_id If of the section to which to add the group
+ * @property {boolean} [at_end=false] If group should be added to bottom of the section
+ */
+
+/**
+ * @typedef {Object} AddGroupRelativeTo
+ * @property {number} ref_id ID of existing item used to position new group
+ * @property {ContentType} ref_type type of the reference item
+ * @property {-1|1} offset Where to put the new group: -1=before, 1=after
+ */
+
 
 /**
  * @typedef {Object} WhereHints
@@ -86,7 +141,7 @@ export default function init(ce,controller)
     },
     animation: 150,
     disabled: false,
-    onEnd: handle_drop_in_tree,
+    onEnd: _handle_drop_in_tree,
   });
 
   const _section_sorters = new Map(); // sorters for group and question elements within a section
@@ -140,7 +195,7 @@ export default function init(ce,controller)
     Object.entries(content.sections)
     .sort( ([,a],[,b]) => a.section_id - b.section_id )
     .forEach( ([,section]) => {
-      add_section_to_tree(section, content);
+      _add_section_to_tree(section, content);
     });
 
     _arborist.handle_resize();
@@ -157,10 +212,10 @@ export default function init(ce,controller)
    * @param {object} content All the survey content and structure
    * @returns {none}
    */
-  function add_section_to_tree(section, content)
+  function _add_section_to_tree(section, content)
   {
     const section_id = section.section_id;
-    const [section_li,section_ul] = create_section_li(section_id, section.name);
+    const [section_li,section_ul] = _create_section_li(section_id, section.name);
     section_li.appendTo(_tree);
 
     const section_content = section.content ?? [];
@@ -168,7 +223,7 @@ export default function init(ce,controller)
       if(item.type === 'question') {
         const question = content.questions[item.id] ?? null;
         if(question) {
-          const question_li = create_question_li(question.id,question);
+          const question_li = _create_question_li(question.id,question);
           question_li.appendTo(section_ul);
           _bullpen.delete(question.id);
         }
@@ -177,14 +232,14 @@ export default function init(ce,controller)
       {
         const group = content.groups[item.id] ?? null;
         if(group) {
-          const [group_li, group_ul] = create_group_li(group.group_id,group.name);
+          const [group_li, group_ul] = _create_group_li(group.group_id,group.name);
 
           group_li.appendTo(section_ul);
           const group_content = group.content ?? [];
           for (const question_id of group_content) {
             const question = content.questions[question_id] ?? null;
             if (question) {
-              const question_li = create_question_li(question.id, question);
+              const question_li = _create_question_li(question.id, question);
               question_li.appendTo(group_ul);
               _bullpen.delete(question.id);
             }
@@ -207,9 +262,9 @@ export default function init(ce,controller)
    * 
    * @param {number} section_id ID of the section to be added to the tree
    * @param {string} name Section name to display in the tree
-   * @returns {[HTMLLIElement, HTMLULElement]} 
+   * @returns {DOMTreeNodePair} 
    */
-  function create_section_li(section_id,name)
+  function _create_section_li(section_id,name)
   {
     const btn  = $('<button>').addClass('toggle');
     const span = $('<span>').addClass('name');
@@ -231,8 +286,8 @@ export default function init(ce,controller)
 
     span.on('click',function(e) {
       e.stopPropagation();
-      set_selection($(this).closest('li.section'));
-      start_keyboard_navigation(e);
+      _set_selection($(this).closest('li.section'));
+      _start_keyboard_navigation(e);
     });
 
     const ul = $('<ul>').addClass('section-content').appendTo(li);
@@ -247,7 +302,7 @@ export default function init(ce,controller)
         },
         animation: 150,
         disabled: true,
-        onEnd: handle_drop_in_container,
+        onEnd: _handle_drop_in_container,
       })
     );
 
@@ -287,9 +342,9 @@ export default function init(ce,controller)
    * 
    * @param {number} group_id ID of the group to be added to the tree
    * @param {string} name Group name to display in the tree
-   * @returns {[HTMLLIElement, HTMLULElement]} 
+   * @returns {DOMTreeNodePair} 
    */
-  function create_group_li(group_id,name)
+  function _create_group_li(group_id,name)
   {
     const btn  = $('<button>').addClass('toggle');
     const span = $('<span>').addClass('name');
@@ -311,8 +366,8 @@ export default function init(ce,controller)
 
     span.on('click',function(e) {
       e.stopPropagation();
-      set_selection($(this).closest('li.group'));
-      start_keyboard_navigation(e);
+      _set_selection($(this).closest('li.group'));
+      _start_keyboard_navigation(e);
     });
 
     const ul = $('<ul>').addClass('group-content').attr('data-item-id',group_id).appendTo(li);
@@ -327,7 +382,7 @@ export default function init(ce,controller)
         },
         animation: 150,
         disabled: true,
-        onEnd: handle_drop_in_container,
+        onEnd: _handle_drop_in_container,
       })
     );
 
@@ -366,9 +421,9 @@ export default function init(ce,controller)
    * 
    * @param {number} question_id ID of the question to be added to the tree
    * @param {Object} details All of the question specific information
-   * @returns {[HTMLLIElement, HTMLULElement]} 
+   * @returns {DOMTreeNodePair} 
    */
-  function create_question_li(question_id,details)
+  function _create_question_li(question_id,details)
   {
     const leaf = $('<li>')
       .addClass('question')
@@ -392,8 +447,8 @@ export default function init(ce,controller)
     
     leaf.on('click',function(e) { 
       e.stopPropagation();
-      set_selection($(this)); 
-      start_keyboard_navigation(e);
+      _set_selection($(this)); 
+      _start_keyboard_navigation(e);
     } );
 
     return leaf;
@@ -518,7 +573,7 @@ export default function init(ce,controller)
     if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
     if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
 
-    set_selection(move_li);
+    _set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -530,9 +585,9 @@ export default function init(ce,controller)
    * This function does not care where the request came from:
    *   e.g. drag-n-drop undo/redo or move item buttons
    * This function simply updates the DOM per the request
-   * @param {"group"|"question"} itemType Type of item being moved
+   * @param {ContentType} itemType Type of item being moved
    * @param {number} itemId ID of the item being moved
-   * @param {"section"|"group"} toType Type of container into which item is being moved
+   * @param {ContainerType} toType Type of container into which item is being moved
    * @param {number} toId ID of the destination container
    * @param {number} toIndex Ordinal position with in the destination container 
    * @returns {boolean} true on success, false on failure
@@ -598,7 +653,7 @@ export default function init(ce,controller)
       move_li.insertBefore(tgt_li);
     }
 
-    set_selection(move_li);
+    _set_selection(move_li);
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -610,7 +665,7 @@ export default function init(ce,controller)
    * @returns {boolean} true on success, false on failure
    * @fires SurveyWasReordered on success
    */
-  function handle_drop_in_tree(evt)
+  function _handle_drop_in_tree(evt)
   {
     if(evt.oldIndex === evt.newIndex) { return false; }
 
@@ -621,7 +676,7 @@ export default function init(ce,controller)
       redo() { self.move_section(sectionId,evt.newIndex); },
     });
 
-    set_selection($(evt.item));
+    _set_selection($(evt.item));
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -633,7 +688,7 @@ export default function init(ce,controller)
    * @returns {boolean} true on success, false on failure
    * @fires SurveyWasReordered on success
    */
-  function handle_drop_in_container(evt)
+  function _handle_drop_in_container(evt)
   {
     if(evt.from === evt.to && evt.oldIndex === evt.newIndex) { return false; }
 
@@ -654,7 +709,7 @@ export default function init(ce,controller)
       redo() { self.move_to_container(item_type, item_id, to_type,   to_id,   evt.newIndex); },
     });
 
-    set_selection($(evt.item));
+    _set_selection($(evt.item));
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -715,7 +770,7 @@ export default function init(ce,controller)
    * @param {jQuery<HTMLLIElement>} $li 
    * @returns {void}
    */
-  function set_selection($li)
+  function _set_selection($li)
   {
     if(!$li) {
       clear_selection;
@@ -751,12 +806,12 @@ export default function init(ce,controller)
    * Adds a new section <li> element to the navigation tree DOM
    * @param {number} section_id ID of section to add
    * @param {string} section_name Name of section to add
-   * @param {WhereHints} where 
-   * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
+   * @param {WhereToAddSection} where 
+   * @returns {jQueryTreeNodePair}
    */
   self.add_section = function(section_id, section_name, where)
   {
-    const [new_li,new_ul] = create_section_li(section_id,section_name);
+    const [new_li,new_ul] = _create_section_li(section_id,section_name);
     if(where.section_id) {
       const existing_li = _tree.find('li.section[data-item-id='+where.section_id+']');
       if(where.offset < 0) { new_li.insertBefore(existing_li); }
@@ -768,7 +823,7 @@ export default function init(ce,controller)
     // if we got here, editing must be enabled, turn on sorting
     _section_sorters.get(section_id).option('disabled',false);
 
-    set_selection(new_li);
+    _set_selection(new_li);
     $(document).trigger('SurveyWasModified');
 
     return [new_li,new_ul];
@@ -778,12 +833,12 @@ export default function init(ce,controller)
    * Adds a new group <li> element to the navigation tree DOM
    * @param {number} group_id ID of group to add
    * @param {string} group_name Name of group to add
-   * @param {WhereHints} where 
-   * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
+   * @param {WhereToAddGroup} where
+   * @returns {jQueryTreeNodePair}
    */
   self.add_group = function(group_id, group_name, where)
   {
-    const [new_li,new_ul] = create_group_li(group_id,group_name);
+    const [new_li,new_ul] = _create_group_li(group_id,group_name);
 
     if(where.ref_id) {
       const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
@@ -800,7 +855,7 @@ export default function init(ce,controller)
     // if we got here, editing must be enabled, turn on sorting
     _group_sorters.get(group_id).option('disabled',false);
 
-    set_selection(new_li);
+    _set_selection(new_li);
     $(document).trigger('SurveyWasModified');
 
     return [new_li,new_ul];
@@ -814,11 +869,11 @@ export default function init(ce,controller)
    * @param {number} question_id ID of question to add
    * @param {object} question Details about question to add
    * @param {WhereHints} where 
-   * @returns {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]}
+   * @returns {Query<HTMLLIElement>}
    */
   self.add_question = function(question_id, question, where)
   {
-    const new_li = create_question_li(question_id,question);
+    const new_li = _create_question_li(question_id,question);
     if(where.ref_id) {
       const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
       if(where.offset < 0) { 
@@ -842,13 +897,11 @@ export default function init(ce,controller)
       if(where.at_end) { new_li.appendTo(content_ul);  }
       else             { new_li.prependTo(content_ul); }
     }
-    set_selection(new_li);
+    _set_selection(new_li);
     $(document).trigger('SurveyWasModified');
 
     return new_li;
   }
-
-  // TODO add function to remove groups
 
   /**
    * Removes a section <li> from the DOM
@@ -923,7 +976,7 @@ export default function init(ce,controller)
 
   /**
    * Returns the type and ID of the current selection
-   * @returns {null | {item_type:"section"|"group"|"question", item_id:number}} 
+   * @returns {null|ItemSelection} 
    */
   self.current_selection = function()
   {
@@ -940,7 +993,7 @@ export default function init(ce,controller)
 
   /**
    * Sets the current selection based on item type and ID
-   * @param {null | {item_type:"section"|"group"|"question", item_id:number}} selection
+   * @param {null|ItemSelection} selection
    * @returns {void}
    */
   self.restore_selection = function(selection)
@@ -948,7 +1001,7 @@ export default function init(ce,controller)
     if(selection) {
       const item_type = selection.item_type;
       const item_id   = selection.item_id;
-      set_selection(_tree.find('li.'+item_type+'[data-item-id='+item_id+']'));
+      _set_selection(_tree.find('li.'+item_type+'[data-item-id='+item_id+']'));
     }
   }
 
@@ -960,11 +1013,11 @@ export default function init(ce,controller)
    * Enable keyboard navigation
    * @returns {void}
    */
-  function start_keyboard_navigation()
+  function _start_keyboard_navigation()
   {
     if(!_keyboardNav) { 
       _keyboardNav = true;
-      $(document).on('keydown', handle_keyboard_navigation);
+      $(document).on('keydown', _handle_keyboard_navigation);
     }
   }
 
@@ -972,22 +1025,22 @@ export default function init(ce,controller)
    * Disable keyboard navigation
    * @returns {void}
    */
-  function stop_keyboard_navigation()
+  function _stop_keyboard_navigation()
   {
     if(_keyboardNav) {
       _keyboardNav = false;
-      $(document).off('keydown', handle_keyboard_navigation);
+      $(document).off('keydown', _handle_keyboard_navigation);
     }
   }
 
-  $(document).on('click', stop_keyboard_navigation);
+  $(document).on('click', _stop_keyboard_navigation);
 
   /**
    * Keypress handler for keyboard navigation
    * @param {KeyboardEvent} e 
    * @returns 
    */
-  function handle_keyboard_navigation(e)
+  function _handle_keyboard_navigation(e)
   {
     const cur_selection = _tree.find('.selected');
     if(cur_selection.length !== 1 ) { return;}
@@ -1013,7 +1066,7 @@ export default function init(ce,controller)
 
     if(new_index < 0 || new_index >= vis_tree.length) { return; }
     const new_selection = vis_tree.eq(new_index);
-    set_selection(new_selection);
+    _set_selection(new_selection);
   }
 
   //
@@ -1055,7 +1108,7 @@ export default function init(ce,controller)
   /**
    * Toggles the error class on the specified <li> element.
    * Will trigger the observer if this actually changes the state of the error class
-   * @param {"section"|"group"|"question"} item_type 
+   * @param {ItemType} item_type 
    * @param {number} item_id 
    * @param {boolean} has_error 
    */
@@ -1080,7 +1133,7 @@ export default function init(ce,controller)
 
   /**
    * Returns the array of all question IDs that are not current in the tree
-   * @returns 
+   * @returns {[string|number]}
    */
   self.bullpen = function() { 
     return _bullpen; 

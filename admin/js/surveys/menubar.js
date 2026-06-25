@@ -389,6 +389,26 @@ export default function init(ce,controller)
     }
   });
 
+  _add_group.on('click', function() {
+    const curSelection   = _tree.find('li.selected');
+    const selection_type = curSelection.data('type');
+    const selection_id   = curSelection.data('item-id');
+    controller.add_new_group(selection_type,selection_id);
+  });
+
+  _remove_group.on('click', function() {
+    const curSelection = _tree.find('li.selected');
+    const selection_type = curSelection.data('type');
+    if(selection_type === 'group') {
+      controller.remove_group(curSelection.data('item-id'));
+    } else {
+      const group = curSelection.closest('li.group');
+      if(group) {
+        controller.remove_group(group.data('item-id'));
+      }
+    }
+  });
+
   //
   // Selection change handlers
   //
@@ -415,21 +435,23 @@ export default function init(ce,controller)
       _add_section_above.attr('disabled', false);
       _add_section_below.attr('disabled', false);
       _add_question_below.attr('disabled', false);
+      _add_group.attr('disabled', false);
       _delete.attr('disabled', false);
       break;
     case 'group':
       _add_question_above.attr('disabled', false);
       _add_question_below.attr('disabled', false);
+      _remove_group.attr('disabled',false)
       _delete.attr('disabled', false);
       break;
     case 'question':
       _add_question_above.attr('disabled', false);
       _add_question_below.attr('disabled', false);
       _add_question_clone.attr('disabled', false);
-      if(selected_item.closest('li.group').length) {
-        _remove_group.attr('disabled', false);
-      } else {
+      if(!selected_item.closest('li.group').length) { 
         _add_group.attr('disabled', false);
+      } else { 
+        _remove_group.attr('disabled', false); 
       }
       _delete.attr('disabled', false);
       break;

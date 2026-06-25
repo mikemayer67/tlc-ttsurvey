@@ -76,6 +76,8 @@ function setup_hint_handler()
  * @property { (question_id:number, type:string, old_type:string) => void } update_question_type
  * @property { (where:{section_id:number, offset:number}) => void } add_new_section
  * @property { (where:{TODO: update attributes ... see tree::add_question}) => void } add_new_question
+ * @property { (to_type:"section"|"group", to_id:number) => void } add_new_ group
+ * @property { (group_id:number) => void } ungroup
  * @property { (data:object) => void } clone_question
  * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_section
  * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_group
@@ -372,8 +374,6 @@ export default function init(ce)
     });
   };
 
-  // TODO: Add add_new_group method
-
   /**
    * Adds a new question to the survey content, notifies the navigation tree
    *   of the new question, and registers the addition with the undo manager
@@ -436,6 +436,58 @@ export default function init(ce)
       });
     }
   };
+
+  // group handlers
+
+  /**
+   * Adds a new group to either a section or around a question.
+   *   when added to a section, creates an empty group at the end of the section
+   *   when added to a question, the new group wraps the quesiton
+   * @param {"question"|"section"} to_type
+   * @param {number} to_id
+   * @returns {void}
+   */
+  self.add_new_group = function(to_type, to_id) 
+  {
+    const current_group_ids = Object.keys(_content.groups).map((x) => Number(x));
+    const new_group_id = 1 + Math.max(...current_group_ids);
+    const new_group_name = "Untitled Group";
+
+    const new_group = { group_id:new_group_id, name:new_group_name, content:[] };
+    const cur_highlight = _tree.current_selection();
+
+    _content.groups[new_group_id] = new_group;
+
+    if(to_type === 'section') 
+    {
+      const where = {section_id:to_id, at_end:true};
+      ce.undo_manager.add_and_exec({
+        action:'add-group-to-section',
+        redo() {
+          _tree.add_group(new_group_id, new_group_name, where);
+        },
+        undo() {
+          _tree.remove_group(new_group_id);
+          _tree.restore_selection(cur_highlight);
+        },
+      });
+    } 
+    else if(to_type === 'question') 
+    {
+      alert(`add_group(${to_type},${to_id})`);
+    }
+  }
+
+  /**
+   * Removes a group.  Any questions that were in the group remain
+   *   in the containing section, but no longer grouped
+   * @param {number} group_id
+   * @returns {void}
+   */
+  self.remove_group = function(group_id)
+  {
+    alert(`remove_group(${group_id})`);
+  }
 
   // deletion handlers
 
