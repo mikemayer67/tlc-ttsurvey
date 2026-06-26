@@ -10,7 +10,7 @@
 
 /**
  * Initializes a MenubarController object
- * @param {object} ce Container of shared "global" variables
+ * @param {Object} ce Container of shared "global" variables
  * @param {SurveyViewController} controller TODO add JSDoc to controller
  * @returns {NavTreeController}
  */

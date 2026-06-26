@@ -63,9 +63,9 @@ function setup_hint_handler()
  * @property { () => void } disable_edits
  * @property { () => void } show_content Shows the content editor/viewer
  * @property { () => void } hide_content Hides the content editor/viewer
- * @property { (content:object) => void } udpate_content 
+ * @property { (content:Object) => void } udpate_content 
  * @property { () => boolean } can_submit
- * @property { () => {options:object, sections:object, questions:object, next_ids:object} } content
+ * @property { () => {options:Object, sections:Object, questions:Object, next_ids:Object} } content
  * @property { (section_id:number, key:string) => null|number|string } cur_section_data
  * @property { (group_id:number, key:string) => null|number|string } cur_group_data
  * @property { (question_id:number, key:string) => null|number|string } cur_question_data
@@ -78,7 +78,7 @@ function setup_hint_handler()
  * @property { (where:{TODO: update attributes ... see tree::add_question}) => void } add_new_question
  * @property { (to_type:"section"|"group", to_id:number) => void } add_new_ group
  * @property { (group_id:number) => void } ungroup
- * @property { (data:object) => void } clone_question
+ * @property { (data:Object) => void } clone_question
  * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_section
  * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_group
  * @property { (delete_li:jQuery<HTMLLIElement>) => void } delete_question
@@ -86,7 +86,7 @@ function setup_hint_handler()
  * @property { (group_id:number) => void } select_group
  * @property { (question_id:number) => void } select_question
  * @property { () => void } clear_selection
- * @property { () => Map<number,object} } unused_questions
+ * @property { () => Map<number,Object} } unused_questions
  * @property { (old_id:number, new_id:number) => void } replace_question
  * @property { (value:string) => number } add_option
  * @property { (id:number, value:string) => void } update_option
@@ -97,7 +97,7 @@ function setup_hint_handler()
 
 /**
  * Initializes a SurveyViewController
- * @param {object} ce Container of shared "global" variables
+ * @param {Object} ce Container of shared "global" variables
  * @returns {SurveyViewCtontroller}
  */
 export default function init(ce)
@@ -184,7 +184,7 @@ export default function init(ce)
   /**
    * Returns the data structure encapsulating the current survey content/structure
    * in a format usable for submitting it via an AJAX call to the server.
-   * @returns {{options:object, sections:object, questions:object, next_ids:object}}
+   * @returns {{options:Object, sections:Object, questions:Object, next_ids:Object}}
    */
   self.content = function()
   {
@@ -203,33 +203,32 @@ export default function init(ce)
     
     // Loop over the first layer of the tree structure, i.e. the section data
     const tree_structure = _tree.survey_structure();
-    tree_structure.each( function(section_index) {
+    tree_structure.forEach( function(section,section_index) {
       // clone the section data from the existing content data
       //   and update its section ID based on the current survey tree
       // we will update the section content shortly
-      const new_section = deepCopy(_content.sections[this.section_id]);
+      const new_section = deepCopy(_content.sections[section.section_id]);
       const new_section_id =  1 + section_index;
       new_section.section_id = new_section_id;
 
       // populate the new section's content as well as fleshing out the
       //   groups and questions attributes of the rval
-      new_section.content = this.content.map( function(item_index) {
-        if(this.question_id) {
-          const new_question = deepCopy(_content.questions[this.question_id]);
-          rval.questions[this.question_id] = new_question;
-          return { type:'question', id:this.question_id };
-        } else if(this.group_id) {
-          const new_group = deepCopy(_content.groups[this.group_id]);
-          new_group.content = Array.from(this.content);
-          rval.groups[this.group_id] = new_group;
-          this.content.each( function(question_index) {
-            const question_id = this;
+      new_section.content = section.content.map( function(item, item_index) {
+        if(item.question_id) {
+          const new_question = deepCopy(_content.questions[item.question_id]);
+          rval.questions[item.question_id] = new_question;
+          return { type:'question', id:item.question_id };
+        } else if(item.group_id) {
+          const new_group = deepCopy(_content.groups[item.group_id]);
+          new_group.content = [...item.content]; // copy content
+          rval.groups[item.group_id] = new_group;
+          item.content.map( function(question_id,question_index) {
             const new_question = deepCopy(_content.questions[question_id]);
             rval.questions[question_id] = new_question;
           });
-          return { type:'group', id:this.group_id};
+          return { type:'group', id:item.group_id};
         }
-      }).get();
+      });
       rval.sections[new_section_id] = new_section;
     });
 
@@ -405,7 +404,7 @@ export default function init(ce)
    *   survey content and navigation tree, and registers this action with
    *   the undo manager.
    * 
-   * @param {object} data Question details
+   * @param {Object} data Question details
    */
   self.clone_question = function(data)
   {
@@ -731,7 +730,7 @@ export default function init(ce)
   /**
    * Returns a Map of the all content questions not currently in
    *   use in the survey.
-   * @returns {Map<number,object>}
+   * @returns {Map<number,Object>}
    */
   self.unused_questions = function() 
   {
@@ -758,7 +757,7 @@ export default function init(ce)
 
   /**
    * Returns all option values defined for the current survey
-   * @returns {object} 
+   * @returns {Object} 
    * 
    */
   self.all_options = function() {
@@ -826,6 +825,6 @@ export default function init(ce)
     return _tree.move_to_container('question',question_id,toType,toId,toIndex);
   }
 
-  // return controller object
+  // return controller Object
   return self;
 };

@@ -1,12 +1,14 @@
 import Sortable from '../../../js/sortable.esm.js';
 import arborist from './arborist.js';
 
+/// <reference path="./data-types.js" />
+
 /**
  * Controller used to manage the content of the navigation tree.
  * 
  * @typedef {Object} NavTreeController
  * @property { () => void } reset
- * @property { (content:object) => void } update
+ * @property { (content:Object) => void } update
  * @property { (section_id:number, key:string, value:number|string)  => void } update_section
  * @property { (group_id:number, key:string, value:number|string)  => void } update_group
  * @property { (question_id:number, new_type:string, old_type:string) => void } update_question_type
@@ -28,90 +30,33 @@ import arborist from './arborist.js';
  * @property { (
  *   section_id: number, 
  *   section_name: string, 
- *   where: WhereToAddSection
+ *   where: WhereRelativeToSection
  * ) => jQueryTreeNodePair } add_section
  * @property { (
  *   group_id:number, 
  *   group_name:string,
  *   where: WhereToAddGroup
- *   ) => jQueryTreeNodePair
- * } add_group
- * @property { (question_id:number, question:Object) => jQuery<HTMLLIElement> } add_question
+ *   ) => jQueryTreeNodePair } add_group
+ * @property { (
+ *   question_id:number, 
+ *   where:WhereToAdQuestioni
+ *   ) => jQuery<HTMLLIElement> } add_questioe
  * @property { (section_id) => void } remove_section
  * @property { (group_id) => void } remove_group
  * @property { (question_id) => void } remove_question
- * @property { () => {null|ItemSelection}} } current_selection
- * @property { (null|ItemSelection) => void } restore_selection
+ * @property { () => {null|SelectedItem}} } current_selection
+ * @property { (null|SelectedItem) => void } restore_selection
  * @property { (item_type:ItemType, item_id:number, has_error:boolean) => void } toggle_error
  * @property { () => boolean } can_submit
  * @property { () => Set<number> } bullpen
- * @property { (old_id:number, new_id:number, old_data:object, new_data:object) => void} replace_question
+ * @property { (old_id:number, new_id:number, old_data:Object, new_data:Object) => void} replace_question
  * @property { () => Object } survey_structure TODO: flesh out return type
  */
 
-/**
- * @typedef {"section"|"group"} ContainerType
- */
-
-/**
- * @typedef {"group"|"question"} ContentType
- */
-
-/**
- * @typedef {"section"|"group"|"question"} ItemType
- */
-
-/**
- * @typedef {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]} jQueryTreeNodePair
- */
-
-/**
- * @typedef {[HTMLLIElement,HTMLULElement]} DOMTreeNodePair
- */
-
-/**
- * @typedef {Object} ItemSelection
- * @property {ItemType} item_type
- * @property {number} item_id
- */
-
-/**
- * @typedef {Object} WhereToAddSection
- * @property { number } section_id ID of the existing section used to position new section
- * @property {-1|1} offset Where to put the new section: -1=before, 1=after relative to existing section
- */
-
-/**
- * @typedef {AddGroupToSection|AddGroupRelativeTo} WhereToAddGroup
- */
-
-/**
- * @typedef {Object} AddGroupToSection
- * @property {number} section_id If of the section to which to add the group
- * @property {boolean} [at_end=false] If group should be added to bottom of the section
- */
-
-/**
- * @typedef {Object} AddGroupRelativeTo
- * @property {number} ref_id ID of existing item used to position new group
- * @property {ContentType} ref_type type of the reference item
- * @property {-1|1} offset Where to put the new group: -1=before, 1=after
- */
-
-
-/**
- * @typedef {Object} WhereHints
- * @property { number } [ref_id] ID of the item relative to which position a new item
- * @property { "question" | "group" } [ref_type] type of the reference item
- * @property { number } [section_id] ID of the section into which insert the new item
- * @property { number } [group_id] ID of the group into which insert the new item
- * @property { 1 | -1 } [offset] Where to put the item relative to the ref item 
- * @property { boolean } [at_end] Insert item at the end of the section/group
- */
 
 /**
  * Initializes a NavTreeController object
- * @param {object} ce Container of shared "global" variables
+ * @param {Object} ce Container of shared "global" variables
  * @param {SurveyViewController} controller TODO add JSDoc to controller
  * @returns {NavTreeController}
  */
@@ -209,7 +154,7 @@ export default function init(ce,controller)
    *   other functions to create them and then it places them into the DOM.
    * 
    * @param {number} section ID of the section to be added to the tree
-   * @param {object} content All the survey content and structure
+   * @param {Object} content All the survey content and structure
    * @returns {none}
    */
   function _add_section_to_tree(section, content)
@@ -806,7 +751,7 @@ export default function init(ce,controller)
    * Adds a new section <li> element to the navigation tree DOM
    * @param {number} section_id ID of section to add
    * @param {string} section_name Name of section to add
-   * @param {WhereToAddSection} where 
+   * @param {WhereRelativeToSection} where 
    * @returns {jQueryTreeNodePair}
    */
   self.add_section = function(section_id, section_name, where)
@@ -862,13 +807,10 @@ export default function init(ce,controller)
   }
 
   /**
-   * TODO: update to include groups
-   * TODO: update the following param list
-   * TODO: add add_question to the API prologue
    * Adds a new question <li> element to the navigation tree DOM
    * @param {number} question_id ID of question to add
-   * @param {object} question Details about question to add
-   * @param {WhereHints} where 
+   * @param {Object} question Details about question to add
+   * @param {WhereToAddQuestion} where 
    * @returns {Query<HTMLLIElement>}
    */
   self.add_question = function(question_id, question, where)
@@ -976,7 +918,7 @@ export default function init(ce,controller)
 
   /**
    * Returns the type and ID of the current selection
-   * @returns {null|ItemSelection} 
+   * @returns {null|SelectedItem} 
    */
   self.current_selection = function()
   {
@@ -993,7 +935,7 @@ export default function init(ce,controller)
 
   /**
    * Sets the current selection based on item type and ID
-   * @param {null|ItemSelection} selection
+   * @param {null|SelectedItem} selection
    * @returns {void}
    */
   self.restore_selection = function(selection)
@@ -1143,8 +1085,8 @@ export default function init(ce,controller)
    * Swaps out one question in the navigation tree for another
    * @param {number} old_id ID of the question to be replaced
    * @param {number} new_id ID of the question replacing it
-   * @param {object} old_data Details of the question being replaced
-   * @param {object} new_data Details of the question replacing it
+   * @param {Object} old_data Details of the question being replaced
+   * @param {Object} new_data Details of the question replacing it
    * @returns 
    */
   self.replace_question = function(old_id, new_id, old_data, new_data) {
@@ -1173,7 +1115,7 @@ export default function init(ce,controller)
 
   /**
    * Returns the survey structure as defined by the navigation tree
-   * @returns {object} TODO: flesh out the return type once groups have been added
+   * @returns {SurveyStructure} 
    */
   self.survey_structure = function() 
   {
@@ -1194,12 +1136,12 @@ export default function init(ce,controller)
           const question_lis = item_li.find('li.question');
           const group_content = question_lis.map( function() {
             return $(this).data('item-id');
-          });
+          }).get();
           return {group_id:item_id, content:group_content};
         }
-      });
+      }).get();
       return {section_id, content:section_content};
-    });
+    }).get();
 
     return rval;
   }
