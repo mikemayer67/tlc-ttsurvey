@@ -1,4 +1,20 @@
 /**
+ * Runtime context container
+ *   The actual properties will vary depending on runtime context
+ * @typedef {Object} RuntimeContext
+ */
+
+/**
+ * @typedef {Object.<number, string>} IntStringMap
+ */
+
+/**
+ * @typedef {*} BooleanFlag 
+ * A value interpreted according to JavaScript truthiness rules.
+ * 
+ */
+
+/*
  * @typedef {"section"|"group"} ContainerType
  */
 
@@ -17,6 +33,53 @@
 
 /**
  * @typedef {"INFO"|"BOOL"|"FREETEXT"|"SELECT_ONE"|"SELECT_MULTI"} QuestionType
+ */
+
+/** 
+ * @typedef {"LEFT"|"RIGHT"} BoolLayout
+ */
+
+/**
+ * @typedef {"ROW"|"LCOL"|"RCOL"} SelectLayout
+ */
+
+/**
+ * @typedef {Object} SectionInfo
+ * @property {number} section_id
+ * @property {string} name
+ * @property {string} intro
+ * @property {BooleanFag} collapsible Boolean like value
+ * @property {Array<SectionContent>} content
+ */
+
+/**
+ * @typedef {Object} SectionContent
+ * @property {ContainerType} type
+ * @property {number} id
+ */
+
+/**
+ * @typedef {Object} GroupInfo
+ * @property {number} group_id
+ * @property {string} name
+ * @property {Array<number>} content Question IDs
+ */
+
+/**
+ * @typedef {Object} QuestionInfo
+ * @property {number} id
+ * @property {QuestionType} type
+ * @property {string} [infotag] (Info questions only)
+ * @property {string} [wording] (N/A for Info questions)
+ * @property {string} [info] (Info questions only)
+ * @property {string} [intro] (N/A for Info questions)
+ * @property {Array<number>} [options] (Select type questions only)
+ * @property {BooleanFag} [other_flag] (Select type questions only)
+ * @property {string} [other="Other"] (only applicable if other_flag is truthy)
+ * @property {string} [qualifier] (N/A for Info questions)
+ * @property {string} [popup] (N/A for Info questions)
+ * @property {BooleanFag} [render_in_group] Boolean like value (Info questions only)
+ * @property {null|BoolLayout|SelectLayout} [layout] 
  */
 
 /**
@@ -44,13 +107,13 @@
 /**
  * @typedef {Object} WhereInSection
  * @property {number} section_id ID of the section into which to add the item
- * @property {booleanY} [at_end=false] If item should be added to bottom of the section
+ * @property {boolean} [at_end=false] If item should be added to bottom of the section
  */
 
 /**
  * @typedef {Object} WhereInGroup
  * @property {number} group_id ID of the group into which to add the item
- * @property {booleanY} [at_end=false] If item should be added to bottom of the group
+ * @property {boolean} [at_end=false] If item should be added to bottom of the group
  */
 
 /**
@@ -76,3 +139,18 @@
  * @typedef {Array<QuestionID|GroupStructure>} SurveyStructure
  */
 
+/**
+ * @typedef {Object} SurveyContent
+ * @property {IntStringMap} options
+ * @property {Object.<number,SectionInfo>} sections
+ * @property {SurveyGroups} groups
+ * @property {SurveyQuestions} questions
+ * @property {NextIDs} next_ids
+ */
+
+/**
+ * @typedef {Object} NextIDs
+ * @property {number} survey
+ * @property {number} quesiton
+ * @property {number} Option
+ */

@@ -39,8 +39,8 @@ import arborist from './arborist.js';
  *   ) => jQueryTreeNodePair } add_group
  * @property { (
  *   question_id:number, 
- *   where:WhereToAdQuestioni
- *   ) => jQuery<HTMLLIElement> } add_questioe
+ *   where:WhereToAddQuestion
+ *   ) => jQuery<HTMLLIElement> } add_question
  * @property { (section_id) => void } remove_section
  * @property { (group_id) => void } remove_group
  * @property { (question_id) => void } remove_question
