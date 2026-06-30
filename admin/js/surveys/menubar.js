@@ -393,7 +393,22 @@ export default function init(ce,controller)
     const curSelection   = _tree.find('li.selected');
     const selection_type = curSelection.data('type');
     const selection_id   = curSelection.data('item-id');
-    controller.add_new_group(selection_type,selection_id);
+    if(selection_type === 'section') 
+    {
+      controller.add_group_to_section(selection_id);
+    }
+    else if(selection_type === 'question')
+    {
+      const question_li = curSelection;
+      const question_id = selection_id;
+      
+      const section_li = question_li.closest('li.section');
+      const section_content = section_li.find('ul.section-content').children();
+      const section_id = section_li.data('item-id');
+      const cur_index = section_content.index(question_li);
+
+      controller.add_group_for_question(question_id,section_id,cur_index);
+    }
   });
 
   _remove_group.on('click', function() {

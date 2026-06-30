@@ -594,7 +594,7 @@ export default function init(ce,controller)
       move_li.appendTo(to_ul);
     }
     else {
-      // insert before element currenty at destination index
+      // insert before element currently at destination index
       move_li.insertBefore(tgt_li);
     }
 

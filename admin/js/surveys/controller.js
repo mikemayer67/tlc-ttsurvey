@@ -77,7 +77,8 @@ function setup_hint_handler()
  * @property { (question_id:number, type:string, old_type:string) => void } update_question_type
  * @property { (where:{section_id:number, offset:number}) => void } add_new_section
  * @property { (where:WhereToAddQuestion) => void } add_new_question
- * @property { (to_type:"section"|"question", to_id:number) => void } add_new_group
+ * @property { (section_id:number) => void } add_group_to_section
+ * @property { (question_id:number) => void } add_group_for_question
  * @property { (group_id:number) => void } ungroup
  * @property { (data:QuestionInfo) => void } clone_question
  * @property { ($delete_li:jQuery<HTMLLIElement>) => void } delete_section
@@ -440,42 +441,77 @@ export default function init(ce)
   // group handlers
 
   /**
-   * Adds a new group to either a section or around a question.
-   *   when added to a section, creates an empty group at the end of the section
-   *   when added to a question, the new group wraps the quesiton
-   * @param {"question"|"section"} to_type
-   * @param {number} to_id
-   * @returns {void}
+   * Creates a new group with a new/unique group ID
+   * @param {string} [name="Untitled Group"]
+   * @returns {GroupInfo}
    */
-  self.add_new_group = function(to_type, to_id) 
+  self._create_new_group = function(name='Untitled Group')
   {
     const current_group_ids = Object.keys(_content.groups).map((x) => Number(x));
-    const new_group_id = 1 + Math.max(...current_group_ids);
-    const new_group_name = "Untitled Group";
+    const group_id = 1 + Math.max(...current_group_ids);
+    return { group_id, name, content: [] };
+  }
 
-    const new_group = { group_id:new_group_id, name:new_group_name, content:[] };
+  /**
+   * Adds a new group to (end of) a section
+   * @param {number} section_id
+   * @returns {void}
+   */
+  self.add_group_to_section = function(section_id) 
+  {
+    const cur_highlight = _tree.current_selection();
+    const new_group = self._create_new_group()
+    const group_id = new_group.group_id;
+    const name = new_group.name;
+
+    _content.groups[group_id] = new_group;
+
+    ce.undo_manager.add_and_exec({
+      action: 'add-group-to-section',
+      redo() {
+        _tree.add_group(group_id, name, {section_id,at_end:true});
+      },
+      undo() {
+        _tree.remove_group(group_id);
+        _tree.restore_selection(cur_highlight);
+      },
+    });
+  }
+
+  /**
+   * Wraps an existing unbrouped question in a new group
+   * @param {number} question_id 
+   * @param {number} section_id ID of the section currently containing the question
+   * @param {number} section_index index of the question within the containing section
+   * @returns {void}
+   */
+  self.add_group_for_question = function(question_id,section_id,section_index)
+  {
     const cur_highlight = _tree.current_selection();
 
-    _content.groups[new_group_id] = new_group;
+    const new_group = self._create_new_group()
+    const group_id = new_group.group_id;
+    const group_name = new_group.name;
 
-    if(to_type === 'section') 
-    {
-      const where = {section_id:to_id, at_end:true};
-      ce.undo_manager.add_and_exec({
-        action:'add-group-to-section',
-        redo() {
-          _tree.add_group(new_group_id, new_group_name, where);
-        },
-        undo() {
-          _tree.remove_group(new_group_id);
-          _tree.restore_selection(cur_highlight);
-        },
-      });
-    } 
-    else if(to_type === 'question') 
-    {
-      alert(`add_group(${to_type},${to_id})`);
-    }
+    _content.groups[group_id] = new_group;
+
+    ce.undo_manager.add_and_exec({
+      action:'add-group-for-question',
+      redo() {
+        _tree.add_group( 
+          group_id, 
+          group_name, 
+          {ref_type:'question', ref_id:question_id, offset:-1}
+        );
+        _tree.move_to_container('question',question_id,'group',group_id,0);
+      },
+      undo() {
+        _tree.move_to_container(
+          'question', question_id,
+          'section', section_id, section_index);
+        _tree.remove_group(group_id);
+      },
+    });
   }
 
   /**
