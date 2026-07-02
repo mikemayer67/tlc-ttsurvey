@@ -40,7 +40,7 @@ import arborist from './arborist.js';
  * @property { (
  *   question_id:number, 
  *   where:WhereToAddQuestion
- *   ) => jQuery<HTMLLIElement> } add_question
+ *   ) => jQueryLIElement } add_question
  * @property { (section_id) => void } remove_section
  * @property { (group_id) => void } remove_group
  * @property { (question_id) => void } remove_question
@@ -712,7 +712,7 @@ export default function init(ce,controller)
   /**
    * Makes the specified section, group, or question <li> element the 
    *    selected navigation tree element
-   * @param {jQuery<HTMLLIElement>} $li 
+   * @param {jQueryLIElement} $li 
    * @returns {void}
    */
   function _set_selection($li)
@@ -785,16 +785,20 @@ export default function init(ce,controller)
   {
     const [new_li,new_ul] = _create_group_li(group_id,group_name);
 
-    if(where.ref_id) {
+    if(where.ref_id) // WhereRelatoveToContent
+    {
       const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
       if(where.offset < 0) { new_li.insertBefore(ref_li); }
       else                 { new_li.insertAfter(ref_li); }
     }
-    else if(where.section_id) {
+    else if(where.section_id) //WhereInSection
+    {
       const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
       const content_ul  = section_li.children('ul.section-content');
-      if(where.at_end) { new_li.appendTo(content_ul); }
-      else             { new_li.prependTo(content_ul); }
+      const index = where.index ?? 0;
+      if     (index<0) { new_li.appendTo(content_ul);  } 
+      else if(index<1) { new_li.prependTo(content_ul); }
+      else             { new_li.insertBefore(content_ul.children().eq(index)); }
     }
 
     // if we got here, editing must be enabled, turn on sorting
@@ -816,28 +820,35 @@ export default function init(ce,controller)
   self.add_question = function(question_id, question, where)
   {
     const new_li = _create_question_li(question_id,question);
-    if(where.ref_id) {
+    if(where.ref_id)  // WhereRelativetoContent
+    {
       const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
       if(where.offset < 0) { 
         new_li.insertBefore(ref_li); 
       } else if(where.ref_type === 'question') { 
         new_li.insertAfter(ref_li); 
       } else {
-        const content_ul = ref_li.children('ul.group-content');
+        const content_ul = ref_li.children('ul.'+where.ref_type+'-content');
         new_li.prependTo(content_ul);
       }
     }
-    else if(where.section_id) {
+    else if(where.section_id) // WhereInSection
+    {
       const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
       const content_ul = section_li.children('ul.section-content');
-      if(where.at_end) { new_li.appendTo(content_ul);  }
-      else             { new_li.prependTo(content_ul); }
+      const index = where.index ?? 0;
+      if     (index < 0) { new_li.appendTo(content_ul);  }
+      else if(index < 1) { new_li.prependTo(content_ul); }
+      else               { new_li.insertBefore(content_ul.children().eq(index))}
     } 
-    else if(where.group_id) {
+    else if(where.group_id)  // WhereInGroup
+    {
       const group_li = _tree.find('li.group[data-item-id='+where.group_id+']');
       const content_ul = group_li.children('ul.group-content');
-      if(where.at_end) { new_li.appendTo(content_ul);  }
-      else             { new_li.prependTo(content_ul); }
+      const index = where.index ?? 0;
+      if     (index < 0) { new_li.appendTo(content_ul);  }
+      else if(index < 1) { new_li.prependTo(content_ul); }
+      else               { new_li.insertBefore(content_ul.children().eq(index))}
     }
     _set_selection(new_li);
     $(document).trigger('SurveyWasModified');

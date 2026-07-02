@@ -81,9 +81,9 @@ function setup_hint_handler()
  * @property { (question_id:number) => void } add_group_for_question
  * @property { (group_id:number) => void } ungroup
  * @property { (data:QuestionInfo) => void } clone_question
- * @property { ($delete_li:jQuery<HTMLLIElement>) => void } delete_section
- * @property { ($delete_li:jQuery<HTMLLIElement>) => void } delete_group
- * @property { ($delete_li:jQuery<HTMLLIElement>) => void } delete_question
+ * @property { ($delete_li:jQueryLIElement) => void } delete_section
+ * @property { ($delete_li:jQueryLIElement) => void } delete_group
+ * @property { ($delete_li:jQueryLIElement) => void } delete_question
  * @property { (section_id:number) => void } select_section
  * @property { (group_id:number) => void } select_group
  * @property { (question_id:number) => void } select_question
@@ -469,7 +469,7 @@ export default function init(ce)
     ce.undo_manager.add_and_exec({
       action: 'add-group-to-section',
       redo() {
-        _tree.add_group(group_id, name, {section_id,at_end:true});
+        _tree.add_group(group_id, name, {section_id,index:-1});
       },
       undo() {
         _tree.remove_group(group_id);
@@ -517,12 +517,48 @@ export default function init(ce)
   /**
    * Removes a group.  Any questions that were in the group remain
    *   in the containing section, but no longer grouped
-   * @param {number} group_id
+   * @param{jQueryLIElement} $group_li
    * @returns {void}
    */
-  self.remove_group = function(group_id)
+  self.remove_group = function($group_li)
   {
-    alert(`remove_group(${group_id})`);
+    const group_id = $group_li.data('item-id');
+    const group_name = _content.groups[group_id].name;
+    const question_ids = 
+      $group_li.find('li.question')
+      .map(function () { return $(this).data('item-id') })
+      .get();
+
+    const $section_li = $group_li.closest('li.section');
+    const section_id = $section_li.data('item-id');
+    const section_index = 
+      $section_li.find('ul.section-content').children().index($group_li);
+
+    ce.undo_manager.add_and_exec({
+      action: 'remove-group',
+      redo() {
+        question_ids.forEach( (question_id,offset) => {
+          _tree.move_to_container(
+            'question',question_id,
+            'section',section_id,
+            section_index + 1 + offset
+          );
+        });
+        _tree.remove_group(group_id);
+      },
+      undo() {
+        _tree.add_group(group_id, group_name, {section_id, index:section_index});
+        question_ids.forEach((question_id,offset) => {
+          _tree.move_to_container(
+            'question',question_id,
+            'group',group_id,
+            offset
+          )
+        });
+      }
+    });
+
+
   }
 
   // deletion handlers
@@ -530,7 +566,7 @@ export default function init(ce)
   /**
    * Removes the specified section element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} $delete_li 
+   * @param {jQueryLIElement} $delete_li 
    * @returns {void}
    */
   self.delete_section = function($delete_li) 
@@ -559,7 +595,7 @@ export default function init(ce)
         const group = _content.groups[item_id];
         undo_tasks.push({
           func: _tree.add_group,
-          args:[item_id,group.name, {section_id,at_end:true}]
+          args:[item_id,group.name, {section_id,index:-1}]
         });
       } else if(item_type === 'question') {
         const question = _content.questions[item_id];
@@ -568,12 +604,12 @@ export default function init(ce)
           const group_id = $in_group.data('item-id');
           undo_tasks.push({
             func: _tree.add_question, 
-            args: [item_id, question, { group_id, at_end:true }]
+            args: [item_id, question, { group_id, index:-1 }]
           });
         } else {
           undo_tasks.push({ 
             func: _tree.add_question, 
-            args: [item_id, question, { section_id,at_end:true }]
+            args: [item_id, question, { section_id,index:-1 }]
           });
         }
       }
@@ -601,7 +637,7 @@ export default function init(ce)
   /**
    * Removes the specified group element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} $delete_li 
+   * @param {jQueryLIElement} $delete_li 
    * @returns {void}
    */
   self.delete_group = function($delete_li) 
@@ -641,7 +677,7 @@ export default function init(ce)
           _tree.add_question(
             question_id, 
             _content.questions[question_id],
-            {group_id, at_end:true},
+            {group_id, index:-1},
           )
         });
         _tree.restore_selection(cur_highlight);
@@ -652,7 +688,7 @@ export default function init(ce)
   /**
    * Removes the specified question element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
-   * @param {jQuery<HTMLLIElement>} $delete_li 
+   * @param {jQueryLIElement} $delete_li 
    * @returns {void}
    */
   self.delete_question = function($delete_li) 

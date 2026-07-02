@@ -103,9 +103,9 @@ echo <<<HTML
     <button class='down' data-hint='Move selection down'><span class=icon></span></button>
     <button class='add section below' data-hint='Insert new section below'><span class=icon></span></button>
     <button class='add section above' data-hint='Insert new section above'><span class=icon></span></button>
-    <button class='add question below' data-hint='Insert new survey item below'><span class=icon></span></button>
-    <button class='add question above' data-hint='Insert new survey item above'><span class=icon></span></button>
-    <button class='add question clone' data-hint='Duplicate survey item'><span class=icon></span></button>
+    <button class='add question below' data-hint='Insert new question below'><span class=icon></span></button>
+    <button class='add question above' data-hint='Insert new question above'><span class=icon></span></button>
+    <button class='add question clone' data-hint='Duplicate question'><span class=icon></span></button>
     <button class='add group' data-hint='Start new grouping'><span class=icon></span></button>
     <button class='remove group' data-hint='Remove grouping'><span class=icon></span></button>
     <button class='delete' data-hint='Delete selection'><span class=icon></span></button>

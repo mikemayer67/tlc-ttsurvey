@@ -11,7 +11,6 @@
 /**
  * @typedef {*} BooleanFlag 
  * A value interpreted according to JavaScript truthiness rules.
- * 
  */
 
 /*
@@ -24,6 +23,14 @@
 
 /**
  * @typedef {"section"|"group"|"question"} ItemType
+ */
+
+/**
+ * @typedef {jQuery<HTMLLIElement>} jQueryLIElement
+ */
+
+/**
+ * @typedef {jQuery<HTMLULElement>} jQueryULElement
  */
 
 /**
@@ -83,7 +90,7 @@
  */
 
 /**
- * @typedef {[jQuery<HTMLLIElement>,jQuery<HTMLULElement>]} jQueryTreeNodePair
+ * @typedef {[jQueryLIElement,jQueryULElement]} jQueryTreeNodePair
  */
 
 /**
@@ -98,7 +105,7 @@
 
 /**
  * @typedef {WhereInSection|WhereRelativeToContent} WhereToAddGroup
- */
+ *e
 
 /**
  * @typedef {WhereInSection|WhereInGroup|WhereRelativeToContent} WhereToAddQuestion
@@ -107,13 +114,13 @@
 /**
  * @typedef {Object} WhereInSection
  * @property {number} section_id ID of the section into which to add the item
- * @property {boolean} [at_end=false] If item should be added to bottom of the section
+ * @property {number} [index=0] Position within section (-1 = at end)
  */
 
 /**
  * @typedef {Object} WhereInGroup
  * @property {number} group_id ID of the group into which to add the item
- * @property {boolean} [at_end=false] If item should be added to bottom of the group
+ * @property {bynber} [index=0] Position within group (-1 = at end)
  */
 
 /**

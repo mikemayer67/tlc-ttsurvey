@@ -73,10 +73,10 @@ export default function init(ce,controller)
   // Delete Button
 
   _$delete.on('click', function() {
-    const _$item = _$tree.find('li.selected');
-    switch(_$item.data('type')) {
-      case 'section':  controller.delete_section(_$item);  break;
-      case 'group':    controller.delete_group(_$item);    break;
+    const $item = _$tree.find('li.selected');
+    switch($item.data('type')) {
+      case 'section':  controller.delete_section($item);  break;
+      case 'group':    controller.delete_group($item);    break;
       case 'question': controller.delete_question($item); break;
     }
   });
@@ -143,7 +143,7 @@ export default function init(ce,controller)
    * Or more simply put, all unnested <li> children of the section <ul>
    * 
    * @param {HTMLLIElement} $section_li 
-   * @returns {jQuery<HTMLLIElement>}
+   * @returns {jQueryLIElement}
    */
   function find_section_items($section_li)
   {
@@ -414,13 +414,13 @@ export default function init(ce,controller)
   _$remove_group.on('click', function() {
     const $curSelection = _$tree.find('li.selected');
     const selection_type = $curSelection.data('type');
-    if(selection_type === 'group') {
-      controller.remove_group($curSelection.data('item-id'));
-    } else {
-      const group = $curSelection.closest('li.group');
-      if(group) {
-        controller.remove_group(group.data('item-id'));
-      }
+    const $group_li = (
+      selection_type === 'group'
+      ? $curSelection
+      : $curSelection.closest('li.group')
+    );
+    if ($group_li.length > 0) {
+      controller.remove_group($group_li);
     }
   });
 
