@@ -101,7 +101,7 @@ export default function init(ce,controller)
     switch(_$item.data('type')) {
       case 'section':  request_move_section(_$item,delta);  break;
       case 'group':    request_move_group(_$item,delta);    break;
-      case 'question': request_move_question($item,delta); break;
+      case 'question': request_move_question(_$item,delta); break;
     }
   }
 

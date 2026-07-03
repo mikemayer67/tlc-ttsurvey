@@ -8,7 +8,7 @@ import arborist from './arborist.js';
  * 
  * @typedef {Object} NavTreeController
  * @property { () => void } reset
- * @property { (content:Object) => void } update
+ * @property { (content:SurveyContent) => void } update
  * @property { (section_id:number, key:string, value:number|string)  => void } update_section
  * @property { (group_id:number, key:string, value:number|string)  => void } update_group
  * @property { (question_id:number, new_type:string, old_type:string) => void } update_question_type
@@ -22,7 +22,7 @@ import arborist from './arborist.js';
  *   toType: ContainerType
  *   toId: number,
  *   toIndex: number
- * ) => boolean } move_to_container
+ *   ) => boolean } move_to_container
  * @property { (section_id:number) => void } select_section
  * @property { (group_id:number) => void } select_group
  * @property { (question_id:number) => void } select_question
@@ -31,7 +31,7 @@ import arborist from './arborist.js';
  *   section_id: number, 
  *   section_name: string, 
  *   where: WhereRelativeToSection
- * ) => jQueryTreeNodePair } add_section
+ *   ) => jQueryTreeNodePair } add_section
  * @property { (
  *   group_id:number, 
  *   group_name:string,
@@ -39,6 +39,7 @@ import arborist from './arborist.js';
  *   ) => jQueryTreeNodePair } add_group
  * @property { (
  *   question_id:number, 
+ *   question:QuestionInfo,
  *   where:WhereToAddQuestion
  *   ) => jQueryLIElement } add_question
  * @property { (section_id) => void } remove_section
@@ -49,28 +50,33 @@ import arborist from './arborist.js';
  * @property { (item_type:ItemType, item_id:number, has_error:boolean) => void } toggle_error
  * @property { () => boolean } can_submit
  * @property { () => Set<number> } bullpen
- * @property { (old_id:number, new_id:number, old_data:Object, new_data:Object) => void} replace_question
- * @property { () => Object } survey_structure TODO: flesh out return type
+ * @property { (
+ *   old_id:number, 
+ *   new_id:number, 
+ *   old_data:QuestionInfo, 
+ *   new_data:QuestionInfo
+ *   ) => void} replace_question
+ * @property { () => SurveyStructure } survey_structure
  */
 
 
 /**
  * Initializes a NavTreeController object
- * @param {Object} ce Container of shared "global" variables
+ * @param {RuntimeContext} ce Container of shared "global" variables
  * @param {SurveyViewController} controller TODO add JSDoc to controller
  * @returns {NavTreeController}
  */
 export default function init(ce,controller)
 {
-  const _box      = $('#survey-tree');
-  const _info     = $('#survey-tree .info');
-  const _tree     = $('#survey-tree ul.sections');
+  const _$box      = $('#survey-tree');
+  const _$info     = $('#survey-tree .info');
+  const _$tree     = $('#survey-tree ul.sections');
 
   const _bullpen  = new Set();  // to hold archived questions
 
-  const _arborist = arborist(_box);
+  const _arborist = arborist(_$box);
 
-  // Start the returned editor_tree object.
+  // Start the returned editor_$tree object.
   //    We'll add more properties/methods below
   const self = {
   };
@@ -78,7 +84,7 @@ export default function init(ce,controller)
   let _keyboardNav = false;
 
   // sorter for ul.sections within a tree
-  const _tree_sorter = new Sortable( _tree[0], {
+  const _tree_sorter = new Sortable( _$tree[0], {
     group: {
       name:'tree',
       pull: false,
@@ -86,7 +92,7 @@ export default function init(ce,controller)
     },
     animation: 150,
     disabled: false,
-    onEnd: _handle_drop_in_tree,
+    onEnd: _handle_drop_in_$tree,
   });
 
   const _section_sorters = new Map(); // sorters for group and question elements within a section
@@ -109,8 +115,9 @@ export default function init(ce,controller)
     _section_sorters.clear();
     _group_sorters.forEach((sorter) => sorter.destroy());
     _group_sorters.clear();
-    _tree.empty();
-    _info.hide();
+
+    _$tree.empty();
+    _$info.hide();
     _bullpen.clear();
   }
 
@@ -120,7 +127,7 @@ export default function init(ce,controller)
    * - content sorters are attached to each ul.section and ul.group
    * - the question bullpen is repopluated
    * 
-   * @param {Object} content All the survey content and structure
+   * @param {SurveyContent} content All the survey content and structure
    * @returns {void}
    */
   self.update = function(content)
@@ -140,7 +147,7 @@ export default function init(ce,controller)
     Object.entries(content.sections)
     .sort( ([,a],[,b]) => a.section_id - b.section_id )
     .forEach( ([,section]) => {
-      _add_section_to_tree(section, content);
+      _add_section_to_$tree(section, content);
     });
 
     _arborist.handle_resize();
@@ -153,23 +160,23 @@ export default function init(ce,controller)
    * Note that this function does not create the DOM elements, it calls
    *   other functions to create them and then it places them into the DOM.
    * 
-   * @param {number} section ID of the section to be added to the tree
-   * @param {Object} content All the survey content and structure
+   * @param {SectionInfo} section info for the section to be added to the tree
+   * @param {SurveyContent} content All the survey content and structure
    * @returns {none}
    */
-  function _add_section_to_tree(section, content)
+  function _add_section_to_$tree(section, content)
   {
     const section_id = section.section_id;
-    const [section_li,section_ul] = _create_section_li(section_id, section.name);
-    section_li.appendTo(_tree);
+    const [$section_li,$section_ul] = _create_section_li(section_id, section.name);
+    $section_li.appendTo(_$tree);
 
     const section_content = section.content ?? [];
     for(const item of section_content) {
       if(item.type === 'question') {
         const question = content.questions[item.id] ?? null;
         if(question) {
-          const question_li = _create_question_li(question.id,question);
-          question_li.appendTo(section_ul);
+          const $question_li = _create_question_li(question.id,question);
+          $question_li.appendTo($section_ul);
           _bullpen.delete(question.id);
         }
       }
@@ -177,15 +184,15 @@ export default function init(ce,controller)
       {
         const group = content.groups[item.id] ?? null;
         if(group) {
-          const [group_li, group_ul] = _create_group_li(group.group_id,group.name);
+          const [$group_li, $group_ul] = _create_group_li(group.group_id,group.name);
 
-          group_li.appendTo(section_ul);
+          $group_li.appendTo($section_ul);
           const group_content = group.content ?? [];
           for (const question_id of group_content) {
             const question = content.questions[question_id] ?? null;
             if (question) {
-              const question_li = _create_question_li(question.id, question);
-              question_li.appendTo(group_ul);
+              const $question_li = _create_question_li(question.id, question);
+              $question_li.appendTo($group_ul);
               _bullpen.delete(question.id);
             }
           }
@@ -211,35 +218,34 @@ export default function init(ce,controller)
    */
   function _create_section_li(section_id,name)
   {
-    const btn  = $('<button>').addClass('toggle');
-    const span = $('<span>').addClass('name');
-    const div  = $('<div>').append(btn,span);
+    const $btn  = $('<button>').addClass('toggle');
+    const $span = $('<span>').addClass('name');
+    const $div  = $('<div>').append($btn,$span);
 
-    const li = $('<li>')
+    const $li = $('<li>')
       .addClass('section closed')
       .attr('data-item-id',section_id)
       .data('type','section')
-      .html(div);
+      .html($div);
 
-    _arborist.initialize(li,name);
+    _arborist.initialize($li,name);
 
-    btn.on('click', function(e) {
+    $btn.on('click', function(e) {
       e.stopPropagation();
-      const li = $(this).closest('li.section');
-      li.toggleClass('closed');
+      $(this).closest('li.section').toggleClass('closed');
     });
 
-    span.on('click',function(e) {
+    $span.on('click',function(e) {
       e.stopPropagation();
       _set_selection($(this).closest('li.section'));
       _start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('section-content').appendTo(li);
+    const $ul = $('<ul>').addClass('section-content').appendTo(li);
 
     _section_sorters.set(
       section_id, 
-      new Sortable( ul[0], {
+      new Sortable( $ul[0], {
         group: {
           name: 'content',
           pull: true,
@@ -251,7 +257,7 @@ export default function init(ce,controller)
       })
     );
 
-    return [li,ul];
+    return [$li,$ul];
   }
 
   /**
@@ -269,8 +275,8 @@ export default function init(ce,controller)
   self.update_section = function(section_id,key,value)
   {
     if(key === 'name') {
-      const leaf = _tree.find('.section[data-item-id='+section_id+']');
-      _arborist.update_label(leaf, value);
+      const $leaf = _$tree.find('.section[data-item-id='+section_id+']');
+      _arborist.update_label($leaf, value);
     }
   }
 
@@ -291,35 +297,34 @@ export default function init(ce,controller)
    */
   function _create_group_li(group_id,name)
   {
-    const btn  = $('<button>').addClass('toggle');
-    const span = $('<span>').addClass('name');
-    const div  = $('<div>').append(btn,span);
+    const $btn  = $('<button>').addClass('toggle');
+    const $span = $('<span>').addClass('name');
+    const $div  = $('<div>').append($btn,$span);
 
-    const li = $('<li>')
+    const $li = $('<li>')
       .addClass('group')
       .attr('data-item-id',group_id)
       .data('type','group')
-      .html(div);
+      .html($div);
 
-    _arborist.initialize(li,name);
+    _arborist.initialize($li,name);
 
-    btn.on('click', function(e) {
+    $btn.on('click', function(e) {
       e.stopPropagation();
-      const li = $(this).closest('li.group');
-      li.toggleClass('closed');
+      $(this).closest('li.group').toggleClass('closed');
     });
 
-    span.on('click',function(e) {
+    $span.on('click',function(e) {
       e.stopPropagation();
       _set_selection($(this).closest('li.group'));
       _start_keyboard_navigation(e);
     });
 
-    const ul = $('<ul>').addClass('group-content').attr('data-item-id',group_id).appendTo(li);
+    const $ul = $('<ul>').addClass('group-content').attr('data-item-id',group_id).appendTo($li);
 
     _group_sorters.set(
       group_id,
-      new Sortable( ul[0], {
+      new Sortable( $ul[0], {
         group: {
           name: 'content',
           pull: true,
@@ -331,7 +336,7 @@ export default function init(ce,controller)
       })
     );
 
-    return [li,ul];
+    return [$li,$ul];
   }
 
   /**
@@ -349,8 +354,8 @@ export default function init(ce,controller)
   self.update_group = function(group_id,key,value)
   {
     if(key === 'name') {
-      const leaf = _tree.find('.group[data-item-id='+group_id+']');
-      _arborist.update_label(leaf, value);
+      const $leaf = _$tree.find('.group[data-item-id='+group_id+']');
+      _arborist.update_label($leaf, value);
     }
   }
 
@@ -365,12 +370,12 @@ export default function init(ce,controller)
    *   - name: make the section the active tree element for navigation/editing 
    * 
    * @param {number} question_id ID of the question to be added to the tree
-   * @param {Object} details All of the question specific information
+   * @param {QuestionInfo} details All of the question specific information
    * @returns {DOMTreeNodePair} 
    */
   function _create_question_li(question_id,details)
   {
-    const leaf = $('<li>')
+    const $leaf = $('<li>')
       .addClass('question')
       .attr('data-item-id',question_id)
       .data('type','question');
@@ -381,22 +386,22 @@ export default function init(ce,controller)
     if( type.toLowerCase() === 'info') {
       if( details.infotag ) {
         wording = details.infotag;
-        leaf.data('using-infotag',true);
+        $leaf.data('using-infotag',true);
       } else {
         wording = details.info;
-        leaf.data('using-infotag',false);
+        $leaf.data('using-infotag',false);
       }
     }
 
-    _arborist.initialize(leaf, wording, details.type || '');
+    _arborist.initialize($leaf, wording, details.type || '');
     
-    leaf.on('click',function(e) { 
+    $leaf.on('click',function(e) { 
       e.stopPropagation();
       _set_selection($(this)); 
       _start_keyboard_navigation(e);
     } );
 
-    return leaf;
+    return $leaf;
   }
 
   /**
@@ -409,8 +414,8 @@ export default function init(ce,controller)
    */
   self.update_question_type = function(question_id,new_type,old_type)
   {
-    const leaf = _tree.find('.question[data-item-id='+question_id+']');
-    _arborist.update_type(leaf,new_type,old_type);
+    const $leaf = _$tree.find('.question[data-item-id='+question_id+']');
+    _arborist.update_type($leaf,new_type,old_type);
   }
 
   /**
@@ -431,29 +436,29 @@ export default function init(ce,controller)
    */
   self.update_question = function(question_id,key,value)
   {
-    const leaf  = _tree.find('.question[data-item-id='+question_id+']');
+    const $leaf  = _$tree.find('.question[data-item-id='+question_id+']');
 
     if(key === 'wording') {
-      _arborist.update_label(leaf,value);
+      _arborist.update_label($leaf,value);
       return;
     }
 
     // wording is always the question label except for info questions
     //   so if this isn't an info question, return now
-    if(!leaf.hasClass('info')) { return; }
+    if(!$leaf.hasClass('info')) { return; }
 
     if(key === 'infotag') {
       if(value) {
         // infotag is being provided. use that to label the question
-        _arborist.update_label(leaf,value);
-        leaf.data('using-infotag',true);
+        _arborist.update_label($leaf,value);
+        $leaf.data('using-infotag',true);
       } 
       else {
         // infotag was cleared, use info itself to label the question
         // ... but we'll need to get that from the controller
         const info = controller.cur_question_data(question_id,'info');
-        _arborist.update_label(leaf,info);
-        leaf.data('using-infotag',false);
+        _arborist.update_label($leaf,info);
+        $leaf.data('using-infotag',false);
       }
       return;
     }
@@ -461,10 +466,10 @@ export default function init(ce,controller)
     // something other than infotag changed.
     //   if we're currently labeling the question with infotag, no need to continue.
 
-    if( leaf.data('using-infotag') ) { return; }
+    if( $leaf.data('using-infotag') ) { return; }
 
     if(key === 'info') {
-      _arborist.update_label(leaf,value || '');
+      _arborist.update_label($leaf,value || '');
     }
   }
 
@@ -474,7 +479,7 @@ export default function init(ce,controller)
    */
   self.disable = function()
   {
-    _info.hide();
+    _$info.hide();
     _tree_sorter.option('disabled',true);
     _section_sorters.forEach((sorter)=>sorter.option('disabled',true));
     _group_sorters.forEach((sorter)=>sorter.option('disabled',true));
@@ -486,7 +491,7 @@ export default function init(ce,controller)
    */
   self.enable = function()
   {
-    _info.show();
+    _$info.show();
     _tree_sorter.option('disabled',false);
     _section_sorters.forEach((sorter)=>sorter.option('disabled',false));
     _group_sorters.forEach((sorter)=>sorter.option('disabled',false));
@@ -506,19 +511,19 @@ export default function init(ce,controller)
    */
   self.move_section = function(sectionId,toIndex) 
   {
-    const all_sections = _tree.children('li.section');
-    if( toIndex >= all_sections.length) { return false; }
+    const $all_sections = _$tree.children('li.section');
+    if( toIndex >= $all_sections.length) { return false; }
 
-    const move_li = all_sections.filter('[data-item-id='+sectionId+']');
-    if( move_li.length !== 1 ) { return false; }
+    const $move_li = $all_sections.filter('[data-item-id='+sectionId+']');
+    if( $move_li.length !== 1 ) { return false; }
 
-    const tgt_li    = all_sections.eq(toIndex);
-    const fromIndex = all_sections.index(move_li);
+    const $tgt_li    = $all_sections.eq(toIndex);
+    const fromIndex = $all_sections.index($move_li);
 
-    if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
-    if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
+    if(toIndex < fromIndex) { $move_li.insertBefore($tgt_li); }
+    if(toIndex > fromIndex) { $move_li.insertAfter($tgt_li); }
 
-    _set_selection(move_li);
+    _set_selection($move_li);
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -541,8 +546,8 @@ export default function init(ce,controller)
   self.move_to_container = function(itemType,itemId,toType,toId,toIndex)
   {
     // Find the <li> element of the item to be moved.
-    const move_li = _tree.find('li.'+itemType+'[data-item-id='+itemId+']');
-    if(move_li.length != 1) {
+    const $move_li = _$tree.find('li.'+itemType+'[data-item-id='+itemId+']');
+    if($move_li.length != 1) {
       // length should only ever be 1... but just in case it's not
       //   If it's 0, then something broke in the view controller
       //   If it's >1, then something broke in the underlying app logic
@@ -552,53 +557,53 @@ export default function init(ce,controller)
     // Find: the <li> for the current container of the item to be moved
     //       its type
     //       its ID
-    const from_li = move_li.closest('ul').closest('li');
-    const fromType = from_li.hasClass('section') ? 'section' : 'group'; 
-    const fromId = from_li.data('item-id');
+    const $from_li = $move_li.closest('ul').closest('li');
+    const fromType = $from_li.hasClass('section') ? 'section' : 'group'; 
+    const fromId   = $from_li.data('item-id');
 
     // Find: the <li> for the destination container
     //       the <ul> that holds its content
     //       the content of that <ul>
-    const to_li = _tree.find('li.'+toType+'[data-item-id='+toId+']');
-    const to_ul = to_li.children('ul');
-    const content = to_ul.children('li');
+    const $to_li = _$tree.find('li.'+toType+'[data-item-id='+toId+']');
+    const $to_ul = $to_li.children('ul');
+    const content = $to_ul.children('li');
 
     // Find the <li> currently in the target location
     //   It is possible there is nothing currently there
-    const tgt_li = content.eq(toIndex);
+    const $tgt_li = content.eq(toIndex);
 
     if(toType === fromType && toId === fromId) {
       // moving item within the same container
-      if(tgt_li.length !== 1 ) { 
+      if($tgt_li.length !== 1 ) { 
         // something went wrong... because we are simply shuffling items
         //   within the same container, there must be something currently
         //   at the destination position for the item being moved
         return false; 
       } 
       // find current position of the item to be moved
-      const fromIndex = content.index(move_li);
+      const fromIndex = content.index($move_li);
       // case 1 (toIndex < fromIndex)
       //   5 -> 2:  0 1 5 2 3 4 6 7 8
       //   5 -> 0:  5 0 1 2 3 4 6 7 8
-      if(toIndex < fromIndex) { move_li.insertBefore(tgt_li); }
+      if(toIndex < fromIndex) { $move_li.insertBefore($tgt_li); }
       // case 2 (toIndex > fromIndex)
       //   2 -> 5:  0 1 3 4 5 2 6 7 8
       //   2 -> 8:  0 1 3 4 5 6 7 8 2
-      if(toIndex > fromIndex) { move_li.insertAfter(tgt_li); }
+      if(toIndex > fromIndex) { $move_li.insertAfter($tgt_li); }
     }
-    else if(tgt_li.length === 0) 
+    else if($tgt_li.length === 0) 
     { 
       // there is currently nothing at the destination index
       // only allowed if adding to end of the container
       if( toIndex > content.length ) { return false; } 
-      move_li.appendTo(to_ul);
+      $move_li.appendTo($to_ul);
     }
     else {
       // insert before element currently at destination index
-      move_li.insertBefore(tgt_li);
+      $move_li.insertBefore($tgt_li);
     }
 
-    _set_selection(move_li);
+    _set_selection($move_li);
     $(document).trigger('SurveyWasReordered');
     return true;
   }
@@ -610,7 +615,7 @@ export default function init(ce,controller)
    * @returns {boolean} true on success, false on failure
    * @fires SurveyWasReordered on success
    */
-  function _handle_drop_in_tree(evt)
+  function _handle_drop_in_$tree(evt)
   {
     if(evt.oldIndex === evt.newIndex) { return false; }
 
@@ -640,13 +645,13 @@ export default function init(ce,controller)
     const item_type = $(evt.item).data('type');
     const item_id   = $(evt.item).data('item-id');
 
-    const to_li     = $(evt.to).closest('li');
-    const to_type   = to_li.data('type');
-    const to_id     = to_li.data('item-id');
+    const $to_li     = $(evt.to).closest('li');
+    const to_type   = $to_li.data('type');
+    const to_id     = $to_li.data('item-id');
     
-    const from_li   = $(evt.from).closest('li');
-    const from_type = from_li.data('type');
-    const from_id   = from_li.data('item-id');
+    const $from_li   = $(evt.from).closest('li');
+    const from_type = $from_li.data('type');
+    const from_id   = $from_li.data('item-id');
 
     ce.undo_manager.add({
       action: 'drop-in-section',
@@ -670,8 +675,8 @@ export default function init(ce,controller)
    */
   self.select_section = function(section_id)
   {
-    const e = _tree.find('.section[data-item-id='+section_id+']');
-    _tree.find('.selected').removeClass('selected');
+    const e = _$tree.find('.section[data-item-id='+section_id+']');
+    _$tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
 
@@ -682,8 +687,8 @@ export default function init(ce,controller)
    */
   self.select_group = function(group_id)
   {
-    const e = _tree.find('.group[data-item-id='+group_id+']');
-    _tree.find('.selected').removeClass('selected');
+    const e = _$tree.find('.group[data-item-id='+group_id+']');
+    _$tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
 
@@ -694,8 +699,8 @@ export default function init(ce,controller)
    */
   self.select_question = function(question_id)
   {
-    const e = _tree.find('.question[data-item-id='+question_id+']');
-    _tree.find('.selected').removeClass('selected');
+    const e = _$tree.find('.question[data-item-id='+question_id+']');
+    _$tree.find('.selected').removeClass('selected');
     e.addClass('selected');
   }
 
@@ -705,7 +710,7 @@ export default function init(ce,controller)
    */
   function clear_selection()
   {
-    _tree.find('.selected').removeClass('selected');
+    _$tree.find('.selected').removeClass('selected');
     controller.clear_selection();
   }
 
@@ -721,7 +726,7 @@ export default function init(ce,controller)
       clear_selection;
       return;
     }
-    _tree.find('.selected').removeClass('selected');
+    _$tree.find('.selected').removeClass('selected');
     $li.addClass('selected');
     if($li.hasClass('section')) {
       controller.select_section($li.data('item-id'));
@@ -734,9 +739,9 @@ export default function init(ce,controller)
     $li[0].scrollIntoView({block:'nearest', behavior:'smooth'});
   }
 
-  _box.on('click', function(e) {
-    const clicked_li = $(e.target).closest('li');
-    if(clicked_li.length === 0) {
+  _$box.on('click', function(e) {
+    const $clicked_li = $(e.target).closest('li');
+    if($clicked_li.length === 0) {
       clear_selection();
     }
   });
@@ -744,8 +749,6 @@ export default function init(ce,controller)
   //
   // Insertions and Deletions
   //
-
-  // TODO Revise/Add functions for adding groups
 
   /**
    * Adds a new section <li> element to the navigation tree DOM
@@ -756,22 +759,22 @@ export default function init(ce,controller)
    */
   self.add_section = function(section_id, section_name, where)
   {
-    const [new_li,new_ul] = _create_section_li(section_id,section_name);
+    const [$new_li,$new_ul] = _create_section_li(section_id,section_name);
     if(where.section_id) {
-      const existing_li = _tree.find('li.section[data-item-id='+where.section_id+']');
-      if(where.offset < 0) { new_li.insertBefore(existing_li); }
-      else                 { new_li.insertAfter(existing_li); }
+      const $existing_li = _$tree.find('li.section[data-item-id='+where.section_id+']');
+      if(where.offset < 0) { $new_li.insertBefore($existing_li); }
+      else                 { $new_li.insertAfter($existing_li); }
     } else {
-      new_li.prependTo(_tree);
+      $new_li.prependTo(_$tree);
     }
 
     // if we got here, editing must be enabled, turn on sorting
     _section_sorters.get(section_id).option('disabled',false);
 
-    _set_selection(new_li);
+    _set_selection($new_li);
     $(document).trigger('SurveyWasModified');
 
-    return [new_li,new_ul];
+    return [$new_li,$new_ul];
   }
 
   /**
@@ -783,77 +786,77 @@ export default function init(ce,controller)
    */
   self.add_group = function(group_id, group_name, where)
   {
-    const [new_li,new_ul] = _create_group_li(group_id,group_name);
+    const [$new_li,$new_ul] = _create_group_li(group_id,group_name);
 
     if(where.ref_id) // WhereRelatoveToContent
     {
-      const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
-      if(where.offset < 0) { new_li.insertBefore(ref_li); }
-      else                 { new_li.insertAfter(ref_li); }
+      const $ref_li = _$tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
+      if(where.offset < 0) { $new_li.insertBefore($ref_li); }
+      else                 { $new_li.insertAfter($ref_li); }
     }
     else if(where.section_id) //WhereInSection
     {
-      const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
-      const content_ul  = section_li.children('ul.section-content');
+      const $section_li = _$tree.find('li.section[data-item-id='+where.section_id+']');
+      const $content_ul  = $section_li.children('ul.section-content');
       const index = where.index ?? 0;
-      if     (index<0) { new_li.appendTo(content_ul);  } 
-      else if(index<1) { new_li.prependTo(content_ul); }
-      else             { new_li.insertBefore(content_ul.children().eq(index)); }
+      if     (index<0) { $new_li.appendTo($content_ul);  } 
+      else if(index<1) { $new_li.prependTo($content_ul); }
+      else             { $new_li.insertBefore($content_ul.children().eq(index)); }
     }
 
     // if we got here, editing must be enabled, turn on sorting
     _group_sorters.get(group_id).option('disabled',false);
 
-    _set_selection(new_li);
+    _set_selection($new_li);
     $(document).trigger('SurveyWasModified');
 
-    return [new_li,new_ul];
+    return [$new_li,$new_ul];
   }
 
   /**
    * Adds a new question <li> element to the navigation tree DOM
    * @param {number} question_id ID of question to add
-   * @param {Object} question Details about question to add
+   * @param {QuestionInfo} question Details about question to add
    * @param {WhereToAddQuestion} where 
    * @returns {Query<HTMLLIElement>}
    */
   self.add_question = function(question_id, question, where)
   {
-    const new_li = _create_question_li(question_id,question);
+    const $new_li = _create_question_li(question_id,question);
     if(where.ref_id)  // WhereRelativetoContent
     {
-      const ref_li = _tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
+      const $ref_li = _$tree.find('li.'+where.ref_type+'[data-item-id='+where.ref_id+']');
       if(where.offset < 0) { 
-        new_li.insertBefore(ref_li); 
+        $new_li.insertBefore($ref_li); 
       } else if(where.ref_type === 'question') { 
-        new_li.insertAfter(ref_li); 
+        $new_li.insertAfter($ref_li); 
       } else {
-        const content_ul = ref_li.children('ul.'+where.ref_type+'-content');
-        new_li.prependTo(content_ul);
+        const $content_ul = $ref_li.children('ul.'+where.ref_type+'-content');
+        $new_li.prependTo($content_ul);
       }
     }
     else if(where.section_id) // WhereInSection
     {
-      const section_li = _tree.find('li.section[data-item-id='+where.section_id+']');
-      const content_ul = section_li.children('ul.section-content');
+      const $section_li = _$tree.find('li.section[data-item-id='+where.section_id+']');
+      const $content_ul = $section_li.children('ul.section-content');
       const index = where.index ?? 0;
-      if     (index < 0) { new_li.appendTo(content_ul);  }
-      else if(index < 1) { new_li.prependTo(content_ul); }
-      else               { new_li.insertBefore(content_ul.children().eq(index))}
+      if     (index < 0) { $new_li.appendTo($content_ul);  }
+      else if(index < 1) { $new_li.prependTo($content_ul); }
+      else               { $new_li.insertBefore($content_ul.children().eq(index))}
     } 
     else if(where.group_id)  // WhereInGroup
     {
-      const group_li = _tree.find('li.group[data-item-id='+where.group_id+']');
-      const content_ul = group_li.children('ul.group-content');
+      const $group_li = _$tree.find('li.group[data-item-id='+where.group_id+']');
+      const $content_ul = $group_li.children('ul.group-content');
       const index = where.index ?? 0;
-      if     (index < 0) { new_li.appendTo(content_ul);  }
-      else if(index < 1) { new_li.prependTo(content_ul); }
-      else               { new_li.insertBefore(content_ul.children().eq(index))}
+      if     (index < 0) { $new_li.appendTo($content_ul);  }
+      else if(index < 1) { $new_li.prependTo($content_ul); }
+      else               { $new_li.insertBefore($content_ul.children().eq(index))}
     }
-    _set_selection(new_li);
+    _set_selection($new_li);
     $(document).trigger('SurveyWasModified');
 
-    return new_li;
+    return $new_li;
   }
 
   /**
@@ -864,18 +867,18 @@ export default function init(ce,controller)
    */
   self.remove_section = function(section_id)
   {
-    const section_li = _tree.find('li.section[data-item-id='+section_id+']');
+    const $section_li = _$tree.find('li.section[data-item-id='+section_id+']');
 
-    const question_lis = section_li.find('li.question');
-    const question_ids = question_lis.map(
+    const $question_lis = $section_li.find('li.question');
+    const question_ids  = $question_lis.map(
       function() { return $(this).data('item-id'); }
     );
     for(const question_id of question_ids) {
       self.remove_question(question_id);
     }
 
-    const group_lis = section_li.find('li.group');
-    const group_ids = group_lis.map(
+    const $group_lis = $section_li.find('li.group');
+    const group_ids  = $group_lis.map(
       function() { return $(this).data('item-id'); }
     );
     for(const group_id of group_ids) {
@@ -885,7 +888,7 @@ export default function init(ce,controller)
     _section_sorters.get(section_id)?.destroy();
     _section_sorters.delete(section_id);
 
-    section_li.remove();
+    $section_li.remove();
     clear_selection();
     $(document).trigger('SurveyWasModified');
   }
@@ -898,10 +901,10 @@ export default function init(ce,controller)
    */
   self.remove_group = function(group_id)
   {
-    const group_li = _tree.find('li.group[data-item-id='+group_id+']');
+    const $group_li = _$tree.find('li.group[data-item-id='+group_id+']');
 
-    const questions = group_li.find('li.question');
-    questions.each( function () {
+    const $questions = $group_li.find('li.question');
+    $questions.each( function () {
       const question_id = $(this).data('item-id');
       self.remove_question(question_id);
     });
@@ -909,7 +912,7 @@ export default function init(ce,controller)
     _group_sorters.delete(group_id);
 
     clear_selection();
-    group_li.remove();
+    $group_li.remove();
     $(document).trigger('SurveyWasModified');
   }
 
@@ -921,7 +924,7 @@ export default function init(ce,controller)
    */
   self.remove_question = function(question_id)
   {
-    _tree.find('li.question[data-item-id='+question_id+']').remove();
+    _$tree.find('li.question[data-item-id='+question_id+']').remove();
     clear_selection();
     _bullpen.add(Number(question_id));
     $(document).trigger('SurveyWasModified');
@@ -933,11 +936,11 @@ export default function init(ce,controller)
    */
   self.current_selection = function()
   {
-    const curSelection = _tree.find('li.selected');
-    if( curSelection ) {
+    const $curSelection = _$tree.find('li.selected');
+    if( $curSelection ) {
       return {
-        item_type: curSelection.data('type'),
-        item_id: curSelection.data('item-id')
+        item_type: $curSelection.data('type'),
+        item_id:   $curSelection.data('item-id')
       };
     } else {
       return null;
@@ -954,7 +957,7 @@ export default function init(ce,controller)
     if(selection) {
       const item_type = selection.item_type;
       const item_id   = selection.item_id;
-      _set_selection(_tree.find('li.'+item_type+'[data-item-id='+item_id+']'));
+      _set_selection(_$tree.find('li.'+item_type+'[data-item-id='+item_id+']'));
     }
   }
 
@@ -995,8 +998,8 @@ export default function init(ce,controller)
    */
   function _handle_keyboard_navigation(e)
   {
-    const cur_selection = _tree.find('.selected');
-    if(cur_selection.length !== 1 ) { return;}
+    const $curSelection = _$tree.find('.selected');
+    if($curSelection.length !== 1 ) { return;}
     var delta = 0;
     switch(e.keyCode) {
       case 38: delta = -1; break;
@@ -1007,18 +1010,18 @@ export default function init(ce,controller)
     e.stopPropagation();
     e.preventDefault();
 
-    const full_tree = _tree.find('li');
-    const vis_tree = full_tree.filter( function() {
+    const $full_tree = _$tree.find('li');
+    const $vis_tree = $full_tree.filter( function() {
       if( $(this).hasClass('section') ) { return true; }
       if( $(this).parent().parent().hasClass('closed') ) { return false; }
       return true;
     })
 
-    const cur_index = vis_tree.index(cur_selection);
+    const cur_index = $vis_tree.index($curSelection);
     const new_index = cur_index + delta;
 
-    if(new_index < 0 || new_index >= vis_tree.length) { return; }
-    const new_selection = vis_tree.eq(new_index);
+    if(new_index < 0 || new_index >= $vis_tree.length) { return; }
+    const new_selection = $vis_tree.eq(new_index);
     _set_selection(new_selection);
   }
 
@@ -1030,9 +1033,9 @@ export default function init(ce,controller)
   const _observer = new MutationObserver((mutations) => {
     let dirty = false;
     for(const m of mutations) {
-      const tgt = $(m.target);
-      if( (m.type === 'childList'  && tgt.is('ul.group-content,ul.section-content')) ||
-          (m.type === 'attributes' && tgt.is('li.question, li.group')) 
+      const $tgt = $(m.target);
+      if( (m.type === 'childList'  && $tgt.is('ul.group-content,ul.section-content')) ||
+          (m.type === 'attributes' && $tgt.is('li.question, li.group')) 
       ) {
         dirty = true;
         break;
@@ -1042,16 +1045,16 @@ export default function init(ce,controller)
       observerMicrotaskQueued = true;
       queueMicrotask(() => {
         observerMicrotaskQueued = false;
-        _tree.find('li.section,li.group').each((i,e) => {
-          const child_selected = $(e).find('.selected');
-          $(e).toggleClass('child-selected',child_selected.length > 0);
-          const child_error = $(e).find('.error,.needs-value,.needs-type');
-          $(e).toggleClass('child-error',child_error.length > 0);
+        _$tree.find('li.section,li.group').each((i,e) => {
+          const $child_selected = $(e).find('.selected');
+          $(e).toggleClass('child-selected',$child_selected.length > 0);
+          const $child_error = $(e).find('.error,.needs-value,.needs-type');
+          $(e).toggleClass('child-error',$child_error.length > 0);
         });
       });
     }
   });
-  _observer.observe( $(_tree)[0], {
+  _observer.observe( $(_$tree)[0], {
     attributes: true,
     subtree: true,
     childList: true,
@@ -1066,8 +1069,7 @@ export default function init(ce,controller)
    * @param {boolean} has_error 
    */
   self.toggle_error = function(item_type,item_id,has_error) {
-    const item = _tree.find('li.'+item_type+'[data-item-id='+item_id+']');
-    item.toggleClass('error',has_error)
+    _$tree.find('li.'+item_type+'[data-item-id='+item_id+']').toggleClass('error',has_error)
   }
 
   /**
@@ -1077,7 +1079,7 @@ export default function init(ce,controller)
    * @returns {boolean}
    */
   self.can_submit = function() {
-    return _tree.find('li.error, li.needs-value, li.needs-type').length === 0;
+    return _$tree.find('li.error, li.needs-value, li.needs-type').length === 0;
   }
 
   // 
@@ -1096,25 +1098,25 @@ export default function init(ce,controller)
    * Swaps out one question in the navigation tree for another
    * @param {number} old_id ID of the question to be replaced
    * @param {number} new_id ID of the question replacing it
-   * @param {Object} old_data Details of the question being replaced
-   * @param {Object} new_data Details of the question replacing it
+   * @param {QuestionInfo} old_data Details of the question being replaced
+   * @param {QuestionInfo} new_data Details of the question replacing it
    * @returns 
    */
   self.replace_question = function(old_id, new_id, old_data, new_data) {
-    const leaf = _tree.find('li.question[data-item-id='+old_id+']');
-    if(leaf.length !== 1) { return; }
+    const $leaf = _$tree.find('li.question[data-item-id='+old_id+']');
+    if($leaf.length !== 1) { return; }
 
-    leaf.data('question',new_id).attr('data-item-id',new_id);
+    $leaf.data('question',new_id).attr('data-item-id',new_id);
 
     if(new_data.type === 'INFO') {
-      _arborist.update_label(leaf,new_data.infotag || new_data.info);
+      _arborist.update_label($leaf,new_data.infotag || new_data.info);
     } else {
-      _arborist.update_label(leaf,new_data.wording);
+      _arborist.update_label($leaf,new_data.wording);
     }
 
     const old_type = old_data.type || '';
     const new_type = new_data.type || '';
-    _arborist.update_type(leaf, new_type, old_type);
+    _arborist.update_type($leaf, new_type, old_type);
 
     _bullpen.delete(Number(new_id));
     if(old_type) { _bullpen.add(Number(old_id)); }
@@ -1130,22 +1132,22 @@ export default function init(ce,controller)
    */
   self.survey_structure = function() 
   {
-    const section_lis = _tree.find('li.section');
-    const rval = section_lis.map( function () {
-      const section_li = $(this);
-      const section_id = section_li.data('item-id');
+    const $section_lis = _$tree.find('li.section');
+    const rval = $section_lis.map( function () {
+      const $section_li = $(this);
+      const section_id = $section_li.data('item-id');
 
-      const content_lis = section_li.find('li.group, li.question').not('li.group li.question');
-      const section_content = content_lis.map( function() {
-        const item_li = $(this);
-        const item_id = item_li.data('item-id');
-        const item_type = item_li.data('type');
+      const $content_lis = $section_li.find('li.group, li.question').not('li.group li.question');
+      const section_content = $content_lis.map( function() {
+        const $item_li = $(this);
+        const item_id = $item_li.data('item-id');
+        const item_type = $item_li.data('type');
 
         if( item_type === 'question') {
           return {question_id:item_id};
         } else {
-          const question_lis = item_li.find('li.question');
-          const group_content = question_lis.map( function() {
+          const $question_lis = $item_li.find('li.question');
+          const group_content = $question_lis.map( function() {
             return $(this).data('item-id');
           }).get();
           return {group_id:item_id, content:group_content};
@@ -1170,7 +1172,7 @@ export default function init(ce,controller)
       _arborist.handle_resize();
     }, 250 );
   });
-  ro.observe(_tree[0]);
+  ro.observe(_$tree[0]);
 
   //
   // Return
