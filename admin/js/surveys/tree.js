@@ -241,7 +241,7 @@ export default function init(ce,controller)
       _start_keyboard_navigation(e);
     });
 
-    const $ul = $('<ul>').addClass('section-content').appendTo(li);
+    const $ul = $('<ul>').addClass('section-content').appendTo($li);
 
     _section_sorters.set(
       section_id, 
