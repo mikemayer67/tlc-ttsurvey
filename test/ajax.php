@@ -9,7 +9,7 @@ if( ($config['dev_env']??false) !== true ) {
 }
 
 $nonce_keys = [
-  'admin-navbar','admin-cleanup','admin-log','admin-login',
+  'admin-navbar','admin-maintenance','admin-log','admin-login',
   'admin-participants','admin-roles','admin-settings','admin-surveys',
   'preview','update-page','summary-download','survey-form',
   'login','pwreset','recover','register','updateprof','updatepw',

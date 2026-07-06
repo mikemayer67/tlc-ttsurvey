@@ -73,7 +73,7 @@ $tabs = [
   'surveys'      => ['label'=>'Surveys',      'roles'=>['admin','content']],
   'participants' => ['label'=>'Participants', 'roles'=>['admin']],
   'log'          => ['label'=>'App Log',      'roles'=>['admin','tech']],
-  'cleanup'      => ['label'=>'Maintenance',  'roles'=>[]],
+  'maintenance'  => ['label'=>'Maintenance',  'roles'=>[]],
   'docs'         => ['label'=>'Admin Docs',   'roles'=>['admin','content','tech']],
 ];
 

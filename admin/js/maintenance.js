@@ -24,16 +24,16 @@
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
-      ajax_error_handler(jqXHR,'cleanup options');
+      ajax_error_handler(jqXHR,'maintenance options');
     } );
   }
 
   $(document).ready( function($) {
-    ce.form    = $('#admin-cleanup');
+    ce.form    = $('#admin-maintenance');
     ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
     ce.nonce   = ce.form.find('input[name=nonce]').val();
 
-    ce.form.find('.cleanup.options').on('click',cleanup_options);
+    ce.form.find('.maintenance.options').on('click',cleanup_options);
   });
 
 })();
