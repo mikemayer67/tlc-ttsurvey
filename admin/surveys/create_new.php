@@ -57,11 +57,9 @@ function create_new_survey(string $name,?int $parent_id,?string &$error=null) : 
  */
 function clone_survey(int $child_id,int $parent_id) : void
 {
-  todo("THIS FUNCTION IS NEEDS TO BE FIXED TO WORK WITH NEW ARCHITECTURE");
-
   $query = <<<SQL
     INSERT into tlc_srv_survey_options
-    SELECT ?, option_id, text_sid
+    SELECT ?, option_id, option_str
       FROM tlc_srv_survey_options
      WHERE survey_id=?
   SQL;
@@ -84,6 +82,18 @@ function clone_survey(int $child_id,int $parent_id) : void
   );
 
   $query = <<<SQL
+    INSERT into tlc_srv_question_groups
+    SELECT ?, group_id, name
+      FROM tlc_srv_question_groups
+     WHERE survey_id=?
+  SQL;
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy question groups from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
+
+  $query = <<<SQL
     INSERT into tlc_srv_questions
     SELECT question_id, ?, wording, question_type, question_flags, other, qualifier, intro, info
       FROM tlc_srv_questions
@@ -96,14 +106,26 @@ function clone_survey(int $child_id,int $parent_id) : void
   );
 
   $query = <<<SQL
-    INSERT into tlc_srv_question_map
-    SELECT ?, section_id, question_seq, question_id
-      FROM tlc_srv_question_map
+    INSERT into tlc_srv_section_content
+    SELECT ?, section_id, sequence, group_id, question_id
+      FROM tlc_srv_section_content
      WHERE survey_id=?
   SQL;
   MySQLExecuteWithExceptionHandler(
     $query,
-    fn($e) => throw new FailedToCreate('Failed to copy question map from cloned survey'),
+    fn($e) => throw new FailedToCreate('Failed to copy section content from cloned survey'),
+    'ii', $child_id,$parent_id
+  );
+
+  $query = <<<SQL
+    INSERT into tlc_srv_group_content
+    SELECT ?, group_id, sequence, question_id
+      FROM tlc_srv_group_content
+     WHERE survey_id=?
+  SQL;
+  MySQLExecuteWithExceptionHandler(
+    $query,
+    fn($e) => throw new FailedToCreate('Failed to copy section content from cloned survey'),
     'ii', $child_id,$parent_id
   );
 

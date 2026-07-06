@@ -63,7 +63,7 @@ import arborist from './arborist.js';
 /**
  * Initializes a NavTreeController object
  * @param {RuntimeContext} ce Container of shared "global" variables
- * @param {SurveyViewController} controller TODO add JSDoc to controller
+ * @param {SurveyViewController} controller
  * @returns {NavTreeController}
  */
 export default function init(ce,controller)
