@@ -14,7 +14,7 @@ function start_admin_page($cur_tab=null)
   add_tab_name('ttt_admin');
   start_header();
 
-  add_js_resources($context);
+  add_js_resources($context,js_uri('jquery_helpers'));
   if($cur_tab) { // admin tab page
     add_css_resources($context, css_uri($cur_tab,'admin') );
   } else { // admin login page

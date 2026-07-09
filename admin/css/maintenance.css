@@ -7,7 +7,51 @@
   font-size:1.1em;
 }
 
-#ttt-body div.body #admin-maintenance ul {
-  list-style:none;
-  margin:5px 0;
+#ttt-body div.body #admin-maintenance div.section-content {
+  margin-left:3em;
 }
+
+#ttt-body div.body #admin-maintenance div.section-content select {
+  margin-bottom: 0.5em;
+}
+
+#ttt-body div.body #admin-maintenance div.section-content .draft-info {
+  margin-left:1em;
+  margin-bottom:0.5em;
+  font-size:90%;
+}
+
+#ttt-body div.body #admin-maintenance div.section-content .draft-info .label {
+  font-weight:bold;
+}
+
+#ttt-body div.body #admin-maintenance div.section-content .draft-info .value {
+  margin-left:0.5em;
+  margin-right:2em;
+}
+
+#ttt-body div.body #admin-maintenance div.content-label {
+  font-weight:bold;
+  margin: 1em 0 0.5em;
+}
+
+#ttt-body div.body #admin-maintenance div.content-block {
+  margin:0 0 0.5em 1em;
+}
+
+#ttt-body div.body #admin-maintenance div.content-block div.confirm {
+  margin:0 0 0 1em;
+  font-size:85%;
+  font-style: italic;
+  color: darkred;
+}
+
+#ttt-body div.body #admin-maintenance div.content-block input {
+  margin-left:1em;
+  padding:0 1em;
+  background:white;
+  font-style: italic;
+  width:20em;
+}
+
+
