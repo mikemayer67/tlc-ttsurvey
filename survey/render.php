@@ -14,9 +14,10 @@ class RenderEngine
 {
   private $popup_icon = null;
 
-  private $in_box       = false;
   private $in_grid      = false;
   private $follows_info = false;
+  private $content      = null;
+  private $responses    = null;
 
   function __construct()
   {
@@ -25,11 +26,11 @@ class RenderEngine
 
   public function render($state, $content, $kwargs)
   {
-    $this->in_box       = false;
     $this->in_grid      = false;
     $this->follows_info = false;
 
-    $responses = $kwargs['responses'] ?? [];
+    $this->content   = $content;
+    $this->responses = $kwargs['responses'] ?? [];
 
     if($state === 'preview')
     {
@@ -56,10 +57,8 @@ class RenderEngine
       add_hidden_input('timestamps', $timestamps);
     }
 
-    $sections = $content['sections'];
-    usort($sections, fn($a,$b) => $a['sequence'] <=> $b['sequence']);
-    foreach($sections as $section) {
-      $this->add_section($section,$content,$responses);
+    foreach($content['sections'] as $section) {
+      $this->add_section($section);
     }
 
     if($action) { $this->add_submit_bar($state); }
@@ -117,7 +116,7 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_section($section,$content,$responses)
+  private function add_section($section)
   {
     $sid         = $section['section_id'];
     $name        = $section['name'];
@@ -126,17 +125,11 @@ class RenderEngine
 
     $index = "data-section=$sid";
 
-    if($this->in_box) { echo "</div>"; }
-
     if($collapsible) {
       echo "<details class='section' $index>";
       echo "<summary><span>$name</span></summary>";
-      $closing_tag = "</details>";
-    }
-    else
-    {
+    } else {
       echo "<div class='section' $index>";
-      $closing_tag = "</div>";
     }
 
     if($intro) {
@@ -145,9 +138,34 @@ class RenderEngine
       echo "</div>";
     }
 
-    $this->add_questions($sid,$content,$responses);
+    foreach($section['content'] as $item) {
+      switch($item['type']) {
+        case 'question':
+          $this->add_question($item['id']);
+          break;
+          case 'group':
+          $this->add_grou($item['id']);
+      }
+    }
 
-    echo $closing_tag;
+    if($collapsible) { echo "</details>"; }
+    else             { echo "</div>"; }
+  }
+
+  private function add_group($group_id)
+  {
+    $question_ids = $this->content['groups'][$group_id]['content'];
+    $has_info = false;
+    foreach($question_ids as $question_id) {
+      $question = $this->content['questions'][$question_id];
+      if($question['type']==='INFO') {
+        $has_info = true;
+        break;
+      }
+    }
+    foreach($question_ids as $question_id) {
+      $this->add_question($question_id);
+    }
   }
 
 
@@ -168,7 +186,6 @@ class RenderEngine
     });
 
     # determine which questions can be put into a grid
-    todo("Update the following as question.grouped no longer exists");
     $prev = $questions[0];
     $prev['grid'] = false;
     $prev_can_grid = str_starts_with($prev['type']??'',"SELECT") && ($prev['grouped']==='YES');
