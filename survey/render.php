@@ -145,7 +145,7 @@ class RenderEngine
           $this->add_question($item['id']);
           break;
           case 'group':
-          $this->add_grou($item['id']);
+          $this->add_group($item['id']);
       }
     }
 
@@ -159,7 +159,7 @@ class RenderEngine
     $has_info = false;
     foreach($question_ids as $question_id) {
       $question = $this->content['questions'][$question_id];
-      if($question['type']==='INFO') {
+      if($question['type']->isInfo()) {
         $has_info = true;
         break;
       }
@@ -325,7 +325,7 @@ class RenderEngine
     $intro  = $question['intro'] ?? '';
     $popup  = $question['popup'] ?? '';
 
-    $response = $responses[$id]['freetext'] ?? '';
+    $response = $responses[$id]['free_text'] ?? '';
 
     $input_id = "question-freetext-$id";
 

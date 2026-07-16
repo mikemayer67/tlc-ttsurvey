@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 
 
 enum SurveyJustification : string {
-  case LEFT = 'LEFT';
+  case LEFT  = 'LEFT';
   case RIGHT = 'RIGHT';
 
   public static function fromInput(string $value): self
