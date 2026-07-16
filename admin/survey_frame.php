@@ -3,15 +3,9 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-$type_labels = [
-  'INFO' => 'Info Block',
-  'BOOL' => 'Simple Checkbox',
-  'SELECT_ONE' => 'Single Selection',
-  'SELECT_MULTI' => 'Multiple Selection',
-  'FREETEXT' => 'Free Text',
-];
+require_once(app_file('include/question_types.php'));
 
-echo "<script>\n const typeLabels = " . json_encode($type_labels) . ";\n</script>\n";
+echo "<script>\n const typeLabels = " . json_encode(QuestionType::labels()) . ";\n</script>\n";
 
 $hints = [
   'section' => [
@@ -37,11 +31,11 @@ $hints = [
     ),
     'type' => (
        'Type of "question" entry in the survey. Possible values are: '.
-       '<p><b>'.$type_labels['INFO'].'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
-       '<p><b>'.$type_labels['BOOL'].'</b> - For use with Yes/No questions.</p>'.
-       '<p><b>'.$type_labels['SELECT_ONE'].'</b> - Participant can select no more than one option</p>'.
-       '<p><b>'.$type_labels['SELECT_MULTI'].'</b> - Participant can select as many options as apply</p>'.
-       '<p><b>'.$type_labels['FREETEXT'].'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
+       '<p><b>'.QuestionType::Info->label().'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
+       '<p><b>'.QuestionType::Bool->label().'</b> - For use with Yes/No questions.</p>'.
+       '<p><b>'.QuestionType::SelectOne->label().'</b> - Participant can select no more than one option</p>'.
+       '<p><b>'.QuestionType::SelectMulti->label().'</b> - Participant can select as many options as apply</p>'.
+       '<p><b>'.QuestionType::FreeText->label().'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
     'infotag' => (
       '<b>This field is optional.</b> If provided, it will be shown in the structure layout tree (&larr;) '.
       'rather than a truncated version of the information text.'.

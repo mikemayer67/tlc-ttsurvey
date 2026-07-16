@@ -8,6 +8,7 @@ log_mark("-------------- Start of Render --------------");
 handle_warnings();
 
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/question_types.php'));
 require_once(app_file('survey/markdown.php'));
 
 class RenderEngine 
@@ -221,19 +222,19 @@ class RenderEngine
     $this->start_box($type,$question['grouped']);
 
     switch($type) {
-    case 'info':         
+    case QuestionType::Info:         
       $this->add_info($question);
       break;
-    case 'freetext':
+    case QuestionType::FreeText:
       $this->add_freetext($question,$responses);
       break;
-    case 'bool':
+    case QuestionType::Bool:
       $this->add_bool($question,$responses);
       break;
-    case 'select_one':   
+    case QuestionType::SelectOne:   
       $this->add_select($question,$content['options'],false,$responses); 
       break;                                              
-    case 'select_multi':                                  
+    case QuestionType::SelectMulti:                                  
       $this->add_select($question,$content['options'],true, $responses); 
       break;
     }
@@ -324,7 +325,7 @@ class RenderEngine
     $intro  = $question['intro'] ?? '';
     $popup  = $question['popup'] ?? '';
 
-    $response = $responses[$id]['free_text'] ?? '';
+    $response = $responses[$id]['freetext'] ?? '';
 
     $input_id = "question-freetext-$id";
 

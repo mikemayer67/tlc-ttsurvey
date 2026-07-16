@@ -255,7 +255,7 @@ CREATE TABLE tlc_srv_responses (
   question_id SMALLINT    UNSIGNED NOT NULL,
   draft       TINYINT     UNSIGNED NOT NULL     COMMENT '1=draft response, 0=submitted response',
   selected    SMALLINT    UNSIGNED DEFAULT NULL COMMENT '1/0 or select id based on question type',
-  free_text   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
+  freetext   text                 DEFAULT NULL COMMENT 'reponse to free text questions',
   qualifier   text                 DEFAULT NULL COMMENT 'response qualifying information',
   other       VARCHAR(128)         DEFAULT NULL COMMENT 'user provided other-option text',
   PRIMARY KEY (userid,survey_id,question_id,draft),
@@ -342,11 +342,11 @@ SQL ],
   [ __LINE__, <<<SQL
 CREATE VIEW tlc_srv_view_responses_freetext AS
 SELECT r.userid, r.survey_id, CASE WHEN r.draft=0 THEN 'SUBMITTED' ELSE 'DRAFT' END AS status,
-       q.question_id, q.wording, r.free_text, r.qualifier
+       q.question_id, q.wording, r.freetext, r.qualifier
   FROM tlc_srv_responses r
   LEFT JOIN tlc_srv_questions q 
          ON q.question_id=r.question_id and q.survey_id=r.survey_id
- WHERE r.free_text is not NULL
+ WHERE r.freetext is not NULL
    AND q.question_type='FREETEXT';
 SQL ],
 

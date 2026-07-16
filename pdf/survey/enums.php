@@ -5,6 +5,7 @@ if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry att
 
 require_once(app_file('pdf/pdf_boxes.php'));
 
+
 enum SurveyJustification : string {
   case LEFT = 'LEFT';
   case RIGHT = 'RIGHT';

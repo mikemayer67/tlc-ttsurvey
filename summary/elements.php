@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/elements.php'));
+require_once(app_file('include/question_types.php'));
 require_once(app_file('summary/markdown.php'));
 
 function start_summary_page($kwargs)
@@ -63,7 +64,6 @@ function add_notebook_css($tab_ids)
 class SectionPanel
 {
   private $sid       = null;
-  private $section   = null;
   private $questions = null;
   private $options   = null;
   private $responses = null;
@@ -74,7 +74,6 @@ class SectionPanel
   function __construct($sid,$content,$responses)
   {
     $this->sid       = $sid;
-    $this->section   = $content['sections'][$sid];
     $this->options   = $content['options'];
     $this->responses = $responses;
 
@@ -109,9 +108,9 @@ class SectionPanel
 
   private function add_question($question)
   {
-    $type = strtolower($question['type']??'');
+    $type = $question['type']??null;
 
-    if( $type === 'info' ) {
+    if($type->isInfo()) {
       $this->add_info_text($question);
       return;
     }
@@ -126,14 +125,14 @@ class SectionPanel
 
     $responses = $this->responses[$qid] ?? [];
     switch($type) {
-      case 'bool':
+      case QuestionType::Bool:
         $this->add_bool_responses($question, $responses);
         break;
-      case 'freetext':
+      case QuestionType::FreeText:
         $this->add_freetext_responses($question, $responses);
         break;
-      case 'select_one': // intentional fallthrough
-      case 'select_multi':
+      case QuestionType::SelectOne: // intentional fallthrough
+      case QuestionType::SelectMulti:
         $this->add_select_responses($question, $responses);
         break;
     }
@@ -175,11 +174,12 @@ class SectionPanel
 
   private function add_select_responses($question,$responses)
   {
+    $type      = $question['type'];
     $options   = $question['options'];
     $has_other = $question['other_flag'];
     $other     = $question['other'] ?? 'Other';
 
-    $multi = strtolower($question['type']) === 'select_multi';
+    $multi = $type === QuestionType::SelectMulti;
 
     if($has_other) { $options[] = 0; }
 
@@ -226,7 +226,7 @@ class SectionPanel
       $userid = $response['userid'];
       $user   = User::from_userid($userid);
       $name   = $user->fullname();
-      $answer = $response['free_text']??null;
+      $answer = $response['freetext']??null;
       if($answer) {
         echo "<tr><td class='name'>$name:</td><td class='response'>$answer</td></tr>";
       }

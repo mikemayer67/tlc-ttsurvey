@@ -34,7 +34,7 @@ function get_user_responses(string $userid,int $survey_id,string $scope) : array
   if(!$timestamp ) { return []; }
 
   $query = <<<SQL
-    SELECT question_id, selected, free_text, qualifier, other
+    SELECT question_id, selected, freetext, qualifier, other
       FROM tlc_srv_responses
      WHERE userid=? AND survey_id=? AND draft=?;
   SQL;
@@ -118,7 +118,7 @@ function get_all_user_responses(string $userid,int $survey_id) : array
 function get_all_responses(int $survey_id) : array
 {
   $query = <<<SQL
-    SELECT question_id, userid, selected, free_text, qualifier, other
+    SELECT question_id, userid, selected, freetext, qualifier, other
       FROM tlc_srv_responses
      WHERE draft=0 and survey_id=?;
   SQL;
@@ -180,8 +180,8 @@ function withdraw_user_responses(string $userid,int $survey_id) : bool
     new MySQLPreparedExec( 
       <<<SQL
         INSERT into tlc_srv_responses 
-              ( userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
-        SELECT   userid, survey_id, question_id, 1,     selected, free_text, qualifier, other
+              ( userid, survey_id, question_id, draft, selected, freetext, qualifier, other)
+        SELECT   userid, survey_id, question_id, 1,     selected, freetext, qualifier, other
           FROM tlc_srv_responses
         WHERE userid=? AND survey_id=?
       SQL, 
@@ -378,12 +378,12 @@ function update_user_responses(string $userid,int $survey_id,array $responses,bo
       // skip any empty input responses
       if( $v==='' ) { continue; }
 
-      // Freetext questions
+      // FreeText questions
       if(preg_match('/^question-freetext-(\d+)$/',$k,$m)) {
         $query = <<<SQL
-           INSERT into tlc_srv_responses (userid,survey_id,question_id,draft,free_text)
+           INSERT into tlc_srv_responses (userid,survey_id,question_id,draft,freetext)
            VALUES     (?,?,?,$draft,?)
-           ON DUPLICATE KEY UPDATE free_text=?;
+           ON DUPLICATE KEY UPDATE freetext=?;
         SQL;
         MySQLExecute($query,'siiss', $userid, $survey_id, $m[1], $v, $v);
       }

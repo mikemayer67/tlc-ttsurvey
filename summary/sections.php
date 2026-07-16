@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/question_types.php'));
+
 /**
  * Returns a sorted array of sections that contain actual questions (not just info blocks)
  * @param array $content 
@@ -12,7 +14,7 @@ function summary_sections(array $content) : array
 {
   $sections = [];
   foreach ($content['questions'] as $question) {
-    if (strtolower($question['type'] ?? '') !== 'info') {
+    if ($question['type']->isInfo()) {
       $sid = $question['section'] ?? null;
       if ($sid && !array_key_exists($sid, $sections)) {
         $section = $content['sections'][$sid];

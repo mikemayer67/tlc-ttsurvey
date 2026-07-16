@@ -203,8 +203,8 @@ function restore_user_responses(int $survey_id) : void
 
   $query = <<<SQL
     INSERT INTO tlc_srv_responses
-           (  userid,   survey_id,   question_id,   draft,   selected,   free_text,   qualifier,   other )
-    SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.selected, c.free_text, c.qualifier, c.other
+           (  userid,   survey_id,   question_id,   draft,   selected,   freetext,   qualifier,   other )
+    SELECT  c.userid, c.survey_id, c.question_id, c.draft, c.selected, c.freetext, c.qualifier, c.other
       FROM tlc_srv_responses_cache c
       JOIN tlc_srv_questions q ON q.survey_id=c.survey_id AND q.question_id=c.question_id
      WHERE c.survey_id=?

@@ -4,6 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/db.php'));
+require_once(app_file('include/question_types.php'));
 
 class QuestionFlags {
   const MASK_LEFT_RIGHT = 0x0001;  // 0:LEFT  1:RIGHT
@@ -123,25 +124,17 @@ class QuestionFlags {
     return null;
   }
 
-  public function layout(string $context, ?string $value=null) : ?string
+  public function layout(QuestionType $question_type, ?string $value=null) : ?string
   {
     if( $value === null ) {
       //this is the getter
-      switch(strtoupper($context)) {
-      case "BOOL":
-        return $this->align_right() ? "RIGHT" : "LEFT";
-        break;
-      case "SELECT_ONE":
-      case "SELECT_MULTI":
-        return ( 
-          $this->orient_row() ? "ROW" :
-          ($this->align_right() ? "RCOL" : "LCOL")
-        );
-        break;
-      default:
-        return null;
-        break;
-      }
+      return match($question_type) {
+        QuestionType::Bool        => ($this->align_right() ? 'RIGHT' : 'LEFT'),
+        QuestionType::SelectOne,
+        QuestionType::SelectMulti => ($this->orient_row() ? "ROW" : ($this->align_right() ? "RCOL" : "LCOL")),
+        QuestionType::Info        => null,
+        QuestionType::FreeText    => null
+      };
     }
     // this is the setter
     $value = strtoupper($value);

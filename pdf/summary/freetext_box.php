@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/table_response_box.php'));
 
-class SummaryFreetextBox extends SummaryQuestionBox
+class SummaryFreeTextBox extends SummaryQuestionBox
 {
   private PDFTextBox $label_box;
   private ?SummaryTableResponseBox $response_box = null;
@@ -41,7 +41,7 @@ class SummaryFreetextBox extends SummaryQuestionBox
     $this->height = $this->label_box->getHeight();
 
     if($responses) {
-      $responses = array_map(fn($a) => $a['free_text'], $responses);
+      $responses = array_map(fn($a) => $a['freetext'], $responses);
       $this->height += self::vgap;
       $this->response_box = new SummaryTableResponseBox(
         $summaryPDF, $width - self::indent, $responses

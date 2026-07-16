@@ -11,6 +11,7 @@ require_once(app_file('pdf/summary/bool_box.php'));
 require_once(app_file('pdf/summary/freetext_box.php'));
 require_once(app_file('pdf/summary/select_box.php'));
 require_once(app_file('summary/sections.php'));
+require_once(app_file('include/question_types.h'));
 
 /**
  * Responsible for parsing the survey responses into PDFBoxes
@@ -88,22 +89,21 @@ class SummaryRootBox extends PDFRootBox
 
       $box = null;
 
-      $type = strtolower($question['type']);
-      switch($type) {
-        case 'info':
+      switch($question['type']) {
+        case QuestionType::Info:
           if($grouped) {
             $box = new SummaryInfoBox($this->ttpdf,$width,$question,$prev);
             $width = $max_width - SummaryInfoBox::indent;
           }
           break;
-        case 'bool':
+        case QuestionType::Bool:
           $box = new SummaryBoolBox($this->ttpdf,$width,$question,$responses,$prev);
           break;
-        case 'freetext':
-          $box = new SummaryFreetextBox($this->ttpdf,$width,$question,$responses,$prev);
+        case QuestionType::FreeText:
+          $box = new SummaryFreeTextBox($this->ttpdf,$width,$question,$responses,$prev);
           break;
-        case 'select_one': // intentional fallthrough
-        case 'select_multi':
+        case QuestionType::SelectOne: // intentional fallthrough
+        case QuestionType::SelectMulti:
           $options = $content['options'];
           $box = new SummarySelectBox($this->ttpdf,$width,$question,$options,$responses,$prev);
           break;

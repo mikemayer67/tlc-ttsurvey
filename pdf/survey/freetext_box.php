@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/intro_box.php'));
 require_once(app_file('pdf/survey/config.php'));
 
-class SurveyFreetextBox extends PDFBox
+class SurveyFreeTextBox extends PDFBox
 {
   private ?SurveyIntroBox $intro_box = null;
   private PDFBox          $wording_box;

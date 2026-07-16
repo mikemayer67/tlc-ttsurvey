@@ -7,6 +7,7 @@ require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/option_box.php'));
 require_once(app_file('pdf/summary/other_box.php'));
 require_once(app_file('pdf/summary/qualifiers_box.php'));
+require_once(app_file('include/question_types.php'));
 
 class SummarySelectBox extends SummaryQuestionBox
 {
@@ -55,7 +56,7 @@ class SummarySelectBox extends SummaryQuestionBox
       $options[0] = $question['other'] ?? 'Other';
     }
 
-    $multi = strtolower($question['type']) === 'select_multi';
+    $multi = $question['type'] === QuestionType::SelectMulti;
     foreach($options as $oid=>$option) {
       $box = null;
       if($oid && $multi) {

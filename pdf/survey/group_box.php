@@ -3,6 +3,7 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question_types.php'));
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/info_box.php'));
 require_once(app_file('pdf/survey/freetext_box.php'));
@@ -37,17 +38,17 @@ class SurveyGroupBox extends PDFBox
       $type = $question['type'];
 
       switch($type) {
-        case 'INFO':
+        case QuestionType::Info:
           $box = new SurveyInfoBox($surveyPDF,$max_width,$question);
           break;
-        case 'FREETEXT':
-          $box = new SurveyFreetextBox($surveyPDF,$max_width,$question);
+        case QuestionType::FreeText:
+          $box = new SurveyFreeTextBox($surveyPDF,$max_width,$question);
           break;
-        case 'BOOL':
+        case QuestionType::Bool:
           $box = new SurveyBoolBox($surveyPDF,$max_width,$question);
           break;
-        case 'SELECT_ONE':
-        case 'SELECT_MULTI':
+        case QuestionType::SelectOne:
+        case QuestionType::SelectMulti:
           $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content['options']);
           break;
       }

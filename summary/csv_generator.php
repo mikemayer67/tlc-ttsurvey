@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/users.php'));
+require_once(app_file('include/question_types.php'));
 
 class CSVGenerator
 {
@@ -123,14 +124,14 @@ class CSVGenerator
         $question_type = $question['type'];
 
         switch($question_type) {
-        case 'INFO':         $rows = $this->add_info_question($question);         break;
-        case 'BOOL':         $rows = $this->add_bool_question($question);         break;
-        case 'FREETEXT':     $rows = $this->add_freetext_question($question);     break;
-        case 'SELECT_ONE':   $rows = $this->add_select_one_question($question);   break;
-        case 'SELECT_MULTI': $rows = $this->add_select_multi_question($question); break;
-        default:
-          $rows = [['question'=>$question_type]];
-          break;
+          case QuestionType::Info:        $rows = $this->add_info_question($question);         break;
+          case QuestionType::Bool:        $rows = $this->add_bool_question($question);         break;
+          case QuestionType::FreeText:    $rows = $this->add_freetext_question($question);     break;
+          case QuestionType::SelectOne:   $rows = $this->add_select_one_question($question);   break;
+          case QuestionType::SelectMulti: $rows = $this->add_select_multi_question($question); break;
+          default:
+            internal_error("Invalid Question Type");
+            break;
         }
 
         foreach($rows as $row) {
@@ -196,7 +197,7 @@ class CSVGenerator
       $row = [];
       $row['question']    = $wording;
       $row['participant'] = $this->fullname($r['userid']);
-      $row['notes']       = $r['free_text'] ?? '';
+      $row['notes']       = $r['freetext'] ?? '';
       $rows[] = $row;
     }
     if(!$rows) {

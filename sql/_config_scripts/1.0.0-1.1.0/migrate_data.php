@@ -125,7 +125,7 @@ SQL ],
 
 // No change to the user response table other than prefix
   [ __LINE__, <<<SQL
-INSERT into tlc_srv_responses (userid, survey_id, question_id, draft, selected, free_text, qualifier, other)
+INSERT into tlc_srv_responses (userid, survey_id, question_id, draft, selected, freetext, qualifier, other)
 SELECT userid, survey_id, question_id, draft, selected, free_text, qualifier, other from tlc_tt_responses;
 SQL ],
 

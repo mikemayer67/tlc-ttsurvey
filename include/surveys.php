@@ -6,6 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/question_flags.php'));
+require_once(app_file('include/question_types.php'));
 
 /**
  * Returns the survey ID of the active survey
@@ -137,7 +138,7 @@ function next_survey_ids(int $survey_id) : array
  *     content : array of question IDs that appear in the group (in order)
  *   questions:
  *     id : unique identifier for each question
- *     type: 'INFO', 'BOOL', 'SELECT_MULTI', 'SELECT_ONE', or 'FREETEXT'
+ *     type: QuestionType
  *     wording: how question appears in the survey
  *     intro: optional introductory text shown before question
  *     qualifier: (BOOL and SELECT only) label for optional freetext field in response
@@ -146,7 +147,7 @@ function next_survey_ids(int $survey_id) : array
  *     info: (INFO only) the body of the info message
  *     popup: (all but INFO) text in popup hint in the survey
  *     layout:  how responses appear in the survey:
- *        BOOl: 'LEFT' or 'RIGHT' (checkbox location)
+ *        BOOL: 'LEFT' or 'RIGHT' (checkbox location)
  *        SELECT: 'ROW', 'RCOL' or 'LCOL'
  *        default: null
  *     render_in_group: (INFO only)
@@ -275,7 +276,7 @@ function survey_groups(string $survey_id) : array
  * Returns array of all questons in the specified survey (and its ancestors)
  * This includes for each question
  *   id : unique identifier for each question
- *   type: 'INFO', 'BOOL', 'SELECT_MULTI', 'SELECT_ONE', or 'FREETEXT'
+ *   type: QuestionType
  *   wording: how question appears in the survey
  *   intro: optional introductory text shown before question
  *   qualifier: (BOOL and SELECT only) label for optional freetext field in response
@@ -308,25 +309,17 @@ function survey_questions(int $survey_id, array $exclude = []) : array
 
   if(!$rows) { return array(); }
 
-  $q_fields = [
-    'INFO'         => ['wording'=>'infotag',                     'info'         ],
-    'BOOL'         => ['wording', 'intro', 'qualifier',          'info'=>'popup'],
-    'SELECT_MULTI' => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-    'SELECT_ONE'   => ['wording', 'intro', 'qualifier', 'other', 'info'=>'popup'],
-    'FREETEXT'     => ['wording', 'intro',                       'info'=>'popup']
-  ];
-
   $questions = array();
   foreach($rows as $row) {
     $question_id = $row['question_id'];
-    $question_type = $row['question_type'];
+    $question_type = QuestionType::from($row['question_type']);
 
     $q = [ 
       'id'       => $question_id, 
       'type'     => $question_type,
     ];
 
-    foreach ($q_fields[$question_type] ?? [] as $from => $to)
+    foreach( $question_type->fields() as $from => $to )
     {
       if(is_int($from)) { $from = $to; } // straight copy from row to question
       $q[$to] = $row[$from];
@@ -335,15 +328,15 @@ function survey_questions(int $survey_id, array $exclude = []) : array
     # decode the question_flags bitmap
     $flags = new QuestionFlags( $row['flags'] ?? 0 );
     $q['layout']  = $flags->layout($question_type);
-    if($question_type === 'INFO') {
+    if($question_type->isIinfo()) {
       $q['render_in_group'] = $flags->render_in_group();
     }
-    if(str_starts_with($question_type,'SELECT')) {
+    if($question_type->isSelect()) {
       $q['other_flag'] = $flags->has_other() ? 1 : 0;
     }
 
     // add question options
-    if($question_type==='SELECT_MULTI' || $question_type==='SELECT_ONE') {
+    if($question_type->isSelect()) {
       $query = <<<SQL
         SELECT option_id
         FROM   tlc_srv_question_options
