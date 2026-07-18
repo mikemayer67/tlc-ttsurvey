@@ -5,6 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 require_once(app_file('include/db.php'));
 require_once(app_file('include/question_types.php'));
+require_once(app_file('include/question_layout.php'));
 
 class QuestionFlags {
   const MASK_LEFT_RIGHT = 0x0001;  // 0:LEFT  1:RIGHT
@@ -106,7 +107,7 @@ class QuestionFlags {
   }
 
   /**
-   * Getter/Setter for "render in grup"
+   * Getter/Setter for "render in group"
    * @param null|bool $value (null=getter, bool=setter)
    * @return null|bool setter:null, getter:bool
    */
@@ -124,22 +125,33 @@ class QuestionFlags {
     return null;
   }
 
-  public function layout(QuestionType $question_type, ?string $value=null) : ?string
+  /**
+   * Getter/Setter for layout
+   * @param QuestionType $question_type 
+   * @param null|QuestionLayout $value (null=getter, QuestionLayout=setter)
+   * @return null|QuestionLayout setter:null, getter:QuestionLayout
+   */
+  public function layout(QuestionType $question_type, ?QuestionLayout $value=null) : ?QuestionLayout
   {
     if( $value === null ) {
       //this is the getter
       return match($question_type) {
-        QuestionType::Bool        => ($this->align_right() ? 'RIGHT' : 'LEFT'),
+        QuestionType::Bool => (
+          $this->align_right() ? QuestionLayout::CheckboxRight : QuestionLayout::CheckboxLeft
+        ),
         QuestionType::SelectOne,
-        QuestionType::SelectMulti => ($this->orient_row() ? "ROW" : ($this->align_right() ? "RCOL" : "LCOL")),
-        QuestionType::Info        => null,
-        QuestionType::FreeText    => null
+        QuestionType::SelectMulti => (
+          $this->orient_row() 
+          ? QuestionLayout::Row 
+          : ( $this->align_right() ? QuestionLayout::ColumnRight : QuestionLayout::ColumnLeft )
+        ),
+        QuestionType::Info,
+        QuestionType::FreeText => QuestionLayout::None
       };
     }
     // this is the setter
-    $value = strtoupper($value);
-    $this->orient_column( in_array($value, ["RCOL","LCOL"] , true) );
-    $this->align_right(   in_array($value, ["RCOL","RIGHT"], true) );
+    $this->orient_column($value->isColumn());
+    $this->align_right($value->isRight());
     return null;
   }
 }

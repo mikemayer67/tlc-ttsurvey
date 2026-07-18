@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question_layout.php'));
+
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/option_box.php'));
 require_once(app_file('pdf/survey/other_box.php'));
@@ -11,8 +13,8 @@ require_once(app_file('pdf/survey/enums.php'));
 
 class SurveyOptionsBox extends PDFBox
 {
-  private bool         $inline = false;
-  private OptionLayout $layout;
+  private bool $inline = false;
+  private QuestionLayout $layout;
 
   /** @var SurveyAlignableBox[] */
   private array           $children = [];
@@ -59,9 +61,8 @@ class SurveyOptionsBox extends PDFBox
     
     $type = $question['type'];
     $shape = OptionShape::fromInput($type);
-    $question_layout = $question['layout'] ?? 'ROW';
-    $justification = SurveyJustification::fromInput($question_layout);
-    $layout = OptionLayout::fromInput($question_layout);
+    $layout = $question['layout'] ?? QuestionLayout::Row;
+    $justification = SurveyJustification::fromInput($layout);
 
     $this->layout = $layout;
     
@@ -79,10 +80,10 @@ class SurveyOptionsBox extends PDFBox
       );
     }
 
-    if($layout === OptionLayout::ROW) {
-      $this->construct_rows($max_width,$inline_width);
-    } else {
+    if($layout->isColumn()) {
       $this->construct_column($max_width,$inline_width);
+    } else {
+      $this->construct_rows($max_width,$inline_width);
     }
   }
 

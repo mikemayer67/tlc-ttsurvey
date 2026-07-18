@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question_layout.php'));
+
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/alignable_box.php'));
 require_once(app_file('pdf/survey/options_box.php'));
@@ -38,12 +40,10 @@ class SurveySelectBox extends SurveyAlignableBox
     $intro   = $question['intro'] ?? null;
     $wording = $question['wording'];
     $qual    = $question['qualifier'] ?? null;
-    $layout  = $question['layout'] ?? "ROW";
+    $layout  = $question['layout'] ?? QuestionLayout::Row;
 
     $justification = SurveyJustification::fromInput($layout);
-
-    $shape  = OptionShape::fromInput($type);
-    $layout = OptionLayout::fromInput($layout);
+    $shape         = OptionShape::fromInput($type);
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);

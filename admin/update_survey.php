@@ -315,13 +315,14 @@ function add_survey_questions(int $survey_id,array $questions) : void
     $qualifier   = $question['qualifier'] ?? null;
     $intro       = $question['intro'] ?? null;
     $info        = $question['info'] ?? $question['popup'] ?? null;
+    $layout      = $question['layout'] ?? "";
 
     $other_flag  = $question['other_flag'] ?? false;
     $other       = ($other_flag ? ($question['other'] ?? null) : null);
 
     # encode the question_flags bitmap
     $flags = new QuestionFlags();
-    $flags->layout(QuestionType::from($type), $question['layout']??"");
+    $flags->layout(QuestionType::from($type), QuestionLayout::from($layout));
     $flags->has_other($other_flag);
 
     $insert_question->run(

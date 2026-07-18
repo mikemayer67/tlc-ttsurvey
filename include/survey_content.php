@@ -35,10 +35,7 @@ require_once(app_file('include/question_flags.php'));
  *     other: (SELECT only) label for "other" field in response
  *     info: (INFO only) the body of the info message
  *     popup: (all but INFO) text in popup hint in the survey
- *     layout:  how responses appear in the survey:
- *        BOOL: 'LEFT' or 'RIGHT' (checkbox location)
- *        SELECT: 'ROW', 'RCOL' or 'LCOL'
- *        default: null
+ *     layout: QuestionLayout
  *     render_in_group: (INFO only)
  *     options: (SELECT only) the list of selectable options
  *   next_ids:
@@ -140,10 +137,7 @@ class SurveyContent
    *   other?: string (SELECT only) label for "other" field in response,
    *   info?: string (INFO only) the body of the info message,
    *   popup?: string (all but INFO) text in popup hint in the survey,
-   *   layout?:  string how responses appear in the survey:
-   *      BOOl: 'LEFT' or 'RIGHT' (checkbox location)
-   *      SELECT: 'ROW', 'RCOL' or 'LCOL'
-   *      default: null,
+   *   layout: QuestionLayout
    *   render_in_group?: bool (INFO only),
    *   options?: array<int> (SELECT only) the list of selectable options
    * } >
@@ -163,10 +157,7 @@ class SurveyContent
    *   other?: string (SELECT only) label for "other" field in response,
    *   info?: string (INFO only) the body of the info message,
    *   popup?: string (all but INFO) text in popup hint in the survey,
-   *   layout?:  string how responses appear in the survey:
-   *      BOOl: 'LEFT' or 'RIGHT' (checkbox location)
-   *      SELECT: 'ROW', 'RCOL' or 'LCOL'
-   *      default: null,
+   *   layout: QuestionLayout
    *   render_in_group?: bool (INFO only),
    *   options?: array<int> (SELECT only) the list of selectable options
    */

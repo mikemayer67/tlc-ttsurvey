@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question_layout'));
+
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/alignable_box.php'));
 require_once(app_file('pdf/survey/option_box.php'));
@@ -31,7 +33,7 @@ class SurveyBoolBox extends SurveyAlignableBox
 
     $intro   = $question['intro'] ?? null;
     $wording = $question['wording'];
-    $layout  = $question['layout' ?? 'LEFT'];
+    $layout  = $question['layout'] ?? QuestionLayout::None;
     $qual    = $question['qualifier'] ?? null;
 
     if($intro) {
