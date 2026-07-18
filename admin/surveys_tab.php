@@ -28,7 +28,8 @@ if($all_surveys) {
     $index = 0;
     $id = $all_surveys[0]['survey_id'];
   }
-  $all_surveys[$index]['content'] = survey_content($id);
+  $content = new SurveyContent($id);
+  $all_surveys[$index]['content'] = $content->as_array();
 }
 
 if(! ($all_surveys || $is_admin) ) {

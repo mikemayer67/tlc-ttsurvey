@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('pdf/survey_pdf.php'));
 
 log_mark("-------------- Start of Survey PDF Download --------------");
@@ -16,11 +16,12 @@ $info = survey_info($survey_id);
 if(!$info) { api_die(); }
 
 $title = $info['title'];
-$content = survey_content($survey_id);
+$content = new SurveyContent($survey_id);
 
 ob_start();
 
 $survey_pdf = new SurveyPDF($title);
+todo("update survey pdf render to handle SurveyContent");
 $survey_pdf->render($info, $content);
 
 ob_end_clean();

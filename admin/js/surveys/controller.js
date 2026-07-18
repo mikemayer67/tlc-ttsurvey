@@ -442,13 +442,13 @@ export default function init(ce)
 
   /**
    * Creates a new group with a new/unique group ID
-   * @param {string} [name="Untitled Group"]
+   * @param {string} [name="[question group]"]
    * @returns {GroupInfo}
    */
-  self._create_new_group = function(name='Untitled Group')
+  self._create_new_group = function(name='[question group]')
   {
     const current_group_ids = Object.keys(_content.groups).map((x) => Number(x));
-    const group_id = 1 + Math.max(...current_group_ids);
+    const group_id = 1 + Math.max(0,...current_group_ids);
     return { group_id, name, content: [] };
   }
 

@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('summary/elements.php'));
 require_once(app_file('summary/sections.php'));
@@ -35,14 +35,14 @@ $summary_flags = (int)get_setting('summary_flags');
 if($summary_flags & 2) { // requires submit
   if(!$is_admin) {
     if($survey_id && ($survey_id === $active_id)) {
-      $responses = get_user_responses( $userid,$survey_id);
+      $responses = get_all_user_responses( $userid,$survey_id);
       $submitted = $responses['submitted'] ?? [];
       if(!$submitted) { $has_access = false; }
     }
   }
 }
 
-$content   = survey_content($survey_id);
+$content   = new SurveyContent($survey_id);
 $responses = get_all_responses($survey_id);
 $sections  = summary_sections($content);
 

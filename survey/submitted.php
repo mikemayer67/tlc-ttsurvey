@@ -140,7 +140,7 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   }
 }
 
-function send_confirmation_email($userid,$survey_id,$email,$content,$submitted)
+function send_confirmation_email($userid,$survey_id,$email)
 {
   todo("Add summary info to confirmation email");
   $error = '';

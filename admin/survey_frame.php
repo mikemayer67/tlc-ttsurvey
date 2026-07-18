@@ -240,7 +240,7 @@ function add_type_select()
   echo "    <div class='text'></div>";
   echo "    <select class='question type' name='question-type' data-key='type'>";
   echo "      <option value=''>Required...</option>";
-  foreach($type_labels as $key => $value) {
+  foreach(QuestionType::labels() as $key => $value) {
     echo "    <option value='$key'>$value</option>";
   }
   echo "    </select>";

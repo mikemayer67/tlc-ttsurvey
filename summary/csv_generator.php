@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/question_types.php'));
@@ -35,7 +35,7 @@ class CSVGenerator
     ];
     $this->_column_keys = array_keys($this->_column_headers);
 
-    $this->_content   = survey_content($survey_id);
+    $this->_content   = new SurveyContent($survey_id);
     $this->_responses = get_all_responses($survey_id);
     $this->_fullnames = [];
 

@@ -7,6 +7,7 @@ require_once(app_file('include/users.php'));
 require_once(app_file('include/status.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/timestamps.php'));
 require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/render.php'));
@@ -19,8 +20,8 @@ if(!$active_id) {
   die();
 }
 
-$userid    = active_userid() ?? null;
-$content   = survey_content($active_id);
+$userid  = active_userid() ?? null;
+$content = new SurveyContent($active_id);
 
 $navbar_args = [
   'title'  => active_survey_title(),
@@ -34,7 +35,7 @@ $submitted_exists = false;
 
 $reopen_submitted = ($_POST['action'] ?? '') === "reopen"; 
 
-$responses = get_user_responses( $userid,$active_id);
+$responses = get_all_user_responses($userid,$active_id);
 $submitted = $responses['submitted'] ?? [];
 $draft     = $responses['draft']     ?? [];
 $state     = '';
@@ -82,7 +83,7 @@ if($submitted && !$draft && !$reopen_submitted)
       ($user = User::from_userid($userid)) &&
       ($email = $user->email())
     ) {
-      send_confirmation_email($userid,$active_id,$email,$content,$submitted);
+      send_confirmation_email($userid,$active_id,$email);
     }
 
     show_submitted_page($userid,$active_id,$submitted['timestamp']);

@@ -321,7 +321,7 @@ function add_survey_questions(int $survey_id,array $questions) : void
 
     # encode the question_flags bitmap
     $flags = new QuestionFlags();
-    $flags->layout($type, $question['layout']??"");
+    $flags->layout(QuestionType::from($type), $question['layout']??"");
     $flags->has_other($other_flag);
 
     $insert_question->run(

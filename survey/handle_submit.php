@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/submitted.php'));
@@ -76,9 +76,7 @@ if(empty($_POST['js_enabled'])) {
   $active_user = User::from_userid($active_userid);
   $email = $active_user->email();
   if($email) {
-    $content = survey_content($survey_id);
-    $submitted = get_user_responses($userid,$survey_id,false);
-    send_confirmation_email($userid,$survey_id,$email,$content,$submitted);
+    send_confirmation_email($userid,$survey_id,$email);
   }
   $_SESSION['queued-confirmation-email']=false;
 } else {
