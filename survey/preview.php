@@ -14,6 +14,7 @@ require_once(app_file('survey/render.php'));
 $page_title = 'Survey Preview';
 
 $survey_title = $_POST['title'] ?? '[No Name]';
+internal_error("json_decode content");
 $content      = json_decode($_POST['content'] ?? '',true);
 $preview_js   = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEAN);
 

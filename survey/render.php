@@ -8,6 +8,7 @@ log_mark("-------------- Start of Render --------------");
 handle_warnings();
 
 require_once(app_file('include/logger.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/question_types.php'));
 require_once(app_file('survey/markdown.php'));
 
@@ -25,7 +26,19 @@ class RenderEngine
     $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
   }
 
-  public function render($state, $content, $kwargs)
+  /**
+   * Renders the HTML for displaying the survey in a browswer
+   * @param ('preview'|'draft_updates'|'submitted'|'draft'|'new') $state
+   * @param  SurveyContent $content 
+   * @param array {
+   *   userid: string,
+   *   survey_id: int,
+   *   responses: array,
+   *   timestamps: string (draft:submitted)
+   * } $kwargs 
+   * @return void 
+   */
+  public function render(string $state, SurveyContent $content, array $kwargs)
   {
     $this->in_grid      = false;
     $this->follows_info = false;
@@ -58,7 +71,7 @@ class RenderEngine
       add_hidden_input('timestamps', $timestamps);
     }
 
-    foreach($content['sections'] as $section) {
+    foreach($content->sections() as $section) {
       $this->add_section($section);
     }
 
@@ -67,19 +80,25 @@ class RenderEngine
     echo "</form>";
   }
 
-  private function add_submit_bar($state)
+  /**
+   * Renders the HTML for the submit bar at the bottom of the survey.  There are four 
+   *   recognized state values which drive the content of the bar:
+   *     new:           "Save As Draft", "Submit"
+   *     draft:         "Revert to Saved", "Update Draft", "Submit"
+   *     draft Updates: "Revert to Saved", "Delete Draft", "Save Draft", "Submit"
+   *     submitted:     "Save as Draft", "Submit"
+   * 
+   * Each state has its own set of associated actions:
+   *     submit: Save form data as submitted, clear draft
+   *     save:   Save form data as draft
+   *     cancel: Save nothing, reload page
+   *     delete: Delete draft, reload page
+   * @param ('new'|'draft'|'draft_updates'|'submitted') $state 
+   * @return void 
+   */
+  private function add_submit_bar(string $state)
   {
     echo "<div class='submit-bar'>";
-    // Cases:
-    // New:           "Save As Draft", "Submit"
-    // Draft:         "Revert to Saved", "Update Draft", "Submit"
-    // Draft Updates: "Revert to Saved", "Delete Draft", "Save Draft", "Submit"
-    // Submitted:     "Save as Draft", "Submit"
-    //
-    // submit: Save form data as submitted, clear draft
-    // save:   Save form data as draft
-    // cancel: Save nothing, reload page
-    // delete: Delete draft, reload page
     switch($state) {
     case 'new':
       echo "<div>";
@@ -117,7 +136,7 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_section($section)
+  private function add_section(array $section)
   {
     $sid         = $section['section_id'];
     $name        = $section['name'];
@@ -155,10 +174,10 @@ class RenderEngine
 
   private function add_group($group_id)
   {
-    $question_ids = $this->content['groups'][$group_id]['content'];
+    $question_ids = $this->content->group($group_id)['content'];
     $has_info = false;
     foreach($question_ids as $question_id) {
-      $question = $this->content['questions'][$question_id];
+      $question = $this->content->question($question_id);
       if($question['type']->isInfo()) {
         $has_info = true;
         break;
@@ -169,8 +188,7 @@ class RenderEngine
     }
   }
 
-
-  private function add_questions($section,$content,$responses)
+  private function add_questions(array $section)
   {
     # find all the questions that are assigned to this section
     #   (and have an associated sequence value)
@@ -214,9 +232,9 @@ class RenderEngine
   }
 
 
-  private function add_question($question,$content,$responses)
+  private function add_question($question)
   {
-    $type = strtolower($question['type']);
+    $type = $question['type'];
 
     todo("Update the following as question.grouped no longer exsits");
     $this->start_box($type,$question['grouped']);
@@ -226,16 +244,16 @@ class RenderEngine
       $this->add_info($question);
       break;
     case QuestionType::FreeText:
-      $this->add_freetext($question,$responses);
+      $this->add_freetext($question);
       break;
     case QuestionType::Bool:
-      $this->add_bool($question,$responses);
+      $this->add_bool($question);
       break;
     case QuestionType::SelectOne:   
-      $this->add_select($question,$content['options'],false,$responses); 
+      $this->add_select($question,false);
       break;                                              
     case QuestionType::SelectMulti:                                  
-      $this->add_select($question,$content['options'],true, $responses); 
+      $this->add_select($question,true); 
       break;
     }
   }
@@ -512,7 +530,19 @@ class RenderEngine
   }
 };
 
-function render_survey($state, $content, $kwargs=[])
+/**
+ * Renders the HTML for displaying the survey in a browswer
+ * @param ('preview'|'draft_updates'|'submitted'|'draft'|'new') $state
+ * @param  SurveyContent $content 
+ * @param array {
+ *   userid: string,
+ *   survey_id: int,
+ *   responses: array,
+ *   timestamps: string (draft:submitted)
+ * } $kwargs 
+ * @return void 
+ */
+function render_survey(string $state, SurveyContent $content, $kwargs=[])
 {
   $re = new RenderEngine();
   $re->render($state, $content, $kwargs);
