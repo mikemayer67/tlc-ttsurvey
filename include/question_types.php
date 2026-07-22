@@ -39,25 +39,7 @@ enum QuestionType : string
     return $rval;
   }
 
-  /**
-   * Returns the list of attribute fields associated with the current question type
-   *   In most cases the question attribute and the database column names align.
-   *   In the few cases where they don't, the corresponding entry in the return array will be
-   *     of the form database_key => question_attribute
-   * @return array 
-   */
-  public function fields() : array
-  {
-    return match($this) {
-      self::Info         => ['wording' => 'infotag',                   'info'],
-      self::Bool         => ['wording', 'intro', 'qualifier',          'info' => 'popup'],
-      self::SelectMulti  => ['wording', 'intro', 'qualifier', 'other', 'info' => 'popup'],
-      self::SelectOne    => ['wording', 'intro', 'qualifier', 'other', 'info' => 'popup'],
-      self::FreeText     => ['wording', 'intro',                       'info' => 'popup']
-    };
-  }
-
-  public function isIinfo() : bool
+  public function isInfo() : bool
   {
     return $this === self::Info;
   }

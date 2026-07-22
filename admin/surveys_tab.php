@@ -28,8 +28,8 @@ if($all_surveys) {
     $index = 0;
     $id = $all_surveys[0]['survey_id'];
   }
-  $content = new SurveyContent($id);
-  $all_surveys[$index]['content'] = $content->as_array();
+  $content = SurveyContent::fromSurveyID($id);
+  $all_surveys[$index]['content'] = $content->format_for_js();
 }
 
 if(! ($all_surveys || $is_admin) ) {

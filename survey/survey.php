@@ -21,7 +21,7 @@ if(!$active_id) {
 }
 
 $userid  = active_userid() ?? null;
-$content = new SurveyContent($active_id);
+$content = SurveyContent::fromSurveyID($active_id);
 
 $navbar_args = [
   'title'  => active_survey_title(),

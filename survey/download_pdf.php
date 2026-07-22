@@ -16,7 +16,7 @@ $info = survey_info($survey_id);
 if(!$info) { api_die(); }
 
 $title = $info['title'];
-$content = new SurveyContent($survey_id);
+$content = SurveyContent::fromSurveyID($survey_id);
 
 ob_start();
 

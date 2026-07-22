@@ -8,14 +8,14 @@ log_mark("-------------- Start of Preview --------------");
 validate_and_retain_nonce('preview');
 
 require_once(app_file('include/cookiejar.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/render.php'));
 
 $page_title = 'Survey Preview';
 
 $survey_title = $_POST['title'] ?? '[No Name]';
-internal_error("json_decode content");
-$content      = json_decode($_POST['content'] ?? '',true);
+$content      = SurveyContent::fromJsonString($_POST['content']??''); 
 $preview_js   = filter_var($_POST['preview_js'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
 $userid = active_userid();

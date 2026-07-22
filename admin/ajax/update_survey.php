@@ -15,20 +15,21 @@ start_ob_logging();
 // using javascript key id rather than PHP key survey_id
 $survey_id  = $_POST['id'] ?? null;
 $title      = $_POST['name'] ?? null;
-$content    = json_decode($_POST['content'],true);
+todo("Complete conversion of update_survey to use SurveyContent");
+$content    = SurveyContent::fromJsonString($_POST['content']);
 
 if(!$survey_id)  { send_ajax_bad_request('Missing survey_id in request'); }
 
 $updated = update_survey($survey_id, $content, $title);
 if(!$updated) { send_ajax_internal_error('Failed to update survey'); }
 
-$revised_content = new SurveyContent($survey_id);
+$revised_content = SurveyContent::fromSurveyID($survey_id);
 $next_ids        = $revised_content->next_ids();
 
 end_ob_logging();
 
 $response = new AjaxResponse();
-$response->add('content', $revised_content->as_array());
+$response->add('content', $revised_content->format_for_js());
 $response->add('next_ids',$next_ids);
 $response->send();
 

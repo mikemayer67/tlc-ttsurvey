@@ -35,7 +35,7 @@ class CSVGenerator
     ];
     $this->_column_keys = array_keys($this->_column_headers);
 
-    $this->_content   = new SurveyContent($survey_id);
+    $this->_content   = SurveyContent::fromSurveyID($survey_id);
     $this->_responses = get_all_responses($survey_id);
     $this->_fullnames = [];
 

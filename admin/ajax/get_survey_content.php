@@ -16,15 +16,15 @@ $id = parse_ajax_integer_input('survey_id');
 // assume failure unless content was actually found
 $response = new AjaxResponse(false);
 
-$content = new SurveyContent($id);
-if($content->is_empty()) {
+$content = SurveyContent::fromSurveyID($id);
+if(!$content->is_initialized()) {
   send_ajax_failure("No survey content found for id=$id");
 }
 
 end_ob_logging();
 
 $response = new AjaxResponse();
-$response->add('content',$content->as_array());
+$response->add('content',$content->format_for_js());
 $response->send();
 
 die();

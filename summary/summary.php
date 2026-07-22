@@ -42,7 +42,7 @@ if($summary_flags & 2) { // requires submit
   }
 }
 
-$content   = new SurveyContent($survey_id);
+$content   = SurveyContent::fromSurveyID($survey_id);
 $responses = get_all_responses($survey_id);
 $sections  = summary_sections($content);
 

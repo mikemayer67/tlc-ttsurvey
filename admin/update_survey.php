@@ -49,7 +49,7 @@ function build_exception_handler(string $message) : callable
 }
 
 /**
- * Choreographs te updating of the survey content/structure in the database
+ * Choreographs the updating of the survey content/structure in the database
  * @param int $survey_id 
  * @param array $content 
  * @param string $title 

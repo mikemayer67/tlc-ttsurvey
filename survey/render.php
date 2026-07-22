@@ -16,19 +16,15 @@ class RenderEngine
 {
   private $popup_icon = null;
 
-  private $in_grid      = false;
   private $follows_info = false;
   private $content      = null;
   private $responses    = null;
-
-  function __construct()
-  {
-    $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
-  }
+  private $userid       = null;
+  private $survey_id    = null;
+  private $timestamps   = [];
 
   /**
-   * Renders the HTML for displaying the survey in a browswer
-   * @param ('preview'|'draft_updates'|'submitted'|'draft'|'new') $state
+   * Constructs the render engine for the online survey
    * @param  SurveyContent $content 
    * @param array {
    *   userid: string,
@@ -38,14 +34,28 @@ class RenderEngine
    * } $kwargs 
    * @return void 
    */
-  public function render(string $state, SurveyContent $content, array $kwargs)
+  function __construct(SurveyContent $content, array $kwargs)
   {
+    $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
+
     $this->in_grid      = false;
     $this->follows_info = false;
 
     $this->content   = $content;
     $this->responses = $kwargs['responses'] ?? [];
 
+    $this->userid     = $kwargs['userid'] ?? null;
+    $this->survey_id  = $kwargs['survey_id'] ?? null;
+    $this->timestamps = $kwargs['timestamps'] ?? [];
+  }
+
+  /**
+   * Renders the HTML for displaying the survey in a browswer
+   * @param ('preview'|'draft_updates'|'submitted'|'draft'|'new') $state
+   * @return void 
+   */
+  public function render(string $state)
+  {
     if($state === 'preview')
     {
       $action = null;
@@ -53,12 +63,9 @@ class RenderEngine
     } 
     else {
       $action     = app_uri();
-      $userid     = $kwargs['userid'] ?? null;
-      $survey_id  = $kwargs['survey_id'] ?? null;
-      $timestamps = $kwargs['timestamps'] ?? [];
 
-      if(is_null($userid))    { internal_error("missing userid in kwargs");    }
-      if(is_null($survey_id)) { internal_error("missing survey_id in kwargs"); }
+    if(is_null($this->userid))    { internal_error("missing userid in kwargs");    }
+    if(is_null($this->survey_id)) { internal_error("missing survey_id in kwargs"); }
 
       echo "<form id='survey' action='$action' method='post'>";
       $ui_cache_id = $_SESSION['ui-cache-id'] ?? null;
@@ -66,12 +73,12 @@ class RenderEngine
       add_hidden_input('submit',1);
       if($ui_cache_id) { add_hidden_input('ui-cache-id',$ui_cache_id); }
       add_hidden_input('ajaxuri',app_uri());
-      add_hidden_input('userid',$userid);
-      add_hidden_input('survey_id',$survey_id);
-      add_hidden_input('timestamps', $timestamps);
+      add_hidden_input('userid',$this->userid);
+      add_hidden_input('survey_id',$this->survey_id);
+      add_hidden_input('timestamps', $this->timestamps);
     }
 
-    foreach($content->sections() as $section) {
+    foreach($this->content->sections() as $section) {
       $this->add_section($section);
     }
 
@@ -159,85 +166,31 @@ class RenderEngine
     }
 
     foreach($section['content'] as $item) {
+      echo "<div class='question-box'>";
       switch($item['type']) {
         case 'question':
-          $this->add_question($item['id']);
+          $question_ids = [$this->add_question($item['id'])];
           break;
-          case 'group':
-          $this->add_group($item['id']);
+        case 'group':
+          $group_id = $item['id'];
+          $question_ids = $this->content->group($group_id)['content'];
+          break;
       }
+      $this->follows_info = false;
+      foreach ($question_ids as $question_id) {
+        $question = $this->content->question($question_id);
+        $this->add_question($question);
+      }
+      echo "</div>";  
     }
 
     if($collapsible) { echo "</details>"; }
     else             { echo "</div>"; }
   }
 
-  private function add_group($group_id)
-  {
-    $question_ids = $this->content->group($group_id)['content'];
-    $has_info = false;
-    foreach($question_ids as $question_id) {
-      $question = $this->content->question($question_id);
-      if($question['type']->isInfo()) {
-        $has_info = true;
-        break;
-      }
-    }
-    foreach($question_ids as $question_id) {
-      $this->add_question($question_id);
-    }
-  }
-
-  private function add_questions(array $section)
-  {
-    # find all the questions that are assigned to this section
-    #   (and have an associated sequence value)
-    $questions = array_values(array_filter(
-      $content['questions'],
-      fn($q) => (
-        array_key_exists('sequence', $q) && ($q['section'] ?? null) === $section
-      )
-    ));
-
-    # sort the questions by sequence value
-    usort($questions, function($a,$b) {
-      return $a['sequence'] <=> $b['sequence'];
-    });
-
-    # determine which questions can be put into a grid
-    $prev = $questions[0];
-    $prev['grid'] = false;
-    $prev_can_grid = str_starts_with($prev['type']??'',"SELECT") && ($prev['grouped']==='YES');
-    for($i=1; $i<count($questions); ++$i) {
-      $cur = $questions[$i];
-      $cur_can_grid = str_starts_with($cur['type']??'',"SELECT") && ($cur['grouped']==='YES');
-      if( $prev_can_grid && $cur_can_grid ) {
-        $questions[$i-1]['grid'] = true;
-        $questions[$i]['grid'] = true;
-      } else {
-        $questions[$i]['grid'] = false;
-      }
-      $prev_can_grid = $cur_can_grid;
-      $prev = $cur;
-    }
-
-    # add the questions to the survey form
-    $this->follows_info = false;
-    foreach($questions as $question) {
-      $this->add_question($question,$content,$responses);
-    }
-
-    # close the current question box (if open)
-    $this->close_box();
-  }
-
-
-  private function add_question($question)
+  private function add_question(araay $question)
   {
     $type = $question['type'];
-
-    todo("Update the following as question.grouped no longer exsits");
-    $this->start_box($type,$question['grouped']);
 
     switch($type) {
     case QuestionType::Info:         
@@ -255,71 +208,6 @@ class RenderEngine
     case QuestionType::SelectMulti:                                  
       $this->add_select($question,true); 
       break;
-    }
-  }
-
-  private function start_box($type,$grouped)
-  {
-    todo("Possibly update this to remove second function parameter");
-    $need_close = false;
-    $need_open  = false;
-
-    if($type === 'info') {
-      switch($grouped) {
-      case "YES":   
-        $need_open = true;
-        break;
-      case "NEW": 
-        $need_close = true;
-        $need_open  = true; 
-        break;
-      default:
-        $need_close = true;
-        break;
-      }
-    } else {
-      $need_open  = true;
-      $need_close = $grouped === "NO";
-    }
-
-    if($need_close) { $this->close_box(); }
-    if($need_open)  { $this->open_box(); }
-  }
-
-  private function open_box()
-  {
-    if( !$this->in_box ) { 
-      $this->follows_info = false;
-
-      echo "<div class='question-box'>"; 
-      $this->in_box = true;
-    }
-  }
-
-  private function close_box()
-  {
-    $this->close_grid();
-    if( $this->in_box ) {
-      echo "</div>"; 
-      $this->in_box = false;
-    }
-  }
-
-  private function open_grid()
-  {
-    if( !$this->in_grid ) { 
-      $class = 'question select grid';
-      if($this->follows_info) { $class = "$class follows-info"; }
-      echo "<div class='$class'>"; 
-      $this->in_grid = true;
-    }
-  }
-
-  private function close_grid()
-  {
-    if( $this->in_grid) { 
-      echo "</div>";
-      $this->in_grid = false;
     }
   }
 
@@ -544,7 +432,7 @@ class RenderEngine
  */
 function render_survey(string $state, SurveyContent $content, $kwargs=[])
 {
-  $re = new RenderEngine();
-  $re->render($state, $content, $kwargs);
+  $re = new RenderEngine($content,$kwargs);
+  $re->render($state);
 }
 
