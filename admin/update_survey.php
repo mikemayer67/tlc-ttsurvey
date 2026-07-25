@@ -8,6 +8,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/question_flags.php'));
 
 class FailedToUpdate extends \Exception {}
@@ -51,16 +52,14 @@ function build_exception_handler(string $message) : callable
 /**
  * Choreographs the updating of the survey content/structure in the database
  * @param int $survey_id 
- * @param array $content 
+ * @param SurveyContent $content 
  * @param string $title 
  * @return bool
  * @throws FailedToUpdate
- * @note Structure of the $content input must be consistent with the structure
- *       unpacked from the survey data json string sent by ajax
  * @note All updates are handled in a transactions so that if any update fails,
  *       all prior updates will be rolled back.
  */
-function update_survey(int $survey_id, array $content, string $title) : bool
+function update_survey(int $survey_id, SurveyContent $content, string $title) : bool
 {
   // We want the update to be all or nothing, so wrap it in a MySQL transaction
   //   so that we can do a rollback if something goes wrong
@@ -93,18 +92,18 @@ function update_survey(int $survey_id, array $content, string $title) : bool
     add_survey_details($survey_id,$details);
 
     // survey options has FK to survey_id
-    add_survey_options($survey_id,$content['options']??[]);
+    add_survey_options($survey_id,$content);
 
     // survey questions has FK to survey_id
     //   question options has FK to survey_id, option_id
-    add_survey_questions($survey_id,$content['questions']??[]);
+    add_survey_questions($survey_id,$content);
 
     // survey sections has FK to survey_id
     //   sections have FK to survey_id
     //   groups have FK to survey_id
     //   section content has FK to survey_id, section_id, group_id, question_id
     //   group content has FK to survey_id, group_id, question_id
-    add_survey_content($survey_id,$content);
+    add_survey_structure($survey_id,$content);
 
     // and reload the user responses
     if($cached) { restore_user_responses($survey_id); }
@@ -262,11 +261,11 @@ function add_survey_details(int $survey_id,array $details) : void
 /**
  * Updates the option values shared across the survey
  * @param int $survey_id 
- * @param array{int,string} $options Survey options
+ * @param SurveyContent $content
  * @return void 
  * @throws FailedToUpdate on mysqli exception
  */
-function add_survey_options(int $survey_id,array $options) : void
+function add_survey_options(int $survey_id,SurveyContent $content) : void
 {
   $insert_option = new MySQLPreparedExec(
     <<<SQL
@@ -276,7 +275,7 @@ function add_survey_options(int $survey_id,array $options) : void
     SQL, 'iis',
     build_exception_handler('update option %2$d for survey %1$d')
   );
-  foreach($options as $option_id => $option_str) 
+  foreach($content->options() as $option_id => $option_str) 
   {
     $insert_option->run($survey_id, $option_id, $option_str);
   }
@@ -285,11 +284,11 @@ function add_survey_options(int $survey_id,array $options) : void
 /**
  * Updates the survey question data
  * @param int $survey_id 
- * @param array $questions Questions data
+ * @param SurveyContent
  * @return void 
  * @throws FailedToUpdate on mysqli exception
  */
-function add_survey_questions(int $survey_id,array $questions) : void
+function add_survey_questions(int $survey_id,SurveyContent $content) : void
 {
   $insert_question = new MySQLPreparedExec(
     <<<SQL
@@ -306,34 +305,24 @@ function add_survey_questions(int $survey_id,array $questions) : void
     build_exception_handler('add option %4$d as choice %3$d for question %2$d of survey %1$d') 
   );
 
-  foreach($questions as $question) 
+  foreach($content->questions() as $question) 
   {
-    $question_id = $question['id'];
-
-    $type        = $question['type'];
-    $wording     = $question['wording'] ?? $question['infotag'] ?? null;
-    $qualifier   = $question['qualifier'] ?? null;
-    $intro       = $question['intro'] ?? null;
-    $info        = $question['info'] ?? $question['popup'] ?? null;
-    $layout      = $question['layout'] ?? "";
-
-    $other_flag  = $question['other_flag'] ?? false;
-    $other       = ($other_flag ? ($question['other'] ?? null) : null);
-
-    # encode the question_flags bitmap
-    $flags = new QuestionFlags();
-    $flags->layout(QuestionType::from($type), QuestionLayout::from($layout));
-    $flags->has_other($other_flag);
-
+    $data = $question->for_database();
     $insert_question->run(
-      $question_id, $survey_id,
-      $wording, $type, $flags->get_bits(), 
-      $other, $qualifier, $intro, $info
+      $data['id'],
+      $survey_id,
+      $data['wording'] ?? null,
+      $data['type'],
+      $data['flags'] ?? 0,
+      $data['other'] ?? null,
+      $data['qualifier'] ?? null,
+      $data['intro'] ?? null,
+      $data['info'] ?? null,
     );
 
-    $options = $question['options'] ?? [];
+    $options = $data['options'] ?? [];
     foreach($options as $index=>$option_id) {
-      $insert_option->run($survey_id,$question_id,1+$index,$option_id);
+      $insert_option->run($survey_id,$data['id'],1+$index,$option_id);
     }
   }
 }
@@ -341,11 +330,11 @@ function add_survey_questions(int $survey_id,array $questions) : void
 /**
  * Updates the survey content
  * @param int $survey_id 
- * @param array $content 
+ * @param SurveyContent $content 
  * @return void 
  * @throws FailedToUpdate on missing content or mysqli exception
  */
-function add_survey_content(int $survey_id,array $content) : void
+function add_survey_structure(int $survey_id,SurveyContent $content) : void
 {
   $insert_section = new MySQLPreparedExec(
     'INSERT into tlc_srv_sections (survey_id, section_id, name, collapsible, intro) VALUES (?,?,?,?,?)',
@@ -353,9 +342,7 @@ function add_survey_content(int $survey_id,array $content) : void
     build_exception_handler('update details for section %2$d for survey %1$d')
   );
 
-  $sections = $content['sections'] ?? [];
-
-  foreach($sections as $section) { 
+  foreach($content->sections() as $section) { 
     $section_id   = $section['section_id'];
     $section_name = $section['name'];
     $collapsible  = ($section['collapsible'] ?? false) ? 1 : 0;
@@ -371,14 +358,11 @@ function add_survey_content(int $survey_id,array $content) : void
  * Updates the section content data
  * @param int $survey_id 
  * @param int $section_id
- * @param array $content Survey data
+ * @param SurveyContent $survey_content
  * @return void 
  */
-function add_section_content(int $survey_id, int $section_id, array $content) : void
+function add_section_content(int $survey_id, int $section_id, SurveyContent $survey_content) : void
 {
-  $section = $content['sections'][$section_id] ?? [];
-  $section_content = $section['content'] ?? [];
-  
   $add_question_to_section = new MySQLPreparedExec(
     'INSERT into tlc_srv_section_content (survey_id,section_id,sequence,question_id) VALUES (?,?,?,?)',
     'iiii', 
@@ -397,13 +381,15 @@ function add_section_content(int $survey_id, int $section_id, array $content) : 
     build_exception_handler('add group %4$d as element %3$d in section %2$d of survey %1$d')
   );
 
-
   $add_question_to_group = new MySQLPreparedExec(
     'INSERT into tlc_srv_group_content (survey_id,group_id,sequence,question_id) VALUES (?,?,?,?)',
     'iiii',
     build_exception_handler('add question $4$d in position %3$d in group %2$d of survey %1$d')
   );
 
+  $section = $survey_content->section($section_id);
+  $section_content = $section['content'] ?? [];
+  
   foreach($section_content as $section_index=>$item) {
     $section_sequence = 1 + $section_index;
     $item_type = $item['type'];
@@ -416,7 +402,7 @@ function add_section_content(int $survey_id, int $section_id, array $content) : 
     elseif($item_type === 'group') 
     {
       $group_id = $item_id;
-      $group = $content['groups'][$group_id] ?? null;
+      $group = $survey_content->group($group_id);
       if(!$group) { 
         $error = "Missing group $group_id data in content array";
         log_error($error);

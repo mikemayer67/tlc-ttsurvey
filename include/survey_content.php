@@ -95,6 +95,19 @@ class SurveyContent
   public function sections() : array { return $this->_sections; }
 
   /**
+   * Returns the details associated with the specified section
+   * @param int $section_id 
+   * @return null || array {
+   *   section_id: int unique identifier for each group,
+   *   name: string name as it will appear in the survey editor,
+   *   content: array<int> question IDs that appear in the group (in order)
+   * }
+   */
+  public function section($section_id) : ?array { 
+    return $this->_sections[$section_id] ?? null; 
+  }
+
+  /**
    * Returns array of all question groups in the specified survey
    * @return array {
    *   group_id: int unique identifier for each group,
@@ -172,14 +185,14 @@ class SurveyContent
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array
+  public function for_js() : array
   {
     return [
       'options'   => $this->_options,
       'sections'  => $this->_sections,
       'groups'    => $this->_groups,
       'questions' => array_map(
-        function($question) { return $question->format_for_js(); },
+        function($question) { return $question->for_js(); },
         $this->_questions
       ),
       'next_ids'  => $this->_next_ids,

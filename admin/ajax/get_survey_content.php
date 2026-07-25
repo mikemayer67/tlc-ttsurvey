@@ -24,7 +24,7 @@ if(!$content->is_initialized()) {
 end_ob_logging();
 
 $response = new AjaxResponse();
-$response->add('content',$content->format_for_js());
+$response->add('content',$content->for_js());
 $response->send();
 
 die();

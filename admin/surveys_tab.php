@@ -29,7 +29,7 @@ if($all_surveys) {
     $id = $all_surveys[0]['survey_id'];
   }
   $content = SurveyContent::fromSurveyID($id);
-  $all_surveys[$index]['content'] = $content->format_for_js();
+  $all_surveys[$index]['content'] = $content->for_js();
 }
 
 if(! ($all_surveys || $is_admin) ) {

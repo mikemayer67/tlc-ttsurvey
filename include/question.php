@@ -114,11 +114,24 @@ class Question
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array
+  public function for_js() : array
   {
     return [
       'id' => $this->_id,
       'type' => $this->_type,
+    ];
+  }
+
+  /**
+   * Converts the content to an array suitable to writing to database
+   *   The aray keys are set to reflect column names in the question table
+   * @return array 
+   */
+  public function for_database() : array
+  {
+    return [
+      'id' => $this->_id,
+      'type' => $this->_type->value,
     ];
   }
 };
@@ -189,12 +202,29 @@ final class InfoQuestion extends Question
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array 
+  public function for_js() : array 
   {
-    $rval = parent::format_for_js();
+    $rval = parent::for_js();
     $rval['info']     = $this->_text;
     $rval['infotag']  = $this->_tag;
     $rval['in_group'] = $this->_in_group;
+    return $rval;
+  }
+
+  /**
+   * Converts the content to an array suitable to writing to database
+   *   The aray keys are set to reflect column names in the question table
+   * @return array 
+   */
+  public function for_database() : array
+  {
+    $flags = new QuestionFlags();
+    $flags->in_group($this->_in_group);
+
+    $rval = parent::for_database();
+    $rval['info'] = $this->_text;
+    $rval['wording'] = $this->_tag ? $this->_tag : null;
+    $rval['flags'] = $flags->get_bits();
     return $rval;
   }
 };
@@ -277,14 +307,33 @@ final class BoolQuestion extends Question
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array
+  public function for_js() : array
   {
-    $rval = parent::format_for_js();
+    $rval = parent::for_js();
     $rval['wording']   = $this->_wording;
     $rval['intro']     = $this->_intro;
     $rval['qualifier'] = $this->_qualifier;
     $rval['popup']     = $this->_popup;
     $rval['layout']    = $this->_layout;
+    return $rval;
+  }
+  
+  /**
+   * Converts the content to an array suitable to writing to database
+   *   The aray keys are set to reflect column names in the question table
+   * @return array 
+   */
+  public function for_database() : array
+  {
+    $flags = new QuestionFlags();
+    $flags->layout($this->_type, $this->_layout);
+
+    $rval = parent::for_database();
+    $rval['wording']   = $this->_wording;
+    $rval['qualifier'] = $this->_qualifier ? $this->_qualifier : null;
+    $rval['intro']     = $this->_intro     ? $this->_intro :     null;
+    $rval['info']      = $this->_popup     ? $this->_popup :     null;
+    $rval['flags']     = $flags->get_bits();
     return $rval;
   }
 };
@@ -351,12 +400,26 @@ final class FreetextQuestion extends Question
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array
+  public function for_js() : array
   {
-    $rval = parent::format_for_js();
+    $rval = parent::for_js();
     $rval['wording']   = $this->_wording;
     $rval['intro']     = $this->_intro;
     $rval['popup']     = $this->_popup;
+    return $rval;
+  }
+  
+  /**
+   * Converts the content to an array suitable to writing to database
+   *   The aray keys are set to reflect column names in the question table
+   * @return array 
+   */
+  public function for_database() : array
+  {
+    $rval = parent::for_database();
+    $rval['wording']   = $this->_wording;
+    $rval['intro']     = $this->_intro     ? $this->_intro :     null;
+    $rval['info']      = $this->_popup     ? $this->_popup :     null;
     return $rval;
   }
 };
@@ -479,14 +542,15 @@ final class SelectQuestion extends Question
   }
 
   public function popup_text() : ?string { return $this->_popup; }
-    /**
+
+  /**
    * Converts the content to an array suitable to passing to JavaScript via AJAX
    *   The aray keys are set to reflect what will be used with the js code.
    * @return array 
    */
-  public function format_for_js() : array
+  public function for_js() : array
   {
-    $rval = parent::format_for_js();
+    $rval = parent::for_js();
     $rval['wording']   = $this->_wording;
     $rval['intro']     = $this->_intro;
     $rval['qualifier'] = $this->_qualifier;
@@ -499,6 +563,35 @@ final class SelectQuestion extends Question
       $other = $this->_other ?? '';
       $rval['other'] = ($other !== '') ? $other : 'Other';
     }
+
+    return $rval;
+  }
+  
+  /**
+   * Converts the content to an array suitable to writing to database
+   *   The aray keys are set to reflect column names in the question table
+   * @return array 
+   */
+  public function for_database() : array
+  {
+    $flags = new QuestionFlags();
+    $flags->layout($this->_type, $this->_layout);
+    $flags->has_other($this->_has_other);
+
+    $rval = parent::for_database();
+    $rval['wording']   = $this->_wording;
+    $rval['qualifier'] = $this->_qualifier ? $this->_qualifier : null;
+    $rval['intro']     = $this->_intro     ? $this->_intro :     null;
+    $rval['info']      = $this->_popup     ? $this->_popup :     null;
+    
+    if($this->_has_other) {
+      $rval['other'] = $this->_other ? $this->_other : null;
+    }
+    if($this->_options) {
+      $rval['options'] = $this->_options;
+    }
+
+    $rval['flags']     = $flags->get_bits();
 
     return $rval;
   }
