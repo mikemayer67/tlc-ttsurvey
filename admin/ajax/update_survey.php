@@ -20,6 +20,7 @@ $content    = SurveyContent::fromJsonString($_POST['content']);
 
 if(!$survey_id)  { send_ajax_bad_request('Missing survey_id in request'); }
 
+internal_error('work here');
 $updated = update_survey($survey_id, $content, $title);
 if(!$updated) { send_ajax_internal_error('Failed to update survey'); }
 

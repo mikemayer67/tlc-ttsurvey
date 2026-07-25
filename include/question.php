@@ -1,10 +1,18 @@
 <?php
 namespace tlc\tts;
 
+use LogicException;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/question_types.php'));
+require_once(app_file('include/question_flags.php'));;
 require_once(app_file('include/question_layout.php'));
+
+enum QuestionDataSource {
+  case Database;
+  case Javascript;
+};
 
 /**
  * Base class for the translation of questions 
@@ -12,8 +20,8 @@ require_once(app_file('include/question_layout.php'));
  *   including translation of keyword differences for each environment
  *   
  * The base class handles: php key:php type [mysql column / js key]
- *   id : int [ question_id / question_id ]
- *   type : QuestionType [ question_type / question_type]
+ *   id : int [ question_id / id ]
+ *   type : QuestionType [ question_type / type]
  */
 class Question
 {
@@ -21,57 +29,74 @@ class Question
   protected QuestionType   $_type;
 
   /**
-   * Constructs the question base class given a single row from a
-   *   query of the questions table in the database.
-   * @param array {
-   *   question_id   : int
-   *   question_type : string
-   * } $db_entry
+   * Constructs the question base class
+   * @param int $id 
+   * @param string $type 
    */
-  protected function __construct(array $db_entry)
+  protected function __construct(int $id, string $type)
   {
-    $this->_id   = $db_entry['question_id'];
-    $this->_type = QuestionType::from($db_entry['question_type']);
+    $this->_id   = $id;
+    $this->_type = QuestionType::from($type);
   }
 
   /**
-   * Constructs and returns a new Question subclass instance given a single
-   *   row from a query of the question table in the database.
+   * Question factory method which constructs and returns a new Question subclass
+   *   instance given a single row from a query of the question table in the database.
    * @param int $survey_id
-   * @param array {
-   *   question_id   : int
-   *   question_type : string
-   *   wording       : string
-   *   flags         : int (a bitstring)
-   *   other         : null | string
-   *   qualifier     : string
-   *   intro         : string
-   *   info          : string
-   * } $db_entry
-   * @return Question
+   * @param array $db_entry  (see subclass constructors for details)
+   * @return Question (subclass thereof)
    * @note the survey ID is actually only needed to instantiate SELECT questions,
    *   but as it is this factory method's job to determine the question type,
    *   the survey ID is always required.
    */
-  public static function from_database_entry(int $survey_id, array $db_entry) : self
+  public static function from_database(int $survey_id, array $db_entry) : self
   {
-    switch(QuestionType::from($db_entry['question_type']))
+    $db_entry['survey_id'] = $survey_id;
+    $type = QuestionType::from($db_entry['question_type']);
+    return self::from_array($type,$db_entry, QuestionDataSource::Database);
+  }
+
+  /**
+   * Question factory method which constructs and returns a new Question subclass
+   *   instance given updated question content from a javascript AJAX call
+   * @param array $js_entry  (see subclass constructors for details)
+   * @return Question (subclass thereof)
+   * @note the survey ID is actually only needed to instantiate SELECT questions,
+   *   but as it is this factory method's job to determine the question type,
+   *   the survey ID is always required.
+   */
+  public static function from_js(array $js_entry) : self
+  {
+    $type = QuestionType::from($js_entry['type']);
+    return self::from_array($type,$js_entry, QuestionDataSource::Javascript);
+  }
+
+  /**
+   * The heart of the Question factory methods
+   * @param QuetionType $type
+   * @param array $data (see subclass constructors for details)
+   * @param QuestionDataSource $data_source 
+   * @return Question (subclass thereof)
+   */
+  private static function from_array(QuestionType $type, array $data, QuestionDataSource $data_source) : self
+  {
+    switch($type)
     {
       case QuestionType::Info:
-        return new InfoQuestion($db_entry);
+        return new InfoQuestion($data,$data_source);
         break;
       case QuestionType::Bool:
-        return new BoolQuestion($db_entry);
+        return new BoolQuestion($data,$data_source);
         break;
       case QuestionType::FreeText:
-        return new FreetextQuestion($db_entry);
+        return new FreetextQuestion($data,$data_source);
         break;
       case QuestionType::SelectOne:  // intentional fall-through
       case QuestionType::SelectMulti:
-        return new SelectQuestion($survey_id, $db_entry);
+        return new SelectQuestion($data,$data_source);
         break;
       default:
-        internal_error("Unknown question type: ". $db_entry['question_type']);
+        internal_error("Unknown question type: ". $data['question_type']);
         throw new \LogicException("Should never get here... this is here simply to satisfy static analyzers.");
         break;
     }
@@ -103,34 +128,57 @@ class Question
  * Question subclass for the translation of info questions.
  *   
  * This class handles: php key:php type [mysql column / js key]
- *   text : string [info / info]
- *   tag  : string [wording / infotag]
+ *   id       : int [ question_id / id ]
+ *   type     : QuestionType [ question_type / type]
+ *   text     : string [info / info]
+ *   tag      : string [wording / infotag]
+ *   in_group : bool [ flags / in_group ]
  */
 final class InfoQuestion extends Question
 {
   protected string $_tag;
   protected string $_text;
-  protected bool   $_render_in_group;
+  protected bool   $_in_group;
 
   /**
-   * Constructs an InfoQuestion instance given a singel row from a
-   *   query of the questions table in the database.
-   * @param array {
-   *   question_id   : int
-   *   question_type : string
-   *   wording       : string  // info tag value
-   *   info          : string  // info text value
-   * } $db_entry
+   * Constructor
+   * @param array $data
+   *   When $data_source is QuestionDataSource::Database
+   *      array {
+   *        question_id:   int,
+   *        question_type: string,
+   *        info:          string        // info text
+   *        wording?:      string|null   // info tag
+   *        flags:         bitstring     // in_group
+   *      }
+   *   When $data_source is QuestionDataSource::Javascript
+   *      array {
+   *        id:       int,
+   *        type:     string,
+   *        infotext: string        // info text
+   *        infotag?: string|null   // info tag
+   *        in_group: bool
+   *      }
+   * @param QuestionDataSource $data_source 
+   * @note infotag tag is optional: an empty string, null, or missing key are all equivalent
    */
-  public function __construct(array $db_entry)
+  public function __construct(array $data,QuestionDataSource $data_source) 
   {
-    parent::__construct($db_entry);
-
-    $this->_text = $db_entry['info'];
-    $this->_tag = $db_entry['wording'] ?? '';
-
-    $flags = new QuestionFlags($db_entry['flags'] ?? 0);
-    $this->_render_in_group = $flags->render_in_group();
+    if($data_source === QuestionDataSource::Database)
+    {
+      parent::__construct($data['question_id'],$data['question_type']);
+      $this->_text = $data['info'];
+      $this->_tag  = $data['wording'] ?? '';
+      $flags = new QuestionFlags($data['flags'] ?? 0);
+      $this->_in_group = $flags->in_group();
+    }
+    else if($data_source === QuestionDataSource::Javascript)
+    {
+      parent::__construct($data['id'],$data['type']);
+      $this->_text     = $data['info'];
+      $this->_tag      = $data['infotag'] ?? '';
+      $this->_in_group = $data['in_group'];
+    }
   }
 
   public function info_tag()  : ?string { return $this->_tag; }
@@ -144,8 +192,9 @@ final class InfoQuestion extends Question
   public function format_for_js() : array 
   {
     $rval = parent::format_for_js();
-    $rval['info']    = $this->_text;
-    $rval['infotag'] = $this->_tag;
+    $rval['info']     = $this->_text;
+    $rval['infotag']  = $this->_tag;
+    $rval['in_group'] = $this->_in_group;
     return $rval;
   }
 };
@@ -170,30 +219,55 @@ final class BoolQuestion extends Question
 
   protected QuestionLayout $_layout = QuestionLayout::None;
   /**
-   * Constructs the question base class given a single row from a
-   *   query of the questions table in the database.
-   * @param array {
-   *   question_id   : int
-   *   question_type : string
-   *   wording       : string
-   *   qualifier     : string
-   *   intro         : string
-   *   info          : string   // popup hint text
-   * } $db_entry
+   * Constructor
+   * @param array $data 
+   *   When $data_source is QuestionDataSource::Database
+   *      array {
+   *        question_id:   int,
+   *        question_type: string,
+   *        wording:       string
+   *        qualifier?:    string|null
+   *        intro?:        string|null
+   *        info?:         string|null     // popup hint
+   *        flags:         bitstring       // layout
+   *      }
+   *   When $data_source is QuestionDataSource::Javascript
+   *      array {
+   *        id:         int,
+   *        type:       string,
+   *        wording:    string
+   *        qualifier?: string|null
+   *        intro?:     string|null
+   *        popup?:     string|null
+   *        layout:     string
+   *      }
+   * 
+   * @param QuestionDataSource $data_source 
+   * @note for optional fields: an empty string, null, or missing key are all equivalent
    */
-  public function __construct(array $db_entry)
+  public function __construct(array $data,QuestionDataSource $data_source)
   {
-    parent::__construct($db_entry);
+    if($data_source === QuestionDataSource::Database)
+    {
+      parent::__construct($data['question_id'],$data['question_type']);
 
-    $this->_wording   = $db_entry['wording'];
-    $this->_intro     = $db_entry['intro'];
-    $this->_qualifier = $db_entry['qualifier'];
-    $this->_popup     = $db_entry['info'];
+      $this->_wording   = $data['wording'];
+      $this->_qualifier = $data['qualifier'] ?? '';
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['info'] ?? '';
 
-    $question_type = QuestionType::from($db_entry['question_type']);
-    
-    $flags = new QuestionFlags($db_entry['flags'] ?? 0);
-    $this->_layout    = $flags->layout($question_type);
+      $flags = new QuestionFlags($data['flags'] ?? 0);
+      $this->_layout = $flags->layout($this->_type);
+    }
+    else if($data_source === QuestionDataSource::Javascript)
+    {
+      parent::__construct($data['id'],$data['type']);
+      $this->_wording   = $data['wording'];
+      $this->_qualifier = $data['qualifier'] ?? '';
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['popup'] ?? '';
+      $this->_layout    = QuestionLayout::from($data['layout']);
+    }
   }
 
   public function popup_text() : ?string { return $this->_popup; }
@@ -230,23 +304,44 @@ final class FreetextQuestion extends Question
   protected ?string $_intro = null;
   protected ?string $_popup = null;
   /**
-   * Constructs the question base class given a single row from a
-   *   query of the questions table in the database.
-   * @param array {
-   *   question_id   : int
-   *   question_type : string
-   *   wording       : string
-   *   intro         : string
-   *   info          : string   // popup hint text
-   * } $db_entry
+   * Constructor
+   * @param array $data 
+   *   When $data_source is QuestionDataSource::Database
+   *      array {
+   *        question_id:   int,
+   *        question_type: string,
+   *        wording:       string
+   *        intro?:        string|null
+   *        info?:         string|null     // popup hint
+   *      }
+   *   When $data_source is QuestionDataSource::Javascript
+   *      array {
+   *        id:         int,
+   *        type:       string,
+   *        wording     string
+   *        intro?:     string|null
+   *        popup?:     string|null     // popup hint
+   *      }
+   * 
+   * @param QuestionDataSource $data_source 
+   * @note for optional fields: an empty string, null, or missing key are all equivalent
    */
-  public function __construct(array $db_entry)
+  public function __construct(array $data,QuestionDataSource $data_source)
   {
-    parent::__construct($db_entry);
-
-    $this->_wording   = $db_entry['wording'];
-    $this->_intro     = $db_entry['intro'];
-    $this->_popup     = $db_entry['info'];
+    if($data_source === QuestionDataSource::Database)
+    {
+      parent::__construct($data['question_id'],$data['question_type']);
+      $this->_wording   = $data['wording'];
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['info'] ?? '';
+    }
+    else if($data_source === QuestionDataSource::Javascript)
+    {
+      parent::__construct($data['id'],$data['type']);
+      $this->_wording   = $data['wording'];
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['popup'] ?? '';
+    }
   }
 
   public function popup_text() : ?string { return $this->_popup; }
@@ -307,30 +402,80 @@ final class SelectQuestion extends Question
    *   info          : string   // popup hint text
    * } $db_entry
    */
-  public function __construct(int $survey_id, array $db_entry)
+  /**
+   * Constructor
+   * @param array $data 
+   *   When $data_source is QuestionDataSource::Database
+   *      array {
+   *        question_id:   int,
+   *        question_type: string,
+   *        wording:       string
+   *        other?:        string|null
+   *        qualifier?:    string|null
+   *        intro?:        string|null
+   *        info?:         string|null     // popup hint
+   *        flags:         bitstring       // layout and has_other
+   *      }
+   *   When $data_source is QuestionDataSource::Javascript
+   *      array {
+   *        id:         int,
+   *        type:       string,
+   *        wording:    string
+   *        has_other:  bool
+   *        other?:     string|null
+   *        qualifier?: string|null
+   *        intro?:     string|null
+   *        popup?:     string|null
+   *        layout:     string
+   *      }
+   * 
+   * @param QuestionDataSource $data_source 
+   * @note for optional fields: an empty string, null, or missing key are all equivalent
+   */
+  public function __construct(array $data, QuestionDataSource $data_source)
   {
-    parent::__construct($db_entry);
+    if($data_source === QuestionDataSource::Database)
+    {
+      $question_id = $data['question_id'];
+      parent::__construct($question_id,$data['question_type']);
 
-    $this->_wording   = $db_entry['wording'];
-    $this->_intro     = $db_entry['intro'];
-    $this->_qualifier = $db_entry['qualifier'];
-    $this->_other     = $db_entry['other'];
-    $this->_popup     = $db_entry['info'];
+      $this->_wording   = $data['wording'];
+      $this->_qualifier = $data['qualifier'] ?? '';
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['info'] ?? '';
 
-    $question_id   = $db_entry['question_id'];
-    $question_type = QuestionType::from($db_entry['question_type']);
+      $flags = new QuestionFlags($data['flags'] ?? 0);
+      $this->_layout    = $flags->layout($this->_type);
+      $this->_has_other = $flags->has_other();
 
-    $flags = new QuestionFlags($db_entry['flags'] ?? 0);
-    $this->_layout    = $flags->layout($question_type);
-    $this->_has_other = $flags->has_other();
+      if($this->_has_other) {
+        $this->_other = $data['other'] ?? '';
+      }
 
-    $query = <<<SQL
-      SELECT option_id
-      FROM   tlc_srv_question_options
-      WHERE survey_id=? and question_id=?
-      ORDER BY sequence
-    SQL;
-    $this->_options = MySQLFetchColumn($query, 'ii', $survey_id,$question_id);
+      $survey_id = $data['survey_id'];
+      $query = <<<SQL
+        SELECT option_id
+        FROM   tlc_srv_question_options
+        WHERE survey_id=? and question_id=?
+        ORDER BY sequence
+      SQL;
+      $this->_options = MySQLFetchColumn($query, 'ii', $survey_id, $question_id);
+    }
+    else if($data_source === QuestionDataSource::Javascript)
+    {
+      parent::__construct($data['id'],$data['type']);
+      $this->_wording   = $data['wording'];
+      $this->_qualifier = $data['qualifier'] ?? '';
+      $this->_intro     = $data['intro'] ?? '';
+      $this->_popup     = $data['popup'] ?? '';
+      $this->_layout    = QuestionLayout::from($data['layout']);
+      $this->_has_other = $data['has_other'];
+      if($this->_has_other) {
+        $this->_other = $data['other'] ?? '';
+      }
+      $this->_options = $data['options'];
+    }
+
   }
 
   public function popup_text() : ?string { return $this->_popup; }

@@ -111,7 +111,7 @@ class QuestionFlags {
    * @param null|bool $value (null=getter, bool=setter)
    * @return null|bool setter:null, getter:bool
    */
-  public function render_in_group(?bool $value=null) : ?bool
+  public function in_group(?bool $value=null) : ?bool
   {
     if($value === null) { // getter
       return ($this->bits & self::MASK_IN_GROUP) === self::MASK_IN_GROUP;

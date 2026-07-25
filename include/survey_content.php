@@ -130,7 +130,7 @@ class SurveyContent
    *   info?: string (INFO only) the body of the info message,
    *   popup?: string (all but INFO) text in popup hint in the survey,
    *   layout: QuestionLayout
-   *   render_in_group?: bool (INFO only),
+   *   in_group?: bool (INFO only),
    *   options?: array<int> (SELECT only) the list of selectable options
    * } >
    */
@@ -150,7 +150,7 @@ class SurveyContent
    *   info?: string (INFO only) the body of the info message,
    *   popup?: string (all but INFO) text in popup hint in the survey,
    *   layout: QuestionLayout
-   *   render_in_group?: bool (INFO only),
+   *   in_group?: bool (INFO only),
    *   options?: array<int> (SELECT only) the list of selectable options
    */
   public function question(int $question_id) : array 
@@ -295,7 +295,7 @@ class SurveyContent
     if(!$rows) { return; }
 
     foreach($rows as $row) {
-      $question = Question::from_database_entry($survey_id,$row);
+      $question = Question::from_database($survey_id,$row);
       $this->_questions[$question->id()] = $question;
     }
 
@@ -322,17 +322,15 @@ class SurveyContent
 
   private function parse_json_string(string $json)
   {
-    todo("change _questions to array of Question instances");
     $content =json_decode($json, true);
     $this->_options   = $content['options'];
     $this->_sections  = $content['sections'];
     $this->_groups    = $content['groups'];
-    $this->_questions = $content['questions'];
+    $this->_questions = [];
     $this->_next_ids  = $content['next_ids'];
 
-    foreach($this->_questions as $key => $question) {
-      $this->_questions[$key]['type']   = QuestionType::from($question['type']);
-      $this->_questions[$key]['layout'] = QuestionLayout::from($question['layout'] ?? '');
+    foreach($content['questions'] as $question_id => $question) {
+      $this->_questions[$question_id] = Question::from_js($question);
     }
 
     $this->_initialized = true;

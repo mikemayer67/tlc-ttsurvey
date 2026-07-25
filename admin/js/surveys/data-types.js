@@ -85,7 +85,7 @@
  * @property {string} [other="Other"] (only applicable if other_flag is truthy)
  * @property {string} [qualifier] (N/A for Info questions)
  * @property {string} [popup] (N/A for Info questions)
- * @property {BooleanFag} [render_in_group] Boolean like value (Info questions only)
+ * @property {BooleanFag} [in_group] Boolean like value (Info questions only)
  * @property {null|BoolLayout|SelectLayout} [layout] 
  */
 
