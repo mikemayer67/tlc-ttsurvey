@@ -132,41 +132,16 @@ class SurveyContent
 
   /**
    * Returns array of all questions in the specified survey (and its ancestors)
-   * @return array list< {
-   *   id: int unique identifier for each question,
-   *   type: QuestionType,
-   *   wording: string how question appears in the survey,
-   *   intro?: string introductory text shown before question,
-   *   qualifier?: string (BOOL and SELECT only) label for optional freetext field in response,
-   *   other_flag?: bool (SELECT only) if an "other" field will be included in response,
-   *   other?: string (SELECT only) label for "other" field in response,
-   *   info?: string (INFO only) the body of the info message,
-   *   popup?: string (all but INFO) text in popup hint in the survey,
-   *   layout: QuestionLayout
-   *   in_group?: bool (INFO only),
-   *   options?: array<int> (SELECT only) the list of selectable options
-   * } >
+   * @return array list<Question>
    */
   public function questions() : array { return $this->_questions; }
 
   /**
    * Returns the details associated with the specified question
    * @param int $question_id : the survey of interest
-   * @return array {
-   *   id: int unique identifier for each question,
-   *   type: QuestionType,
-   *   wording: string how question appears in the survey,
-   *   intro?: string introductory text shown before question,
-   *   qualifier?: string (BOOL and SELECT only) label for optional freetext field in response,
-   *   other_flag?: bool (SELECT only) if an "other" field will be included in response,
-   *   other?: string (SELECT only) label for "other" field in response,
-   *   info?: string (INFO only) the body of the info message,
-   *   popup?: string (all but INFO) text in popup hint in the survey,
-   *   layout: QuestionLayout
-   *   in_group?: bool (INFO only),
-   *   options?: array<int> (SELECT only) the list of selectable options
+   * @return null|Question
    */
-  public function question(int $question_id) : array 
+  public function question(int $question_id) : ?Question
   { 
     return $this->_questions[$question_id] ?? null;
   }

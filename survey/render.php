@@ -9,6 +9,7 @@ handle_warnings();
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/survey_content.php'));
+require_once(app_file('include/question.php'));
 require_once(app_file('include/question_types.php'));
 require_once(app_file('survey/markdown.php'));
 
@@ -64,8 +65,8 @@ class RenderEngine
     else {
       $action     = app_uri();
 
-    if(is_null($this->userid))    { internal_error("missing userid in kwargs");    }
-    if(is_null($this->survey_id)) { internal_error("missing survey_id in kwargs"); }
+      if(is_null($this->userid))    { internal_error("missing userid in kwargs");    }
+      if(is_null($this->survey_id)) { internal_error("missing survey_id in kwargs"); }
 
       echo "<form id='survey' action='$action' method='post'>";
       $ui_cache_id = $_SESSION['ui-cache-id'] ?? null;
@@ -155,8 +156,10 @@ class RenderEngine
     if($collapsible) {
       echo "<details class='section' $index>";
       echo "<summary><span>$name</span></summary>";
+      $closing_tag = "</details>";
     } else {
       echo "<div class='section' $index>";
+      $closing_tag = "</div>";
     }
 
     if($intro) {
@@ -183,16 +186,24 @@ class RenderEngine
       }
       echo "</div>";  
     }
+    
+    echo $closing_tag;
 
-    if($collapsible) { echo "</details>"; }
-    else             { echo "</div>"; }
+    $feedback_label = $section['feedback'] ?? false;
+    if( $feedback_label )
+    {
+      echo "<div class='section feedback' $index>";
+      echo "<div class='label'>$feedback_label</div>";
+      echo "<textarea class='section feedback' name='section-feedback-$sid' placeholder='[optional]'>";
+      echo $feedback[$sid] ?? '';
+      echo "</textarea>";
+      echo "</div>";
+    }
   }
 
-  private function add_question(araay $question)
+  private function add_question(Question $question)
   {
-    $type = $question['type'];
-
-    switch($type) {
+    switch($question->type()) {
     case QuestionType::Info:         
       $this->add_info($question);
       break;
@@ -211,7 +222,7 @@ class RenderEngine
     }
   }
 
-  private function add_info($question)
+  private function add_info(Question $question)
   {
     $id   = $question['id'];
     $info = $question['info'] ?? '';
