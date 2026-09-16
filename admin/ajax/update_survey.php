@@ -15,7 +15,6 @@ start_ob_logging();
 // using javascript key id rather than PHP key survey_id
 $survey_id  = $_POST['id'] ?? null;
 $title      = $_POST['name'] ?? null;
-todo("Complete conversion of update_survey to use SurveyContent");
 $content    = SurveyContent::fromJsonString($_POST['content']);
 
 if(!$survey_id)  { send_ajax_bad_request('Missing survey_id in request'); }

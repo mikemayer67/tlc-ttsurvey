@@ -317,7 +317,7 @@ function add_survey_questions(int $survey_id,SurveyContent $content) : void
       $data['other'] ?? null,
       $data['qualifier'] ?? null,
       $data['intro'] ?? null,
-      $data['info'] ?? null,
+      $data['info'] ?? $data['popup'] ?? null,
     );
 
     $options = $data['options'] ?? [];

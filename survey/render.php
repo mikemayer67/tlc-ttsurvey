@@ -13,6 +13,79 @@ require_once(app_file('include/question.php'));
 require_once(app_file('include/question_types.php'));
 require_once(app_file('survey/markdown.php'));
 
+/**
+ * The RenderEngine class handles the generation of the HTML used for the online survey.
+ * It handles both the live survey for a logged in participant and preview surveys for the
+ *   admin dashboard.  For live surveys, it aadds the submit toolbar at the bottom of the page.
+ * 
+ * Sections:
+ * - Each section is contained in eaither a <details> or <div>.  The former is used for
+ *     collapsible sections, the latter for non-collapsible sections.
+ * - Section containers are given the class 'section' and a data-section=section ID attribute
+ * - Section intros, if specified, are added as the first <div> in the container and are
+ *     given the classes section and intro and a data-section=sectionID attribute
+ * 
+ * Question Boxes:
+ * - All true questions are rendered in a question box.  This includes both grouped and
+ *     and ungrouped questions.  The mental model should be that an ungrouped question
+ *     is in a "group of one".  This should provide visual continuity between the two
+ *     without the need for dual-maintenance css.
+ *  - The question boxes are <div> elements with the class question-box
+ *  - Question boxes use a grid layout to manage the display of the question elements
+ *  - Ungrouped info boxes may or may not be wrapped in a question box.
+ * 
+ * Question Elements:
+ * - There are 5 types of questions, each with their own quirks:
+ *   - Common classes and attributes
+ *     - All question <divs> have classes: question and the [question type]
+ *     - All elements which are a form input have attribute data-question=[question ID]
+ *   - Info boxes (type class=info):
+ *     - Consists of a single <div>
+ *     - Spans all columns and are left aligned
+ *     - All questions following an info box will be indented 1 count (via indent# class)
+ *   - Freetext (type class=freetext):
+ *     - Consists of one or two <div> elements:
+ *       - Intro [optional] (additional class=intro)
+ *         - if present, all subsequent elements are indented an additional 1 count
+ *       - Inputs:
+ *         - contains a label and a textarea
+ *         - internal layout controlled by css and responsive design
+ *     - All divs span all columns
+ *   - Boolean (type class=bool):
+ *     - Contains a number of <div> elements in the following order
+ *       - Intro [optional] (additional class=intro)
+ *         - if present, all subsequent elements are indented an additional 1 count
+ *         - spans all columns
+ *       - Question (additional class=question)
+ *         - contains label and checkbox
+ *         - content layout controlled by layout class (left or right)
+ *         - spans column 1 only
+ *       - Qualifier (additional class=qualifier)
+ *         - contains label and input box
+ *         - always indented 1 additional count
+ *         - spans all columns
+ *   - Select (single or multi) (class=select and multi or single)
+ *     - Contains a number of <div> elements in the following order
+ *       - Intro [optional] (class=intro)
+ *         - if present, all subsequent elements are indented an additional 1 count
+ *         - spans all columns
+ *       - Label (class=label)
+ *         - always in column 1
+ *       - Options (class=options)
+ *         - contains one or more option <divs>
+ *         - content layout controlled by layout class (lcol, rcol, or row)
+ *         - column 1 or 2 depending on responsive design
+ *       - Qualifier (additional class=qualifier)
+ *         - contains label and input box
+ *         - always indented 1 additional count
+ *         - spans all columns
+ *     
+ * Feedback (optional):
+ *   - Always lies outside of question boxes
+ *   - Always last element in the section container, if present
+ * 
+ * @package tlc\tts
+ */
 class RenderEngine 
 {
   private $popup_icon = null;
@@ -39,7 +112,6 @@ class RenderEngine
   {
     $this->popup_icon = "<img class='popup' src='" . img_uri('icons8/info.png') . "'></img>";
 
-    $this->in_grid      = false;
     $this->follows_info = false;
 
     $this->content   = $content;
@@ -168,180 +240,131 @@ class RenderEngine
       echo "</div>";
     }
 
-    foreach($section['content'] as $item) {
-      echo "<div class='question-box'>";
+    foreach($section['content'] as $item) 
+    {
+      $item_id = $item['id'];
+
+      # reset the "follows info" flag
+      $this->follows_info = false;
+
+      # handle section level questions and groups differently
       switch($item['type']) {
         case 'question':
-          $question_ids = [$this->add_question($item['id'])];
+          $question = $this->content->question($item_id);
+          $box_class = $question->box_class();
+          echo "<div class='$box_class' data-qid=$item_id>";
+          $this->add_question($question);
+          echo "</div>";
           break;
+
         case 'group':
-          $group_id = $item['id'];
-          $question_ids = $this->content->group($group_id)['content'];
+          $group = $this->content->group($item_id);
+          $question_ids = $group['content'];
+          $group_name = $group['name'];
+          echo "<div class='group-box' data-gid=$item_id data-group='$group_name'>";
+          foreach($question_ids as $question_id) {
+            $question = $this->content->question($question_id);
+            $this->add_question($question);
+          }
+          echo "</div>";
           break;
       }
-      $this->follows_info = false;
-      foreach ($question_ids as $question_id) {
-        $question = $this->content->question($question_id);
-        $this->add_question($question);
-      }
-      echo "</div>";  
     }
     
     echo $closing_tag;
-
-    $feedback_label = $section['feedback'] ?? false;
-    if( $feedback_label )
-    {
-      echo "<div class='section feedback' $index>";
-      echo "<div class='label'>$feedback_label</div>";
-      echo "<textarea class='section feedback' name='section-feedback-$sid' placeholder='[optional]'>";
-      echo $feedback[$sid] ?? '';
-      echo "</textarea>";
-      echo "</div>";
-    }
   }
 
   private function add_question(Question $question)
   {
     switch($question->type()) {
-    case QuestionType::Info:         
-      $this->add_info($question);
-      break;
-    case QuestionType::FreeText:
-      $this->add_freetext($question);
-      break;
-    case QuestionType::Bool:
-      $this->add_bool($question);
-      break;
-    case QuestionType::SelectOne:   
-      $this->add_select($question,false);
-      break;                                              
-    case QuestionType::SelectMulti:                                  
-      $this->add_select($question,true); 
-      break;
+      case QuestionType::Info:         $this->add_info($question);      break;
+      case QuestionType::FreeText:     $this->add_freetext($question);  break;
+      case QuestionType::Bool:         $this->add_bool($question);      break;
+      case QuestionType::SelectOne:
+      case QuestionType::SelectMulti:  $this->add_select($question);    break;
     }
   }
 
-  private function add_info(Question $question)
+  private function add_info(InfoQuestion $question)
   {
-    $id   = $question['id'];
-    $info = $question['info'] ?? '';
+    $id   = $question->id();
+    $info = $question->info_text();
+    $info = MarkdownParser::parse($info);
 
-    $this->close_grid();
+    echo "<div class='question info' data-qid='$id'>$info</div>";
 
     $this->follows_info = true;
-
-    $info = MarkdownParser::parse($info);
-    echo "<div class='info question' data-question=$id>$info</div>";
   }
 
-  private function add_freetext($question,$responses)
+  private function add_freetext(FreetextQuestion $question)
   {
-    $id     = $question['id'];
-    $label  = $question['wording'];
-    $intro  = $question['intro'] ?? '';
-    $popup  = $question['popup'] ?? '';
+    $id      = $question->id();
+    $wording = $question->wording();
+    $intro   = $question->intro();
+    $popup   = $question->popup_text();
 
-    $response = $responses[$id]['free_text'] ?? '';
+    $response = $this->responses[$id]['free_text'] ?? '';
 
+    $class = 'question freetext';
+    $data_id = "data-qid='$id'";
     $input_id = "question-freetext-$id";
 
-    $this->close_grid();
+    $indent = $this->follows_info ? 1 : 0;
+    $indent = $this->add_intro($id,$class,$indent,$intro);
 
-    $class = 'freetext';
-    if($this->follows_info) { $class = "$class follows-info"; }
-    echo "<div class='question $class' data-question=$id>";
-
-    $indent = ''; // for styling the input box
-    if($intro) {
-      $intro = MarkdownParser::parse($intro);
-      echo "<div class='intro'>$intro</div>";
-      $indent = 'indent';
-    }
-    echo "<div class='input $indent'>";
-    echo "<label for='$input_id' class='question'>$label</label>";
+    echo "<div class='$class indent$indent' $data_id>";
+    echo "<label for='$input_id' class='$class'>$wording</label>";
     echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'>$response</textarea>";
-    echo "</div>";
-    if($popup) {
-      $hint_id  = "hint-$id";
-      $hintlock_id  = "hint-lock-$id";
-      $popup = MarkdownParser::parse($popup);
-      $icon = $this->popup_icon;
-      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
-      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
-    }
+
+    $this->add_popup( $id, $data_id, $question->popup_text() );
+    
     echo "</div>";
   }
 
-  private function add_bool($question,$responses)
+  private function add_bool(BoolQuestion $question)
   {
-    $id        = $question['id'];
-    $wording   = $question['wording'];
-    $intro     = trim($question['intro'] ?? '');
-    $layout    = strtolower($question['layout'] ?? 'left');
-    $qualifier = trim($question['qualifier'] ?? '');
-    $popup     = $question['popup'] ?? '';
+    $id        = $question->id();
+    $wording   = $question->wording();
+    $intro     = $question->intro();
+    $layout    = $question->layout_class();
+    $qualifier = $question->qualifier();
 
-    $selected  = $responses[$id]['selected'] ?? '';
-    $qualified = $responses[$id]['qualifier'] ?? '';
+    $responses = $this->responses[$id] ?? [];
+    $selected  = $responses['selected'] ?? '';
+    $qualified = $responses['qualifier'] ?? '';
     $checked   = $selected ? 'checked' : '';
 
-    $this->close_grid();
+    $class = 'question bool';
+    $data_id = "data-qid='$id'";
+    $input_id = "question-bool-$id";
 
-    $class = 'bool';
-    if($this->follows_info) { $class = "$class follows-info"; }
-    echo "<div class='question $class' data-question=$id>";
+    $indent = $this->follows_info ? 1 : 0;
 
-    if($intro) {
-      $intro = MarkdownParser::parse($intro);
-      echo "<div class='intro'>$intro</div>";
-    }
+    $indent = $this->add_intro($id,$class,$indent,$intro);
 
-    $name     = "question-bool-$id";
-    $input_id = $name;
-
-    echo "<div class='checkbox $layout'>";
-    echo "<input id='$input_id' type='checkbox' name='$name' value='1' $checked>";
-    echo "<label for='$input_id' class='question'>$wording</label>";
+    echo "<div class='$class indent$indent $layout' $data_id>";
+    echo "<input id='$input_id' type='checkbox' name='$input_id' value='1' $checked>";
+    echo "<label for='$input_id' class='$class'>$wording</label>";
     echo "</div>";
 
-    if($qualifier) {
-      $qualifier_id = "question-qualifier-$id";
-      echo "<div class='qualifier'>";
-      echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
-      echo "</div>";
-    }
-
-    if($popup) {
-      $hint_id = "hint-$id";
-      $hintlock_id = "hint-lock-$id";
-      $popup = MarkdownParser::parse($popup);
-      $icon = $this->popup_icon;
-      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
-      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
-    }
-
-    echo "</div>";
+    $this->add_qualifier($id, $class, $indent, $qualifier);
+    $this->add_popup($id, $data_id, $question->popup_text());
   }
 
-  private function add_select($question,$option_strings,$multi,$responses)
+  private function add_select(SelectQuestion $question)
   {
-    $id        = $question['id'];
-    $wording   = $question['wording'];
-    $intro     = trim($question['intro'] ?? '');
-    $layout    = strtolower($question['layout'] ?? 'row');
-    $qualifier = trim($question['qualifier'] ?? '');
-    $popup     = $question['popup'] ?? '';
-    $options   = $question['options'] ?? [];
-
-    $other_flag = $question['other_flag'] ?? false;
-    $other      = $question['other'] ?? 'Other';
+    $multi = ($question->type() === QuestionType::SelectMulti);
     
-    $in_grid = $question['grid']??false;
+    $id        = $question->id();
+    $wording   = $question->wording();
+    $intro     = $question->intro();
+    $layout    = $question->layout_class();
+    $qualifier = $question->qualifier();
+    $options   = $question->options();
 
+    $has_other = $question->has_other();
+    $other     = $question->other_prompt();
+    
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
       return;
@@ -349,48 +372,40 @@ class RenderEngine
 
     if($multi) {
       $type = 'checkbox';
-      $class = 'select multi';
+      $class = 'question select multi';
       $name = "question-multi-$id";
     } else {
       $type = 'radio';
-      $class = 'select one';
+      $class = 'question select one';
       $name = "question-select-$id";
     }
+    $data_id = "data-qid='$id'";
 
     $response = $responses[$id] ?? null;
     $selected    = $response['selected'] ?? [];
     $other_value = $response['other'] ?? '';
     $qualified   = $response['qualifier'] ?? '';
 
-    if($in_grid) {
-      $this->open_grid();
-    }
-    else {
-      $this->close_grid();
-      if($this->follows_info) { $class = "$class follows-info"; }
-      echo "<div class='question $class' data-question=$id>";
-    }
+    $indent = $this->follows_info ? 1 : 0;
 
-    if($intro) {
-      $intro = MarkdownParser::parse($intro);
-      echo "<div class='intro'>$intro</div>";
-    }
+    $indent = $this->add_intro($id,$class,$indent,$intro);
 
-    if(!$in_grid) { echo "<div class='options-box'>"; }
-
-    echo "<div class='options wording'>$wording</div>";
-    echo "<div class='options wrapper $layout'>";
-    foreach($options as $option) {
-      $input_id = "$name-$option";
+    echo "<div class='$class wording indent$indent'>$wording</div>";
+    echo "<div class='$class options indent$indent $layout'>";
+    foreach($options as $option_id) {
+      $input_id = "$name-$option_id";
       $input_name = $multi ? $input_id : $name;
-      $option_str = $option_strings[$option];
-      $checked = in_array($option,$selected) ? 'checked' : '';
+      $option_str = $this->content->option_text($option_id);
+      if(!$option_str) { 
+        internal_error("Question $id is associated with undefined option $option_id");
+      }
+      $checked = in_array($option_id,$selected) ? 'checked' : '';
       echo "<div class='option'>";
-      echo "<input id='$input_id' type='$type' name='$input_name' value='$option' $checked>";
+      echo "<input id='$input_id' type='$type' name='$input_name' value='$option_id' $checked>";
       echo "<label for='$input_id'>$option_str</label>";
       echo "</div>";
     }
-    if($other_flag) {
+    if($has_other) {
       $input_id = "$name-has-other";
       $input_name = $multi ? $input_id : $name;
       $value      = $multi ? 1 : 0;
@@ -401,33 +416,59 @@ class RenderEngine
       echo "<textarea id='$other_id' class='other' name='$other_id' rows='1' placeholder='$other'>$other_value</textarea>";
       echo "</div>";
     }
-    if($popup) {
-      $hint_id = "hint-$id";
-      $hintlock_id = "hint-lock-$id";
-      $icon = $this->popup_icon;
-      echo "<label for='$hintlock_id' class='hint-toggle' data-question-id='$id'>$icon</label>";
-    }
     echo "</div>"; // option-wrapper
 
-    if(!$in_grid) { echo "</div>"; } // options
+    $this->add_qualifier($id, $class, $indent, $qualifier);
+    $popup_text = $question->popup_text();
+    $this->add_popup($id, $data_id, $popup_text);
+  }
 
-    if($qualifier) {
-      $qualifier_id  = "question-qualifier-$id";
-      echo "<div class='qualifier'>";
-      echo "<label for='$qualifier_id' class='qualifier'>$qualifier:</label>";
-      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
-      echo "</div>";
+  /**
+   * Adds intro box to a question (if specified) and increases indent
+   * @param int $id
+   * @param string $class 
+   * @param int $indent 
+   * @param string $intro 
+   * @return int new indent level
+   */
+  protected function add_intro(int $id, string $class, int $indent, string $intro) : int
+  {
+    if($intro) {
+      if(possibleMarkdown($intro)) {
+        $intro = MarkdownParser::parse($intro);
+      }
+      echo "<div class='$class intro indent$indent'>$intro</div>";
+      $indent += 1;
     }
+    return $indent;
+  }
 
-    if($popup) {
-      $popup = MarkdownParser::parse($popup);
+  protected function add_qualifier(int $id, string $class, int $indent, string $qualifier) : void
+  {
+    $qualifier_id = "question-qualifier-$id";
+    echo "<div class='$class qualifier indent$indent'>";
+    echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
+    echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
+    echo "</div>";
+  }
+
+  protected function add_popup(int $id, string $data_id, string $popup_text) : void 
+  {
+    if($popup_text !== '') 
+    {
+      $hint_id  = "hint-$id";
+      $hintlock_id  = "hint-lock-$id";
+      if(possibleMarkdown($popup_text)) {
+        $popup_text = MarkdownParser::parse($popup_text);
+      }
+      $icon = $this->popup_icon;
       echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<div id='$hint_id' class='question-hint'>$popup</div>";
+      echo "<label for='$hintlock_id' class='hint-toggle' $data_id>$icon</label>";
+      echo "<div id='$hint_id' class='question-hint'>$popup_text</div>";
     }
-
-    if(!$in_grid) { echo "</div>"; }
   }
 };
+
 
 /**
  * Renders the HTML for displaying the survey in a browswer

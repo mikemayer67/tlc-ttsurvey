@@ -79,6 +79,15 @@ class SurveyContent
   public function options() : array { return $this->_options; }
 
   /**
+   * Returns the text associated with the option with the specified option ID
+   * @param int $id 
+   * @return null|string 
+   */
+  public function option_text(int $id) : ?string {
+    return $this->_options[$id] ?? null;
+  }
+
+  /**
    * Returns array of all sections in the specified survey
    * @return array {
    *   section_id: int unique identifier for each setion,
@@ -283,7 +292,7 @@ class SurveyContent
     if(!$rows) { return; }
 
     foreach($rows as $row) {
-      $question = Question::from_database($survey_id,$row);
+      $question = Question::from($row,$survey_id);
       $this->_questions[$question->id()] = $question;
     }
 
@@ -318,7 +327,7 @@ class SurveyContent
     $this->_next_ids  = $content['next_ids'];
 
     foreach($content['questions'] as $question_id => $question) {
-      $this->_questions[$question_id] = Question::from_js($question);
+      $this->_questions[$question_id] = Question::from($question);
     }
 
     $this->_initialized = true;
