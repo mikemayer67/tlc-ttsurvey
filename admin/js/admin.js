@@ -143,7 +143,7 @@ function check_lock()
   } else {
     $.ajax({
       type:'POST',
-      url: ace.ajaxui,
+      url: ace.ajaxuri,
       dataType:'json',
       data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
     })
@@ -189,7 +189,7 @@ function hold_lock()
 
   $.ajax({
     type:'POST',
-    url: ace.ajaxui,
+    url: ace.ajaxuri,
     dataType:'json',
     data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
   })

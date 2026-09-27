@@ -26,6 +26,7 @@ function start_admin_page($cur_tab=null)
   add_navbar($context);
   add_js_required();
   add_admin_lock();
+  add_small_screen_warning();
   add_status_bar();
 
   start_body();

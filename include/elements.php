@@ -341,11 +341,15 @@ function add_js_recommended($wrapper="noscript")
   echo "</$wrapper>";
 }
 
+function add_small_screen_warning()
+{
+  echo "<div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>";
+}
+
 function add_admin_lock()
 {
   require_once(app_file('admin/admin_lock.php'));
   $lock = json_encode(obtain_admin_lock());
-  echo "<div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>";
   echo "<script>var admin_lock = $lock;</script>";
 }
 

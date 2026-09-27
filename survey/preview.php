@@ -10,6 +10,7 @@ validate_and_retain_nonce('preview');
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/survey_content.php'));
 require_once(app_file('survey/elements.php'));
+require_once(app_file('include/elements.php'));
 require_once(app_file('survey/render.php'));
 
 $page_title = 'Survey Preview';
@@ -25,6 +26,11 @@ start_preview_page($survey_title,$userid,$preview_js);
 render_survey('preview',$content);
 
 $user_menu = js_uri('user_menu','survey');
+add_admin_lock();
+$ajaxuri = app_uri();
+echo "<script>var ajaxuri='$ajaxuri';</script>";
+echo "<script src='",js_uri('preview','survey'),"'></script>";
+
 echo "<script>const ttt_preview = true;</script>";
 echo "<script type='module' src='$user_menu'></script>";
 

@@ -261,7 +261,7 @@ class RenderEngine
           $group = $this->content->group($item_id);
           $question_ids = $group['content'];
           $group_name = $group['name'];
-          echo "<div class='group-box' data-gid=$item_id data-group='$group_name'>";
+          echo "<div class='question-box' data-gid=$item_id data-group='$group_name'>";
           foreach($question_ids as $question_id) {
             $question = $this->content->question($question_id);
             $this->add_question($question);
@@ -298,15 +298,15 @@ class RenderEngine
 
   private function add_freetext(FreetextQuestion $question)
   {
-    $id      = $question->id();
-    $wording = $question->wording();
-    $intro   = $question->intro();
-    $popup   = $question->popup_text();
+    $id         = $question->id();
+    $wording    = $question->wording();
+    $intro      = $question->intro();
+    $has_popup  = $question->has_popup();
 
     $response = $this->responses[$id]['free_text'] ?? '';
 
-    $class = 'question freetext';
-    $data_id = "data-qid='$id'";
+    $class    = 'question freetext';
+    $data_id  = "data-qid='$id'";
     $input_id = "question-freetext-$id";
 
     $indent = $this->follows_info ? 1 : 0;
@@ -314,9 +314,9 @@ class RenderEngine
 
     echo "<div class='$class indent$indent' $data_id>";
     echo "<label for='$input_id' class='$class'>$wording</label>";
+    if($has_popup) { $this->add_popup_trigger($id); }
     echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'>$response</textarea>";
-
-    $this->add_popup( $id, $data_id, $question->popup_text() );
+    if($has_popup) { $this->add_popup($id,$question->popup_text()); }
     
     echo "</div>";
   }
@@ -328,10 +328,10 @@ class RenderEngine
     $intro     = $question->intro();
     $layout    = $question->layout_class();
     $qualifier = $question->qualifier();
+    $has_popup = $question->has_popup();
 
     $responses = $this->responses[$id] ?? [];
     $selected  = $responses['selected'] ?? '';
-    $qualified = $responses['qualifier'] ?? '';
     $checked   = $selected ? 'checked' : '';
 
     $class = 'question bool';
@@ -346,9 +346,9 @@ class RenderEngine
     echo "<input id='$input_id' type='checkbox' name='$input_id' value='1' $checked>";
     echo "<label for='$input_id' class='$class'>$wording</label>";
     echo "</div>";
-
-    $this->add_qualifier($id, $class, $indent, $qualifier);
-    $this->add_popup($id, $data_id, $question->popup_text());
+    if($has_popup) { $this->add_popup_trigger($id); }
+    $this->add_qualifier($id, $class, $indent, $qualifier, $responses['qualifier'] ?? '');
+    if($has_popup) { $this->add_popup($id,$question->popup_text()); }
   }
 
   private function add_select(SelectQuestion $question)
@@ -361,9 +361,9 @@ class RenderEngine
     $layout    = $question->layout_class();
     $qualifier = $question->qualifier();
     $options   = $question->options();
-
     $has_other = $question->has_other();
     $other     = $question->other_prompt();
+    $has_popup = $question->has_popup();
     
     if(!$options) {
       log_warning("Failed to render select question $id ($wording) as there were no options provided");
@@ -384,14 +384,14 @@ class RenderEngine
     $response = $responses[$id] ?? null;
     $selected    = $response['selected'] ?? [];
     $other_value = $response['other'] ?? '';
-    $qualified   = $response['qualifier'] ?? '';
 
     $indent = $this->follows_info ? 1 : 0;
 
     $indent = $this->add_intro($id,$class,$indent,$intro);
 
     echo "<div class='$class wording indent$indent'>$wording</div>";
-    echo "<div class='$class options indent$indent $layout'>";
+    if($has_popup) { $this->add_popup_trigger($id,'narrow'); }
+    echo "<div class='$class options $layout'>";
     foreach($options as $option_id) {
       $input_id = "$name-$option_id";
       $input_name = $multi ? $input_id : $name;
@@ -417,10 +417,9 @@ class RenderEngine
       echo "</div>";
     }
     echo "</div>"; // option-wrapper
-
-    $this->add_qualifier($id, $class, $indent, $qualifier);
-    $popup_text = $question->popup_text();
-    $this->add_popup($id, $data_id, $popup_text);
+    if($has_popup) { $this->add_popup_trigger($id,'nominal'); }
+    $this->add_qualifier($id, $class, $indent, $qualifier, $response['qualifier'] ?? '');
+    if($has_popup) {$this->add_popup($id, $question->popup_text()); }
   }
 
   /**
@@ -443,29 +442,39 @@ class RenderEngine
     return $indent;
   }
 
-  protected function add_qualifier(int $id, string $class, int $indent, string $qualifier) : void
+  protected function add_qualifier(int $id, string $class, int $indent, string $qualifier, string $response) : void
   {
-    $qualifier_id = "question-qualifier-$id";
-    echo "<div class='$class qualifier indent$indent'>";
-    echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
-    echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$qualified</textarea>";
-    echo "</div>";
+    if($qualifier) {
+      $qualifier_id = "question-qualifier-$id";
+      echo "<div class='$class qualifier indent$indent'>";
+      echo "<label for='$qualifier_id' class='qualifier'>$qualifier</label>";
+      echo "<textarea id='$qualifier_id' class='qualifier' type='text' name='$qualifier_id' placeholder='[optional]' rows='1'>$response</textarea>";
+      echo "</div>";
+    }
   }
 
-  protected function add_popup(int $id, string $data_id, string $popup_text) : void 
+  protected function add_popup(int $id, string $popup_text) : void 
   {
-    if($popup_text !== '') 
-    {
-      $hint_id  = "hint-$id";
-      $hintlock_id  = "hint-lock-$id";
-      if(possibleMarkdown($popup_text)) {
-        $popup_text = MarkdownParser::parse($popup_text);
-      }
-      $icon = $this->popup_icon;
-      echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
-      echo "<label for='$hintlock_id' class='hint-toggle' $data_id>$icon</label>";
-      echo "<div id='$hint_id' class='question-hint'>$popup_text</div>";
+    $hint_id  = "hint-$id";
+    $hintlock_id  = "hint-lock-$id";
+    if (possibleMarkdown($popup_text)) {
+      $popup_text = MarkdownParser::parse($popup_text);
     }
+    echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
+    echo "<div id='$hint_id' class='question-hint'>$popup_text</div>";
+  }
+
+  /**
+   * Adds the trigger "button" for toggling the popup info on/off
+   * @param int $id 
+   * @param ''|'nominal'|'narrow' $column_class 
+   * @return void 
+   */
+  protected function add_popup_trigger(int $id, string $column_class='') : void
+  {
+    $hintlock_id  = "hint-lock-$id";
+    $icon = $this->popup_icon;
+    echo "<label for='$hintlock_id' class='hint-toggle $column_class' data-question-id=$id>$icon</label>";
   }
 };
 
