@@ -62,5 +62,5 @@ echo "</div>";
 
 echo "</div>";
 echo "</form>";
-echo "<script src='", js_uri('maintenance','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('maintenance','admin'), "'></script>";
 echo "<script src='", js_uri('dayjs.min'), "'></script>";
