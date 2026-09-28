@@ -113,4 +113,4 @@ echo "</div>";
 
 echo "</form>";
 
-echo "<script src='", js_uri('participants','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('participants','admin'), "'></script>";
