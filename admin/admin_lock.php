@@ -14,7 +14,6 @@ const LOCK_DURATION = 300;
 
 function obtain_admin_lock()
 {
-  $agent = $_SERVER['HTTP_USER_AGENT']??'unknown';
   $now = time();
   $own_cur_lock = false;
 
@@ -61,4 +60,46 @@ function obtain_admin_lock()
     'expires_in' => LOCK_DURATION,
     'new_token'   => !$own_cur_lock,
   );
+}
+
+function check_admin_lock()
+{
+  $cur_lock = get_setting(LOCK_SETTING);
+
+  if(!$cur_lock) {
+    log_dev("Check lock: no lock exists");
+    return array(
+      'has_lock' => false,
+      'locked_by' => null,
+    );
+  }
+
+  [$cur_lock_token,$lock_expires,$locked_by] = explode('|',$cur_lock);
+  $my_token = $_SESSION[LOCK_TOKEN] ?? null;
+  $now = time();
+  $expires_in = $lock_expires - $now;
+
+  if($my_token !== $cur_lock_token) {
+    log_dev("Check lock: lost lock to $locked_by");
+    return array(
+      'has_lock' => false,
+      'locked_by' => $locked_by,
+      'expires_in' => $expires_in,
+    );
+  }
+
+  if($expires_in > 0) {
+    log_dev("Check lock: lock will expire in $expires_in seconds");
+    return array(
+      'has_lock' => true,
+      'is_expired' => false,
+      'expires_in' => $expires_in,
+    );
+  } else {
+    log_dev("Check lock: lock has expired");
+    return array(
+      'has_lock' => true,
+      'is_expired' => true,
+    );
+  }
 }

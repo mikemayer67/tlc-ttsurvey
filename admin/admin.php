@@ -139,16 +139,29 @@ echo "</form>";
 $img=img_uri("icons8/info.png");
 echo <<<HTMLMODAL
 <!-- Tab Switch Modal -->
-<div id='tab-switch-modal'>
-  <div id='tab-switch-content'>
+<div class='admin modal' id='tab-switch-modal'>
+  <div class='content' id='tab-switch-content'>
     <img src='$img'>
     <div class='text-box'>
       <p>You have unsaved changes.</p>
       <p>If you switch <span class='tsm-type'>tabs</span>, you will lose your changes.</p>
     </div>
-    <div class='tab-switch-buttons'>
+    <div class='buttons'>
       <button class='confirm'>Switch Tabs</button>
       <button class='cancel'>Stay Here</button>
+    </div>
+  </div>
+</div>
+<!-- Admin Alert Modal -->
+<div class='admin modal' id='admin-alert-modal'>
+  <div class='content' id='admin-alert-content'>
+    <img src='$img'>
+    <div class='text-box'>
+      <p class='line one'></p>
+      <p class='line two'></p>
+    </div>
+    <div class='buttons'>
+      <button class='confirm'>OK</button>
     </div>
   </div>
 </div>

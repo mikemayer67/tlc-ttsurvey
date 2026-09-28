@@ -9,6 +9,7 @@ var expires_timer=null;
 
 const lock_hold_freq  = 20; // seconds (I know, this is a period, not a frequency... )
 const check_hold_freq = 10; // seconds (... deal with it. )
+const lock_warning_lead = 60; // seconds
 var overdue_lock_hold = false;
 var active=false;
 
@@ -132,6 +133,18 @@ function handle_user_logout() {
   });
 }
 
+function admin_alert(line_one,line_two,ok_callback)
+{
+  var aam = $('#admin-alert-modal');
+  aam.find('.line.one').html(line_one);
+  aam.find('.line.two').html(line_two);
+  aam.find('button').off('click').on('click',function() {
+    aam.hide();
+    ok_callback();
+  });
+  aam.show();
+}
+
 function check_lock()
 {
   if(admin_lock.next_check > 0) {
@@ -149,8 +162,13 @@ function check_lock()
     })
     .done( function(data,status,jqXHR) {
       if(data.has_lock) {
-        alert("Admin Dashboard lock has been released. You are free to start making edits");
-        window.location.reload();
+        admin_alert(
+          "Admin Dashboard lock has been released",
+          "You are free to start making edits",
+          function() {
+            window.location.reload();
+          }
+        );
       } else {
         admin_lock.expires_in = data.expires_in;
         admin_lock.next_check = check_hold_freq;
@@ -196,31 +214,74 @@ function hold_lock()
   .done( function(data,status,jqXHR) {
     if(data.has_lock) {
       if(data.new_token) {
-        alert("While you were away, someone else obtained and released a lock on the Admin Dashboard. " +
-              "This page will be reloaded to pick up any changes they may have made.");
-        window.location.reload();
+        admin_alert(
+          "While you were away, someone else obtained and released a lock on the Admin Dashboard.",
+          "This page will be reloaded to pick up any changes they may have made.",
+          function() {
+            window.location.reload();
+          }
+        );
       }
       clearTimeout(lock_timer);
       lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
-      var warn_in = Math.max(0,data.expires_in-60);
+      var warn_in = Math.max(0,data.expires_in-lock_warning_lead);
       clearTimeout(expires_timer);
-      expires_timer = setTimeout(
-        function() { 
-          alert("You are about to lose your lock on the Admin Dashboard due to inactivity.");
-          active = true;
-          hold_lock();
-        },
-        1000*warn_in
-      );
+      expires_timer = setTimeout(raise_lock_warning,1000*warn_in);
     }
     else {
-      alert("While you were away, " + data.locked_by + " obtained a lock on the Admin Dashboard.");
-      window.location.reload();
+      alert_lost_lock(data.locked_by);
     }
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
     ajax_error_handler(jqXHR,'hold admin lock');
   });
+}
+
+function raise_lock_warning()
+{
+  $.ajax({
+    type:'POST',
+    url: ace.ajaxuri,
+    dataType:'json',
+    data:{'ajax':'admin/check_admin_lock','nonce':ace.nonce},
+  })
+  .done( function(data,status,jqXRR) {
+    if(!data.has_lock) {
+      // should never get here... but just in case
+      alert_lost_lock(data.locked_by);
+    }
+    else if(data.is_expired || data.expires_in<=lock_warning_lead) {
+      admin_alert(
+        "You are about to lose your lock on the Admin Dashboard due to inactivity.",
+        "Acknowledge to try to retain it",
+        function() {
+          // responding to the alert is an action, so set active to true and try to hold onto the lock
+          active = true;
+          hold_lock();
+        }
+      );
+    } else {
+      // still have lock, but too early to raise the warning
+      var warn_in = data.expires_in - lock_warning_lead;
+      clearTimeout(expires_timer);
+      expires_time = setTimeout(raise_lock_warning,1000*warn_in);
+    }
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    ajax_error_handler(jqXHR,'raise lock warning');
+  });
+
+}
+
+function alert_lost_lock(locked_by)
+{
+  admin_alert(
+    "While you were away, you lost your lock on the Admiin Dashboard.",
+    "It was acquired by "+locked_by,
+    function() {
+      window.location.reload();
+    }
+  );
 }
 
 $(document).ready(
