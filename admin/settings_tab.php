@@ -168,4 +168,4 @@ echo "</div>";
 
 echo "</form>";
 
-echo "<script src='", js_uri('settings','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('settings','admin'), "'></script>";
