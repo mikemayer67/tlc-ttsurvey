@@ -109,4 +109,4 @@ echo <<<HTMLCTRLS
 HTMLCTRLS;
 
 echo "</form>";
-echo "<script src='", js_uri('log','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('log','admin'), "'></script>";
