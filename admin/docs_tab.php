@@ -30,4 +30,4 @@ HTML;
 
 
 echo "</form>";
-echo "<script src='", js_uri('docs','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('docs','admin'), "'></script>";
