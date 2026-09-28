@@ -34,7 +34,7 @@ echo "</div>";
 echo "</form>";
 echo "</div>";
 
-echo "<script src='", js_uri('login','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('login','admin'), "'></script>";
 
 end_page();
 die();
