@@ -124,4 +124,4 @@ echo "</div>";
 
 echo "</form>";
 
-echo "<script src='", js_uri('roles','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('roles','admin'), "'></script>";
