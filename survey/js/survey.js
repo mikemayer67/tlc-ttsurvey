@@ -1,5 +1,6 @@
 var ce = {};
 
+// @@@ TODO: Consider reuse of admin.js internal_error
 function internal_error(jqXHR)
 {
   alert(
@@ -9,6 +10,7 @@ function internal_error(jqXHR)
   );
 }
 
+// @@@ TODO: Consider reuse of admin.js ajax_error_handler
 function ajax_error_handler(jqXHR,activity)
 {
   if(jqXHR.status == 400) {
@@ -40,12 +42,14 @@ function ajax_error_handler(jqXHR,activity)
   }
 }
 
+// @@@ TODO: Consider reuse of admin.js hide_status
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
   setTimeout(() => {ce.status.html('')},0);
 }
 
+// @@@ TODO: Consider reuse of admin.js show_status
 function show_status(level,msg)
 {
   ce.status.removeClass().addClass(level).html(msg);

@@ -1,18 +1,24 @@
 // The following are used by all Admin Dashboard pages
 
+// @@@ used by login.js
 var ace = {};
-
+  
+// @@@ used by roles.js, settings.js, surveys.js
 var has_change_cb = null;
-var status_timer=null;
-var lock_timer=null;
-var expires_timer=null;
 
-const lock_hold_freq  = 20; // seconds (I know, this is a period, not a frequency... )
-const check_hold_freq = 10; // seconds (... deal with it. )
-const lock_warning_lead = 60; // seconds
-var overdue_lock_hold = false;
+// @@@ used by preview
+var lock_timer=null;       // 3x
+const lock_hold_freq  = 20; // seconds 
+var overdue_lock_hold = false; // seconds
 var active=false;
 
+// @@@ local use only
+var status_timer=null;
+var expires_timer=null;
+const check_hold_freq = 10; // seconds
+const lock_warning_lead = 60; // seconds
+
+// @@@ used by participants.js, draft_view.js, survey.js(?)
 function internal_error(jqXHR)
 {
   alert("Internal error (#" + jqXHR.status
@@ -21,6 +27,7 @@ function internal_error(jqXHR)
        );
 }
 
+// @@@ used by numerous other admin .js files
 function ajax_error_handler(jqXHR,activity)
 {
   if(jqXHR.status == 400) {
@@ -45,6 +52,7 @@ function ajax_error_handler(jqXHR,activity)
   }
 }
 
+// @@@ used by roles.js, settings.js, surveys.js, controls.js, draft_view.js
 function hide_status()
 {
   ace.status.removeClass().addClass('none');
@@ -52,6 +60,7 @@ function hide_status()
   status_timer = setTimeout(() => {ace.status.html('')},750);
 }
 
+// @@@ used by login.js, roles.js, settings.js, draft_view.js, password_editor.js, profile_editor.js
 function show_status(level,msg)
 {
   clearTimeout(status_timer);
@@ -59,6 +68,7 @@ function show_status(level,msg)
   ace.status.removeClass('none').addClass(level).html(msg);
 }
 
+// @@@ internal use only
 function handle_tab_change(event)
 {
   if(has_change_cb && has_change_cb()) {
@@ -81,6 +91,7 @@ function handle_tab_change(event)
   }
 }
 
+// @@@ internal use only
 function handle_exit_admin(event)
 {
   if(has_change_cb && has_change_cb()) {
@@ -98,11 +109,13 @@ function handle_exit_admin(event)
   }
 }
 
+// @@@ internal use only
 function handle_admin_login() {
   console.log(ace.ajaxuri);
   window.location = ace.ajaxuri + '?admin=login';
 }
 
+// @@@ internal use only
 function handle_admin_logout() {
   $.ajax( {
     type:'POST',
@@ -118,6 +131,7 @@ function handle_admin_logout() {
   });
 }
 
+// @@@ internal use only
 function handle_user_logout() {
   $.ajax( {
     type:'POST',
@@ -133,6 +147,7 @@ function handle_user_logout() {
   });
 }
 
+// @@@ internal use only
 function admin_alert(line_one,line_two,ok_callback)
 {
   var aam = $('#admin-alert-modal');
@@ -145,6 +160,7 @@ function admin_alert(line_one,line_two,ok_callback)
   aam.show();
 }
 
+// @@@ internal use only
 function check_lock()
 {
   if(admin_lock.next_check > 0) {
@@ -184,12 +200,14 @@ function check_lock()
   }
 }
 
+// @@@ internal use only
 function seconds_to_mmss(seconds) {
   var min = Math.floor(seconds/60);
   var sec = seconds - 60*min;
   return min.toString() + ":" + sec.toString().padStart(2,'0');
 }
 
+// @@@ used by preview.js
 function hold_lock()
 {
   if(!active) { 
@@ -237,6 +255,7 @@ function hold_lock()
   });
 }
 
+// @@@ internal use only
 function raise_lock_warning()
 {
   $.ajax({
@@ -273,6 +292,7 @@ function raise_lock_warning()
 
 }
 
+// @@@ internal use only
 function alert_lost_lock(locked_by)
 {
   admin_alert(

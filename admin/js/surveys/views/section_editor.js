@@ -1,6 +1,5 @@
 import { update_character_count, validate_markdown } from '../../utils.js';
 
-
 function input_error(key,value) 
 {
   const len = String(value).trim().length;
