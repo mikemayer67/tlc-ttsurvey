@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 let saved_settings = {};
 
@@ -251,8 +253,10 @@ function has_changes()
   return false;
 }
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
+  admin_init( {has_change_hook:has_changes} );
+
   ce.form            = $('#admin-settings');
   ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-settings input[name=nonce]').val();
@@ -299,8 +303,6 @@ $(document).ready(
   // smtp specific fields
   ce.selects.smtp_auth.on('change',handle_smtp_auth_change);
   $('#test_connection_button').on('click',handle_test_smtp);
-
-  has_change_cb = has_changes;
 
   handle_smtp_auth_change();  // to set initial placeholder value
 

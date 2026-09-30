@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 
 function cleanup_options(e)
@@ -141,7 +143,10 @@ function handle_dropped_survey()
   ce.survey_btn.disable();
 }
 
-$(document).ready( function($) {
+$(document).ready( function($) 
+{
+  admin_init();
+
   ce.form    = $('#admin-maintenance');
   ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();

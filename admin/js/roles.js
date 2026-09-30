@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 let saved_roles = {};
 let saved_summary_flags = 0;
@@ -240,8 +242,10 @@ function revert_values()
   update_submit();
 }
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
+  admin_init( {has_change_hook:has_changes} );
+
   ce.form            = $('#admin-roles');
   ce.ajaxuri         = $('#admin-roles input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-roles input[name=nonce]').val();
@@ -277,8 +281,6 @@ $(document).ready(
   $('#primary-admin-select').on('change',update_submit);
   const inputs = ce.form.find('input[type=checkbox]');
   inputs.on('change',update_submit);
-
-  has_change_cb = has_changes;
 
   if(admin_lock.has_lock) {
     update_submit();

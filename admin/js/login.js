@@ -1,3 +1,5 @@
+import admin_init from "./admin.js";
+
 let ce = {};
 
 function handle_login_submit(event) {
@@ -34,8 +36,8 @@ function handle_login_submit(event) {
   }
 }
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
   ce.form     = $('#admin-login');
   ce.userid   = $('#ttt-input-userid');
   ce.password = $('#ttt-input-password');
@@ -45,8 +47,7 @@ $(document).ready(
   ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();
 
-  // need this as there is no admin navbar on the admin login page
-  ace.ajaxuri = ce.ajaxuri;
+  admin_init( {ajaxuri:ce.ajaxuri, nonce:ce.nonce} );
 
   ce.form.on('submit',handle_login_submit);
 

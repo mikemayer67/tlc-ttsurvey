@@ -1,35 +1,199 @@
-// The following are used by all Admin Dashboard pages
+ /**
+ * @typedef {Object} AdminInitArgs
+ * @property {null|string} [ajaxuri]
+ * @property {null|string} [nonce]
+ * @property {null|function(): boolean} [has_change_hook]
+ */
 
-// @@@ used by login.js
-var ace = {};
-  
-// @@@ used by roles.js, settings.js, surveys.js
-var has_change_cb = null;
+let _initialized = false;
 
-// @@@ used by preview
-var lock_timer=null;       // 3x
-const lock_hold_freq  = 20; // seconds 
-var overdue_lock_hold = false; // seconds
-var active=false;
+let $_admin_status;
+let _status_timer;
 
-// @@@ local use only
-var status_timer=null;
-var expires_timer=null;
-const check_hold_freq = 10; // seconds
-const lock_warning_lead = 60; // seconds
+let $_admin_navbar;
+const $_admin_tabs = {};
 
-// @@@ used by participants.js, draft_view.js, survey.js(?)
-function internal_error(jqXHR)
+let _ajaxuri;
+let _admin_nonce;
+let _has_change_hook;
+
+/**
+ * Initializes the shared admin javascript functionality
+ * @param {AdminInitArgs} [kwargs={}]
+ */
+export default function( kwargs={} )
 {
-  alert("Internal error (#" + jqXHR.status
-                         + "): "+ jqXHR.statusText
-                         + "\nPlease let the survey admin know something went wrong."
-       );
+  if(_initialized) { throw new Error('admin.js initialized more than once'); }
+
+  _has_change_hook = kwargs.has_change_hook;
+
+  $('#ttt-body').show();
+
+  $_admin_status = $('#ttt-status');
+  $_admin_navbar = $('#admin-tabs');
+
+  $_admin_navbar.find('button').each(
+    function() { $_admin_tabs[$(this).attr('value')] = $(this) }
+  );
+
+  _ajaxuri     = kwargs.ajaxuri ?? $_admin_navbar.find('input[name=ajaxuri]').val();
+  _admin_nonce = kwargs.nonce   ?? $_admin_navbar.find('input[name=nonce]').val();
+
+  $('.left-box *').on('click', handle_exit_admin);
+  $('#admin-tabs a.admin.login').on('click',handle_admin_login);
+  $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
+  $('#admin-tabs a.user.logout').on('click',handle_user_logout);
+
+  $_admin_navbar.on('submit',handle_tab_change);
+
+  _initialized = true;
 }
 
-// @@@ used by numerous other admin .js files
-function ajax_error_handler(jqXHR,activity)
+/**
+ * Add this to the top of all exported functions (other than init) to 
+ *   raise an Error if it is called prior to initialization
+ * @param {string} function_name 
+ */
+function requires_initialization(function_name)
 {
+  if(!_initialized) {
+    throw new Error('admin.'+function_name+' called before initialization of admin.js');
+  }
+}
+
+function handle_exit_admin(event)
+{
+  if( _has_change_hook?.() ) {
+    const tsm = $('#tab-switch-modal');
+    if (!tsm) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
+    tsm.find('button.cancel').on('click',function() { 
+      tsm.hide();
+    });
+    tsm.find('button.confirm').on('click',function() { 
+      tsm.hide();
+      window.open(_ajaxuri,'ttt_survey');
+    });
+    tsm.show();
+  } else {
+    window.open(_ajaxuri,'ttt_survey');
+  }
+}
+
+function handle_admin_login() 
+{
+  console.log(_ajaxuri);
+  window.location = _ajaxuri + '?admin=login';
+}
+
+function handle_admin_logout() {
+  $.ajax( {
+    type:'POST',
+    url: _ajaxuri,
+    dataType:'json',
+    data:{ 'ajax':'admin/logout_admin','nonce':_admin_nonce},
+  })
+  .done( function(data,status,jqXHR) {
+    window.location = _ajaxuri + '?admin';
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    ajax_error_handler(jqXHR,'log out admin');
+  });
+}
+
+function handle_user_logout() {
+  $.ajax( {
+    type:'POST',
+    url: _ajaxuri,
+    dataType:'json',
+    data:{ 'ajax':'admin/logout_user','nonce':_admin_nonce},
+  })
+  .done( function(data,status,jqXHR) {
+    window.location = _ajaxuri + '?admin';
+  })
+  .fail( function(jqXHR,textStatus,errorThrown) {
+    ajax_error_handler(jqXHR,'log out user');
+  });
+}
+
+function handle_tab_change(event)
+{
+  if(_has_change_hook?.()) {
+    event.preventDefault();
+
+    var tgt_action = event.target.action
+    var new_tab = $(event.originalEvent.submitter).val();
+    var new_tab_uri = tgt_action + '&tab=' + new_tab;
+
+    var tsm = $('#tab-switch-modal');
+    if (!tsm) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
+    tsm.find('.tsm-type').html('tabs');
+    tsm.find('button.cancel').off('click').on('click',function() { 
+      tsm.hide();
+    });
+    tsm.find('button.confirm').off('click').on('click',function() { 
+      tsm.hide();
+      window.location.replace(new_tab_uri);
+    }).html("Switch Tabs");
+    tsm.show();
+  }
+}
+
+/**
+ * Hides the admin status
+ */
+function hide_status()
+{
+  $_admin_status.removeClass().addClass('none');
+  clearTimeout(_status_timer);
+  _status_timer = setTimeout(() => {$_admin_status.html('')},750);
+}
+
+/**
+ * Displays the admin status, setting its display level (color) and
+ *   message.
+ * @param {'error'|'warning'|'info"'} level 
+ * @param {string} msg 
+ */
+function show_status(level,msg)
+{
+  clearTimeout(_status_timer);
+  _status_timer = null;
+  $_admin_status.removeClass('none').addClass(level).html(msg);
+}
+
+
+/**
+ * Displays the common admin alert modal dialog box and call the (optional)
+ *   callback when the ok button is pressed
+ * @param {string} line_one 
+ * @param {null|string} line_two 
+ * @param {null|function} ok_callback 
+ */
+export function admin_alert(line_one,line_two=null,ok_callback=null)
+{
+  var aam = $('#admin-alert-modal');
+  if(!aam) { throw new Error('admin tab DOM is missing #admin-alert-modal <div>'); }
+
+  aam.find('.line.one').html(line_one);
+  if(line_two) { aam.find('.line.two').html(line_two).show(); }
+  else         { aam.find('.line.two').hide(); }
+
+  aam.find('button').off('click').on('click',function() {
+    aam.hide();
+    if(ok_callback) { ok_callback(); }
+  });
+  aam.show();
+}
+
+/**
+ * Common AJAX error handler for the admin dashboard
+ * @param {JQuery.jqXHR} jqXHR 
+ * @param {string} activity 
+ */
+export function ajax_error_handler(jqXHR,activity)
+{
+  requires_initialization('ajax_error_handler');
+
   if(jqXHR.status == 400) {
     // bad request
     //   do nothing other than to warn the user (should be an admin)
@@ -38,7 +202,7 @@ function ajax_error_handler(jqXHR,activity)
   } else if(jqXHR.status == 401) {
     // authentication error.
     //   send them back to main entry point to reauthenticate
-    window.location.href = ce.ajaxuri;
+    window.location.href = _ajaxuri;
   } else if(jqXHR.status == 403) {
     // forbidden
     //   for the admin dashboard, should mean there was an expired nonce
@@ -52,307 +216,14 @@ function ajax_error_handler(jqXHR,activity)
   }
 }
 
-// @@@ used by roles.js, settings.js, surveys.js, controls.js, draft_view.js
-function hide_status()
+/**
+ * Common AJAX internal error handler for the admin dashboard
+ * @param {JQuery.jqXHR} jqXHR 
+ */
+export function internal_error(jqXHR)
 {
-  ace.status.removeClass().addClass('none');
-  clearTimeout(status_timer);
-  status_timer = setTimeout(() => {ace.status.html('')},750);
+  alert("Internal error (#" + jqXHR.status
+                         + "): "+ jqXHR.statusText
+                         + "\nPlease let the survey admin know something went wrong."
+       );
 }
-
-// @@@ used by login.js, roles.js, settings.js, draft_view.js, password_editor.js, profile_editor.js
-function show_status(level,msg)
-{
-  clearTimeout(status_timer);
-  status_timer = null;
-  ace.status.removeClass('none').addClass(level).html(msg);
-}
-
-// @@@ internal use only
-function handle_tab_change(event)
-{
-  if(has_change_cb && has_change_cb()) {
-    event.preventDefault();
-
-    var tgt_action = event.target.action
-    var new_tab = $(event.originalEvent.submitter).val();
-    var new_tab_uri = tgt_action + '&tab=' + new_tab;
-
-    var tsm = $('#tab-switch-modal');
-    tsm.find('.tsm-type').html('tabs');
-    tsm.find('button.cancel').off('click').on('click',function() { 
-      tsm.hide();
-    });
-    tsm.find('button.confirm').off('click').on('click',function() { 
-      tsm.hide();
-      window.location.replace(new_tab_uri);
-    }).html("Switch Tabs");
-    tsm.show();
-  }
-}
-
-// @@@ internal use only
-function handle_exit_admin(event)
-{
-  if(has_change_cb && has_change_cb()) {
-    var tsm = $('#tab-switch-modal');
-    tsm.find('button.cancel').on('click',function() { 
-      tsm.hide();
-    });
-    tsm.find('button.confirm').on('click',function() { 
-      tsm.hide();
-      window.open(ace.ajaxuri,'ttt_survey');
-    });
-    tsm.show();
-  } else {
-    window.open(ace.ajaxuri,'ttt_survey');
-  }
-}
-
-// @@@ internal use only
-function handle_admin_login() {
-  console.log(ace.ajaxuri);
-  window.location = ace.ajaxuri + '?admin=login';
-}
-
-// @@@ internal use only
-function handle_admin_logout() {
-  $.ajax( {
-    type:'POST',
-    url: ace.ajaxuri,
-    dataType:'json',
-    data:{ 'ajax':'admin/logout_admin','nonce':ace.nonce},
-  })
-  .done( function(data,status,jqXHR) {
-    window.location = ace.ajaxuri + '?admin';
-  })
-  .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_handler(jqXHR,'log out admin');
-  });
-}
-
-// @@@ internal use only
-function handle_user_logout() {
-  $.ajax( {
-    type:'POST',
-    url: ace.ajaxuri,
-    dataType:'json',
-    data:{ 'ajax':'admin/logout_user','nonce':ace.nonce},
-  })
-  .done( function(data,status,jqXHR) {
-    window.location = ace.ajaxuri + '?admin';
-  })
-  .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_handler(jqXHR,'log out admin');
-  });
-}
-
-// @@@ internal use only
-function admin_alert(line_one,line_two,ok_callback)
-{
-  var aam = $('#admin-alert-modal');
-  aam.find('.line.one').html(line_one);
-  aam.find('.line.two').html(line_two);
-  aam.find('button').off('click').on('click',function() {
-    aam.hide();
-    ok_callback();
-  });
-  aam.show();
-}
-
-// @@@ internal use only
-function check_lock()
-{
-  if(admin_lock.next_check > 0) {
-    $('.admin-lock.timeout').html(seconds_to_mmss(admin_lock.expires_in));
-    admin_lock.next_check = admin_lock.next_check - 1;
-    admin_lock.expires_in = Math.max(0,admin_lock.expires_in - 1);
-    clearTimeout(lock_timer);
-    lock_timer = setTimeout(check_lock,1000);
-  } else {
-    $.ajax({
-      type:'POST',
-      url: ace.ajaxuri,
-      dataType:'json',
-      data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
-    })
-    .done( function(data,status,jqXHR) {
-      if(data.has_lock) {
-        admin_alert(
-          "Admin Dashboard lock has been released",
-          "You are free to start making edits",
-          function() {
-            window.location.reload();
-          }
-        );
-      } else {
-        admin_lock.expires_in = data.expires_in;
-        admin_lock.next_check = check_hold_freq;
-        $('.admin-lock.timeout').html(seconds_to_mmss(data.expires_in));
-        $('.admin-lock.name').html(data.locked_by);
-        clearTimeout(lock_timer);
-        lock_timer = setTimeout(check_lock,1000);
-      }
-    })
-    .fail( function(jqXHR,textStatus,errorThrown) {
-      ajax_error_handler(jqXHR,'obtain admin lock');
-    });
-  }
-}
-
-// @@@ internal use only
-function seconds_to_mmss(seconds) {
-  var min = Math.floor(seconds/60);
-  var sec = seconds - 60*min;
-  return min.toString() + ":" + sec.toString().padStart(2,'0');
-}
-
-// @@@ used by preview.js
-function hold_lock()
-{
-  if(!active) { 
-    overdue_lock_hold = true;
-    clearTimeout(lock_timer);
-    lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
-    return; 
-  }
-  // reset for next hold_lock timeout
-  active = false;
-  overdue_lock_hold = false;
-
-  clearTimeout(expires_timer);
-  expires_timer = null;
-
-  $.ajax({
-    type:'POST',
-    url: ace.ajaxuri,
-    dataType:'json',
-    data:{'ajax':'admin/obtain_admin_lock','nonce':ace.nonce},
-  })
-  .done( function(data,status,jqXHR) {
-    if(data.has_lock) {
-      if(data.new_token) {
-        admin_alert(
-          "While you were away, someone else obtained and released a lock on the Admin Dashboard.",
-          "This page will be reloaded to pick up any changes they may have made.",
-          function() {
-            window.location.reload();
-          }
-        );
-      }
-      clearTimeout(lock_timer);
-      lock_timer = setTimeout(hold_lock,1000*lock_hold_freq);
-      var warn_in = Math.max(0,data.expires_in-lock_warning_lead);
-      clearTimeout(expires_timer);
-      expires_timer = setTimeout(raise_lock_warning,1000*warn_in);
-    }
-    else {
-      alert_lost_lock(data.locked_by);
-    }
-  })
-  .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_handler(jqXHR,'hold admin lock');
-  });
-}
-
-// @@@ internal use only
-function raise_lock_warning()
-{
-  $.ajax({
-    type:'POST',
-    url: ace.ajaxuri,
-    dataType:'json',
-    data:{'ajax':'admin/check_admin_lock','nonce':ace.nonce},
-  })
-  .done( function(data,status,jqXRR) {
-    if(!data.has_lock) {
-      // should never get here... but just in case
-      alert_lost_lock(data.locked_by);
-    }
-    else if(data.is_expired || data.expires_in<=lock_warning_lead) {
-      admin_alert(
-        "You are about to lose your lock on the Admin Dashboard due to inactivity.",
-        "Acknowledge to try to retain it",
-        function() {
-          // responding to the alert is an action, so set active to true and try to hold onto the lock
-          active = true;
-          hold_lock();
-        }
-      );
-    } else {
-      // still have lock, but too early to raise the warning
-      var warn_in = data.expires_in - lock_warning_lead;
-      clearTimeout(expires_timer);
-      expires_time = setTimeout(raise_lock_warning,1000*warn_in);
-    }
-  })
-  .fail( function(jqXHR,textStatus,errorThrown) {
-    ajax_error_handler(jqXHR,'raise lock warning');
-  });
-
-}
-
-// @@@ internal use only
-function alert_lost_lock(locked_by)
-{
-  admin_alert(
-    "While you were away, you lost your lock on the Admiin Dashboard.",
-    "It was acquired by "+locked_by,
-    function() {
-      window.location.reload();
-    }
-  );
-}
-
-$(document).ready(
-  function($) {
-
-  $('#ttt-body').show();
-
-  ace.status = $('#ttt-status');
-  ace.form   = $('#admin-tabs');
-  ace.ajaxuri = ace.form.find('input[name=ajaxuri]').val();
-  ace.nonce   = ace.form.find('input[name=nonce]').val();
-
-  ace.tabs = {};
-  ace.form.find('button').each(
-    function() { ace.tabs[$(this).attr('value')] = $(this) }
-  );
-
-  $('.left-box *').on('click', handle_exit_admin);
-  $('#admin-tabs a.admin.login').on('click',handle_admin_login);
-  $('#admin-tabs a.admin.logout').on('click',handle_admin_logout);
-  $('#admin-tabs a.user.logout').on('click',handle_user_logout);
-
-  ace.form.on('submit',handle_tab_change);
-
-  if( !admin_lock.has_lock ) {
-    admin_lock.next_check = check_hold_freq;
-    show_status('warning',"<div>Admin Dashboard is locked by <span class='admin-lock name'>" + 
-                admin_lock.locked_by + "</span>.</div><div>" +
-                "Unless they renew it, the lock will expire in <span class='admin-lock timeout'>?</span></div>");
-    check_lock();
-  }
-  else {
-    // We only want to extend our lock if the user is active.  This includes interacting with
-    //   the form AND simply moving the mouse, typing keys, etc.   As interacting with the
-    //   form requires the latter, we will add a event handler for each of these which
-    //   simply sets the active flag to true.
-    active = false;
-    const passiveEvents = ['mousemove', 'mousedown', 'scroll', 'touchstart', 'focus'];
-    const nonPassiveEvents = ['keydown','visibilitychange'];
-    passiveEvents.concat(nonPassiveEvents).forEach( eventName => {
-      document.addEventListener(eventName, function() {
-        active = true;
-        if(overdue_lock_hold) {
-          clearTimeout(lock_timer);
-          hold_lock();
-        }
-      }, 
-      { passive: passiveEvents.includes(eventName) } 
-      )
-    });
-
-    hold_lock();
-  }
-});

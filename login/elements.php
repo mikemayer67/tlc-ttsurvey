@@ -13,13 +13,12 @@ require_once(app_file('include/elements.php'));
 
 function start_login_page()
 {
-  $context = 'login';
   start_header();
   add_tab_name('ttt_survey');
-  add_js_resources($context);
-  add_css_resources($context);
+  add_js_resources('login');
+  add_css_resources('login');
   end_header();
-  add_navbar($context);
+  add_navbar('login');
   add_js_recommended();
   add_status_bar();
   start_body();

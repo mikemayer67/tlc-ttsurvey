@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 
 function handle_breadcrumb(e) {
@@ -51,19 +53,20 @@ function load_doc_topic(topic) {
   });
 }
 
-$(document).ready(
-  function($) {
-    ce.form         = $('#admin-docs');
-    ce.ajaxuri      = $('#admin-docs input[name=ajaxuri]').val();
-    ce.nonce        = $('#admin-docs input[name=nonce]').val();
-    ce.breadcrumbs  = ce.form.find('a.breadcrumb');
-    ce.docs_display = $('#docs-display');
-    ce.doc_links    = $('a.doc-link');
+$(document).ready( function($) 
+{
+  admin_init();
+  
+  ce.form         = $('#admin-docs');
+  ce.ajaxuri      = $('#admin-docs input[name=ajaxuri]').val();
+  ce.nonce        = $('#admin-docs input[name=nonce]').val();
+  ce.breadcrumbs  = ce.form.find('a.breadcrumb');
+  ce.docs_display = $('#docs-display');
+  ce.doc_links    = $('a.doc-link');
 
-    // should only be one breadcrumb, but let's not assume that here
-    ce.breadcrumbs.each(function (i) {$(this).data('position', i)});
-    ce.breadcrumbs.on('click',handle_breadcrumb);
+  // should only be one breadcrumb, but let's not assume that here
+  ce.breadcrumbs.each(function (i) {$(this).data('position', i)});
+  ce.breadcrumbs.on('click',handle_breadcrumb);
 
-    ce.doc_links.on('click',handle_doc_link);
-  }
-);
+  ce.doc_links.on('click',handle_doc_link);
+});

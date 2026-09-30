@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 import survey_data  from './surveys/survey_data.js';
 import controls     from './surveys/controls.js';
 import metadata     from './surveys/metadata.js';
@@ -112,8 +114,10 @@ function has_changes()
 
 // Entry point
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
+  admin_init( {has_change_hook:has_changes} );
+
   // common form elements
   ce.form    = $('#admin-surveys');
   ce.ajaxuri = $('#admin-surveys input[name=ajaxuri]').val();
@@ -159,8 +163,5 @@ $(document).ready(
   ce.controls     = controls(ce);
   ce.undo_manager = undo_manager(ce);
 
-  // Support global form
-
-  has_change_cb = has_changes;
 });
 

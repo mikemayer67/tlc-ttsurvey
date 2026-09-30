@@ -100,21 +100,34 @@ function start_header($title=null)
   echo "<title>$title</title>";
 }
 
-function add_js_resources($context, ...$extra_js)
+/**
+ * Adds jquery, optional jquery_helper, and context <script> to DOM
+ * @param string $context 
+ * @param bool $as_module 
+ * @return void 
+ */
+function add_js_resources($context="", $as_module=false, $jquery_helpers=false)
 {
-  //  - always include jquery
-  //  - add any extra js that may have been provided
-  //  - add context specific URI if js file exists
-  $js_uris = array_merge(
-    [ js_uri('jquery-3.7.1.min') ],
-    $extra_js,
-    file_exists(app_file("$context/js/$context.js")) ? [js_uri($context,$context)] : [],
-    file_exists(app_file("js/$context.js")) ? [js_uri($context)] : [],
-  );
-  echo "<!-- Javascript -->";
-  foreach($js_uris as $js_uri) {
-    echo "<script src='$js_uri'></script>";
+  $script_uris = [ js_uri('jquery-3.7.1.min') ];
+  $module_uris = [];
+
+  if($jquery_helpers) { $script_uris[] = js_uri('jquery_helpers'); }
+
+  if($context) {
+    if(file_exists(app_file("$context/js/$context.js"))) {
+      if($as_module) { $module_uris[] = js_uri($context,$context); }
+      else           { $script_uris[] = js_uri($context,$context); }
+    }
+    if(file_exists(app_file("js/$context.js"))) {
+      if($as_module) { $module_uris[] = js_uri($context); }
+      else           { $script_uris[] = js_uri($context); }
+    }
   }
+
+  echo "<!-- Javascript -->";
+  foreach($script_uris as $uri) { echo "<script src='$uri'></script>"; }
+  foreach($module_uris as $uri) { echo "<script type='module' src='$uri'></script>"; }
+  
   echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
 }
 

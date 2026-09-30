@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 
 let last_sort_key = undefined;
@@ -174,7 +176,10 @@ function update_remind_button()
   ce.remind.prop('disabled', selected.length===0);
 }
 
-$(document).ready( function($) {
+$(document).ready( function($) 
+{
+  admin_init();
+
   ce.form    = $('#admin-participants');
   ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();

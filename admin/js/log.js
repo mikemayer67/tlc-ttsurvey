@@ -1,3 +1,5 @@
+import admin_init from './admin.js';
+
 let ce = {};
 let refresh_timer = null;
 
@@ -59,8 +61,10 @@ function update_refresh_timer(){
   resume_refresh();
 }
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
+  admin_init();
+
   ce.form            = $('#admin-log');
   ce.ajaxuri         = $('#admin-log input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-log input[name=nonce]').val();
