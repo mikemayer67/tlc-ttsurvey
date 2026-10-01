@@ -11,7 +11,6 @@ require_once(app_file('include/settings.php'));
 $form_uri = app_uri('admin');
 echo "<form id='admin-log' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','log');
 
 $download_uri = full_app_uri("admin&log=download&ttt=$nonce");

@@ -33,7 +33,7 @@ function handle_settings_submit(event)
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: formData,
     processData: false,
@@ -88,7 +88,7 @@ function validate_all()
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: data,
   } )
@@ -172,7 +172,7 @@ function handle_test_smtp()
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: data,
   } )
@@ -259,7 +259,6 @@ $(document).ready( function($)
   admin_init( {has_change_hook:has_changes} );
 
   ce.form            = $('#admin-settings');
-  ce.ajaxuri         = $('#admin-settings input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-settings input[name=nonce]').val();
   ce.test_response   = $('#test_connection_response');
   ce.submit          = $('#changes-submit');

@@ -83,7 +83,6 @@ export default function init()
     submit_btn.disable();
 
     const nonce   = $('form input[name=nonce]').val();
-    const ajaxuri = $('form input[name=ajaxuri]').val();
 
     const new_name  = name_input.val();
     const new_email = email_input.val();
@@ -92,7 +91,7 @@ export default function init()
 
     $.ajax({
       type:'POST',
-      url:ajaxuri,
+      url:window.location.pathname,
       dataType:'json',
       data:{ 
         ajax:  'survey/update_user_info',
@@ -118,7 +117,7 @@ export default function init()
         if(data.email || old_email) {
           $.ajax({
             type:'POST',
-            url:ajaxuri,
+            url:window.location.pathname,
             data:{ 
               ajax:  'survey/notify_updated_userinfo',
               nonce:  nonce,

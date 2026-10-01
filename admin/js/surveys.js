@@ -68,7 +68,7 @@ function handle_download_pdf(e)
 {
   e.preventDefault();
   // not really an ajax call, but channels through the same mechanism
-  const url = new URL(ce.ajaxuri, window.location.href);
+  const url = new URL(window.location.pathname, window.location.href);
   url.searchParams.set('download', 'survey');
   url.searchParams.set('sid',ce.cur_survey.id);
   url.searchParams.set('f','pdf');
@@ -120,7 +120,6 @@ $(document).ready( function($)
 
   // common form elements
   ce.form    = $('#admin-surveys');
-  ce.ajaxuri = $('#admin-surveys input[name=ajaxuri]').val();
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 

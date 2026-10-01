@@ -15,7 +15,7 @@ function handle_login_submit(event) {
   else if(ce.submit.is(sender)) {
     $.ajax( {
       type:'POST',
-      url:ce.ajaxuri,
+      url:window.location.pathname,
       dataType:'json',
       data:{
         'ajax':'admin/login_admin',
@@ -26,7 +26,7 @@ function handle_login_submit(event) {
     })
     .done( function(data,status,jqXHR) {
       if(data.success) {
-        window.open( ce.ajaxuri + '?admin', 'ttt_admin');
+        window.open( window.location.pathname + '?admin', 'ttt_admin');
       } else {
         show_status('error',data.error);
       }
@@ -45,10 +45,9 @@ $(document).ready( function($)
   ce.submit   = $('#admin-login button.submit');
   ce.cancel   = $('#admin-login button.cancel');
 
-  ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();
 
-  admin_init( {ajaxuri:ce.ajaxuri, nonce:ce.nonce} );
+  admin_init( {nonce:ce.nonce} );
 
   ce.form.on('submit',handle_login_submit);
 

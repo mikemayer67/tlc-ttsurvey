@@ -26,13 +26,12 @@
 
 function send_confirmation_email(form)
 {
-  const ajaxuri = form.find('input[name=ajaxuri]').val();
   const nonce   = form.find('input[name=nonce]').val();
   const userid  = form.find('input[name=userid]').val();
 
   $.ajax({
     type:'POST',
-    url:ajaxuri,
+    url:window.location.pathname,
     dataType:'json',
     data:{ 
       ajax:  'survey/send_confirmation_email',

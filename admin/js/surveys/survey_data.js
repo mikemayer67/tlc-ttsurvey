@@ -57,7 +57,7 @@ export default function init(ce)
 
     $.ajax( {
       type: 'POST',
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       dataType: 'json',
       data: {
         ajax:'admin/get_survey_content',

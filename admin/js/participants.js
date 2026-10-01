@@ -19,7 +19,7 @@ function send_reminders(e)
     var data = {ajax:'admin/send_reminder_emails', userids, nonce:ce.nonce };
     $.ajax( {
       type: "POST",
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       dataType: 'json',
       data: data,
     } )
@@ -130,7 +130,7 @@ function handle_pwreset(userid) {
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: data,
   } )
@@ -182,7 +182,6 @@ $(document).ready( function($)
   admin_init();
 
   ce.form    = $('#admin-participants');
-  ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();
 
   ce.select = $('#action-select');

@@ -156,7 +156,7 @@ export default function init(ce)
 
     $.ajax( {
       type: 'POST',
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       contentType: false,
       processData: false,
       dataType: 'json',

@@ -45,7 +45,7 @@ function handle_roles_submit(event)
   };
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data:data,
   })
@@ -248,7 +248,6 @@ $(document).ready( function($)
   admin_init( {has_change_hook:has_changes} );
 
   ce.form            = $('#admin-roles');
-  ce.ajaxuri         = $('#admin-roles input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-roles input[name=nonce]').val();
   ce.status          = $('#ttt-status');
   ce.submit          = $('#changes-submit');

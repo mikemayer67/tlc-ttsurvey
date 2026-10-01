@@ -11,7 +11,7 @@ function cleanup_options(e)
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: data,
   } )
@@ -106,7 +106,7 @@ function delete_survey(e)
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: data,
   } )
@@ -149,7 +149,6 @@ $(document).ready( function($)
   admin_init();
 
   ce.form    = $('#admin-maintenance');
-  ce.ajaxuri = ce.form.find('input[name=ajaxuri]').val();
   ce.nonce   = ce.form.find('input[name=nonce]').val();
 
   ce.options_btn = ce.form.find('button.maintenance.options');

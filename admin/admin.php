@@ -117,7 +117,6 @@ $nonce = gen_nonce('admin-navbar');
 
 echo "<!-- Admin Tabs -->";
 echo "<form id='admin-tabs' class='admin-navbar' method='post' action='$form_uri'>";
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('nonce',$nonce);
 
 echo "<div class='tabs'>";

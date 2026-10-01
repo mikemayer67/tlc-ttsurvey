@@ -34,9 +34,6 @@ elseif($test === 'all')
   echo "<link rel='stylesheet' type='text/css' href='test/ajax.css?v=$vr'>";
   end_header();
 
-  $ajaxuri = app_uri();
-  echo "<input id='ajaxuri' type='hidden' value='$ajaxuri'>";
-
   $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
   $admin_username = $config['admin_username'] ?? null;
   $admin_password = $config['admin_password'] ?? null;

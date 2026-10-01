@@ -35,7 +35,7 @@ function load_doc_topic(topic) {
   ce.doc_links.off('click');
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: {
       'ajax':'admin/get_docs_topic',
@@ -59,7 +59,6 @@ $(document).ready( function($)
   admin_init();
   
   ce.form         = $('#admin-docs');
-  ce.ajaxuri      = $('#admin-docs input[name=ajaxuri]').val();
   ce.nonce        = $('#admin-docs input[name=nonce]').val();
   ce.breadcrumbs  = ce.form.find('a.breadcrumb');
   ce.docs_display = $('#docs-display');

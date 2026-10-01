@@ -27,8 +27,6 @@ render_survey('preview',$content);
 
 $user_menu = js_uri('user_menu','survey');
 add_admin_lock();
-$ajaxuri = app_uri();
-echo "<script>var ajaxuri='$ajaxuri';</script>";
 echo "<script src='",js_uri('preview','survey'),"'></script>";
 
 echo "<script>const ttt_preview = true;</script>";

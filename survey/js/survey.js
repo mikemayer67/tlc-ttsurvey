@@ -26,7 +26,7 @@ function ajax_error_handler(jqXHR,activity)
   else if(jqXHR.status == 401) {
     // authentication error.
     //   send them back to main entry point to reauthenticate
-    window.location.href = ce.ajaxuri;
+    window.location.href = window.location.pathname;
   } 
   else if(jqXHR.status == 403) {
     // forbidden
@@ -313,7 +313,7 @@ function update_ui_cache(e)
 function heartbeat() {
   $.ajax({
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: {
       ajax: 'survey/heartbeat',
@@ -371,7 +371,6 @@ $(document).ready( function() {
 
   ce.checkable  = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
   ce.inputs     = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
-  ce.ajaxuri    = ce.form.find('input[name=ajaxuri]').val();
 
   ce.userid     = ce.form.find('input[name=userid]').val();
   ce.survey_id  = ce.form.find('input[name=survey_id]').val();

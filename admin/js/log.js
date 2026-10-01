@@ -14,7 +14,7 @@ function refresh_display() {
 
   $.ajax( {
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: {
       'ajax':'admin/get_log',
@@ -67,7 +67,6 @@ $(document).ready( function($)
   admin_init();
 
   ce.form            = $('#admin-log');
-  ce.ajaxuri         = $('#admin-log input[name=ajaxuri]').val();
   ce.nonce           = $('#admin-log input[name=nonce]').val();
 
   ce.log_controls    = ce.form.find('.log-controls select');
@@ -104,7 +103,7 @@ $(document).ready( function($)
 
     $.ajax( {
       type: 'POST',
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       dataType: 'json',
       data: {
         'ajax':'admin/get_log',

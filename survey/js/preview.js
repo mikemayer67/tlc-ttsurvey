@@ -18,7 +18,7 @@ function hold_lock()
 
   $.ajax({
     type:'POST',
-    url: ajaxuri,
+    url: window.location.pathname,
     dataType:'json',
     data:{'ajax':'admin/obtain_admin_lock'},
   })

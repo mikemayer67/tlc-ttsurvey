@@ -34,7 +34,7 @@ export function preview_handler(ce,e)
 
     const form = $('<form>', {
       method:'POST',
-      action:(ce.ajaxuri + '?preview'),
+      action:(window.location.pathname + '?preview'),
       target:_previewTabName,
     })
     .append( 

@@ -145,7 +145,6 @@ class RenderEngine
 
       add_hidden_input('submit',1);
       if($ui_cache_id) { add_hidden_input('ui-cache-id',$ui_cache_id); }
-      add_hidden_input('ajaxuri',app_uri());
       add_hidden_input('userid',$this->userid);
       add_hidden_input('survey_id',$this->survey_id);
       add_hidden_input('timestamps', $this->timestamps);

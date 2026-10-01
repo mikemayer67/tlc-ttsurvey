@@ -77,7 +77,6 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   {
     $needs_js = true;
     add_hidden_input('email-status','queued');
-    add_hidden_input('ajaxuri',app_uri());
     echo "A confirmation email will be sent to $email shortly";
   }
   elseif($email_sent) 

@@ -29,7 +29,6 @@ array_walk($users, function(&$a) { $a = $a['name']; });
 $form_uri = app_uri('admin');
 echo "<form id='admin-roles' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','roles');
 
 echo "<div class='column-wrapper'>";

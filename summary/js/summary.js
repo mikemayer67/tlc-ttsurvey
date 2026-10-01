@@ -50,7 +50,7 @@ function adjust_list(l)
 function download_summary(format)
 {
   // not really an ajax call, but channels through the same API
-  const url = new URL(ce.ajaxuri, window.location.href);
+  const url = new URL(window.location.pathname, window.location.href);
   url.searchParams.set('download','summary');
   url.searchParams.set('f',format);
   url.searchParams.set('sid', ce.survey_id);
@@ -83,7 +83,6 @@ $(document).ready( function() {
   ce.resizable_lists = $('.resizable-list');
   ce.inputs = $('#ttt-navbar input[type=hidden]');
   ce.nonce = ce.inputs.filter('[name=nonce]').val();
-  ce.ajaxuri = ce.inputs.filter('[name=ajaxurl]').val();
   ce.survey_id = ce.inputs.filter('[name=survey_id]').val();
 
   $('.js-only').removeClass('js-only');

@@ -1,6 +1,5 @@
  /**
  * @typedef {Object} AdminInitArgs
- * @property {null|string} [ajaxuri]
  * @property {null|string} [nonce]
  * @property {null|function(): boolean} [has_change_hook]
  */
@@ -13,7 +12,6 @@ let _status_timer;
 let $_admin_navbar;
 const $_admin_tabs = {};
 
-let _ajaxuri;
 let _admin_nonce;
 let _has_change_hook;
 
@@ -36,7 +34,6 @@ export default function( kwargs={} )
     function() { $_admin_tabs[$(this).attr('value')] = $(this) }
   );
 
-  _ajaxuri     = kwargs.ajaxuri ?? $_admin_navbar.find('input[name=ajaxuri]').val();
   _admin_nonce = kwargs.nonce   ?? $_admin_navbar.find('input[name=nonce]').val();
 
   $('.left-box *').on('click', handle_exit_admin);
@@ -71,29 +68,29 @@ function handle_exit_admin(event)
     });
     tsm.find('button.confirm').on('click',function() { 
       tsm.hide();
-      window.open(_ajaxuri,'ttt_survey');
+      window.open(window.location.pathname,'ttt_survey');
     });
     tsm.show();
   } else {
-    window.open(_ajaxuri,'ttt_survey');
+    window.open(window.location.pathname,'ttt_survey');
   }
 }
 
 function handle_admin_login() 
 {
-  console.log(_ajaxuri);
-  window.location = _ajaxuri + '?admin=login';
+  console.log(window.location.pathname);
+  window.location.assign( window.location.pathname + '?admin=login' );
 }
 
 function handle_admin_logout() {
   $.ajax( {
     type:'POST',
-    url: _ajaxuri,
+    url: window.location.pathname,
     dataType:'json',
     data:{ 'ajax':'admin/logout_admin','nonce':_admin_nonce},
   })
   .done( function(data,status,jqXHR) {
-    window.location = _ajaxuri + '?admin';
+    window.location.assign( window.location.pathname + '?admin' );
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
     ajax_error_handler(jqXHR,'log out admin');
@@ -103,12 +100,12 @@ function handle_admin_logout() {
 function handle_user_logout() {
   $.ajax( {
     type:'POST',
-    url: _ajaxuri,
+    url: window.location.pathname,
     dataType:'json',
     data:{ 'ajax':'admin/logout_user','nonce':_admin_nonce},
   })
   .done( function(data,status,jqXHR) {
-    window.location = _ajaxuri + '?admin';
+    window.location.assign( window.location.pathname + '?admin' );
   })
   .fail( function(jqXHR,textStatus,errorThrown) {
     ajax_error_handler(jqXHR,'log out user');
@@ -202,7 +199,7 @@ export function ajax_error_handler(jqXHR,activity)
   } else if(jqXHR.status == 401) {
     // authentication error.
     //   send them back to main entry point to reauthenticate
-    window.location.href = _ajaxuri;
+    window.location.href = window.location.pathname;
   } else if(jqXHR.status == 403) {
     // forbidden
     //   for the admin dashboard, should mean there was an expired nonce
