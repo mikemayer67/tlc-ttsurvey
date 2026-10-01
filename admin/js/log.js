@@ -1,4 +1,5 @@
 import admin_init from './admin.js';
+import { ajax_error_handler } from './admin.js';
 
 let ce = {};
 let refresh_timer = null;
