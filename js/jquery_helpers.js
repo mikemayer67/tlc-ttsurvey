@@ -13,5 +13,4 @@ $.fn.extend({
   toggleChecked(state=null) { 
     return this.prop('checked', state!==null ? state : !this.prop('checked'));
   },
-
 });
