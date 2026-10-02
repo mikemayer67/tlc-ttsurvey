@@ -101,17 +101,18 @@ function start_header($title=null)
 }
 
 /**
- * Adds jquery, optional jquery_helper, and context <script> to DOM
- * @param string $context 
- * @param bool $as_module 
+ * Adds jquery, jquery_helper, and optional context <script> to DOM
+ * @param string [$context]
+ * @param bool [$as_module]
  * @return void 
  */
-function add_js_resources($context="", $as_module=false, $jquery_helpers=false)
+function add_js_resources($context="", $as_module=false)
 {
-  $script_uris = [ js_uri('jquery-3.7.1.min') ];
+  $script_uris = [ 
+    js_uri('jquery-3.7.1.min'), 
+    js_uri('jquery_helpers'),
+  ];
   $module_uris = [];
-
-  if($jquery_helpers) { $script_uris[] = js_uri('jquery_helpers'); }
 
   if($context) {
     if(file_exists(app_file("$context/js/$context.js"))) {

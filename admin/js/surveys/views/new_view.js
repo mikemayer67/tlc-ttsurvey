@@ -1,5 +1,3 @@
-import { ajax_error_handler } from "../../admin";
-
 export default function init(ce)
 {
   const _info_edit    = $('#info-edit');

@@ -1,5 +1,3 @@
-import {ajax_error_handler} from './admin.js';
-
 /**
  * The admin lock function sets up an object that supports the admin dashboard
  *   locking mechanism.  It handles the ajax calls necessary to obtain and
@@ -21,7 +19,7 @@ import {ajax_error_handler} from './admin.js';
  * @typedef { (timeout:number, locked_by?:string|null) => void } UpdateLockStatus
  * 
  * @typedef {Object} AdminLockCallbacks
- * @property {AdminLockCallback} [lockReleased]
+ * @property {AdminLockCallback} [lockAvailable]
  * @property {UpdateLockStatus}  [updateLockStatus]
  */
 
@@ -64,12 +62,13 @@ export default function init(status, callbacks={})
 
     $.ajax({ 
       type:'POST', 
+      url:window.location.pathname,
       dataType:'json', 
       data:{'ajax':'admin/obtain_lock'} 
     })
     .done( function(data,status,jqXHR) {
       if(data.has_lock) {
-        callbacks.lockReleased();
+        callbacks.lockAvailable();
       } else {
         self.status.expires_in = data.expires_in;
         callbacks.updateLockStatus(self.status.expires_in, data.locked_by);
@@ -81,7 +80,7 @@ export default function init(status, callbacks={})
       }
     })
     .fail( function(jqHXR,textStatus,errorThrown) {
-      callbacks.ajaxErrorHandler(jqHXR,'obtain admin lock');
+      ajax_error_handler(jqHXR,'obtain admin lock');
     });
   }
 

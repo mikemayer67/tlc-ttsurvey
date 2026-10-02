@@ -1,5 +1,4 @@
 import admin_init from './admin.js';
-import { ajax_error_handler } from "./admin.js";
 
 let ce = {};
 
@@ -148,7 +147,7 @@ function handle_pwreset(userid) {
       alert(message);
     } else {
       // should never get here...
-      internal_error(jqXHR); 
+      ajax_internal_error(jqXHR); 
     }
   } )
   .fail( function(jqXHR,textStatus,errorThrown) { 

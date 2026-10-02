@@ -1,4 +1,4 @@
- /**
+/**
  * @typedef {Object} AdminInitArgs
  * @property {null|string} [nonce]
  * @property {null|function(): boolean} [has_change_hook]
@@ -180,47 +180,4 @@ export function admin_alert(line_one,line_two=null,ok_callback=null)
     if(ok_callback) { ok_callback(); }
   });
   aam.show();
-}
-
-/**
- * Common AJAX error handler for the admin dashboard
- * @param {JQuery.jqXHR} jqXHR 
- * @param {string} activity 
- */
-export function ajax_error_handler(jqXHR,activity)
-{
-  requires_initialization('ajax_error_handler');
-
-  if(jqXHR.status == 400) {
-    // bad request
-    //   do nothing other than to warn the user (should be an admin)
-    const reason = jqXHR.responseJSON?.reason || 'invalid request';
-    alert('Failed to ' + activity + ': ' + reason);
-  } else if(jqXHR.status == 401) {
-    // authentication error.
-    //   send them back to main entry point to reauthenticate
-    window.location.href = window.location.pathname;
-  } else if(jqXHR.status == 403) {
-    // forbidden
-    //   for the admin dashboard, should mean there was an expired nonce
-    //   reload the page for a new nonce value
-    alert("Form timed out... reloading the admin dashboard");
-    location.reload();
-  } else { 
-    // not sure what went wrong
-    //   treat it as an internal error
-    internal_error(jqXHR);
-  }
-}
-
-/**
- * Common AJAX internal error handler for the admin dashboard
- * @param {JQuery.jqXHR} jqXHR 
- */
-export function internal_error(jqXHR)
-{
-  alert("Internal error (#" + jqXHR.status
-                         + "): "+ jqXHR.statusText
-                         + "\nPlease let the survey admin know something went wrong."
-       );
 }

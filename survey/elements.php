@@ -11,7 +11,7 @@ function start_survey_page($kwargs)
   start_header($kwargs['title']);
   add_tab_name('ttt_survey');
 
-  add_js_resources('survey',jquery_helpers:true);
+  add_js_resources('survey');
   add_css_resources('survey');
 
   end_header();
@@ -75,7 +75,7 @@ function start_preview_page($title,$userid,$enable_js=true)
 
   // We want to load the survey css and javascript
   if($enable_js) { 
-    add_js_resources('survey', jquery_helpers:true);
+    add_js_resources('survey');
   }
   add_css_resources('survey');
 
@@ -106,7 +106,7 @@ function start_nosurvey_page()
   add_tab_name("ttt_$context");
   
 
-  add_js_resources($context, jquery_helpers:true);
+  add_js_resources($context);
   add_css_resources($context);
 
   end_header();

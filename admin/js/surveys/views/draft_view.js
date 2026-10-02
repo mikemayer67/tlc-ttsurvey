@@ -1,4 +1,3 @@
-import {ajax_error_handler} from "./admin.js";
 import {preview_handler} from './preview_handler.js';
 
 export default function init(ce)
@@ -177,7 +176,7 @@ export default function init(ce)
 
       } else {
         // should never get here...
-        internal_error(jqXHR);
+        ajax_internal_error(jqXHR);
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 

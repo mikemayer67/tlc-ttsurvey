@@ -1,55 +1,11 @@
 var ce = {};
 
-// @@@ TODO: Consider reuse of admin.js internal_error
-function internal_error(jqXHR)
-{
-  alert(
-    "Internal error (#" + jqXHR.status + "): "
-    + jqXHR.statusText
-    + "\nPlease let the survey admin know something went wrong."
-  );
-}
-
-// @@@ TODO: Consider reuse of admin.js ajax_error_handler
-function ajax_error_handler(jqXHR,activity)
-{
-  if(jqXHR.status == 400) {
-    // bad request
-    //   do nothing other than to warn the user (should be an admin)
-    const log_id = jqXHR.responseJSON?.log_id || '121467';
-    alert(
-      'Failed to ' + activity + ".\n" + 
-      "Please let the survey admin something went wrong\n" +
-      "  and givem them logID=" + log_id
-    );
-  } 
-  else if(jqXHR.status == 401) {
-    // authentication error.
-    //   send them back to main entry point to reauthenticate
-    window.location.href = window.location.pathname;
-  } 
-  else if(jqXHR.status == 403) {
-    // forbidden
-    //   with the removal of nonces from this form, should never see this
-    //   ... but if we do, reload the page to refresh it
-    alert("Form timed out... reloading the survey");
-    location.reload();
-  } 
-  else { 
-    // not sure what went wrong
-    //   treat it as an internal error
-    internal_error(jqXHR);
-  }
-}
-
-// @@@ TODO: Consider reuse of admin.js hide_status
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
   setTimeout(() => {ce.status.html('')},0);
 }
 
-// @@@ TODO: Consider reuse of admin.js show_status
 function show_status(level,msg)
 {
   ce.status.removeClass().addClass(level).html(msg);

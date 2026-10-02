@@ -1,5 +1,3 @@
-import { ajax_error_handler } from "./admin.js";
-
 export default function init(ce)
 {
   // full survey data (indexed by id)
