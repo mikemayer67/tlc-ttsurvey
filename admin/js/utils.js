@@ -13,11 +13,11 @@ export function deepCopy(obj)
   return result;
 }
 
-export function update_character_count(e)
+export function update_character_count(textarea)
 {
-  const cur_length = $(this).val().length;
-  const max_length = $(this).attr('maxlength');
-  const cc = $(this).parent().children('.char-count');
+  const cur_length = $(textarea).val().length;
+  const max_length = $(textarea).attr('maxlength');
+  const cc = $(textarea).parent().children('.char-count');
 
   cc.children('.cur').text(cur_length);
 

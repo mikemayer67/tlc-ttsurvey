@@ -6,9 +6,9 @@ export default function init(ce)
 
   let _prior_id = null;
 
-  function validate_input(sender,event)
+  function validate_input($sender,event)
   {
-    if(_survey_name.is(sender)) {
+    if(_survey_name.is($sender)) {
       update_submit();
     }
   }

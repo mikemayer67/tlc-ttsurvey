@@ -1,4 +1,5 @@
 import admin_init from './admin.js';
+import {hide_status} from './admin.js'
 
 import survey_data  from './surveys/survey_data.js';
 import controls     from './surveys/controls.js';
@@ -15,32 +16,37 @@ let validation_timer = null;
 
 // Survey status agnostic stuff
 
-function enforce_alphanum_only(event)
+function enforce_alphanum_only(e)
 {
-  var v = $(this).val();
+  const $tgt = $(e.currentTarget);
+  var v = $tgt.val();
   v = v.replace(/[^a-zA-Z0-9& ]/g,'');
-  $(this).val(v);
+  $tgt.val(v);
 }
 
 function handle_input(e)
 {
+  const $tgt = $(e.currentTarget);
+
   hide_status();
   clearTimeout(validation_timer);
-  $(this).removeClass('invalid-value');
-  validation_timer = setTimeout(validate_input,250,$(this),e);
+  $tgt.removeClass('invalid-value');
+  validation_timer = setTimeout(validate_input,250,$tgt,e);
 }
 
 function handle_change(e)
 {
+  const $tgt = $(e.currentTarget);
+
   hide_status()
   clearTimeout(validation_timer);
   validation_timer = null;
-  validate_input($(this),e);
+  validate_input($tgt,e);
 }
 
-function validate_input(sender,event)
+function validate_input($sender,event)
 {
-  ce.dispatch('validate_input',sender,event);
+  ce.dispatch('validate_input',$sender,event);
 }
 
 function handle_submit(e)
@@ -105,9 +111,9 @@ async function dispatch_async(f,...args)
   return null;
 }
 
-function has_changes()
+function is_dirty()
 {
-  var rval = dispatch('has_changes');
+  var rval = dispatch('is_dirty');
   if( rval === null || rval === undefined ) { rval = false; }
   return rval;
 }
@@ -116,7 +122,7 @@ function has_changes()
 
 $(document).ready( function($) 
 {
-  admin_init( {has_change_hook:has_changes} );
+  admin_init( {is_dirty_fn:is_dirty} );
 
   // common form elements
   ce.form    = $('#admin-surveys');

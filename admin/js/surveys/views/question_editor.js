@@ -129,7 +129,7 @@ export default function init(ce,controller)
     SELECT_MULTI: show_select_multi,
   };
 
-  _textareas.on('input change', update_character_count);
+  _textareas.on('input change', (e) => update_character_count(e.currentTarget));
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
     this.style.height = 'auto';

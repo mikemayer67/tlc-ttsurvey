@@ -1,7 +1,9 @@
+import AdminLock from './admin_lock.js';
+
 /**
  * @typedef {Object} AdminInitArgs
  * @property {null|string} [nonce]
- * @property {null|function(): boolean} [has_change_hook]
+ * @property {null|function(): boolean} [is_dirty_fn]
  */
 
 let _initialized = false;
@@ -9,11 +11,13 @@ let _initialized = false;
 let $_admin_status;
 let _status_timer;
 
+let _admin_nonce;
 let $_admin_navbar;
 const $_admin_tabs = {};
 
-let _admin_nonce;
-let _has_change_hook;
+let _is_dirty_fn;
+
+let _admin_lock;
 
 /**
  * Initializes the shared admin javascript functionality
@@ -23,7 +27,7 @@ export default function( kwargs={} )
 {
   if(_initialized) { throw new Error('admin.js initialized more than once'); }
 
-  _has_change_hook = kwargs.has_change_hook;
+  _is_dirty_fn = kwargs.is_dirty_fn;
 
   $('#ttt-body').show();
 
@@ -34,7 +38,7 @@ export default function( kwargs={} )
     function() { $_admin_tabs[$(this).attr('value')] = $(this) }
   );
 
-  _admin_nonce = kwargs.nonce   ?? $_admin_navbar.find('input[name=nonce]').val();
+  _admin_nonce = kwargs.nonce ?? $_admin_navbar.find('input[name=nonce]').val();
 
   $('.left-box *').on('click', handle_exit_admin);
   $('#admin-tabs a.admin.login').on('click',handle_admin_login);
@@ -42,6 +46,14 @@ export default function( kwargs={} )
   $('#admin-tabs a.user.logout').on('click',handle_user_logout);
 
   $_admin_navbar.on('submit',handle_tab_change);
+
+  _admin_lock = AdminLock(
+    admin_lock, // global set in php via <script> tag 
+    {
+      lockAvailable: handle_lock_available,
+      updateLockState: handle_lock_state_update,
+    }
+  );
 
   _initialized = true;
 }
@@ -60,7 +72,7 @@ function requires_initialization(function_name)
 
 function handle_exit_admin(event)
 {
-  if( _has_change_hook?.() ) {
+  if( _is_dirty_fn?.() ) {
     const tsm = $('#tab-switch-modal');
     if (!tsm) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
     tsm.find('button.cancel').on('click',function() { 
@@ -114,7 +126,7 @@ function handle_user_logout() {
 
 function handle_tab_change(event)
 {
-  if(_has_change_hook?.()) {
+  if(_is_dirty_fn?.()) {
     event.preventDefault();
 
     var tgt_action = event.target.action
@@ -135,10 +147,18 @@ function handle_tab_change(event)
   }
 }
 
+function handle_lock_available() {
+  console.log("handle_lock_available()");
+}
+
+function handle_lock_state_update() {
+  console.log("handle_lock_state_update()");
+}
+
 /**
  * Hides the admin status
  */
-function hide_status()
+export function hide_status()
 {
   $_admin_status.removeClass().addClass('none');
   clearTimeout(_status_timer);
@@ -151,13 +171,12 @@ function hide_status()
  * @param {'error'|'warning'|'info"'} level 
  * @param {string} msg 
  */
-function show_status(level,msg)
+export function show_status(level,msg)
 {
   clearTimeout(_status_timer);
   _status_timer = null;
   $_admin_status.removeClass('none').addClass(level).html(msg);
 }
-
 
 /**
  * Displays the common admin alert modal dialog box and call the (optional)

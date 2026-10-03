@@ -58,7 +58,7 @@ export default function init(ce,controller)
   let _cur_id = null;  // This is the current section ID displayed in the editor
   let _errors = {};
 
-  _intro_value.on('input change', update_character_count);
+  _intro_value.on('input change', (e) => update_character_count(e.currentTarget));
   _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 

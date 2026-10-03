@@ -112,7 +112,7 @@ function restore_cached_values()
   update_submit_buttons();
 }
 
-function has_changes()
+function is_dirty()
 {
   ce.dirty = false;
   ce.checkable.each( function() {
@@ -156,7 +156,7 @@ function handle_save()
 
 function handle_input_change(e)
 {
-  const dirty = has_changes();
+  const dirty = is_dirty();
   update_submit_buttons();
 }
 

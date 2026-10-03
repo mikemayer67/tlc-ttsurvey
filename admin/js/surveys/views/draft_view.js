@@ -1,3 +1,4 @@
+import {hide_status, show_status} from './admin.js'
 import {preview_handler} from './preview_handler.js';
 
 export default function init(ce)
@@ -7,7 +8,7 @@ export default function init(ce)
 
   async function block_survey_select()
   {
-    if( !has_changes() ) { return Promise.resolve(false); }
+    if( !is_dirty() ) { return Promise.resolve(false); }
 
     return new Promise((resolve) =>  {
       var tsm = $('#tab-switch-modal');
@@ -71,7 +72,7 @@ export default function init(ce)
 
   // Input Validation
   
-  function validate_input(sender,event)
+  function validate_input($sender,event)
   {
     hide_status();
     validate_all();
@@ -85,7 +86,7 @@ export default function init(ce)
 
   function update_submit_revert()
   {
-    const dirty = has_changes();
+    const dirty = is_dirty();
 
     const can_submit = (
       dirty &&
@@ -111,7 +112,7 @@ export default function init(ce)
   $(document).on('SurveyWasReordered',update_submit_revert);
   $(document).on('SurveyWasModified',update_submit_revert);
 
-  function has_changes()
+  function is_dirty()
   {
     const cur_name = _survey_name.val().trim();
     if( cur_name !== _saved_name )   { return true; }
@@ -198,7 +199,7 @@ export default function init(ce)
   return {
     state:'draft',
     block_survey_select, select_survey,
-    update_info, has_changes, validate_input,
+    update_info, is_dirty, validate_input,
     handle_revert, handle_submit, handle_preview,
   };
 };

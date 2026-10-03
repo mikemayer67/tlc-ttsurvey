@@ -1,4 +1,5 @@
 import admin_init from './admin.js';
+import {hide_status, show_status} from './admin.js'
 
 let ce = {};
 let saved_settings = {};
@@ -7,7 +8,7 @@ let validation_timer=null;
 
 function handle_smtp_auth_change()
 {
-  if(this.value == '0') {
+  if(ce.selects.smtp_auth.val() == '0') {
     ce.inputs.smtp_port.attr('placeholder','465');
   } else {
     ce.inputs.smtp_port.attr('placeholder','587');
@@ -193,7 +194,7 @@ function update_submit()
   ce.test_response.html('');
 
   var errors = $('input.invalid-value');
-  var dirty = has_changes();
+  var dirty = is_dirty();
   var can_submit = dirty && errors.length==0;
   ce.submit.prop('disabled',!can_submit);
 
@@ -204,7 +205,7 @@ function update_submit()
   }
 }
 
-function handle_change(event)
+function handle_change(e)
 {
   hide_status();
   clearTimeout(validation_timer);
@@ -212,11 +213,11 @@ function handle_change(event)
   validate_all();
 }
 
-function handle_input(event)
+function handle_input(e)
 {
   hide_status();
   clearTimeout(validation_timer);
-  $(this).removeClass('invalid-value');
+  $(e.currentTarget).removeClass('invalid-value');
   validation_timer = setTimeout(validate_all,750);
 }
 
@@ -242,7 +243,7 @@ function revert_logo()
   handle_logo_select();
 }
 
-function has_changes()
+function is_dirty()
 {
   var current = current_values();
   for( var k in saved_settings ) {
@@ -255,7 +256,7 @@ function has_changes()
 
 $(document).ready( function($) 
 {
-  admin_init( {has_change_hook:has_changes} );
+  admin_init( {is_dirty_fn:is_dirty} );
 
   ce.form            = $('#admin-settings');
   ce.nonce           = $('#admin-settings input[name=nonce]').val();

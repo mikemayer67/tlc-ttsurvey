@@ -1,4 +1,5 @@
 import admin_init from './admin.js';
+import {hide_status, show_status} from './admin.js'
 
 let ce = {};
 let saved_roles = {};
@@ -89,12 +90,13 @@ function add_role(role,userid)
     option.remove();
 }
 
-function handle_role_select(event)
+function handle_role_select(e)
 {
   hide_status();
 
-  var role = $(this).attr('name');
-  var userid = $(this).val();
+  const $tgt = $(e.currentTarget);
+  var role = $tgt.attr('name');
+  var userid = $tgt.val();
 
   if(userid) {
     add_role(role,userid);
@@ -139,7 +141,7 @@ function role_changes(new_roles)
   return changes;
 }
 
-function has_changes()
+function is_dirty()
 {
   var changes = role_changes(current_roles());
   if( 'add' in changes ) { return true; }
@@ -152,7 +154,7 @@ function has_changes()
 
 function update_submit()
 {
-  var dirty = has_changes();
+  var dirty = is_dirty();
 
   if(dirty) {
     ce.submit.attr('disabled',false);
@@ -196,9 +198,7 @@ function current_summary_flags()
 {
   let rval = 0;
   ce.summary_flags.each( function() {
-    if( $(this).prop('checked') ) { 
-      rval += Number($(this).val());
-    }
+    if( $(this).prop('checked') ) { rval += Number($(this).val()); }
   });
   return rval;
 }
@@ -244,7 +244,7 @@ function revert_values()
 
 $(document).ready( function($) 
 {
-  admin_init( {has_change_hook:has_changes} );
+  admin_init( {is_dirty_fn:is_dirty} );
 
   ce.form            = $('#admin-roles');
   ce.nonce           = $('#admin-roles input[name=nonce]').val();
