@@ -2,7 +2,6 @@ import AdminLock from './admin_lock.js';
 
 /**
  * @typedef {Object} AdminInitArgs
- * @property {null|string} [nonce]
  * @property {null|function(): boolean} [is_dirty_fn]
  */
 
@@ -23,7 +22,7 @@ let _admin_lock;
  * Initializes the shared admin javascript functionality
  * @param {AdminInitArgs} [kwargs={}]
  */
-export default function( kwargs={} )
+export default function init(kwargs={})
 {
   if(_initialized) { throw new Error('admin.js initialized more than once'); }
 
@@ -33,12 +32,12 @@ export default function( kwargs={} )
 
   $_admin_status = $('#ttt-status');
   $_admin_navbar = $('#admin-tabs');
+  
+  _admin_nonce = $_admin_navbar.find('input[name=nonce]').val();
 
   $_admin_navbar.find('button').each(
     function() { $_admin_tabs[$(this).attr('value')] = $(this) }
   );
-
-  _admin_nonce = kwargs.nonce ?? $_admin_navbar.find('input[name=nonce]').val();
 
   $('.left-box *').on('click', handle_exit_admin);
   $('#admin-tabs a.admin.login').on('click',handle_admin_login);
@@ -47,14 +46,25 @@ export default function( kwargs={} )
 
   $_admin_navbar.on('submit',handle_tab_change);
 
-  _admin_lock = AdminLock(
-    admin_lock, // global set in php via <script> tag 
+  // Note tbat admin_lock is a global set up in pip via a <script> tag
+  if( !admin_lock.has_lock ) {
+    show_status(
+      'warning',
+      "<div>Admin Dashboard is locked by <span class='admin-lock name'>"
+      + admin_lock.locked_by + "</span>.</div><div>"
+      + "Unless they renew it, the lock will expire in <span class='admin-lock timeout'>?</span></div>"
+    );
+  }
+  _admin_lock = AdminLock( admin_lock, _admin_nonce,
     {
-      lockAvailable: handle_lock_available,
-      updateLockState: handle_lock_state_update,
+      'lockAvailable': handle_lock_available,
+      'lockKeyChanged': handle_lock_key_changed,
+      'lockExpiring': handle_expiring_lock,
+      'lostLock': handle_lost_lock,
+      'updateLockState': handle_lock_state_update,
     }
   );
-
+  
   _initialized = true;
 }
 
@@ -147,12 +157,54 @@ function handle_tab_change(event)
   }
 }
 
-function handle_lock_available() {
-  console.log("handle_lock_available()");
+function handle_lock_available() 
+{
+  admin_alert(
+    "Admin Dashboard lock has been released",
+    "You are free to start making edits",
+    function () { window.location.reload(); }
+  );
 }
 
-function handle_lock_state_update() {
-  console.log("handle_lock_state_update()");
+function handle_lock_key_changed()
+{
+  admin_alert(
+    "While you were away, someone else obtained and released a lock on the Admin Dashboard.",
+    "This page will be reloaded to pick up any changes they may have made.",
+    function() { window.location.reload(); }
+  );
+}
+
+function handle_expiring_lock()
+{
+  admin_alert(
+    "You are about to lose your lock on the Admin Dashboard due to inactivity.",
+    "Acknowledge to try to retain it",
+    function() {
+      // responding to the alert is an action, so let the admin lock know
+      _admin_lock.jiggle();
+    }
+  );
+
+}
+
+function handle_lost_lock(locked_by)
+{
+  admin_alert(
+    "While you were away, you lost your lock on the Admiin Dashboard.",
+    "It was acquired by "+locked_by,
+    function() { window.location.reload(); }
+  );
+}
+
+function handle_lock_state_update(timeout, locked_by=null) 
+{
+  const min = Math.floor(timeout/60);
+  const sec = timeout - 60*min;
+  mmss = min.toString() + ":" + sec.toString().padStart(2,'0');
+  // .admin-lock elements created in admin init function above
+  $('.admin-lock.timeout').html(mmss);
+  if(locked_by) { $('.admin-lock.name').html(locked_by); }
 }
 
 /**

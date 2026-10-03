@@ -113,7 +113,7 @@ if(!in_array($cur_tab,$active_tabs)) {
 start_admin_page($cur_tab);
 
 $form_uri = app_uri('admin');
-$nonce = gen_nonce('admin-navbar');
+$nonce = gen_nonce('admin');
 
 echo "<!-- Admin Tabs -->";
 echo "<form id='admin-tabs' class='admin-navbar' method='post' action='$form_uri'>";

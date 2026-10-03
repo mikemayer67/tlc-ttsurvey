@@ -1,6 +1,3 @@
-import admin_init from "./admin.js";
-import {show_status} from './admin.js'
-
 let ce = {};
 
 function handle_login_submit(event) {
@@ -28,7 +25,7 @@ function handle_login_submit(event) {
       if(data.success) {
         window.open( window.location.pathname + '?admin', 'ttt_admin');
       } else {
-        show_status('error',data.error);
+        $('#ttt-status').removeClass('none').addClass('error').html(data.error);
       }
     })
     .fail( function(jqXHR,textStatus,errorThrown) { 
@@ -46,8 +43,6 @@ $(document).ready( function($)
   ce.cancel   = $('#admin-login button.cancel');
 
   ce.nonce   = ce.form.find('input[name=nonce]').val();
-
-  admin_init( {nonce:ce.nonce} );
 
   ce.form.on('submit',handle_login_submit);
 
