@@ -37,9 +37,10 @@
  */
 export default function init(lock_state, admin_nonce, callbacks={})
 {
-  const LOCK_HOLD_FREQ  = 20; // seconds (I know, this is a period, not a frequency... )
-  const WATCH_FOR_LOCK_FREQ = 10; // seconds (... deal with it)
-  const LOCK_WARNING_LEAD = 60; // seconds
+  console.log("admin_lock.js: init()");
+  const LOCK_HOLD_PERIOD      = 20; // seconds
+  const WATCH_FOR_LOCK_PERIOD = 10; // seconds
+  const LOCK_WARNING_LEAD     = 60; // seconds
 
   let status_heartbeat = null;
   let lock_timer       = null;
@@ -71,6 +72,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
 
   function handle_user_action() 
   {
+    console.log("admin.js: handle_user_action()");
     user_is_idle = false;
     if (user_was_idle) {
       // last call to hold_lock did not attempt to reacquire lock due
@@ -91,11 +93,12 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function hold_lock()
   {
+    console.log("admin.js: hold_lock()");
     // only attempt to renew lock if user is not idle
     if(user_is_idle) {
       user_was_idle = true;
       clearTimeout(lock_timer);
-      lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_FREQ);
+      lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_PERIOD);
       return;
     }
 
@@ -115,6 +118,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
       data:{ajax:'admin/obtain_admin_lock',nonce:admin_nonce},
     })
     .done( function(data,status,jqXHR) {
+      console.log("admin.js: hold_lock/obtain_admin_lock done(): "+data);
       if(!data.has_lock) 
       {
         // lock has been lost
@@ -131,7 +135,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
         
         // queue up next attempt to hold the lock
         clearTimeout(lock_timer);
-        lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_FREQ);
+        lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_PERIOD);
         
         // raise or queue up the warning for expiring lock
         clearTimeout(warning_timer);
@@ -159,6 +163,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function raise_lock_warning()
   {
+    console.log("admin.js: raise_lock_arning")
     $.ajax({
       type: 'POST',
       url:window.location.pathname,
@@ -166,6 +171,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
       data: { ajax: 'admin/check_admin_lock', nonce: admin_nonce },
     })
     .done(function (data, status, jqXRR) {
+      console.log("admin.js: raise_lock_warning/check_admin_lock: " + data);
       if(!data.has_lock) {
         // should never get here if lock mechanism is working... but just in case
         callbacks.lostLock(data.locked_by);
@@ -193,6 +199,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function watch_for_lock()
   {
+    console.log("admin.js: watch_for_lock");
     clearInterval(status_heartbeat);
     clearTimeout(lock_timer);
     status_heartbeat = lock_timer = null;
@@ -204,6 +211,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
       data:{ajax:'admin/obtain_admin_lock',nonce:admin_nonce}, 
     })
     .done( function(data,status,jqXHR) {
+      console.log("admin.js: watch_for_lock/obtain_admin_lock: " + data);
       if(data.has_lock) {
         // we got the lock, invoke the lockAvailable callback to allow
         //   the clients to respond accordingly.
@@ -219,13 +227,20 @@ export default function init(lock_state, admin_nonce, callbacks={})
             status_heartbeat = null;
           }
         },1000);
-        const next_check = Math.max(1,Math.min(self.expires_in,WATCH_FOR_LOCK_FREQ));
+        const next_check = Math.max(1,Math.min(self.expires_in,WATCH_FOR_LOCK_PERIOD));
         lock_timer = setTimeout(watch_for_lock,1000*next_check);
       }
     })
     .fail( function(jqHXR,textStatus,errorThrown) {
       ajax_error_handler(jqHXR,'obtain admin lock');
     });
+  }
+
+  clearTimeout(lock_timer);
+  if(self.has_lock) {
+    lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_PERIOD);
+  } else {
+    watch_for_lock();
   }
 
   return self;

@@ -1,4 +1,4 @@
-import {hide_status, show_status} from './admin.js'
+import {hide_status, show_status} from '../../admin.js'
 import {preview_handler} from './preview_handler.js';
 
 export default function init(ce)

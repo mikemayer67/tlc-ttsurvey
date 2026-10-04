@@ -185,13 +185,12 @@ function handle_expiring_lock()
       _admin_lock.jiggle();
     }
   );
-
 }
 
 function handle_lost_lock(locked_by)
 {
   admin_alert(
-    "While you were away, you lost your lock on the Admiin Dashboard.",
+    "While you were away, you lost your lock on the Admin Dashboard.",
     "It was acquired by "+locked_by,
     function() { window.location.reload(); }
   );
@@ -201,7 +200,7 @@ function handle_lock_state_update(timeout, locked_by=null)
 {
   const min = Math.floor(timeout/60);
   const sec = timeout - 60*min;
-  mmss = min.toString() + ":" + sec.toString().padStart(2,'0');
+  const mmss = min.toString() + ":" + sec.toString().padStart(2,'0');
   // .admin-lock elements created in admin init function above
   $('.admin-lock.timeout').html(mmss);
   if(locked_by) { $('.admin-lock.name').html(locked_by); }
@@ -246,7 +245,7 @@ export function admin_alert(line_one,line_two=null,ok_callback=null)
   if(line_two) { aam.find('.line.two').html(line_two).show(); }
   else         { aam.find('.line.two').hide(); }
 
-  aam.find('button').off('click').on('click',function() {
+  aam.find('button').prop('disabled',false).off('click').on('click',function() {
     aam.hide();
     if(ok_callback) { ok_callback(); }
   });

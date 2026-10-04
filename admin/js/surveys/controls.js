@@ -1,4 +1,4 @@
-import {hide_status} from './admin.js'
+import {hide_status} from '../admin.js'
 
 export default function init(ce)
 {
