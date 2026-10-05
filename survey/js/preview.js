@@ -3,7 +3,6 @@ import AdminLock from '../../admin/js/admin_lock.js';
 function preview_alert(line_one,line_two,ok_callback=null)
 {
   const pam = $('#preview-lock-modal');
-  if(!pam) { throw new Error('preview DOM is missing #preview-alert-modal <div>'); }
 
   pam.find('.line.one').html(line_one);
   pam.find('.line.two').html(line_two);
@@ -20,13 +19,13 @@ let _admin_lock = AdminLock(
     lockKeyChanged: function() { 
       preview_alert(
         "While you were away, someone else obtained and released a lock on the Admin Dashboard.",
-        "This page will be reloaded to pick up any changes they may have made."
+        "Youl may want to reloaded the page to pick up any changes they may have made."
       );
     },
     lockExpiring: function() { 
       preview_alert(
         "You are about to lose your lock on the Admin Dashboard due to inactivity.",
-        "Acknowledge to try to retain it",
+        "Hit OK to try to retain it",
         function() { _admin_lock.jiggle(); }
       );
     },

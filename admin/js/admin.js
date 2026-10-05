@@ -84,7 +84,7 @@ function handle_exit_admin(event)
 {
   if( _is_dirty_fn?.() ) {
     const tsm = $('#tab-switch-modal');
-    if (!tsm) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
+    
     tsm.find('button.cancel').on('click',function() { 
       tsm.hide();
     });
@@ -238,7 +238,6 @@ export function show_status(level,msg)
 export function admin_alert(line_one,line_two=null,ok_callback=null)
 {
   const aam = $('#admin-alert-modal');
-  if(!aam) { throw new Error('admin tab DOM is missing #admin-alert-modal <div>'); }
 
   aam.find('.line.one').html(line_one);
   if(line_two) { aam.find('.line.two').html(line_two).show(); }
