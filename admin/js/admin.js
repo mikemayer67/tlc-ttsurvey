@@ -100,7 +100,6 @@ function handle_exit_admin(event)
 
 function handle_admin_login() 
 {
-  console.log(window.location.pathname);
   window.location.assign( window.location.pathname + '?admin=login' );
 }
 
@@ -190,7 +189,7 @@ function handle_expiring_lock()
 function handle_lost_lock(locked_by)
 {
   admin_alert(
-    "While you were away, you lost your lock on the Admin Dashboard.",
+    "While you were away, you lost your lock on the Admiin Dashboard.",
     "It was acquired by "+locked_by,
     function() { window.location.reload(); }
   );
@@ -238,7 +237,7 @@ export function show_status(level,msg)
  */
 export function admin_alert(line_one,line_two=null,ok_callback=null)
 {
-  var aam = $('#admin-alert-modal');
+  const aam = $('#admin-alert-modal');
   if(!aam) { throw new Error('admin tab DOM is missing #admin-alert-modal <div>'); }
 
   aam.find('.line.one').html(line_one);

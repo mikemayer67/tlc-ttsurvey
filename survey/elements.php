@@ -77,7 +77,7 @@ function start_preview_page($title,$userid,$enable_js=true)
   if($enable_js) { 
     add_js_resources('survey');
   }
-  add_css_resources('survey');
+  add_css_resources('survey',css_uri('preview'));
 
   end_header();
 
@@ -96,7 +96,6 @@ function start_preview_page($title,$userid,$enable_js=true)
 function add_navbar_center_preview($kwargs) {
   echo '<b>Preview</b>';
 }
-
 
 function start_nosurvey_page()
 {

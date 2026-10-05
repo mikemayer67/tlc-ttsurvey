@@ -23,13 +23,32 @@ $userid = active_userid();
 
 start_preview_page($survey_title,$userid,$preview_js);
 
+$img=img_uri("icons8/info.png");
+echo(" <!-- Preview Lock Modal -->");
+echo(" <div class='preview modal' id='preview-lock-modal'>");
+echo("   <div class='content'>");
+echo("     <img src='$img'>");
+echo("     <div class='text-box'>");
+echo("       <p class='line one'></p>");
+echo("       <p class='line two'></p>");
+echo("     </div>");
+echo("     <div class='buttons'>");
+echo("       <button class='confirm'>OK</button>");
+echo("     </div>");
+echo("   </div>");
+echo(" </div>");
+
+
 render_survey('preview',$content);
 
 $user_menu = js_uri('user_menu','survey');
+
+$admin_nonce = get_nonce('admin');
+echo "<script>const admin_nonce='$admin_nonce';</script>";
 add_admin_lock();
-echo "<script src='",js_uri('preview','survey'),"'></script>";
 
 echo "<script>const ttt_preview = true;</script>";
+echo "<script type='module' src='",js_uri('preview','survey'),"'></script>";
 echo "<script type='module' src='$user_menu'></script>";
 
 end_page();
