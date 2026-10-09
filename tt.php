@@ -33,8 +33,6 @@ if(key_exists('errortest',$_GET)) { internal_error("You asked for it!"); }
 try
 {
   log_mark("-------------- Start of TT --------------");
-  log_dev("Nonces: ".print_r($_SESSION['nonce'],true));
-  log_dev("Nonce:  " . ($_POST['nonce']??'(none)') );
 
   if(key_exists('bug-report',$_POST)) {
     if(($_POST['action']??'cancel') === 'submit') {
