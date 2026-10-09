@@ -7,9 +7,9 @@
  * @typedef {Object} AdminLockState
  * @property {boolean} has_lock
  * @property {boolean} [is_expired]
+ * @property {number}  [lock_gen_num]
  * @property {string}  [locked_by]
  * @property {number}  [expires_in]
- * @property {string}  [new_token]
  * 
  * @typedef {Object} AdminLockAPI
  * @property {(void) => void} jiggle - informs AdminLock of user activity
@@ -31,13 +31,13 @@
 /**
  * Initializes an AdminLock object
  * @param {AdminLockState} lock_state
- * @param {string} admin_nonce
+ * @param {string} context
+ * @param {string} nonce
  * @param {AdminLockCallbacks} callbacks
  * @returns {AdminLock}
  */
-export default function init(lock_state, admin_nonce, callbacks={})
+export default function init(lock_state, context, nonce, callbacks={})
 {
-  console.log("admin_lock.js: init()");
   const LOCK_HOLD_PERIOD      = 20; // seconds
   const WATCH_FOR_LOCK_PERIOD = 10; // seconds
   const LOCK_WARNING_LEAD     = 60; // seconds
@@ -45,6 +45,8 @@ export default function init(lock_state, admin_nonce, callbacks={})
   let status_heartbeat = null;
   let lock_timer       = null;
   let warning_timer    = null;
+
+  let cur_lock_gen     = lock_state.lock_gen_num ?? 0;
 
   let user_is_idle     = false; // no registered events since last hold_lock call
   let user_was_idle    = false;
@@ -72,7 +74,6 @@ export default function init(lock_state, admin_nonce, callbacks={})
 
   function handle_user_action() 
   {
-    console.log("admin.js: handle_user_action()");
     user_is_idle = false;
     if (user_was_idle) {
       // last call to hold_lock did not attempt to reacquire lock due
@@ -93,7 +94,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function hold_lock()
   {
-    console.log("admin.js: hold_lock()");
+    console.log("hold_lock");
     // only attempt to renew lock if user is not idle
     if(user_is_idle) {
       user_was_idle = true;
@@ -115,19 +116,28 @@ export default function init(lock_state, admin_nonce, callbacks={})
       type:'POST',
       url:window.location.pathname,
       dataType:'json',
-      data:{ajax:'admin/obtain_admin_lock',nonce:admin_nonce},
+      data:{ajax:'admin/obtain_admin_lock',nonce, nonce_key:context},
     })
     .done( function(data,status,jqXHR) {
-      console.log("admin.js: hold_lock/obtain_admin_lock done(): "+data);
+      console.log("hold: "
+      + "has_lock=" + (data.has_lock ? "true" : "false")
+      + "lock_gen=" + cur_lock_gen
+      );
       if(!data.has_lock) 
       {
+        console.log("hold: lost lock");
         // lock has been lost
         callbacks.lostLock(data.locked_by);
+        // start watching for possible release of the lock
+        clearTimeout(lock_timer);
+        lock_timer = setTimeout(watch_for_lock,1000*WATCH_FOR_LOCK_PERIOD);
       } 
       else {
         // we still have the lock
-        if(data.new_token) { 
+        if(data.lock_gen_num != cur_lock_gen) { 
+          console.log("hold: key change");
           // .. but we lost it for a bit
+          cur_lock_gen = data.lock_gen_num;
           callbacks.lockKeyChanged(); 
           // note that there is a good chance that the lockKeyChanged
           //   callback will not return as it will probably reload the page
@@ -163,21 +173,25 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function raise_lock_warning()
   {
-    console.log("admin.js: raise_lock_arning")
+    console.log("raise_lock_warning");
     $.ajax({
       type: 'POST',
       url:window.location.pathname,
       dataType: 'json',
-      data: { ajax: 'admin/check_admin_lock', nonce: admin_nonce },
+      data: { ajax: 'admin/check_admin_lock', nonce, nonce_key:context },
     })
     .done(function (data, status, jqXRR) {
-      console.log("admin.js: raise_lock_warning/check_admin_lock: " + data);
+      console.log("raise_lock_warning: "
+      + "has_lock=" + (data.has_lock ? "true" : "false")
+      );
       if(!data.has_lock) {
         // should never get here if lock mechanism is working... but just in case
+        console.log("raise_lock_warning: lost lock");
         callbacks.lostLock(data.locked_by);
       }
       else if(data.is_expired || data.expires_in<=LOCK_WARNING_LEAD) {
         // raise warning
+        console.log("raise_lock_warning: lock expiring");
         callbacks.lockExpiring();
       } 
       else { // too soon (requeue raise_lock_warning)
@@ -199,7 +213,7 @@ export default function init(lock_state, admin_nonce, callbacks={})
    */
   function watch_for_lock()
   {
-    console.log("admin.js: watch_for_lock");
+    console.log("watch_for_lock");
     clearInterval(status_heartbeat);
     clearTimeout(lock_timer);
     status_heartbeat = lock_timer = null;
@@ -208,14 +222,18 @@ export default function init(lock_state, admin_nonce, callbacks={})
       type:'POST', 
       url:window.location.pathname,
       dataType:'json', 
-      data:{ajax:'admin/obtain_admin_lock',nonce:admin_nonce}, 
+      data:{ajax:'admin/obtain_admin_lock', nonce, nonce_key:context},
     })
     .done( function(data,status,jqXHR) {
-      console.log("admin.js: watch_for_lock/obtain_admin_lock: " + data);
+      console.log("watch_for_lock: "
+      + "has_lock=" + (data.has_lock ? "true" : "false")
+      );
       if(data.has_lock) {
         // we got the lock, invoke the lockAvailable callback to allow
         //   the clients to respond accordingly.
         callbacks.lockAvailable();
+        // we just got the lock, let's try to hold onto it.
+        lock_timer = setTimeout(hold_lock,1000*LOCK_HOLD_PERIOD);
       } else {
         self.expires_in = data.expires_in;
         callbacks.updateLockState(self.expires_in, data.locked_by);

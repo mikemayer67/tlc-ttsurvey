@@ -22,8 +22,6 @@ $.fn.extend({
  */
 function ajax_error_handler(jqXHR,activity)
 {
-  requires_initialization('ajax_error_handler');
-
   if(jqXHR.status == 400) {
     // bad request
     //   do nothing other than to warn the user (should be an admin)

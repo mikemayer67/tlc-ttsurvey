@@ -43,8 +43,8 @@ render_survey('preview',$content);
 
 $user_menu = js_uri('user_menu','survey');
 
-$admin_nonce = get_nonce('admin');
-echo "<script>const admin_nonce='$admin_nonce';</script>";
+$nonce = gen_nonce('preview-lock');
+echo "<script>const lock_nonce='$nonce';</script>";
 add_admin_lock();
 
 echo "<script>const ttt_preview = true;</script>";

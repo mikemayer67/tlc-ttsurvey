@@ -14,12 +14,18 @@ function preview_alert(line_one,line_two,ok_callback=null)
 }
 
 let _admin_lock = AdminLock(
-  admin_lock, admin_nonce, 
+  admin_lock, 'preview-lock', lock_nonce, 
   {
+    lostLock: function(locked_by) {
+      preview_alert(
+        "You have lost your lock on the Admin Dashboard to " + locked_by + ".",
+        "The current preview may no longer reflect the newest survey layout."
+      )
+    },
     lockKeyChanged: function() { 
       preview_alert(
         "While you were away, someone else obtained and released a lock on the Admin Dashboard.",
-        "Youl may want to reloaded the page to pick up any changes they may have made."
+        "You may want to reloaded the page to pick up any changes they may have made."
       );
     },
     lockExpiring: function() { 

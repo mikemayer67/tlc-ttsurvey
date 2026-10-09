@@ -55,7 +55,7 @@ export default function init(kwargs={})
       + "Unless they renew it, the lock will expire in <span class='admin-lock timeout'>?</span></div>"
     );
   }
-  _admin_lock = AdminLock( admin_lock, _admin_nonce,
+  _admin_lock = AdminLock( admin_lock, 'admin', _admin_nonce,
     {
       'lockAvailable': handle_lock_available,
       'lockKeyChanged': handle_lock_key_changed,
