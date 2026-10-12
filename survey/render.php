@@ -313,11 +313,12 @@ class RenderEngine
 
     echo "<div class='$class indent$indent' $data_id>";
     echo "<label for='$input_id' class='$class'>$wording</label>";
-    if($has_popup) { $this->add_popup_trigger($id); }
     echo "<textarea id='$input_id' type='text' name='$input_id' placeholder='[optional]'>$response</textarea>";
-    if($has_popup) { $this->add_popup($id,$question->popup_text()); }
-    
     echo "</div>";
+    if($has_popup) { 
+      $this->add_popup_trigger($id);
+      $this->add_popup($id,$question->popup_text(),$indent);
+    }
   }
 
   private function add_bool(BoolQuestion $question)
@@ -347,7 +348,7 @@ class RenderEngine
     echo "</div>";
     if($has_popup) { $this->add_popup_trigger($id); }
     $this->add_qualifier($id, $class, $indent, $qualifier, $responses['qualifier'] ?? '');
-    if($has_popup) { $this->add_popup($id,$question->popup_text()); }
+    if($has_popup) { $this->add_popup($id,$question->popup_text(),$indent); }
   }
 
   private function add_select(SelectQuestion $question)
@@ -418,7 +419,7 @@ class RenderEngine
     echo "</div>"; // option-wrapper
     if($has_popup) { $this->add_popup_trigger($id,'nominal'); }
     $this->add_qualifier($id, $class, $indent, $qualifier, $response['qualifier'] ?? '');
-    if($has_popup) {$this->add_popup($id, $question->popup_text()); }
+    if($has_popup) {$this->add_popup($id, $question->popup_text(), $indent); }
   }
 
   /**
@@ -452,7 +453,7 @@ class RenderEngine
     }
   }
 
-  protected function add_popup(int $id, string $popup_text) : void 
+  protected function add_popup(int $id, string $popup_text, $indent) : void 
   {
     $hint_id  = "hint-$id";
     $hintlock_id  = "hint-lock-$id";
@@ -460,7 +461,7 @@ class RenderEngine
       $popup_text = MarkdownParser::parse($popup_text);
     }
     echo "<input id='$hintlock_id' type='checkbox' class='hint-toggle' hidden>";
-    echo "<div id='$hint_id' class='question-hint'>$popup_text</div>";
+    echo "<div id='$hint_id' class='question-hint indent$indent'>$popup_text</div>";
   }
 
   /**

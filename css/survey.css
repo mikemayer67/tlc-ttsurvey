@@ -129,14 +129,14 @@ details.section summary span {
 
 @media (max-width: 500px) { div.question-box { background-color:pink; } }
 
-div.question.indent0 { padding-left: 0em; }
-div.question.indent1 { padding-left: 2em; }
-div.question.indent2 { padding-left: 4em; }
-div.question.indent3 { padding-left: 6em; }
+div.indent0 { margin-left: 0em; }
+div.indent1 { margin-left: 2em; }
+div.indent2 { margin-left: 4em; }
+div.indent3 { margin-left: 6em; }
 @media (max-width: 500px) {
-  div.question.indent1 { padding-left: 1em; }
-  div.question.indent2 { padding-left: 2em; }
-  div.question.indent3 { padding-left: 3em; }
+  div.indent1 { margin-left: 1em; }
+  div.indent2 { margin-left: 2em; }
+  div.indent3 { margin-left: 3em; }
 }
 
 div.question-box {
@@ -155,7 +155,7 @@ div.question-box {
 
 div.question-box {
   display: grid;
-  grid-template-columns: max-content max-content 1fr;
+  grid-template-columns: fit-content(25%) minmax(25%,1fr) 2em;
 }
 @media (max-width:500px) {
   div.question-box {
@@ -173,10 +173,10 @@ div.question-box > div.question.select.options       { grid-column: 2 / span 1; 
   div.question-box > div.question.select.options       { grid-column: 1 / span 1; }
 }
 
-div.question-box > div.question.qualifier { grid-column: 1 / -1; }
-div.question-box > div.question.info      { grid-column: 1 / -1; }
-div.question-box > div.question-hint      { grid-column: 1 / -1; }
-div.question-box > div.question.intro     { grid-column: 1 / -1; }
+div.question-box > div.question.qualifier { grid-column: 1 / -2; }
+div.question-box > div.question.info      { grid-column: 1 / -2; }
+div.question-box > div.question-hint      { grid-column: 1 / -2; }
+div.question-box > div.question.intro     { grid-column: 1 / -2; }
 
 div.question-box > label.hint-toggle { 
   grid-column: -2 / span 1; 
@@ -281,21 +281,10 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
  * bool
  ****************************************/
 
- div.question.bool {
-  background:pink;
- }
-
- div.question.freetext {
-  background: orange;
- }
-
- div.question.select.one {
-  background: lightblue; 
- }
-
- div.question.select.multi {
-  background: lightgreen;
- }
+ div.question.bool         { background: pink; }
+ /*div.question.freetext     { background: orange; } */
+ div.question.select.one   { background: lightblue; }
+ div.question.select.multi { background: lightgreen; }
 
 /****************************************
  * select
@@ -304,6 +293,15 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
 /****************************************
  * freetext
  ****************************************/
+
+ div.freetext.question:has(label):has(textarea) {
+  display:flex;
+  flex-direction:column;
+ }
+ div.freetext.question label {
+  font-weight:600;
+ }
+
 
 /****************************************
  * hints
@@ -316,6 +314,29 @@ img.popup {
 
 .question-hint {
   display:none;
+  margin: 0.25em 1em 0.5em;
+  padding: 0 0 0 1em;;
+  width: max-content;
+  font-style: italic;
+}
+
+.question-hint::before,
+.question-hint::after
+{
+  content: "";
+  display: block;
+  width: calc(100% + 1em);
+  height: 1px;            /* thickness of the line */
+  background-color: #ccc; /* line color */
+  margin-bottom: 0.25em;  /* space between line and div */
+  position:relative;
+  left: -0.5em;
+}
+.question-hint::before { 
+  margin-bottom: 0.25em;  /* space between line and div */
+}
+.question-hint::after { 
+  margin-top: 0.25em;     /* space between div and line */
 }
 
 label.hint-toggle {
