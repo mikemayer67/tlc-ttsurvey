@@ -155,7 +155,7 @@ div.question-box {
 
 div.question-box {
   display: grid;
-  grid-template-columns: fit-content(25%) minmax(25%,1fr) 2em;
+  grid-template-columns: fit-content(25%) max-content 1fr 2em;
 }
 @media (max-width:500px) {
   div.question-box {
@@ -163,14 +163,13 @@ div.question-box {
   }
 }
 
-div.question-box > div.question.freetext             { grid-column: 1 / span 2; }
-div.question-box > div.question.bool:not(.qualifier) { grid-column: 2 / span 1; }
-div.question-box > div.question.select.wording       { grid-column: 1 / span 1; }
-div.question-box > div.question.select.options       { grid-column: 2 / span 1; }
+div.question-box > div.question.freetext             { grid-column: 1 / -2; }
+div.question-box > div.question.bool.core            { grid-column: 2 /  3; }
+div.question-box > div.question.select.wording       { grid-column: 1 /  2; }
+div.question-box > div.question.select.options       { grid-column: 2 /  3; }
 @media (max-width: 500px) {
-  div.question-box > div.question.freetext             { grid-column: 1 / span 1; }
-  div.question-box > div.question.bool:not(.qualifier) { grid-column: 1 / span 1; }
-  div.question-box > div.question.select.options       { grid-column: 1 / span 1; }
+  div.question-box > div.question.bool:not(.qualifier) { grid-column: 1 / 2; }
+  div.question-box > div.question.select.options       { grid-column: 1 / 2; }
 }
 
 div.question-box > div.question.qualifier { grid-column: 1 / -2; }
@@ -213,6 +212,7 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
   align-items:flex-start;
   margin-top: 0.25em;
   margin-bottom: 0;
+  padding-left:1em;
 }
 
 #survey .section .question.qualifier label {
@@ -278,19 +278,6 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
 }
 
 /****************************************
- * bool
- ****************************************/
-
- div.question.bool         { background: pink; }
- /*div.question.freetext     { background: orange; } */
- div.question.select.one   { background: lightblue; }
- div.question.select.multi { background: lightgreen; }
-
-/****************************************
- * select
- ****************************************/
-
-/****************************************
  * freetext
  ****************************************/
 
@@ -302,6 +289,32 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
   font-weight:600;
  }
 
+/****************************************
+ * bool
+ ****************************************/
+ div.bool.question {
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+ }
+
+ div.bool.question.core label {
+  font-weight:600;
+ }
+
+ div.bool.question.core.left {
+  flex-direction:row;
+ }
+
+ div.bool.question.core.right {
+  flex-direction:row-reverse;
+ }
+
+/****************************************
+ * select
+ ****************************************/
+ div.question.select.one   { background: lightblue; }
+ div.question.select.multi { background: lightgreen; }
 
 /****************************************
  * hints

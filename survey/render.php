@@ -342,7 +342,7 @@ class RenderEngine
 
     $indent = $this->add_intro($id,$class,$indent,$intro);
 
-    echo "<div class='$class indent$indent $layout' $data_id>";
+    echo "<div class='$class core indent$indent $layout' $data_id>";
     echo "<input id='$input_id' type='checkbox' name='$input_id' value='1' $checked>";
     echo "<label for='$input_id' class='$class'>$wording</label>";
     echo "</div>";
