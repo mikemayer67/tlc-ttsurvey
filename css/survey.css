@@ -91,12 +91,12 @@ strong, b { font-weight:bold; }
  * Sections
  ****************************************/
 
-details.section summary {
+details summary {
   font-size:175%;
   cursor:pointer;
 }
 
-details.section summary:hover {
+details summary:hover {
   text-shadow:
       2px 2px 3px rgba(0,0,0,0.4),
       4px 4px 6px rgba(0,0,0,0.2);
@@ -107,17 +107,17 @@ details.section:not(:first-of-type) {
   margin-top:1.5em;
 }
 
-details.section summary span {
+details summary span {
   font-weight:700;
 }
 
-.section div.section.intro
+div.section.intro
 {
   margin: 0 1em 1em 1em;
   font-size:110%;
 }
 
-.section div.section.intro .markdown p
+div.section.intro .markdown p
 {
   margin:0;
   padding:0;
@@ -156,6 +156,7 @@ div.question-box {
 div.question-box {
   display: grid;
   grid-template-columns: fit-content(25%) max-content 1fr 2em;
+  margin-top:5px;
 }
 @media (max-width:500px) {
   div.question-box {
@@ -195,17 +196,18 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
  * Question Elements
  ****************************************/
 
-.section .question * {
+.question * {
   padding:0; 
   margin:0;
   background: inherit;
 }
 
-#survey .section .question.intro {
-  margin: 0.25em 0;
+#survey .question.intro {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
 }
 
-#survey .section .question.qualifier {
+#survey .question.qualifier {
   display:flex;
   flex-direction: row;
   flex-wrap:wrap;
@@ -215,31 +217,31 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
   padding-left:1em;
 }
 
-#survey .section .question.qualifier label {
+#survey .question.qualifier label {
   width:fit-content;
   margin:0;
 }
 
-#survey .section .question.qualifier textarea {
+#survey .question.qualifier textarea {
   margin:0 0 0 8px;
   flex: 0 1 75%;
   min-width:min(250px,95%);
 }
 
-#survey .section .question.question-hint {
+#survey .question.question-hint {
   width:fit-content;
   margin:0 1em 0 1em;
   padding:0.25em 1em;
 }
 
-#survey .section .question.grid .question-hint {
+#survey .question.grid .question-hint {
   margin:0;
   padding:0;
   grid-column: 1 / -1;
   justify-self: center;
 }
 
-#survey .section .question .question-hint::before {
+#survey .question .question-hint::before {
   content: "";
   display: block;
   width: 100%;
@@ -248,7 +250,7 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
   margin-bottom: 0.25em;  /* space between line and div */
 }
 
-#survey .section .question .question-hint::after {
+#survey .question .question-hint::after {
   content: "";
   display: block;
   width: 100%;
@@ -258,7 +260,7 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
   margin-bottom: 0.5em;    /* space below line           */
 }
 
-#survey .section .question.grid .question-hint::after {
+#survey .question.grid .question-hint::after {
   margin-bottom:0;
 }
 
@@ -266,13 +268,13 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
  * info text
  ****************************************/
 
-.section div.info.question
+div.info.question
 {
   padding: 1rem 0.5rem;
   font-size:110%;
 }
 
-.section .question-box .info.question:first-child
+.question-box .info.question:first-child
 {
   padding:0.25rem 0;
 }
@@ -313,8 +315,44 @@ div.question-box > label.hint-toggle.narrow  { display: none; }
 /****************************************
  * select
  ****************************************/
- div.question.select.one   { background: lightblue; }
- div.question.select.multi { background: lightgreen; }
+ div.question.select {
+  margin-top:0.25em;
+  margin-bottom:0.25em;
+ }
+
+ div.question.select.wording {
+  font-weight:600;
+ }
+
+ div.question.select.options { 
+  padding-left:1em;
+  align-self: start;
+  display:flex;
+ }
+
+ div.question.select.options .option {
+  display:flex;
+  flex-direction: row;
+  align-items:center;
+  column-gap: 0.25em;;
+ }
+ div.question.select.options.rcol .option {
+  flex-direction: row-reverse;
+ }
+
+ div.question.select.options.row  { 
+  flex-direction: row;
+  align-items: center;
+  column-gap:1em;
+ }
+
+ div.question.select.options.lcol { 
+  flex-direction: column;
+}
+
+ div.question.select.options.rcol { 
+  flex-direction: column;
+ }
 
 /****************************************
  * hints
