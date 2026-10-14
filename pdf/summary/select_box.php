@@ -52,7 +52,7 @@ class SummarySelectBox extends SummaryQuestionBox
       $question['options'],
       array_map(fn($oid)=>$options[$oid], $question['options'])
     );
-    if($question['other_flag'] ?? false) {
+    if($question['has_other'] ?? false) {
       $options[0] = $question['other'] ?? 'Other';
     }
 

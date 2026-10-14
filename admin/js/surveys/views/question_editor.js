@@ -89,7 +89,7 @@ export default function init(ce,controller)
   const _popup_value     = _popup.find('textarea');
 
   const _other           = _box.children('.other');
-  const _other_flag      = _other.find('input.other_flag');
+  const _has_other      = _other.find('input.has_other');
   const _other_value     = _other.find('input.other');
 
   const _hints           = _box.find('div.hint');
@@ -354,7 +354,7 @@ export default function init(ce,controller)
     const layout     = data.layout || ui_config.layout.select_default;
     const qualifier  = data.qualifier || '';
     const intro      = data.intro || '';
-    const other_flag = data.other_flag || false;
+    const has_other = data.has_other || false;
     const other      = data.other || '';
     const popup      = data.popup || '';
 
@@ -362,7 +362,7 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
-    _other_flag.prop('checked',other_flag);
+    _has_other.prop('checked',has_other);
     _other_value.val(other);
     _popup_value.val(popup);
 
@@ -370,7 +370,7 @@ export default function init(ce,controller)
     validate_input('qualifier'  , qualifier);
     validate_input('intro'      , intro);
     validate_input('popup'      , popup);
-    if(other_flag) {
+    if(has_other) {
       validate_input('other'    , other);
     }
 

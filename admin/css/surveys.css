@@ -688,7 +688,7 @@
   align-items: center;
 }
 
-#editor-frame .grid.editor div.other.value input.other_flag {
+#editor-frame .grid.editor div.other.value input.has_other {
   width:min-content;
   margin-right:1em;
 }
@@ -698,7 +698,7 @@
   width:15em;
 }
 
-#editor-frame .grid.editor div.other.value input.other_flag:checked + input.other {
+#editor-frame .grid.editor div.other.value input.has_other:checked + input.other {
   visibility:visible;
 }
 

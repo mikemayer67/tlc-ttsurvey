@@ -176,7 +176,7 @@ class SectionPanel
   {
     $type      = $question['type'];
     $options   = $question['options'];
-    $has_other = $question['other_flag'];
+    $has_other = $question['has_other'];
     $other     = $question['other'] ?? 'Other';
 
     $multi = $type === QuestionType::SelectMulti;

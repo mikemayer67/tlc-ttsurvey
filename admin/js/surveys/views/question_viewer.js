@@ -98,7 +98,7 @@ export default function init(ce)
           .forEach((opt) => $('<li>').text(opt).appendTo(ul));
         }
 
-        if(data.other_flag) {
+        if(data.has_other) {
           if(data.other) {
             _other_value.text('Enabled  [label: "' + data.other + '"]');
           } else {

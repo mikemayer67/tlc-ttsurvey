@@ -73,7 +73,7 @@ class SurveyOptionsBox extends PDFBox
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );
     }
-    if($question['other_flag']) {
+    if($question['has_other']) {
       $label = $question['other'] ?? "Other";
       $this->children[] = new SurveyOtherBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize
