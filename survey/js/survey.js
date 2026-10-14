@@ -207,7 +207,7 @@ function start_ui_cache(e)
       scroll_pos   = cache.scroll_pos   || 0; 
 
       ce.details.each(function() {
-        const section = $(this).data('item-id');
+        const section = $(this).data('section');
         $(this).prop( 'open', section === open_section );
       });
     }
@@ -228,13 +228,13 @@ function start_ui_cache(e)
 
 function handle_details_toggle(e)
 {
-  const section = $(this).data('item-id');
+  const section = $(this).data('section');
   const is_open = $(this).prop('open');
   if(is_open) {
     const summary = $(this).find('summary')[0];
     const oldY = summary.getBoundingClientRect().top;
     ce.details.each(function() {
-      if( $(this).data('item-id') !== section ) { $(this).prop('open',false) }
+      if( $(this).data('section') !== section ) { $(this).prop('open',false) }
     })
     const curY = summary.getBoundingClientRect().top;
     const delta = curY - oldY;
@@ -251,7 +251,7 @@ function update_ui_cache(e)
 
   cache.open_details = undefined;
   ce.details.each(function () {
-    const section = $(this).data('item-id');
+    const section = $(this).data('section');
     if($(this).prop('open')) { cache.open_details = section; }
   });
 

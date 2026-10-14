@@ -354,6 +354,37 @@ div.info.question
   flex-direction: column;
  }
 
+ div.question.select.options .option textarea.other {
+  width:12em;
+  pointer-events: none;
+  background: var(--question-background);
+  margin:0 0.25em;
+  border-color:lightgray;
+  color:darkgray;
+ }
+
+ div.question.select.options .option input.has-other:checked ~ textarea.other {
+  pointer-events:auto;
+  background:white;
+  border-color: revert;
+  color:revert;
+ }
+
+ div.question.select.options.row textarea.other {
+  resize:horizontal;
+  max-width:min(500px,75vw);
+ }
+
+ div.question.select.options.lcol textarea.other {
+  resize:both;
+ }
+
+ div.question.select.options.rcol textarea.other {
+  resize:none;
+  width:6em;
+  text-align:right;
+ }
+
 /****************************************
  * hints
  ****************************************/
