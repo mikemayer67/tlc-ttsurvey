@@ -346,6 +346,8 @@ function update_user_responses(string $userid,int $survey_id,array $responses,bo
   // wrap all database updates in a transaction to allow for rollback on failure
   MySQLBeginTransaction();
 
+  $draft = $draft ? 1 : 0;
+
   try {
     // remove the existing reponses
     //   if saving a draft, only remove the draft responses

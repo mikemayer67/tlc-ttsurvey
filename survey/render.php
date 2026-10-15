@@ -330,9 +330,9 @@ class RenderEngine
     $qualifier = $question->qualifier();
     $has_popup = $question->has_popup();
 
-    $responses = $this->responses[$id] ?? [];
-    $selected  = $responses['selected'] ?? '';
-    $checked   = $selected ? 'checked' : '';
+    $response = $this->responses[$id] ?? [];
+    $selected = $response['selected'] ?? '';
+    $checked  = $selected ? 'checked' : '';
 
     $class = 'question bool';
     $data_id = "data-qid='$id'";
@@ -347,7 +347,7 @@ class RenderEngine
     echo "<label for='$input_id' class='$class'>$wording</label>";
     echo "</div>";
     if($has_popup) { $this->add_popup_trigger($id); }
-    $this->add_qualifier($id, $class, $indent, $qualifier, $responses['qualifier'] ?? '');
+    $this->add_qualifier($id, $class, $indent, $qualifier, $response['qualifier'] ?? '');
     if($has_popup) { $this->add_popup($id,$question->popup_text(),$indent); }
   }
 
@@ -381,7 +381,7 @@ class RenderEngine
     }
     $data_id = "data-qid='$id'";
 
-    $response = $responses[$id] ?? null;
+    $response    = $this->responses[$id] ?? null;
     $selected    = $response['selected'] ?? [];
     $other_value = $response['other'] ?? '';
 
