@@ -121,7 +121,7 @@ function update_survey(int $survey_id, SurveyContent $content, string $title) : 
 }
 
 /**
- * Validates that the specified caching table in the dataabase has the same columns as
+ * Validates that the specified caching table in the database has the same columns as
  *   the table it is caching.
  * @param mixed $table 
  * @param mixed $cache 
@@ -284,8 +284,7 @@ function add_survey_options(int $survey_id,SurveyContent $content) : void
 /**
  * Updates the survey question data
  * @param int $survey_id 
- * @param SurveyContent
- * @return void 
+ * @param SurveyContent $content
  * @throws FailedToUpdate on mysqli exception
  */
 function add_survey_questions(int $survey_id,SurveyContent $content) : void
@@ -413,10 +412,10 @@ function add_section_content(int $survey_id, int $section_id, SurveyContent $sur
       //   1. Add survey_id, group_id, name to question groups (FK on surveys)
       //   2. Add survey_id, section_id, sequence, group_id to section content (FK on question groups)
       //   3. Add survey_id, group_id, sequence, question_id to group content (FK on section content)
-      $insert_question_group->run($survey_id, $group_id, $group['name']);
+      $insert_question_group->run($survey_id, $group_id, $group->name());
       $add_group_to_section->run($survey_id,$section_id,$section_sequence,$group_id);
 
-      foreach( $group['content'] as $group_index=>$question_id ) {
+      foreach( $group->question_ids() as $group_index=>$question_id ) {
         $add_question_to_group->run($survey_id, $group_id,1+$group_index,$question_id);
       }
     }

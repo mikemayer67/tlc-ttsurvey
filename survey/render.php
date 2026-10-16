@@ -88,25 +88,27 @@ require_once(app_file('survey/markdown.php'));
  */
 class RenderEngine 
 {
-  private $popup_icon = null;
-
-  private $follows_info = false;
-  private $content      = null;
-  private $responses    = null;
-  private $userid       = null;
-  private $survey_id    = null;
-  private $timestamps   = [];
+  private string        $popup_icon;
+  private bool          $follows_info;
+  private SurveyContent $content;
+  private array         $responses;
+  private ?int          $userid;
+  private ?int          $survey_id;
+  private string        $timestamps;
 
   /**
    * Constructs the render engine for the online survey
+   * 
+   * Note: the timestamp value is expected to be of the form "draft:submitted"
+   *        where both draft and submitted are unix timestamps
+   * 
    * @param  SurveyContent $content 
-   * @param array {
+   * @param array{
    *   userid: string,
    *   survey_id: int,
    *   responses: array,
-   *   timestamps: string (draft:submitted)
+   *   timestamps: string
    * } $kwargs 
-   * @return void 
    */
   function __construct(SurveyContent $content, array $kwargs)
   {
@@ -119,7 +121,7 @@ class RenderEngine
 
     $this->userid     = $kwargs['userid'] ?? null;
     $this->survey_id  = $kwargs['survey_id'] ?? null;
-    $this->timestamps = $kwargs['timestamps'] ?? [];
+    $this->timestamps = $kwargs['timestamps'] ?? "";
   }
 
   /**
@@ -258,8 +260,8 @@ class RenderEngine
 
         case 'group':
           $group = $this->content->group($item_id);
-          $question_ids = $group['content'];
-          $group_name = $group['name'];
+          $question_ids = $group->question_ids();
+          $group_name = $group->name();
           echo "<div class='question-box' data-gid=$item_id data-group='$group_name'>";
           foreach($question_ids as $question_id) {
             $question = $this->content->question($question_id);
@@ -453,7 +455,7 @@ class RenderEngine
     }
   }
 
-  protected function add_popup(int $id, string $popup_text, $indent) : void 
+  protected function add_popup(int $id, string $popup_text, int $indent) : void 
   {
     $hint_id  = "hint-$id";
     $hintlock_id  = "hint-lock-$id";
@@ -468,7 +470,6 @@ class RenderEngine
    * Adds the trigger "button" for toggling the popup info on/off
    * @param int $id 
    * @param ''|'nominal'|'narrow' $column_class 
-   * @return void 
    */
   protected function add_popup_trigger(int $id, string $column_class='') : void
   {
@@ -478,20 +479,22 @@ class RenderEngine
   }
 };
 
-
 /**
  * Renders the HTML for displaying the survey in a browswer
+ *
+ * Note: the timestamp value is expected to be of the form "draft:submitted"
+ *        where both draft and submitted are unix timestamps
+ * 
  * @param ('preview'|'draft_updates'|'submitted'|'draft'|'new') $state
  * @param  SurveyContent $content 
- * @param array {
+ * @param array{
  *   userid: string,
  *   survey_id: int,
  *   responses: array,
- *   timestamps: string (draft:submitted)
+ *   timestamps: string
  * } $kwargs 
- * @return void 
  */
-function render_survey(string $state, SurveyContent $content, $kwargs=[])
+function render_survey(string $state, SurveyContent $content, $kwargs=[]) : void
 {
   $re = new RenderEngine($content,$kwargs);
   $re->render($state);

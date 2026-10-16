@@ -8,6 +8,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/question.php'));
 require_once(app_file('include/question_types.php'));
 require_once(app_file('include/question_flags.php'));
+require_once(app_file('include/question_group.php'));
 
 /**
  * Class containing all of the content information for the specified survey
@@ -15,7 +16,7 @@ require_once(app_file('include/question_flags.php'));
  * Survey content must be accessed using the methods provided by
  *   this class. The content includes the following data structures:
  * 
- *   Options : selectable response options (shared by all questions in the survey)
+ *   Options : indexed array of options shared by all questions in the survey
  *     option_id : unique identifier for each option (*array index)
  *     text : how option appears in the survey form
  *
@@ -29,7 +30,7 @@ require_once(app_file('include/question_flags.php'));
  *         type: 'question' or 'group'
  *         id: question ID or group ID
  *
- *   Groups: indexed array of groups that a section can include
+ *   Groups: indexed array of tlc\tts\QuestionGroup instances
  *     group_id : unique identifier for each group
  *     name : group name as it will appear in the survey editor
  *     content : ordered list of question IDs that appear in the group
@@ -84,14 +85,16 @@ class SurveyContent
   }
 
   /**
-   * Returns array of all options common to all questions in the specified survey
+   * Returns array of option strings common to all questions in the specified survey
    *
-   * @return array list of options (see SurveyContent documentation)
+   * @return array<string>
    */
-  public function options() : array { return $this->_options; }
+  public function options() : array { 
+    return $this->_options; 
+  }
 
   /**
-   * Returns the text associated with the option with the specified option ID
+   * Returns the option string associated with the specified option ID
    * @param int $id 
    * @return null|string 
    */
@@ -102,23 +105,15 @@ class SurveyContent
   /**
    * Returns array of all sections in the specified survey
    * 
-   * @return array list of sections (see SurveyContent documentation)
+   * @return array list<SurveySection>
    */
   public function sections() : array { return $this->_sections; }
 
   /**
-   * Returns the array of section details
+   * Returns the survey section with the specified section ID
    * 
-   * Each section contains:
-   *   section_id: unique indentifier for each group
-   *   name:       name as it will appear in the survey editor
-   *   content:    
    * @param int $section_id 
-   * @return null || array{
-   *   section_id: int unique identifier for each group,
-   *   name: string name as it will appear in the survey editor,
-   *   content: array<int> question IDs that appear in the group (in order)
-   * }
+   * @return null|SurveySection
    */
   public function section($section_id) : ?array { 
     return $this->_sections[$section_id] ?? null; 
@@ -126,27 +121,19 @@ class SurveyContent
 
   /**
    * Returns array of all question groups in the specified survey
-   * @return array {
-   *   group_id: int unique identifier for each group,
-   *   name: string name as it will appear in the survey editor,
-   *   content: array<int> question IDs that appear in the group (in order)
-   * }
+   *
+   * @return list<QuestionGroup>
    */
   public function groups() : array { return $this->_groups; }
 
   /**
-   * Returns the details associated with the specified group
+   * Returns the question group with the specified group ID
    * @param int $group_id 
-   * @return null || array {
-   *   group_id: int unique identifier for each group,
-   *   name: string name as it will appear in the survey editor,
-   *   content: array<int> question IDs that appear in the group (in order)
-   * }
+   * @return null|QuestionGroup
    */
-  public function group(int $group_id) : ?array {
+  public function group(int $group_id) : ?QuestionGroup {
     return $this->_groups[$group_id] ?? null;
   }
-
 
   /**
    * Returns array of all questions in the specified survey (and its ancestors)
@@ -155,8 +142,8 @@ class SurveyContent
   public function questions() : array { return $this->_questions; }
 
   /**
-   * Returns the details associated with the specified question
-   * @param int $question_id : the survey of interest
+   * Returns the question with the specified group ID
+   * @param int $question_id
    * @return null|Question
    */
   public function question(int $question_id) : ?Question
@@ -183,9 +170,12 @@ class SurveyContent
     return [
       'options'   => $this->_options,
       'sections'  => $this->_sections,
-      'groups'    => $this->_groups,
+      'groups'    => array_map(
+        fn($group) => $group->for_js(),
+        $this->_groups
+      ),
       'questions' => array_map(
-        function($question) { return $question->for_js(); },
+        fn($question) => $question->for_js(),
         $this->_questions
       ),
       'next_ids'  => $this->_next_ids,
@@ -251,13 +241,13 @@ class SurveyContent
     $this->_sections = array_column($rows,null,'section_id');
 
     $query = <<<SQL
-      SELECT section_id, sequence, group_id, question_id
+      SELECT section_id, group_id, question_id
         FROM tlc_srv_section_content 
        WHERE survey_id=(?)
        ORDER BY section_id, sequence
     SQL;
     $rows = MySQLFetchAllIndexed($query,'i',$survey_id);
-    foreach($rows as [$section_id,$sequence,$group_id,$question_id]) {
+    foreach($rows as [$section_id,$group_id,$question_id]) {
       if(!is_null($question_id)) {
         $this->_sections[$section_id]['content'][] = ['type'=>'question', 'id'=>$question_id];
       } else {
@@ -268,6 +258,10 @@ class SurveyContent
 
   private function add_groups(int $survey_id)
   {
+    // As the database keeps separate tables for identifying and
+    //  populating question groups, we need two queries.
+
+    // Get all group IDs associated with the specified survey
     $query = <<<SQL
       SELECT group_id, name
         FROM tlc_srv_question_groups
@@ -276,8 +270,11 @@ class SurveyContent
     $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
     if (!$rows) { return; }
 
-    $this->_groups = array_column($rows, null, 'group_id');
+    $groups = array_column($rows, null, 'group_id');
     
+    // Get all question IDs associated with each group in the survey
+    //   The database enforces with foreign keys that the group IDs
+    //   returned below are a subset of the group IDs found above
     $query = <<<SQL
       SELECT group_id, question_id
         FROM tlc_srv_group_content 
@@ -286,8 +283,14 @@ class SurveyContent
     SQL;
     $rows = MySQLFetchAllIndexed($query,'i',$survey_id);
     foreach($rows as [$group_id,$question_id]) {
-      $this->_groups[$group_id]['content'][] = $question_id;
+      $groups[$group_id]['content'][] = $question_id;
     }
+
+    $this->_groups = array_map(
+      fn($group) => new QuestionGroup($group),
+      $groups
+    );
+    
   }
 
   private function add_questions(int $survey_id) 
@@ -337,10 +340,14 @@ class SurveyContent
     $content =json_decode($json, true);
     $this->_options   = $content['options'];
     $this->_sections  = $content['sections'];
-    $this->_groups    = $content['groups'];
-    $this->_questions = [];
     $this->_next_ids  = $content['next_ids'];
 
+    $this->_groups = [];
+    foreach($content['groups'] as $group_id => $group) {
+      $this->_groups[$group_id] = new QuestionGroup($group);
+    }
+
+    $this->_questions = [];
     foreach($content['questions'] as $question_id => $question) {
       $this->_questions[$question_id] = Question::from($question);
     }
