@@ -22,8 +22,8 @@ class SummaryInfoBox extends SummaryQuestionBox
     SummaryPDF $summaryPDF,
     float $width,
     array $question,
-    ?SummaryQuestionBox $prev = null
-  ) {
+    ?SummaryQuestionBox $prev = null) 
+  {
     parent::__construct($summaryPDF,$prev);
 
     $this->width = $width;
@@ -49,7 +49,7 @@ class SummaryInfoBox extends SummaryQuestionBox
    * Indentation starts after an in-group info box
    * @return float 
    */
-  public function incrementIndent(): float
+  public function indentDelta(): float
   {
     return self::indent;
   }

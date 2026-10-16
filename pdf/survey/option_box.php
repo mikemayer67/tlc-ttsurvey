@@ -34,7 +34,7 @@ class SurveyOptionBox extends SurveyAlignableBox
    * @param string $label 
    * @param OptionShape $shape 
    * @param SurveyJustification $justification 
-   * @param int $fontsize (default=K_SURVEY_FONT_MEDIUM)
+   * @param float $fontsize (default=K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
   public function __construct(
@@ -43,7 +43,7 @@ class SurveyOptionBox extends SurveyAlignableBox
     string $label,
     OptionShape $shape, 
     SurveyJustification $justification,
-    int $fontsize = K_SURVEY_FONT_MEDIUM )
+    float $fontsize = K_SURVEY_FONT_MEDIUM )
   {
     parent::__construct($surveyPDF,$justification);
 

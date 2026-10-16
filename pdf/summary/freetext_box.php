@@ -25,8 +25,8 @@ class SummaryFreeTextBox extends SummaryQuestionBox
     float $width,
     array $question,
     array $responses,
-    ?SummaryQuestionBox $prev = null
-  ) {
+    ?SummaryQuestionBox $prev = null )
+  {
     parent::__construct($summaryPDF,$prev);
 
     $qid       = $question['id'];

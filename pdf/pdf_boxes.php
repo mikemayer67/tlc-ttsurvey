@@ -97,7 +97,7 @@ abstract class PDFBox
    *   Subclasses which increment indent should override this method
    * @return float amount by which to increment the indent
    */
-  public function incrementIndent(): float { return 0; }
+  public function indentDelta(): float { return 0; }
 
   
   /**
@@ -291,7 +291,7 @@ abstract class PDFRootBox extends PDFBox
       $box->position($this->_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
-      $indent += $box->incrementIndent();
+      $indent += $box->indentDelta();
     }
   }
 

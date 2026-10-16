@@ -24,7 +24,11 @@ class SummaryOtherBox extends PDFBox
    * @param array $responses 
    * @return void 
    */
-  public function __construct(SummaryPDF $summaryPDF,float $width,string $label,array $responses)
+  public function __construct(
+    SummaryPDF $summaryPDF,
+    float $width,
+    string $label,
+    array $responses )
   {
     parent::__construct($summaryPDF);
     

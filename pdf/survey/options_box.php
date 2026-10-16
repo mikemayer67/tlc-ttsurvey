@@ -49,13 +49,17 @@ class SurveyOptionsBox extends PDFBox
    * @param float $max_width 
    * @param float $inline_width 
    * @param array $question 
-   * @param array $options 
-   * @param int $fontsize (default=k_SURVEY_FORM_MEDIUM)
+   * @param SurveyContent $content
+   * @param float $fontsize (default=k_SURVEY_FORM_MEDIUM)
    * @return void 
    */
   public function __construct(
-    SurveyPDF $surveyPDF, float $max_width, float $inline_width,
-    array $question, array $options, int $fontsize=K_SURVEY_FONT_MEDIUM)
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    float $inline_width,
+    array $question, 
+    SurveyContent $content, 
+    float $fontsize=K_SURVEY_FONT_MEDIUM )
   {
     parent::__construct($surveyPDF);
     
@@ -67,8 +71,8 @@ class SurveyOptionsBox extends PDFBox
     $this->layout = $layout;
     
     $this->children = [];
-    foreach($question['options'] as $option) {
-      $label = $options[$option];
+    foreach($question['options'] as $option_id) {
+      $label = $content->option_text($option_id);
       $this->children[] = new SurveyOptionBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );

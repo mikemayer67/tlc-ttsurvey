@@ -27,7 +27,11 @@ class SummaryOptionBox extends PDFBox
    * @param array $userids 
    * @return void 
    */
-  public function __construct(SummaryPDF $summaryPDF, float $width, string $label, array $userids)
+  public function __construct(
+    SummaryPDF $summaryPDF, 
+    float $width, 
+    string $label, 
+    array $userids )
   {
     parent::__construct($summaryPDF);
 

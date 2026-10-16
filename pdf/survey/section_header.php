@@ -80,7 +80,7 @@ class SurveySectionHeader extends PDFBox
    * Section boxes increase the indent for subsequent boxes if it contains an intro box
    * @return float amount by which to incrment the indent
    */
-  public function incrementIndent(): float
+  public function indentDelta(): float
   {
     return $this->intro_box ? K_QUARTER_INCH : 0;
   }

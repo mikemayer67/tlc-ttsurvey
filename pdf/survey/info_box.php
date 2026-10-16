@@ -39,7 +39,7 @@ class SurveyInfoBox extends PDFBox
    * starting a new question group
    * @return float 
    */
-  public function incrementIndent() : float
+  public function indentDelta() : float
   {
     return $this->new_group ? K_QUARTER_INCH : 0;
   }

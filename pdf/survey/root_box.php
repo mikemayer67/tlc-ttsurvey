@@ -17,89 +17,57 @@ class SurveyRootBox extends PDFRootBox
 {
   /**
    * Constructs all of the top level child boxes for the survey form
-   * @param SurveyPDF $surveyPDF 
-   * @param array $content survey content structure data
+   * @param SurveyPDF $surveyPDF  
+   * @param SurveyContent $content
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, array $content)
+  public function __construct(SurveyPDF $surveyPDF, SurveyContent $content)
   {
     parent::__construct($surveyPDF);
 
     $max_width = $this->content_width();
 
     // Sort the sections by sequence
-    $sections = $content['sections'];
-    usort($sections, fn($a, $b) => $a['sequence'] <=> $b['sequence']);
-    foreach ($sections as $section) {
-      $this->add_section($max_width, $section, $content);
-    }
-  }
+    foreach ($content->sections() as $section) 
+    {
+      // reset the width for the next section to full width
+      $width = $max_width;
 
-  /**
-   * Adds section content boxes to the survey form
-   * @param float $width 
-   * @param array $section section specific content data
-   * @param array $content overall survey content structure data
-   * @return void 
-   */
-  private function add_section(float $width, array $section, array $content)
-  {
-    $box = new SurveySectionHeader($this->ttpdf, $width, $section);
-    $this->addChild($box);
-    
-    $width -= $box->incrementIndent();
-    $this->add_questions($width, $section['section_id'], $content);
-  }
-
-  /**
-   * Adds all question content for the specified section id
-   * @param float $width
-   * @param int $sid section ID
-   * @param array $content overall survey content structure data
-   * @return void 
-   */
-  private function add_questions(float $width, int $sid, array $content): void
-  {
-    // find the questions to add to this section
-    $questions = array_values(array_filter(
-      $content['questions'],
-      fn($q) => (
-        (($q['section'] ?? null) === $sid) &&        // question must be associated with this section
-        array_key_exists('sequence', $q)  // question must have a sequence index
-      )
-    ));
-
-    // and sort them by sequence index
-    usort($questions, function ($a, $b) {
-      return $a['sequence'] <=> $b['sequence'];
-    });
-
-    // group the questions into groups that should not break between pages.
-    todo("Update the following as question.grouped no longer exists");
-    $groups = [];
-    $group = [];
-    foreach($questions as $question) {
-      switch( $question['grouped'] ?? 'NO' ) {
-        case 'YES':
-          $group[] = $question;
-        break;
-        case 'NEW':
-          if ($group) { $groups[] = $group; }
-          $group = [$question];
-          break;
-        default:
-          if ($group) { $groups[] = $group; }
-          $groups[] = [$question];
-          $group = [];
-          break;
-      }
-    }
-    if($group) { $groups[] = $group; }
-
-    // add question boxes to the survey
-    foreach($groups as $questions) {
-      $box = new SurveyGroupBox($this->ttpdf, $width, $questions, $content);
+      // add the section header
+      $box = new SurveySectionHeader($this->ttpdf, $width, $section);
       $this->addChild($box);
+    
+      // decrease the available width by the header indent (may be zero)
+      $width -= $box->indentDelta();
+
+      // add the section content
+      foreach($section['content'] as ['type'=>$type, 'id'=>$id])
+      {
+        // determine if the item is group or question and extract question IDs
+        $question_ids = [];
+        if($type === 'question') {
+          // aka... a "group of one"
+          $question_ids = [$id];
+        } elseif($type === 'group') {
+          $group = $content->group($id);
+          if(isset($group)) { $question_ids = $group['content']; }
+        } else {
+          internal_error("Unknown section item type '$type'");
+        }
+
+        // map question IDs to question data
+        $questions = array_filter(
+          array_map(
+            fn($question_id) => $content->question($question_id),
+            $question_ids
+          ),
+          fn($question) => isset($question)
+        );
+
+        // and now render those questions:
+        $box = new SurveyGroupBox($this->ttpdf, $width, $questions, $content);
+        $this->addChild($box);
+      }
     }
   }
 }

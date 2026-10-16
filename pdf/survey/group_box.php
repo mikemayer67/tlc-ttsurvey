@@ -21,9 +21,14 @@ class SurveyGroupBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width
    * @param array $questions 
+   * @param SurveyContent $content
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $questions, array $content)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    array $questions, 
+    SurveyContent $content)
   {
     parent::__construct($surveyPDF);
 
@@ -35,7 +40,7 @@ class SurveyGroupBox extends PDFBox
 
     $aligned_width = 0;
     foreach($questions as $question) {
-      $type = $question['type'];
+      $type = $question->type();
 
       switch($type) {
         case QuestionType::Info:
@@ -49,7 +54,7 @@ class SurveyGroupBox extends PDFBox
           break;
         case QuestionType::SelectOne:
         case QuestionType::SelectMulti:
-          $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content['options']);
+          $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content);
           break;
       }
       $this->height += $box->getHeight();
@@ -60,7 +65,7 @@ class SurveyGroupBox extends PDFBox
         $aligned_width = max($aligned_width, $box->getAlignedWidth());
       }
 
-      $max_width -= $box->incrementIndent();
+      $max_width -= $box->indentDelta();
     }
     foreach($this->child_boxes as $box) {
       if($box instanceof SurveyAlignableBox) {
@@ -84,7 +89,7 @@ class SurveyGroupBox extends PDFBox
     {
       $box->position($x,$y);
       $y += $box->getHeight();
-      $x += $box->incrementIndent();
+      $x += $box->indentDelta();
     }
   }
 

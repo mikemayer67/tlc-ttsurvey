@@ -33,7 +33,7 @@ class SurveyFreeTextBox extends PDFBox
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
-      $max_width     -= $this->intro_box->incrementIndent();
+      $max_width     -= $this->intro_box->indentDelta();
       $this->height += $this->intro_box->getHeight();
     }
 
@@ -58,7 +58,7 @@ class SurveyFreeTextBox extends PDFBox
     if($this->intro_box) {
       $this->intro_box->position($x, $y);
       $y += $this->intro_box->getHeight() + self::vgap;
-      $x += $this->intro_box->incrementIndent();
+      $x += $this->intro_box->indentDelta();
     }
 
     $this->wording_box->position($x, $y);

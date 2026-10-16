@@ -7,6 +7,7 @@ require_once(app_file('include/surveys.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
+$active_roles ??= [];
 $is_admin = in_array('admin',$active_roles);
 
 // survey data

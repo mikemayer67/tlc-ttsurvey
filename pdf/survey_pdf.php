@@ -40,7 +40,7 @@ class SurveyPDF extends TTPDF
 
   /** Renders the PDF file given the survey content
    * @param array $info contains title, status, etc. about the survey being rendered
-   * @param SurveyContent
+   * @param SurveyContent $content
    * @return void 
    */
   public function render(array $info,SurveyContent $content)

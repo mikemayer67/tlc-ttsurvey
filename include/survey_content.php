@@ -1,6 +1,8 @@
 <?php
 namespace tlc\tts;
 
+use OutOfBoundsException;
+
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/question.php'));
@@ -9,46 +11,57 @@ require_once(app_file('include/question_flags.php'));
 
 /**
  * Class containing all of the content information for the specified survey
- * This includes:
- *   options : selectable response options (shared by all questions in the survey)
+ * 
+ * Survey content must be accessed using the methods provided by
+ *   this class. The content includes the following data structures:
+ * 
+ *   Options : selectable response options (shared by all questions in the survey)
  *     option_id : unique identifier for each option (*array index)
  *     text : how option appears in the survey form
- *   sections:
+ *
+ *   Sections: ordered list of survey sections
  *      section_id : unique identifier for each section (*array index) 
  *      sequence : order this section appears in the survey
  *      name : name of this section 
  *      collapsible : truthy/falsey value if the section can be opened/closed in the survey
  *      intro : optional text to display at top of the section
- *      content : array of questions/groups in this section (in order)
+ *      content : ordered list of questions/groups in this section
  *         type: 'question' or 'group'
  *         id: question ID or group ID
- *   groups:
+ *
+ *   Groups: indexed array of groups that a section can include
  *     group_id : unique identifier for each group
  *     name : group name as it will appear in the survey editor
- *     content : array of question IDs that appear in the group (in order)
- *   questions:
- *     array of Question instances
- *   next_ids:
- *     survey:   next available survey ID (must be unique across all surveys)
- *     question: next available question ID (must be unique across all surveys)
- *     option:   next available option ID (must be unique within a given survey)
+ *     content : ordered list of question IDs that appear in the group
  * 
- * @param int $survey_id : the survey of interest
+ *   Questions: indexed array of tlc\tts\Question instances
+ *
+ *   Next IDs: associative array of next available IDs (across all surveys)
+ *     survey:   next available survey ID
+ *     question: next available question ID
+ *     option:   next available option ID
  */
 class SurveyContent
 {
-  private bool  $_initialized;
   private array $_options = [];
   private array $_sections = [];
   private array $_groups = [];
   private array $_questions = [];
   private array $_next_ids = [];
 
-  private function __construct()
-  {
-    $this->_initialized = false;
-  }
+  /**
+   * Cosntructor is private to force use of factory methods
+   * @return void 
+   */
+  private function __construct() {}
 
+  /**
+   * Constructs and returns a SurveyContent instance populated from database
+   * 
+   * @param int $survey_id ID of the survey to load
+   * @return SurveyContent 
+   * @throws \OutOfBoundsException if susrvey_id is not found in the database
+   */
   public static function fromSurveyID(int $survey_id) : SurveyContent
   {
     $content = new SurveyContent();
@@ -56,6 +69,13 @@ class SurveyContent
     return $content;
   }
 
+  /**
+   * Constructs and returns a SurveyContent instance from a JSON string
+   * 
+   * @param string $json JSON representation of the survey content
+   *    (see parse_json_string for more info)
+   * @return SurveyContent 
+   */
   public static function fromJsonString(string $json) : SurveyContent
   {
     $content = new SurveyContent();
@@ -64,17 +84,9 @@ class SurveyContent
   }
 
   /**
-   * Returns whether or not the instance was successfully initialized
-   * @return bool 
-   */
-  public function is_initialized() : bool { return $this->_initialized; }
-
-  /**
    * Returns array of all options common to all questions in the specified survey
-   * @return list< array {
-   *   option_id: int unique identifier for each option,
-   *   text: string how option appears in the survey form
-   * } >
+   *
+   * @return array list of options (see SurveyContent documentation)
    */
   public function options() : array { return $this->_options; }
 
@@ -89,24 +101,20 @@ class SurveyContent
 
   /**
    * Returns array of all sections in the specified survey
-   * @return array {
-   *   section_id: int unique identifier for each setion,
-   *   sequence: int order this section appears in the survey,
-   *   name: string name of this section,
-   *   collapsible: truthy/falsey value if the section can be opened/closed in the survey,
-   *   intro?: string text to display at top of the section,
-   *   content: list< array { 
-   *      type: ('question'|'group'),
-   *      id: int question ID or group id
-   *   } questions/groups in this section (in order)
-   * } >
+   * 
+   * @return array list of sections (see SurveyContent documentation)
    */
   public function sections() : array { return $this->_sections; }
 
   /**
-   * Returns the details associated with the specified section
+   * Returns the array of section details
+   * 
+   * Each section contains:
+   *   section_id: unique indentifier for each group
+   *   name:       name as it will appear in the survey editor
+   *   content:    
    * @param int $section_id 
-   * @return null || array {
+   * @return null || array{
    *   section_id: int unique identifier for each group,
    *   name: string name as it will appear in the survey editor,
    *   content: array<int> question IDs that appear in the group (in order)
@@ -138,6 +146,7 @@ class SurveyContent
   public function group(int $group_id) : ?array {
     return $this->_groups[$group_id] ?? null;
   }
+
 
   /**
    * Returns array of all questions in the specified survey (and its ancestors)
@@ -183,17 +192,23 @@ class SurveyContent
     ];
   }
 
+  /**
+   * Populates the SurveyContent data from database for the specified survey ID
+   * 
+   * @param int $survey_id 
+   * @return void 
+   * @throws OutOfBoundsException if survey_id is not found in the database
+   */
   private function load_from_database(int $survey_id)
   {
-    if($this->verify_id($survey_id)) 
-    {
-      $this->add_options($survey_id);
-      $this->add_sections($survey_id);
-      $this->add_groups($survey_id);
-      $this->add_questions($survey_id);
-      $this->add_next_ids($survey_id);
-      $this->_initialized = true;
+    if(! $this->verify_id($survey_id)) {
+      throw new \OutOfBoundsException("No survey content found for survey_id $survey_id");
     }
+    $this->add_options($survey_id);
+    $this->add_sections($survey_id);
+    $this->add_groups($survey_id);
+    $this->add_questions($survey_id);
+    $this->add_next_ids($survey_id);
   }
 
   private function verify_id(int $survey_id)
@@ -329,7 +344,5 @@ class SurveyContent
     foreach($content['questions'] as $question_id => $question) {
       $this->_questions[$question_id] = Question::from($question);
     }
-
-    $this->_initialized = true;
   }
 }

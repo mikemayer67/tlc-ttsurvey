@@ -21,7 +21,7 @@ class ExcludeFromLogTrace {}
  * @return never 
  */
 #[ExcludeFromLogTrace]
-function api_die(string $msg='') 
+function api_die(string $msg='') : never
 {
   error_log("API Error[$msg]: ".print_r($_SERVER,true));
   http_response_code(405);

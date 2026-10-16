@@ -16,9 +16,10 @@ $id = parse_ajax_integer_input('survey_id');
 // assume failure unless content was actually found
 $response = new AjaxResponse(false);
 
-$content = SurveyContent::fromSurveyID($id);
-if(!$content->is_initialized()) {
-  send_ajax_failure("No survey content found for id=$id");
+try {
+  $content = SurveyContent::fromSurveyID($id);
+} catch (\OutOfBoundsException $e) {
+  send_ajax_failure($e->getMessage());
 }
 
 end_ob_logging();

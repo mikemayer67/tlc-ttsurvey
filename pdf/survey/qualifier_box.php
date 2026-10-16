@@ -22,10 +22,14 @@ class SurveyQualifierBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $label 
-   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
+   * @param float $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF,float $max_width,string $label,int $fontsize=K_SURVEY_FONT_MEDIUM)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    string $label, 
+    float $fontsize = K_SURVEY_FONT_MEDIUM )
   {
     parent::__construct($surveyPDF);
 
