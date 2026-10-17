@@ -35,7 +35,7 @@ $response = new AjaxResponse();
 $response->add('email',$email);
 
 $success = send_confirmation_email($userid,$active_id,$email);
-if(!$success) { $response->fail(); }
+if(!$success) { $response->fail('unknown reason'); }
 
 end_ob_logging();
 

@@ -139,15 +139,17 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   }
 }
 
-function send_confirmation_email($userid,$survey_id,$email)
+function send_confirmation_email($userid,$survey_id,$email) : bool
 {
   todo("Add summary info to confirmation email");
   $error = '';
-  sendmail_confirmation($email,$userid,'',$error);
-  if(empty($error)) {
-    set_confirmation_email_timestamp($userid,$survey_id,$email);
-    $_SESSION['queued-confirmation-email'] = false;
-  }
+  $sent = sendmail_confirmation($email,$userid,'',$error);
+  
+  if(!$sent) { return false; }
+
+  set_confirmation_email_timestamp($userid, $survey_id, $email);
+  $_SESSION['queued-confirmation-email'] = false;
+  return true;
 }
 
 function withdraw_responses($userid,$survey_id,$restart=false)

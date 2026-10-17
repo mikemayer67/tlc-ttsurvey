@@ -51,6 +51,7 @@ function sendmail(mixed $email,string $subject,string $text,?string $html=null)
     $mail->SMTPAuth   = true;
     $mail->Username   = $username;
     $mail->Password   = $password;
+    $mail->Timeout    = 10; // seconds
 
     $reply_email = smtp_reply_email();
     $reply_name  = smtp_reply_email();
@@ -222,9 +223,9 @@ function sendmail_recovery(string $email,array $tokens,?string &$error=null)
  * @param string $userid 
  * @param string $summary 
  * @param null|string &$error set to error reason on failure to send email
- * @return false|true 
+ * @return bool
  */
-function sendmail_confirmation(string $email,string $userid,string $summary, ?string &$error=null)
+function sendmail_confirmation(string $email,string $userid,string $summary, ?string &$error=null) : bool
 {
   $error = '';
 

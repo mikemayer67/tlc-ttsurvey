@@ -92,7 +92,7 @@ class RenderEngine
   private bool          $follows_info;
   private SurveyContent $content;
   private array         $responses;
-  private ?int          $userid;
+  private ?string       $userid;
   private ?int          $survey_id;
   private string        $timestamps;
 
@@ -217,12 +217,12 @@ class RenderEngine
     echo "</div>";
   }
 
-  private function add_section(array $section)
+  private function add_section(SurveySection $section)
   {
-    $sid         = $section['section_id'];
-    $name        = $section['name'];
-    $collapsible = $section['collapsible'] ?? true;
-    $intro       = $section['intro'] ?? '';
+    $sid         = $section->id();
+    $name        = $section->name();
+    $collapsible = $section->collapsible();
+    $intro       = $section->intro() ?? '';
 
     $index = "data-section=$sid";
 
@@ -241,15 +241,14 @@ class RenderEngine
       echo "</div>";
     }
 
-    foreach($section['content'] as $item) 
+    foreach($section->content() as ['type'=>$item_type, 'id'=>$item_id])
     {
-      $item_id = $item['id'];
-
       # reset the "follows info" flag
       $this->follows_info = false;
 
       # handle section level questions and groups differently
-      switch($item['type']) {
+      switch($item_type) 
+      {
         case 'question':
           $question = $this->content->question($item_id);
           $box_class = $question->box_class();
