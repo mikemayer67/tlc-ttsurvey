@@ -18,15 +18,15 @@ class SurveyFreeTextBox extends PDFBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
-   * @param array $question 
+   * @param FreeTextQuestion $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, FreeTextQuestion $question)
   {
     parent::__construct($surveyPDF);
 
-    $wording = $question['wording'];
-    $intro   = $question['intro'] ?? null;
+    $wording = $question->wording();
+    $intro   = $question->intro();
 
     $this->width = $max_width;
     $this->height = 0;

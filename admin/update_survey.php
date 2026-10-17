@@ -345,7 +345,7 @@ function add_survey_structure(int $survey_id,SurveyContent $content) : void
     $section_id   = $section->id();
     $section_name = $section->name();
     $collapsible  = $section->collapsible() ? 1 : 0;
-    $intro        = $section->intro() ?? "";
+    $intro        = $section->intro();
 
     $insert_section->run($survey_id, $section_id, $section_name, $collapsible, $intro);
 

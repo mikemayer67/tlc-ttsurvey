@@ -222,7 +222,7 @@ class RenderEngine
     $sid         = $section->id();
     $name        = $section->name();
     $collapsible = $section->collapsible();
-    $intro       = $section->intro() ?? '';
+    $intro       = $section->intro();
 
     $index = "data-section=$sid";
 

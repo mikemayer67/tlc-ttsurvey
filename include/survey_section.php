@@ -16,7 +16,7 @@ class SurveySection
   private int     $id;
   private string  $name;
   private bool    $collapsible;
-  private ?string $intro;
+  private string  $intro;
   private array   $content;
 
   /**
@@ -35,15 +35,15 @@ class SurveySection
     $this->name        = $data['name'];
     $this->collapsible = $data['collapsible'] ?? true;
     $this->intro       = $data['intro'] ?? null;
-    $this->content     = $data['content'] ?? [];
+    $this->content     = $data['content'] ?? "";
   }
 
   public function id() : int { return $this->id; }
   public function name() : string { return $this->name; }
   public function collapsible() : bool { return $this->collapsible; }
   
-  public function has_intro() : bool    { return $this->intro ? true : false; }
-  public function intro()     : ?string { return $this->intro; }
+  public function has_intro() : bool   { return $this->intro ? true : false; }
+  public function intro()     : string { return $this->intro; }
 
   /**
    * Returns the section content as a list of question or group IDs

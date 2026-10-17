@@ -40,14 +40,9 @@ class SurveySelectBox extends SurveyAlignableBox
   {
     parent::__construct($surveyPDF);
 
-    $type    = $question->type();
     $intro   = $question->intro();
     $wording = $question->wording();
     $qual    = $question->qualifier();
-    $layout  = $question->layout();
-
-    $justification = SurveyJustification::fromInput($layout);
-    $shape         = OptionShape::fromInput($type);
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);

@@ -18,16 +18,16 @@ class SurveySectionHeader extends PDFBox
    * constructor
    * @param SurveyPDF $surveyPDF 
    * @param float $width 
-   * @param array $section 
+   * @param SurveySection $section 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $width, array $section)
+  public function __construct(SurveyPDF $surveyPDF, float $width, SurveySection $section)
   {
     parent::__construct($surveyPDF);
 
-    $name        = $section['name'];
-    $collapsible = $section['collapsible'] ?? true;
-    $intro       = $section['intro'] ?? '';
+    $name        = $section->name();
+    $collapsible = $section->collapsible();
+    $intro       = $section->intro();
 
     $this->width = $width;
     $this->height = 0;

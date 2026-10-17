@@ -14,14 +14,14 @@ class SurveyInfoBox extends PDFBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width
-   * @param array $question 
+   * @param InfoQuestion $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, InfoQuestion $question)
   {
     parent::__construct($surveyPDF);
 
-    $info = $question['info'];
+    $info = $question->info_text();
 
     $this->width = $max_width;
     $this->height = 0;

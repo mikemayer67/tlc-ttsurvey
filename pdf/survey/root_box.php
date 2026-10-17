@@ -41,7 +41,7 @@ class SurveyRootBox extends PDFRootBox
       $width -= $box->indentDelta();
 
       // add the section content
-      foreach($section['content'] as ['type'=>$type, 'id'=>$id])
+      foreach($section->content() as ['type'=>$type, 'id'=>$id])
       {
         // determine if the item is group or question and extract question IDs
         $question_ids = [];

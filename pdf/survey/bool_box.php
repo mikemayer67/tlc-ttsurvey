@@ -24,17 +24,17 @@ class SurveyBoolBox extends SurveyAlignableBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
-   * @param array $question 
+   * @param BoolQuestion $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, BoolQuestion $question)
   {
     parent::__construct($surveyPDF);
 
-    $intro   = $question['intro'] ?? null;
-    $wording = $question['wording'];
-    $layout  = $question['layout'] ?? QuestionLayout::None;
-    $qual    = $question['qualifier'] ?? null;
+    $intro   = $question->intro();
+    $wording = $question->wording();
+    $layout  = $question->layout();
+    $qual    = $question->qualifier();
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);

@@ -50,9 +50,9 @@ class SurveyPDF extends TTPDF
     $this->footer_config['timestamp'] = "version: $version";
 
     $content_root = new SurveyRootBox($this, $content);
-    $content_root->layoutChildren($this);
+    $content_root->layoutChildren();
     $this->page_count = PDFBox::numPages();
     
-    $content_root->render($this);
+    $content_root->render();
   }
 }
