@@ -182,9 +182,8 @@ class SurveyOptionsBox extends PDFBox
    * Manages positioning of an options box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x,$y);
 

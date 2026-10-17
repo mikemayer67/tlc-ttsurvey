@@ -74,12 +74,10 @@ class SurveyBoolBox extends SurveyAlignableBox
 
   /**
    * Manages positioning of a bool box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $y += $this->vpad;

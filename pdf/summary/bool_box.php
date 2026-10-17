@@ -45,9 +45,9 @@ class SummaryBoolBox extends SummaryQuestionBox
     );
     $this->height = $this->label_box->getHeight();
 
+    $responders = [];
+    $qualifiers = [];
     if ($responses) {
-      $responders = [];
-      $qualifiers = [];
       foreach ($responses as $response) {
         $userid    = $response['userid'];
         $selected  = $response['selected'] ?? false;
@@ -90,9 +90,8 @@ class SummaryBoolBox extends SummaryQuestionBox
    * Manages the layout of a bool box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);

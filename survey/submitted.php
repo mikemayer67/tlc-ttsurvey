@@ -139,7 +139,7 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   }
 }
 
-function send_confirmation_email($userid,$survey_id,$email) : bool
+function send_confirmation_email(string $userid,int $survey_id,string $email) : bool
 {
   todo("Add summary info to confirmation email");
   $error = '';
@@ -152,7 +152,7 @@ function send_confirmation_email($userid,$survey_id,$email) : bool
   return true;
 }
 
-function withdraw_responses($userid,$survey_id,$restart=false)
+function withdraw_responses(string $userid,int $survey_id,bool $restart=false)
 {
   if($restart) {
     $result = restart_user_responses($userid,$survey_id);
@@ -173,7 +173,7 @@ function withdraw_responses($userid,$survey_id,$restart=false)
   echo "</div></div>";
 }
 
-function withdraw_and_restart($userid,$survey_id)
+function withdraw_and_restart(string $userid,int $survey_id)
 {
   withdraw_responses($userid,$survey_id,true);
 }

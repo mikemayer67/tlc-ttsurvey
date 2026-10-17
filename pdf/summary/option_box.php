@@ -55,9 +55,8 @@ class SummaryOptionBox extends PDFBox
    * Manages the layout of a summary question option box
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);

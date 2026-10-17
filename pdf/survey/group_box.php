@@ -42,6 +42,7 @@ class SurveyGroupBox extends PDFBox
     foreach($questions as $question) {
       $type = $question->type();
 
+      $box = null;
       switch($type) {
         case QuestionType::Info:
           $box = new SurveyInfoBox($surveyPDF,$max_width,$question);
@@ -55,6 +56,9 @@ class SurveyGroupBox extends PDFBox
         case QuestionType::SelectOne:
         case QuestionType::SelectMulti:
           $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content);
+          break;
+        default:
+          internal_error("Unrecognized question type: $type");
           break;
       }
       $this->height += $box->getHeight();
@@ -76,12 +80,10 @@ class SurveyGroupBox extends PDFBox
 
   /**
    * Manages the layout of a group box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
 

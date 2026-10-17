@@ -40,13 +40,11 @@ class SurveySelectBox extends SurveyAlignableBox
   {
     parent::__construct($surveyPDF);
 
-    $type = $question->
-
-    $type    = $question['type'];
-    $intro   = $question['intro'] ?? null;
-    $wording = $question['wording'];
-    $qual    = $question['qualifier'] ?? null;
-    $layout  = $question['layout'] ?? QuestionLayout::Row;
+    $type    = $question->type();
+    $intro   = $question->intro();
+    $wording = $question->wording();
+    $qual    = $question->qualifier();
+    $layout  = $question->layout();
 
     $justification = SurveyJustification::fromInput($layout);
     $shape         = OptionShape::fromInput($type);
@@ -86,12 +84,10 @@ class SurveySelectBox extends SurveyAlignableBox
 
   /**
    * Manages positioning of a bool box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $y += $this->vpad;

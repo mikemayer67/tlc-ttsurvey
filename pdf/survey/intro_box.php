@@ -39,12 +39,10 @@ class SurveyIntroBox extends PDFBox
 
   /**
    * Manages positioning of a intro box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->box->position($x,$y);

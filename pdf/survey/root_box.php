@@ -50,7 +50,7 @@ class SurveyRootBox extends PDFRootBox
           $question_ids = [$id];
         } elseif($type === 'group') {
           $group = $content->group($id);
-          if(isset($group)) { $question_ids = $group['content']; }
+          if(isset($group)) { $question_ids = $group->question_ids(); }
         } else {
           internal_error("Unknown section item type '$type'");
         }

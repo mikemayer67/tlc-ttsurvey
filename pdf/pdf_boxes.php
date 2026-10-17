@@ -102,10 +102,8 @@ abstract class PDFBox
   
   /**
    * Sets the page number on boxes that start a new page
-   * @param int $page 
-   * @return void 
    */
-  protected function startPage() 
+  protected function startPage() : void
   {
     self::$cur_page += 1;
     $this->page = self::$cur_page;
@@ -131,12 +129,10 @@ abstract class PDFBox
    * - Must be overridden in child classes
    *   - should include call to super::position($x,$y)
    * - Must be called before render()
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     $this->x = $x;
     $this->y = $y;
@@ -160,7 +156,7 @@ abstract class PDFBox
 
   /**
    * Constructor currently does nothing other than set the minimum required argument list
-   * @param TTPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF $ttpdf instances of a TCDPF class (or subclass)
    * @return void 
    */
   public function __construct(TTPDF $ttpdf) 
@@ -221,7 +217,7 @@ abstract class PDFRootBox extends PDFBox
    * Constructor does nothing but invokes the PDFBox constructor.
    *   While the existence of this method is not strictly necessary, it serves as
    *   a reminder that all subclasses of PDFRootBox should also invoke the parent constrctor
-   * @param TTPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF $ttpdf instances of a TCDPF class (or subclass)
    * @param float $top margin (default=PDF_MARGIN_TOP)
    * @param float $right margin (default=PDF_MARGIN_RIGHT)
    * @param float $bottom margin (default=PDF_MARGIN_BOTTOM)
