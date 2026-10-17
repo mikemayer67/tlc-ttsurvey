@@ -342,10 +342,10 @@ function add_survey_structure(int $survey_id,SurveyContent $content) : void
   );
 
   foreach($content->sections() as $section) { 
-    $section_id   = $section['section_id'];
-    $section_name = $section['name'];
-    $collapsible  = ($section['collapsible'] ?? false) ? 1 : 0;
-    $intro        = $section['intro'] ?? '';
+    $section_id   = $section->id();
+    $section_name = $section->name();
+    $collapsible  = $section->collapsible() ? 1 : 0;
+    $intro        = $section->intro() ?? "";
 
     $insert_section->run($survey_id, $section_id, $section_name, $collapsible, $intro);
 
@@ -387,9 +387,7 @@ function add_section_content(int $survey_id, int $section_id, SurveyContent $sur
   );
 
   $section = $survey_content->section($section_id);
-  $section_content = $section['content'] ?? [];
-  
-  foreach($section_content as $section_index=>$item) {
+  foreach($section->content() as $section_index=>$item) {
     $section_sequence = 1 + $section_index;
     $item_type = $item['type'];
     $item_id   = $item['id'];

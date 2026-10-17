@@ -17,7 +17,7 @@ class QuestionGroup
 
   /**
    * Constructs a new QuestionGroup instance
-   * @param array{id: int, name: string, content?:list<int> } $data 
+   * @param array{group_id: int, name: string, content?:list<int> } $data 
    */
   public function __construct(array $data)
   {
@@ -28,6 +28,12 @@ class QuestionGroup
 
   public function id() : int { return $this->id; }
   public function name() : string { return $this->name; }
+
+  /**
+   * Returns the ordered list of question_ids associated with this group
+   * @return list<int>
+   */
+  public function question_ids() : array { return $this->content; }
 
   /**
    * Converts the content to an array suitable to passing to JavaScript via AJAX
@@ -42,11 +48,5 @@ class QuestionGroup
       'content'  => $this->content,
     ];
   }
-
-  /**
-   * Returns the ordered list of question_ids associated with this group
-   * @return list<int>
-   */
-  public function question_ids() : array { return $this->content; }
 }
 

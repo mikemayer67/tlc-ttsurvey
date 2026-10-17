@@ -8,6 +8,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/question.php'));
 require_once(app_file('include/question_types.php'));
 require_once(app_file('include/question_flags.php'));
+require_once(app_file('include/survey_section.php'));
 require_once(app_file('include/question_group.php'));
 
 /**
@@ -20,21 +21,8 @@ require_once(app_file('include/question_group.php'));
  *     option_id : unique identifier for each option (*array index)
  *     text : how option appears in the survey form
  *
- *   Sections: ordered list of survey sections
- *      section_id : unique identifier for each section (*array index) 
- *      sequence : order this section appears in the survey
- *      name : name of this section 
- *      collapsible : truthy/falsey value if the section can be opened/closed in the survey
- *      intro : optional text to display at top of the section
- *      content : ordered list of questions/groups in this section
- *         type: 'question' or 'group'
- *         id: question ID or group ID
- *
- *   Groups: indexed array of tlc\tts\QuestionGroup instances
- *     group_id : unique identifier for each group
- *     name : group name as it will appear in the survey editor
- *     content : ordered list of question IDs that appear in the group
- * 
+ *   Sections:  ordered list of tlc\tts\SurveySection instances
+ *   Groups:    indexed array of tlc\tts\QuestionGroup instances
  *   Questions: indexed array of tlc\tts\Question instances
  *
  *   Next IDs: associative array of next available IDs (across all surveys)
@@ -115,7 +103,7 @@ class SurveyContent
    * @param int $section_id 
    * @return null|SurveySection
    */
-  public function section($section_id) : ?array { 
+  public function section($section_id) : ?SurveySection { 
     return $this->_sections[$section_id] ?? null; 
   }
 
@@ -169,7 +157,10 @@ class SurveyContent
   {
     return [
       'options'   => $this->_options,
-      'sections'  => $this->_sections,
+      'sections'  => array_map(
+        fn($section) => $section->for_js(),
+        $this->_sections
+      ),
       'groups'    => array_map(
         fn($group) => $group->for_js(),
         $this->_groups
@@ -229,6 +220,9 @@ class SurveyContent
 
   private function add_sections(int $survey_id)
   {
+    // As the database keeps separate tables for identifying and
+    //  populating survey sections, we need two queries.
+
     $query = <<<SQL
       SELECT section_id, name, collapsible, intro
       FROM   tlc_srv_sections
@@ -238,7 +232,7 @@ class SurveyContent
     $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
     if(!$rows) { return; }
 
-    $this->_sections = array_column($rows,null,'section_id');
+    $sections = array_column($rows,null,'section_id');
 
     $query = <<<SQL
       SELECT section_id, group_id, question_id
@@ -248,12 +242,23 @@ class SurveyContent
     SQL;
     $rows = MySQLFetchAllIndexed($query,'i',$survey_id);
     foreach($rows as [$section_id,$group_id,$question_id]) {
-      if(!is_null($question_id)) {
-        $this->_sections[$section_id]['content'][] = ['type'=>'question', 'id'=>$question_id];
-      } else {
-        $this->_sections[$section_id]['content'][] = ['type'=>'group', 'id'=>$group_id];
+      $is_group = isset($group_id);
+      $is_question = isset($question_id);
+      if($is_group && $is_question) {
+        internal_error("Section $section_id has content with both group and question IDs");
+      }
+      if($is_group || $is_question) {
+        $sections[$section_id]['content'][] = [
+          'type' => $is_group ? 'group' : 'question',
+          'id'   => $is_group ? $group_id : $question_id,
+        ];
       }
     }
+
+    $this->_sections = array_map(
+      fn($section) => new SurveySection($section),
+      $sections
+    );
   }
 
   private function add_groups(int $survey_id)
@@ -337,10 +342,15 @@ class SurveyContent
 
   private function parse_json_string(string $json)
   {
-    $content =json_decode($json, true);
+    $content = json_decode($json, true);
+
     $this->_options   = $content['options'];
-    $this->_sections  = $content['sections'];
     $this->_next_ids  = $content['next_ids'];
+
+    $this->_sections  = [];
+    foreach($content['sections'] as $section_id => $section) {
+      $this->_sections[$section_id] = new SurveySection($section);
+    }
 
     $this->_groups = [];
     foreach($content['groups'] as $group_id => $group) {
