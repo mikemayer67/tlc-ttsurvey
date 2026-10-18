@@ -9,8 +9,8 @@ require_once(app_file('pdf/survey/config.php'));
 class SurveyQualifierBox extends PDFBox
 {
   private PDFBox $label;
-  private int    $label_width = 0;
-  private int    $label_height = 0;
+  private float  $label_width = 0;
+  private float  $label_height = 0;
   private bool   $multi_line = false;
 
   private array $entry_box = [0,0,0,K_QUARTER_INCH];

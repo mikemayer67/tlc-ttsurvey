@@ -22,7 +22,6 @@ $content = SurveyContent::fromSurveyID($survey_id);
 ob_start();
 
 $survey_pdf = new SurveyPDF($title);
-todo("update survey pdf render to handle SurveyContent");
 $survey_pdf->render($info, $content);
 
 ob_end_clean();

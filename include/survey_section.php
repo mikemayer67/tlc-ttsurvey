@@ -35,7 +35,7 @@ class SurveySection
     $this->name        = $data['name'];
     $this->collapsible = $data['collapsible'] ?? true;
     $this->intro       = $data['intro'] ?? null;
-    $this->content     = $data['content'] ?? "";
+    $this->content     = $data['content'] ?? [];
   }
 
   public function id() : int { return $this->id; }
@@ -66,5 +66,4 @@ class SurveySection
       'content'     => $this->content,
     ];
   }
-
 }

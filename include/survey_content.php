@@ -93,7 +93,7 @@ class SurveyContent
   /**
    * Returns array of all sections in the specified survey
    * 
-   * @return array list<SurveySection>
+   * @return list<SurveySection>
    */
   public function sections() : array { return $this->_sections; }
 
@@ -175,7 +175,6 @@ class SurveyContent
 
   /**
    * Populates the SurveyContent data from database for the specified survey ID
-   * 
    * @param int $survey_id 
    * @return void 
    * @throws OutOfBoundsException if survey_id is not found in the database

@@ -32,6 +32,12 @@ function lookup_userids_by_role(string $role)
   foreach ($roles as $r) {
     if($r[$role]??false) { $rval[] = $r['userid']; }
   }
+  if($role === 'admin') {
+    $primary = primary_admin();
+    if(!in_array($primary,$rval)) {
+      $rval[] = $primary;
+    }
+  }
   return $rval;
 }
 
