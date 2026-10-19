@@ -8,6 +8,7 @@ require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
 require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('summary/summary_content.php'));
 require_once(app_file('summary/elements.php'));
 require_once(app_file('summary/sections.php'));
 
@@ -42,19 +43,27 @@ if($summary_flags & 2) { // requires submit
   }
 }
 
-$content   = SurveyContent::fromSurveyID($survey_id);
-$responses = get_all_responses($survey_id);
-$sections  = summary_sections($content);
-
-$tab_ids = array_map( function($section) { return $section['section_id']; }, $sections );
+$title = null;
+$content = null;
+$section_ids = [];
 
 $info = survey_info($survey_id);
-$title = $info['title']??null;
+if($info) 
+{
+  $title = $info['title'];
+
+  $content = new SummaryContent(
+    SurveyContent::fromSurveyID($survey_id),
+    get_all_responses($survey_id),
+  );
+
+  $section_ids = $content->section_ids();
+}
 
 start_summary_page([
   'title' => $title,
   'userid' => $userid,
-  'tab_ids' => $tab_ids,
+  'tab_ids' => $section_ids,
 ]);
 
 if(!$info) {
@@ -70,12 +79,11 @@ if(!$has_access) {
 }
 
 echo "<div class='notebook'>";
-$first = true;
+$checked = 'checked'; // used to select the first tab
 foreach($sections as $section) {
   $sid  = $section['section_id'];
-  $checked = $first ? 'checked' : '';
-  $first = false;
   echo "<input id='tab-cb-$sid' class='tab-cb' type='radio' name='tab-cb' $checked>";
+  $checked = '';
 }
 
 echo "<div class='tabs'>";
