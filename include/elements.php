@@ -56,7 +56,7 @@ function start_fault_page($context)
   add_js_resources($context);
   end_header();
 
-  add_navbar($context); 
+  add_navbar(); 
 
   start_body();
 }
@@ -168,9 +168,46 @@ function start_body()
   echo "<div class='spacer' style='width:0; min-width:0;'></div>";
 }
 
-function add_navbar($context,$kwargs=[])
+/**
+ * Adds a customizable common navigation toolbar to the top of the page.
+ *   The customization comes through optional callback functions.
+ *   Additionally, an associated array of keyword arguments can be
+ *   provided that will be passed to each of the callbacks.
+ * 
+ * Common keyword arguments include:
+ *   - title : string   The survye title
+ *   - status : string  Status message
+ *   
+ * @param array{
+ *   add_navbar_left?:   callable(array): void,
+ *   add_navbar_right?:  callable(array): void,
+ *   add_navbar_center?: callable(array): void,
+ * } $callbacks 
+ * @param array<string,mixed> $kwargs 
+ * @param bool $include_nojs_user_menu
+ * @return void 
+ */
+function add_navbar(array $callbacks=[], array $kwargs=[], bool $include_nojs_user_menu=false)
 {
-  $userid = $kwargs['userid'] ?? null;
+  $callbacks += [
+    'add_navbar_left'   => function(array $kwargs) : void {
+      $logo_uri = ImageLibrary::app_logo_uri();
+      $missing = $logo_uri ? '' : 'missing';
+      $src     = $logo_uri ? "src='$logo_uri'" : '';
+
+      $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
+      $title = htmlspecialchars($title);
+
+      echo "<img class='ttt-logo $missing' $src alt='Logo'>";
+      echo "<span class='ttt-title'>$title</span>";
+    },
+    'add_navbar_right'  => function(array $kwargs) : void {
+      // common add_navbar_right does nothing
+    },
+    'add_navbar_center' => function(array $kwargs) : void {
+      echo $kwargs['status'] ?? '';
+    }
+  ];
 
   echo "<!-- Navbar -->";
   // include both a wrapper and the navbar itself for purpose of css layout of the user menu
@@ -179,46 +216,24 @@ function add_navbar($context,$kwargs=[])
 
   // left (title) box
   echo "<div class='left-box title-box'>";
-  $rc_left = call_context_function('add_navbar_left',$context,$kwargs);
+  $callbacks['add_navbar_left']($kwargs);
   echo "</div>";
 
   // center (status) box
   echo "<div class='center-box status'>";
-  $rc_center = call_context_function('add_navbar_center',$context,$kwargs);
+  $callbacks['add_navbar_center']($kwargs);
   echo "</div>";
 
   // right (username) box
-  $user = null;
   echo "<div class='right-box username'>";
-  $rc_right = call_context_function('add_navbar_right',$context,$kwargs);
+  $callbacks['add_navbar_right']($kwargs);
   echo "</div>"; // right-box
 
   echo "</div>"; // navbar
 
-  if($rc_right['user_menu'] ?? false) { add_nojs_user_menu(); }
+  if($include_nojs_user_menu) { add_nojs_user_menu(); }
 
   echo "</div>"; // wrapper
-}
-
-function add_navbar_left($kwargs)
-{
-  $logo_uri = ImageLibrary::app_logo_uri();
-
-  $missing = $logo_uri ? '' : 'missing';
-  $src     = $logo_uri ? "src='$logo_uri'" : '';
-  echo "<img class='ttt-logo $missing' $src alt='Logo'>";
-
-  $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
-  echo "<span class='ttt-title'>$title</span>";
-}
-
-function add_navbar_center($kwargs)
-{
-  echo $kwargs['status'] ?? '';
-}
-
-function add_navbar_right($kwargs) 
-{
 }
 
 function add_return_to_survey()

@@ -26,36 +26,33 @@ function start_summary_page(array $kwargs) : void
   add_notebook_css($kwargs['tab_ids']);
   end_header();
 
-  add_navbar('summary',$kwargs);
+  add_navbar(
+    kwargs:$kwargs,
+    callbacks: [
+      'add_navbar_center' => function(array $kwargs) : void 
+      {
+        $title = $kwargs['title'] ?? null;
+        if ($title) { echo '<b>Summary of Responses</b>'; }
+      },
+      'add_navbar_right' => function(array $kwargs) : void 
+      {
+        add_return_to_survey();
+
+        $survey_id = $_REQUEST['summary'];
+        if (!$survey_id) { $survey_id = active_survey_id(); }
+
+        add_hidden_input('ajaxurl', app_uri());
+        add_hidden_input('survey_id', $survey_id);
+        add_hidden_input('nonce', gen_nonce('summary-download'));
+        echo "<a id='download-pdf' class='js-only file-download'>Download PDF</a>";
+        echo "<a id='download-csv' class='js-only file-download'>Download CSV</a>";
+      },
+    ],
+  );
 
   start_body();
 }
 
-/**
- * 
- * @param array $kwargs 
- * @return void 
- */
-function add_navbar_center_summary(array $kwargs) : void
-{
-  if( $kwargs['title']??null ) {
-    echo '<b>Summary of Responses</b>';
-  }
-}
-
-function add_navbar_right_summary($kwargs)
-{
-  add_return_to_survey();
-
-  $survey_id = $_REQUEST['summary'];
-  if(!$survey_id) { $survey_id = active_survey_id(); }
-
-  add_hidden_input('ajaxurl', app_uri());
-  add_hidden_input('survey_id',$survey_id);
-  add_hidden_input('nonce',gen_nonce('summary-download'));
-  echo "<a id='download-pdf' class='js-only file-download'>Download PDF</a>";
-  echo "<a id='download-csv' class='js-only file-download'>Download CSV</a>";
-}
 
 function add_notebook_css($tab_ids)
 {

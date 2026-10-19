@@ -219,6 +219,10 @@ function is_safari() : bool {
 /**
  * Invokes a context specific function variant (if it exists)
  *   tlc\tts\{base_name}_{contenxt}(...{args})
+ * 
+ * This function is now OBE, but retained in case it is ever needed again.
+ *   But goal should be to use callbacks (see add_navbar).
+ * 
  * @param string $base_name name of the function within the context
  * @param string $context name of context
  * @param mixed ...$args passed to the context based function

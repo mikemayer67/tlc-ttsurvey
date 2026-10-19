@@ -23,18 +23,20 @@ function start_admin_page($cur_tab=null)
 
   end_header();
 
-  add_navbar($context);
+  add_navbar(
+    callbacks : [
+      'add_navbar_right' => function(array $kwargs) : void {
+        add_return_to_survey(); 
+      },
+    ]
+  );
+
   add_js_required();
   add_admin_lock();
   add_small_screen_warning();
   add_status_bar();
 
   start_body();
-}
-
-function add_navbar_right_admin($kwarg)
-{
-  add_return_to_survey();
 }
 
 function add_input_section($label,$fields)

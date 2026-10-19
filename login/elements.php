@@ -18,7 +18,7 @@ function start_login_page()
   add_js_resources('login');
   add_css_resources('login');
   end_header();
-  add_navbar('login');
+  add_navbar();
   add_js_recommended();
   add_status_bar();
   start_body();

@@ -16,7 +16,19 @@ function start_survey_page($kwargs)
 
   end_header();
 
-  add_navbar('survey', $kwargs);
+  add_navbar(
+    kwargs:$kwargs,
+    callbacks:[
+      'add_navbar_center' => function(array $kwargs) : void { 
+        add_navbar_center_survey($kwargs); 
+      },
+      'add_navbar_right' => function(array $kwargs) : void {
+        $userid = $kwargs['userid'] ?? null;
+        if($userid) { add_user_menu($userid); }
+      },
+    ],
+    include_nojs_user_menu: true,
+  );
 
   add_js_recommended();
   add_status_bar();
@@ -24,7 +36,19 @@ function start_survey_page($kwargs)
   start_body();
 }
 
-function add_navbar_center_survey($kwargs)
+/**
+ * Adds the HTML for the center of the navbar for surveys
+ *
+ * Takes two options kwargs:
+ *   - submitted : unix timestamp
+ *   - draft     : unix timestampe
+ * 
+ * @param array{
+ *   submitted: string,
+ *   draft: string,
+ * } $kwargs
+ */
+function add_navbar_center_survey(array $kwargs) : void
 {
   $submitted = $kwargs['submitted'] ?? null;
   $draft     = $kwargs['draft']     ?? null;
@@ -57,17 +81,6 @@ function add_navbar_center_survey($kwargs)
   }
 }
 
-function add_navbar_right_survey($kwargs)
-{
-  $userid = $kwargs['userid'] ?? null;
-  if(!$userid) { return null; }
-
-  $rval = add_user_menu($userid);
-
-  return ['user_menu' => $rval];
-}
-
-
 function start_preview_page($title,$userid,$enable_js=true)
 {
   start_header($title);
@@ -82,10 +95,9 @@ function start_preview_page($title,$userid,$enable_js=true)
   end_header();
 
   // But, we want the navbar to reflect that this is preview context
-  add_navbar('preview', [
-    'userid' => $userid, 
-    'title'  => $title,
-  ]);
+  add_navbar(
+    kwargs: ['userid'=>$userid, 'title'=>$title],
+  );
 
   add_js_recommended($enable_js ? 'noscript' : 'div');
   add_status_bar();
@@ -103,7 +115,6 @@ function start_nosurvey_page()
 
   start_header();
   add_tab_name("ttt_$context");
-  
 
   add_js_resources($context);
   add_css_resources($context);
@@ -112,7 +123,14 @@ function start_nosurvey_page()
 
   $userid = active_userid() ?? null;
 
-  add_navbar($context, ['userid'=>$userid]);
+  add_navbar(
+    kwargs:['userid'=>$userid],
+    callbacks:[
+      'add_navbar_center' => function(array $kwargs) : void {
+        add_navbar_center_preview($kwargs);
+      },
+    ],
+  );
 
   add_js_recommended();
 
