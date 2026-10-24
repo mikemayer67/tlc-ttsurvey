@@ -72,12 +72,3 @@ function add_notebook_css($tab_ids)
   
   echo "</style>";
 }
-
-
-function add_section_panel($sid,$content,$responses)
-{
-  $sp = new SectionPanel($sid,$content,$responses);
-  $sp->add();
-}
-
-

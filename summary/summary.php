@@ -10,7 +10,7 @@ require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('summary/summary_content.php'));
 require_once(app_file('summary/elements.php'));
-require_once(app_file('summary/sections.php'));
+require_once(app_file('summary/section_panel.php'));
 
 $admin_id = $_SESSION['admin-id'] ?? null;
 $userid = active_userid();
@@ -80,22 +80,20 @@ if(!$has_access) {
 
 echo "<div class='notebook'>";
 $checked = 'checked'; // used to select the first tab
-foreach($sections as $section) {
-  $sid  = $section['section_id'];
-  echo "<input id='tab-cb-$sid' class='tab-cb' type='radio' name='tab-cb' $checked>";
+foreach($section_ids as $section_id) {
+  echo "<input id='tab-cb-$section_id' class='tab-cb' type='radio' name='tab-cb' $checked>";
   $checked = '';
 }
 
 echo "<div class='tabs'>";
-foreach($sections as $section) {
-  $sid  = $section['section_id'];
-  $name = $section['name'];
-  echo "<label for='tab-cb-$sid' class='tab tab-$sid'>$name</label>";
+foreach($section_ids as $section_id) {
+  $name = $content->section_name($section_id);
+  echo "<label for='tab-cb-$section_id' class='tab tab-$section_id'>$name</label>";
 }
 echo "</div>";
 
-foreach($tab_ids as $sid) {
-  add_section_panel($sid,$content,$responses);
+foreach($section_ids as $section_id) {
+  add_section_panel($section_id, $content);
 }
 
 echo "</div>"; // div.notebook

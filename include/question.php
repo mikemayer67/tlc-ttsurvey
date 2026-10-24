@@ -202,7 +202,7 @@ final class InfoQuestion extends Question
  *   intro     : ?string [intro / intro]
  *   popup     : ?string [info / popup]
  */
-final class FreetextQuestion extends Question
+final class FreetextQuestion extends Question implements QuestionHasWording
 {
   use QuestionIntroTrait;
   use QuestionWordingTrait;
@@ -278,7 +278,7 @@ final class FreetextQuestion extends Question
  *   popup     : ?string [info / popup]
  *   layout    : QuestionLayout [flags / layout]
  */
-final class BoolQuestion extends Question
+final class BoolQuestion extends Question implements QuestionHasWording
 {
   use QuestionIntroTrait; 
   use QuestionWordingTrait;
@@ -369,7 +369,7 @@ final class BoolQuestion extends Question
  *   layout    : QuestionLayout [flags / layout]
  *   options   : array<string> [options table / options]
  */
-final class SelectQuestion extends Question
+final class SelectQuestion extends Question implements QuestionHasWording
 {
   use QuestionIntroTrait;
   use QuestionWordingTrait;
@@ -418,6 +418,18 @@ final class SelectQuestion extends Question
     $this->set_other($data);
     $this->set_options($data);
     $this->set_popup($data);
+  }
+
+  /**
+   * Returns whether or not this is a multi select
+   *   True = multi select
+   *  False = single select
+   * 
+   * @return bool 
+   */
+  public function is_multi() : bool 
+  {
+    return $this->_type === QuestionType::SelectMulti;
   }
 
   /**

@@ -303,7 +303,7 @@ class RenderEngine
     $intro      = $question->intro();
     $has_popup  = $question->has_popup();
 
-    $response = $this->responses[$id]['free_text'] ?? '';
+    $response = $this->responses[$id]['freetext'] ?? '';
 
     $class    = 'question freetext';
     $data_id  = "data-qid='$id'";
@@ -354,7 +354,7 @@ class RenderEngine
 
   private function add_select(SelectQuestion $question)
   {
-    $multi = ($question->type() === QuestionType::SelectMulti);
+    $is_multi = ($question->type() === QuestionType::SelectMulti);
     
     $id        = $question->id();
     $wording   = $question->wording();
@@ -371,7 +371,7 @@ class RenderEngine
       return;
     }
 
-    if($multi) {
+    if($is_multi) {
       $type = 'checkbox';
       $class = 'question select multi';
       $name = "question-multi-$id";
@@ -383,7 +383,10 @@ class RenderEngine
     $data_id = "data-qid='$id'";
 
     $response    = $this->responses[$id] ?? null;
-    $selected    = $response['selected'] ?? [];
+    $selected    = array_merge(
+      (array)($response['selected'] ?? []),
+      $response['options'] ?? []
+    );
     $other_value = $response['other'] ?? '';
 
     $indent = $this->follows_info ? 1 : 0;
@@ -395,7 +398,7 @@ class RenderEngine
     echo "<div class='$class options $layout'>";
     foreach($options as $option_id) {
       $input_id = "$name-$option_id";
-      $input_name = $multi ? $input_id : $name;
+      $input_name = $is_multi ? $input_id : $name;
       $option_str = $this->content->option_text($option_id);
       if(!$option_str) { 
         internal_error("Question $id is associated with undefined option $option_id");
@@ -408,8 +411,8 @@ class RenderEngine
     }
     if($has_other) {
       $input_id = "$name-has-other";
-      $input_name = $multi ? $input_id : $name;
-      $value      = $multi ? 1 : 0;
+      $input_name = $is_multi ? $input_id : $name;
+      $value      = $is_multi ? 1 : 0;
       $other_id = "$name-other";
       $checked = in_array(0,$selected) ? 'checked' : '';
       echo "<div class='option'>";

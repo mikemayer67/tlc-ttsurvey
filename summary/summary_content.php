@@ -21,7 +21,10 @@ class SummaryContent
 
     $this->sections = [];
 
-    foreach($content->sections() as $survey_section) {
+    foreach($content->sections() as $survey_section) 
+    {
+      $section_id = $survey_section->id();
+
       $groups = [];
       foreach($survey_section->content() as ['type'=>$type, 'id'=>$id]) {
         if($type === 'question') {
@@ -39,8 +42,8 @@ class SummaryContent
         }
       }
       if($groups) {
-        $this->sections[] = [
-          'id'   => $survey_section->id(),
+        $this->sections[$section_id] = [
+          'id'   => $section_id,
           'name' => $survey_section->name(),
           'groups' => $groups,
         ];
@@ -56,4 +59,60 @@ class SummaryContent
   {
     return array_map( fn($section) => $section['id'], $this->sections );
   }
+
+  /**
+   * Returns the section name for the specified section ID
+   * @param int $section_id 
+   * @return string 
+   */
+  public function section_name(int $section_id) : string
+  {
+    return $this->sections[$section_id]['name'] ?? "???";
+  }
+
+  /**
+   * Returns all of the groups of questions for the specified section ID
+   * @param int $section_id 
+   * @return list< list<Question> >
+   */
+  public function question_groups(int $section_id) : array
+  {
+    return $this->sections[$section_id]['groups'] ?? [];
+  }
+
+  /**
+   * Returns all of the responses for all users for the specified question ID
+   *   The responses are indexed by userid
+   * 
+   * @param int $question_id 
+   * @return array<string, array{
+   *    question_id : int,
+   *    userid      : string,
+   *    selected?   : int,
+   *    freetext?   : string|null,
+   *    qualifier?  : string|null,
+   *    other?      : string|null,
+   * }>
+   */
+  public function responses(int $question_id) : array
+  {
+    return $this->responses[$question_id] ?? [];
+  }
+
+  /**
+   * Returns all of the option strings indexed by option_id
+   * @return array{int, string}
+   */
+  public function all_options() : array { return $this->options; }
+
+  /**
+   * Return the text associated with the specified option ID
+   * @param int $option_id 
+   * @return string 
+   */
+  public function option(int $option_id) : string
+  {
+    return $this->options[$option_id] ?? "???";
+  }
+  
 }

@@ -6,6 +6,10 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/question_flags.php'));;
 require_once(app_file('include/question_layout.php'));
 
+interface QuestionHasWording {
+  public function wording() : string;
+}
+
 trait QuestionIntroTrait
 {
   protected string $_intro = "";

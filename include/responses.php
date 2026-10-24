@@ -43,8 +43,6 @@ function get_user_responses(string $userid,int $survey_id,string $scope) : array
   $responses = array();
   foreach( $rows as $row ) {
     $qid      = $row['question_id'];
-    $selected = $row['selected'];
-    $row['selected'] = $selected !== null ? [$selected] : [];
     $responses[$qid] = $row;
   }
 
@@ -60,7 +58,7 @@ function get_user_responses(string $userid,int $survey_id,string $scope) : array
     if(!array_key_exists($qid,$responses)) {
       internal_error("There should be no response options for non-existent question $qid");
     }
-    $responses[$qid]['selected'][] = $row['option_id'];
+    $responses[$qid]['options'][] = $row['option_id'];
   }
 
   return [
