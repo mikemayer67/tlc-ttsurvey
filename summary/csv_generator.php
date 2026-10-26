@@ -3,19 +3,27 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once(app_file('include/surveys.php'));
 require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/users.php'));
 require_once(app_file('include/question_types.php'));
+require_once(app_file('summary/summary_content.php'));
 
 class CSVGenerator
 {
-  private array  $_content;
+  private SummaryContent $_content;
+
   private array  $_responses;
   private string $_filename;
   private array  $_fullnames;
   private array  $_column_headers;
   private array  $_column_keys;
+
+  private int    $_cur_section_index;
+  private int    $_cur_question_index;
+  private string $_cur_refid;
+  private string $_cur_section_name;
 
   /**
    * Constructs the CSVGenerator, initialized for the specified survey
@@ -35,8 +43,10 @@ class CSVGenerator
     ];
     $this->_column_keys = array_keys($this->_column_headers);
 
-    $this->_content   = SurveyContent::fromSurveyID($survey_id);
-    $this->_responses = get_all_responses($survey_id);
+    $survey_content = SurveyContent::fromSurveyID($survey_id);
+    $responses = get_all_responses($survey_id);
+    $this->_content = new SummaryContent($survey_content, $responses);
+    
     $this->_fullnames = [];
 
     $info = survey_info($survey_id);
@@ -47,6 +57,19 @@ class CSVGenerator
     $title = preg_replace('/[^A-Za-z0-9._-]+/', '_', $title);
     $title = trim($title, '._-');
     $this->_filename = $title . "_summary.csv";
+  }
+  
+  private function start_new_section(int $section_id)
+  {
+    $this->_cur_section_index += 1;
+    $this->_cur_question_index = 0;
+    $this->_cur_section_name = $this->_content->section_name($section_id);
+  }
+
+  private function start_new_question(int $question_id)
+  {
+    $this->_cur_question_index += 1;
+    $this->_cur_refid = sprintf("%d.%02d", $this->_cur_section_index, $this->_cur_question_index);
   }
 
   /**
@@ -80,9 +103,13 @@ class CSVGenerator
    */
   private function add_row(array $row)
   {
+    if(!isset($row['refid']))   { $row['refid']   = $this->_cur_refid;        }
+    if(!isset($row['section'])) { $row['section'] = $this->_cur_section_name; }
+
     $cells = array_map(fn($k) => $row[$k] ?? '', $this->_column_keys);
     $cells = array_map(fn($v) => '"' . str_replace('"', '""', $v) . '"', $cells);
     $cells = implode(',', $cells);
+
     echo "$cells\n";
   }
 
@@ -108,36 +135,27 @@ class CSVGenerator
 
     // add response data
 
-    $sections = $this->_content['sections'];
-    usort($sections, fn($a, $b) => $a['sequence'] <=> $b['sequence']);
+    $this->_cur_section_index = $this->_cur_question_index = 0;
 
-    foreach( $sections as $section ) {
-      $section_id   = $section['section_id'];
+    foreach($this->_content->section_ids() as $section_id)
+    {
+      $this->start_new_section($section_id);
+      foreach($this->_content->question_groups($section_id) as $questions)
+      {
+        foreach($questions as $question)
+        {
+          $this->start_new_question($question->id());
 
-      $questions = array_filter(
-        $this->_content['questions'],
-        fn($a) => ($a['section'] ?? null) === $section_id
-      );
-      uasort($questions, fn($a, $b) => $a['sequence'] <=> $b['sequence']);
-
-      foreach ($questions as $question) {
-        $question_type = $question['type'];
-
-        switch($question_type) {
-          case QuestionType::Info:        $rows = $this->add_info_question($question);         break;
-          case QuestionType::Bool:        $rows = $this->add_bool_question($question);         break;
-          case QuestionType::FreeText:    $rows = $this->add_freetext_question($question);     break;
-          case QuestionType::SelectOne:   $rows = $this->add_select_one_question($question);   break;
-          case QuestionType::SelectMulti: $rows = $this->add_select_multi_question($question); break;
-          default:
-            internal_error("Invalid Question Type");
-            break;
-        }
-
-        foreach($rows as $row) {
-          $row['refid']   = sprintf("%d.%02d", $section['sequence'], $question['sequence']);
-          $row['section'] = $section['name'];
-          $this->add_row($row);
+          switch($question->type()) {
+            case QuestionType::Info:        $this->add_info_question($question);         break;
+            case QuestionType::Bool:        $this->add_bool_question($question);         break;
+            case QuestionType::FreeText:    $this->add_freetext_question($question);     break;
+            case QuestionType::SelectOne:   $this->add_select_one_question($question);   break;
+            case QuestionType::SelectMulti: $this->add_select_multi_question($question); break;
+            default:
+              internal_error("Invalid Question Type");
+              break;
+          }
         }
       }
     }
@@ -145,135 +163,142 @@ class CSVGenerator
 
   /**
    * Adds a summary of an info question to the csv output
-   * @param array $question 
-   * @return array question specific row fields
+   * @param InfoQuestion $question 
    */
-  private function add_info_question(array $question) : array
+  private function add_info_question(InfoQuestion $question) : void
   {
-    $rows = [];
-    $info = $question['info'] ?? '';
-    if ($info) { $rows[] = ['question' => $info]; }
-    return $rows;
+    $info = $question->info_text();
+    $this->add_row([
+      'question' => $info,
+    ]);
   }
 
   /**
    * Adds a summary of a boolean question to the csv output
-   * @param array $question 
-   * @return array question specific row fields
+   * @param BoolQuestion $question 
    */
-  private function add_bool_question(array $question) : array
+  private function add_bool_question(BoolQuestion $question) : void
   {
-    $rows = [];
-    $qid = $question['id'];
-    $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses[$qid] ?? [];
-    foreach ($qr as $r) {
+    $qid       = $question->id();
+    $wording   = $question->wording();
+    $responses = $this->_content->responses($qid);
+
+    $found = false;
+    foreach ($responses as $r) {
       if ($r['selected']) {
-        $row = [];
-        $row['question']    = $wording;
-        $row['participant'] = $this->fullname($r['userid']);
-        $row['notes']       = $r['qualifier'] ?? '';
-        $rows[] = $row;
+        $found = true;
+        $this->add_row([
+          'question'    => $wording,
+          'participant' => $this->fullname($r['userid']),
+          'notes'       => $r['qualifier'] ?? '',
+        ]);
       }
     }
-    if(!$rows) {
-      $rows[] = ['question' => $wording ];
+    if (!$found) {
+      $this->add_row([
+        'question' => $wording,
+      ]);
     }
-    return $rows;
   }
 
   /**
    * Adds a summary of a freetext question to the csv output
-   * @param array $question 
-   * @return array question specific row fields
+   * @param FreeTextQuestion $question 
    */
-  private function add_freetext_question(array $question) : array
+  private function add_freetext_question(FreeTextQuestion $question) : void
   {
-    $rows = [];
-    $qid = $question['id'];
-    $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses[$qid] ?? [];
-    foreach ($qr as $r) {
-      $row = [];
-      $row['question']    = $wording;
-      $row['participant'] = $this->fullname($r['userid']);
-      $row['notes']       = $r['freetext'] ?? '';
-      $rows[] = $row;
+    $qid       = $question->id();
+    $wording   = $question->wording();
+    $responses = $this->_content->responses($qid);
+
+    $found = false;
+    foreach ($responses as $r) {
+      $this->add_row([
+        'question'    => $wording,
+        'participant' => $this->fullname($r['userid']),
+        'notes'       => $r['freetext'] ?? '',
+      ]);
     }
-    if(!$rows) {
-      $rows[] = ['question' => $wording ];
+    if(!$responses) {
+      $this->add_row([
+        'question' => $wording,
+      ]);
     }
-    return $rows;
   }
 
   /**
    * Adds a summary of a single select question to the csv output
-   * @param array $question 
-   * @return array question specific row fields
+   * @param SelectQuestion $question 
    */
-  private function add_select_one_question(array $question) : array
+  private function add_select_one_question(SelectQuestion $question) : void
   {
-    $rows = [];
-    $qid = $question['id'];
-    $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses[$qid] ?? []; 
-    foreach($qr as $r) {
-      $row = [];
-      $row['question']    = $wording;
-      $row['participant'] = $this->fullname($r['userid']);
-      $row['notes']       = $r['qualifier'] ?? '';
+    $qid       = $question->id();
+    $wording   = $question->wording();
+    $responses = $this->_content->responses($qid);
 
+    foreach($responses as $r) {
       $opt_id = $r['selected'];
       if($opt_id > 0) {
-        $row['selected'] = $this->_content['options'][$opt_id] ?? '???';
+        $selected = $this->_content->option($opt_id);
       } else {
-        $row['selected'] = implode(': ', [
-            ($question['other'] ?? 'Other'),
-            ($r['other'] ?? '???')
+        $selected = implode(': ', [
+          $question->other_prompt(),
+          $r['other'] ?? '???'
         ]);
       }
-      $rows[] = $row;
+      $this->add_row([
+        'question'    => $wording,
+        'participant' => $this->fullname($r['userid']),
+        'notes'       => $r['qualifier'] ?? '',
+        'selected'    => $selected,
+      ]);
     }
-    return $rows;
+    if(!$responses) {
+      $this->add_row([
+        'question' => $wording,
+      ]);
+    }
   }
 
   /**
    * Adds a summary of a multiple select question to the csv output
-   * @param array $question 
-   * @return array 
+   * @param SelectQuestion $question 
    */
-  private function add_select_multi_question(array $question) : array
+  private function add_select_multi_question(SelectQuestion $question) : void
   {
-    $rows = [];
-    $qid = $question['id'];
-    $wording = $question['wording'] ?? '???';
-    $qr = $this->_responses[$qid] ?? []; 
-    foreach($qr as $r) {
-      $name = $this->fullname($r['userid']);
+    $qid       = $question->id();
+    $wording   = $question->wording();
+    $responses = $this->_content->responses($qid);
+
+    foreach($responses as $r) {
+      $name     = $this->fullname($r['userid']);
       $selected = $r['options'] ?? [];
-      $notes = $r['qualifier'] ?? '';
+      $notes    = $r['qualifier'] ?? '';
       foreach($selected as $opt_id) {
-        $row = [];
-        $row['question']    = $wording;
-        $row['participant'] = $name;
-        $row['selected'] = $this->_content['options'][$opt_id] ?? '???';
-        $row['notes'] = $notes;
-        $rows[] = $row;
+        $this->add_row([
+          'question'    => $wording,
+          'participant' => $name,
+          'selected'    => $this->_content->option($opt_id),
+          'notes'       => $notes,
+        ]);
       }
-      $other = $r['selected'] === 0;
       if($r['selected'] === 0) {
-        $row = [];
-        $row['question']    = $wording;
-        $row['participant'] = $name;
-        $row['notes'] = $notes;
-        $row['selected'] = implode(': ', [
-            ($question['other'] ?? 'Other'),
+        $other = implode(': ', [
+            $question->other_prompt(),
             ($r['other'] ?? '???')
         ]);
-        $rows[] = $row;
+        $this->add_row([
+          'question'    => $wording,
+          'participant' => $name,
+          'selected'    => $other,
+          'notes'       => $notes,
+        ]);
       }
-      $row = [];
     }
-    return $rows;
+    if(!$responses) {
+      $this->add_row([
+        'question' => $wording,
+      ]);
+    }
   } 
 }
