@@ -10,91 +10,68 @@ require_once(app_file('pdf/summary/info_box.php'));
 require_once(app_file('pdf/summary/bool_box.php'));
 require_once(app_file('pdf/summary/freetext_box.php'));
 require_once(app_file('pdf/summary/select_box.php'));
-require_once(app_file('summary/sections.php'));
-require_once(app_file('include/question_types.h'));
+require_once(app_file('include/question/types.php'));
 
 /**
  * Responsible for parsing the survey responses into PDFBoxes
  */
 class SummaryRootBox extends PDFRootBox
 {
+  private SummaryContent $content;
   /**
    * Constructs all top level child boxes for the summary
    * @param SummaryPDF $summaryPDF 
-   * @param array $content 
-   * @param array $responses 
-   * @return void 
+   * @param SummaryContent $content 
    */
-  public function __construct(SummaryPDF $summaryPDF, array $content, array $responses)
+  public function __construct(SummaryPDF $summaryPDF, SummaryContent $content)
   {
     parent::__construct($summaryPDF, top:3*K_QUARTER_INCH, right:K_QUARTER_INCH, left:K_HALF_INCH);
-    $sections = summary_sections($content);
-    foreach($sections as $section) {
-      $this->add_section($this->content_width(),$section,$content,$responses);
-    }
+    $this->content = $content;
 
-    return;
+    foreach($content->section_ids() as $section_id)
+    {
+      $this->add_section($this->content_width(),$section_id);
+    }
   }
 
   /**
    * Adds section content boxes to the summary
    * @param float $width 
-   * @param array $section section specific content data
-   * @param array $content overall survey content
-   * @param array $responses overall response data
-   * @return void 
+   * @param int $section_id 
    */
-  private function add_section(float $width, array $section, array $content, array $responses)
+  private function add_section(float $width, int $section_id) : void
   {
-    $box = new SummarySectionHeader($this->ttpdf,$width,$section);
+    $section_name = $this->content->section_name($section_id);
+    $collapsible  = $this->content->section_is_collapsible($section_id);
+    $box = new SummarySectionHeader($this->ttpdf, $width, $section_name, $collapsible);
     $this->addChild($box);
-    $this->add_questions($width, $section, $content, $responses);
+
+    $groups = $this->content->question_groups($section_id);
+    foreach( $groups as $questions) {
+      $this->add_questions($width, $questions);
+    }
   }
 
   /**
    * Adds question boxes for the current section to the summary
    * @param float $max_width 
-   * @param array $section section specific content data
-   * @param array $content overall survey content
-   * @param array $responses overall response data
-   * @return void 
+   * @param array $questions
    */
-  private function add_questions(float $max_width, array $section, array $content, array $responses)
+  private function add_questions(float $max_width, array $questions) : void
   {
-    $sid = $section['section_id'];
-
-    $questions = $content['questions'];
-    $questions = array_filter($questions, fn($a) => ($a['section']??null) === $sid );
-    uasort($questions,fn($a,$b) => $a['sequence'] <=> $b['sequence']);
-
-    todo("Update all the following as question.grouped no longer exists");
-    $grouped = false;
     $prev    = null;
     $width   = $max_width;
-    foreach($questions as $question) {
-      switch(strtoupper($question['grouped']??'NO')) {
-        case 'NO':
-          $grouped = false;
-          $prev    = null;
-          $width   = $max_width;
-          break;
-        case 'NEW':
-          $grouped = true;
-          $prev    = null;
-          break;
-        case 'YES':
-          $grouped = true;
-          break;
-      }
-
+    foreach($questions as $question) 
+    {
       $box = null;
 
-      switch($question['type']) {
+      $question_id = $question->id();
+      $responses = $this->content->responses($question_id);
+
+      switch($question->type()) {
         case QuestionType::Info:
-          if($grouped) {
-            $box = new SummaryInfoBox($this->ttpdf,$width,$question,$prev);
-            $width = $max_width - SummaryInfoBox::indent;
-          }
+          $box = new SummaryInfoBox($this->ttpdf, $width, $question, $prev);
+          $width = $max_width - SummaryInfoBox::indent;
           break;
         case QuestionType::Bool:
           $box = new SummaryBoolBox($this->ttpdf,$width,$question,$responses,$prev);
@@ -104,12 +81,14 @@ class SummaryRootBox extends PDFRootBox
           break;
         case QuestionType::SelectOne: // intentional fallthrough
         case QuestionType::SelectMulti:
-          $options = $content['options'];
+          $options = $this->content->all_options();
           $box = new SummarySelectBox($this->ttpdf,$width,$question,$options,$responses,$prev);
           break;
       }
 
-      if($box) {
+      // box should never not be set... but just in case.
+      if($box)
+      {
         $this->addChild($box);
         $prev = $box;
       }

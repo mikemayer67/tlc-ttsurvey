@@ -8,7 +8,7 @@ require_once(app_file('pdf/ttpdf_utils.php'));
 require_once(app_file('survey/markdown.php'));
 
 /**
- * PDFBox is the baseclass for wrapping methods used to compute and render Boxes of content
+ * PDFBox is the base class for wrapping methods used to compute and render Boxes of content
  *   in a PDF file using the TTPDF package.  This class provides an abstract interface that must be
  *   subclassed for each flavor of box.  It provides common functionality applicable to each of
  *   the subclasses.  
@@ -358,7 +358,7 @@ class PDFTextBox extends PDFBox
 
     $this->family = $family ? $family : K_SANS_SERIF_FONT;
     $this->style = $style;
-    $this->size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
+    $this->size = $factor * ($size ?: K_DEFAULT_FONT_SIZE);
 
     $ttpdf->setFont($this->family, $this->style, $this->size);
 

@@ -45,6 +45,8 @@ class SummaryContent
         $this->sections[$section_id] = [
           'id'   => $section_id,
           'name' => $survey_section->name(),
+          'collapsible' => $survey_section->collapsible(),
+          'intro' => $survey_section->intro(),
           'groups' => $groups,
         ];
       }
@@ -68,6 +70,16 @@ class SummaryContent
   public function section_name(int $section_id) : string
   {
     return $this->sections[$section_id]['name'] ?? "???";
+  }
+
+  /**
+   * Returns whether or not the specified section is collapsible in the survey view
+   * @param int $section_id 
+   * @return bool 
+   */
+  public function section_is_collapsible(int $section_id) : bool
+  { 
+    return $this->sections[$section_id]['collapsible'] ?? true;
   }
 
   /**

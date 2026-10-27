@@ -9,7 +9,7 @@ require_once(app_file('include/db.php'));
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/surveys.php'));
 require_once(app_file('include/survey_content.php'));
-require_once(app_file('include/question_flags.php'));
+require_once(app_file('include/question/flags.php'));
 
 class FailedToUpdate extends \Exception {}
 class ContentError extends \Exception {}

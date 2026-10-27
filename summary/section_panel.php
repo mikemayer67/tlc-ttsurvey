@@ -30,7 +30,6 @@ class SectionPanel
     {
       $indent = false;
       foreach($questions as $question) {
-        $responses = $this->content->responses($question->id());
         $indent = $this->add_question($question,$indent);
       }
     }

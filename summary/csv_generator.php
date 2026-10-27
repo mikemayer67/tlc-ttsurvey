@@ -7,7 +7,7 @@ require_once(app_file('include/surveys.php'));
 require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('include/users.php'));
-require_once(app_file('include/question_types.php'));
+require_once(app_file('include/question/types.php'));
 require_once(app_file('summary/summary_content.php'));
 
 class CSVGenerator

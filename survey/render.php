@@ -9,8 +9,8 @@ handle_warnings();
 
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/survey_content.php'));
-require_once(app_file('include/question.php'));
-require_once(app_file('include/question_types.php'));
+require_once(app_file('include/questions.php'));
+require_once(app_file('include/question/types.php'));
 require_once(app_file('survey/markdown.php'));
 
 /**

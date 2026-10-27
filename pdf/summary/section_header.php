@@ -17,15 +17,14 @@ class SummarySectionHeader extends PDFBox
    * constructor
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $section 
-   * @return void 
+   * @param string $section_name
+   * @param bool $collapsible
    */
-  public function __construct(SummaryPDF $summaryPDF, float $width, array $section)
+  public function __construct(SummaryPDF $summaryPDF, float $width, string $section_name, bool $collapsible)
   {
     parent::__construct($summaryPDF);
 
-    $this->name = $section['name'];
-    $collapsible = $section['collapsible'] ?? true;
+    $this->name = $section_name;
 
     $this->width = $width;
     $this->height = 0;

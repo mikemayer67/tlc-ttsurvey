@@ -15,7 +15,7 @@ class SummaryFreeTextBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
+   * @param FreeTextQuestion $question 
    * @param array $responses 
    * @param null|SummaryQuestionBox $prev 
    * @return void 
@@ -23,15 +23,13 @@ class SummaryFreeTextBox extends SummaryQuestionBox
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
+    FreeTextQuestion $question,
     array $responses,
     ?SummaryQuestionBox $prev = null )
   {
     parent::__construct($summaryPDF,$prev);
 
-    $qid       = $question['id'];
-    $wording   = $question['wording'];
-    $responses = $responses[$qid] ?? [];
+    $wording = $question->wording();
 
     $this->width = $width;
     

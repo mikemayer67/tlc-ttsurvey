@@ -14,21 +14,21 @@ class SummaryInfoBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
+   * @param InfoQuestion $question 
    * @param null|SummaryQuestionBox $prev 
    * @return void 
    */
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
+    InfoQuestion $question,
     ?SummaryQuestionBox $prev = null) 
   {
     parent::__construct($summaryPDF,$prev);
 
     $this->width = $width;
 
-    $info = strip_markdown($question['info']);
+    $info = strip_markdown($question->info_text());
     $this->text_box = new PDFTextBox(
       $summaryPDF, $width, $info, style:'I',size:K_SUMMARY_FONT_LARGE, multi:true
     );

@@ -5,10 +5,10 @@ use LogicException;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/question_types.php'));
-require_once(app_file('include/question_flags.php'));;
-require_once(app_file('include/question_layout.php'));
-require_once(app_file('include/question_traits.php'));
+require_once(app_file('include/question/types.php'));
+require_once(app_file('include/question/flags.php'));;
+require_once(app_file('include/question/layout.php'));
+require_once(app_file('include/question/traits.php'));
 
 /**
  * Base class for the translation of questions 

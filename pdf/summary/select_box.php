@@ -7,7 +7,7 @@ require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/option_box.php'));
 require_once(app_file('pdf/summary/other_box.php'));
 require_once(app_file('pdf/summary/qualifiers_box.php'));
-require_once(app_file('include/question_types.php'));
+require_once(app_file('include/question/types.php'));
 
 class SummarySelectBox extends SummaryQuestionBox
 {
@@ -20,24 +20,23 @@ class SummarySelectBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
-   * @param array $options
+   * @param SelectQuestion $question 
+   * @param array $option_pool
    * @param array $responses 
    * @param null|SummaryQuestionBox $prev 
-   * @return void 
    */
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
-    array $options,
+    SelectQuestion $question,
+    array $option_pool,
     array $responses,
     ?SummaryQuestionBox $prev = null
   ) {
     parent::__construct($summaryPDF, $prev);
     $this->width = $width;
 
-    $wording = $question['wording'];
+    $wording = $question->wording();
     $this->label_box = new PDFTextBox(
       $summaryPDF, $width, $wording,
       style: 'B', size: K_SUMMARY_FONT_LARGE
@@ -45,27 +44,23 @@ class SummarySelectBox extends SummaryQuestionBox
     $this->height = $this->label_box->getHeight();
     $width -= self::indent;
 
-    $qid       = $question['id'];
-    $responses = $responses[$qid] ?? [];
-
+    $option_ids = $question->options();
     $options = array_combine(
-      $question['options'],
-      array_map(fn($oid)=>$options[$oid], $question['options'])
+      $option_ids,
+      array_map(fn($oid)=>$option_pool[$oid], $option_ids)
     );
-    if($question['has_other'] ?? false) {
-      $options[0] = $question['other'] ?? 'Other';
-    }
+    if($question->has_other()) { $options[0] = $question->other_prompt(); }
 
-    $multi = $question['type'] === QuestionType::SelectMulti;
-    foreach($options as $oid=>$option) {
+    $multi = $question->is_multi();
+    foreach($options as $option_id=>$option) {
       $box = null;
-      if($oid && $multi) {
-        $users = array_filter($responses, fn($a) => in_array($oid, $a['options'] ?? []));
+      if($option_id && $multi) {
+        $users = array_filter($responses, fn($a) => in_array($option_id, $a['options'] ?? []));
       } else {
-        $users = array_filter($responses, fn($a) => $a['selected'] === $oid);
+        $users = array_filter($responses, fn($a) => $a['selected'] === $option_id);
       }
 
-      if($oid) { // not "other"
+      if($option_id) { // not "other"
         $box = new SummaryOptionBox($summaryPDF, $width, $option, array_keys($users));
       }
       elseif($users) { // "other", but only if there are responses
@@ -82,7 +77,7 @@ class SummarySelectBox extends SummaryQuestionBox
     $qualifiers = array_filter($responses, fn($a) => ($a['qualifier']??''));
     if ($qualifiers) {
       $qualifiers = array_map(fn($r)=>$r['qualifier'],$qualifiers);
-      $this->qualifiers_box = new SummaryQualifiersBox( $summaryPDF, $width, $question['qualifier'], $qualifiers);
+      $this->qualifiers_box = new SummaryQualifiersBox( $summaryPDF, $width, $question->qualifier(), $qualifiers);
       $this->height += self::vgap + $this->qualifiers_box->getHeight();
     }
   }

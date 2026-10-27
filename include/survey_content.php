@@ -5,11 +5,11 @@ use OutOfBoundsException;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/question.php'));
-require_once(app_file('include/question_types.php'));
-require_once(app_file('include/question_flags.php'));
+require_once(app_file('include/questions.php'));
+require_once(app_file('include/question/types.php'));
+require_once(app_file('include/question/flags.php'));
 require_once(app_file('include/survey_section.php'));
-require_once(app_file('include/question_group.php'));
+require_once(app_file('include/question/group.php'));
 
 /**
  * Class containing all of the content information for the specified survey
