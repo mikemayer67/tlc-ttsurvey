@@ -25,7 +25,7 @@ function populate_content_map(PDO $pdo)
   $question_is_grouped = [];
   $query = 'SELECT survey_id,question_id,question_flags FROM tlc_tt_survey_questions';
   foreach ($pdo->query($query, PDO::FETCH_NUM) as [$survey_id,$question_id,$flags] ) {
-    $question_is_grouped[$survey_id][$question_id] = ($flags & 0x08) === 0x08;
+    $question_is_grouped[$survey_id][$question_id] = ($flags & 0x10) === 0x10;
   }
 
   $question_map = [];
