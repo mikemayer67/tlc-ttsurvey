@@ -23,7 +23,7 @@ SQL ],
 // Copy existing version history.  New migration entry will be added later
   [ __LINE__, <<<SQL
 INSERT INTO tlc_srv_version_history (version, change_description, added)
-SELECT version, description, added FROM tlc_tt_version_history;
+SELECT version, change_description, added FROM tlc_tt_version_history;
 SQL ],
 
 // The survey table must be updated to use actual title strings rather than string IDs
