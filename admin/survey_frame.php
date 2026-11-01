@@ -3,15 +3,9 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-$type_labels = [
-  'INFO' => 'Info Block',
-  'BOOL' => 'Simple Checkbox',
-  'SELECT_ONE' => 'Single Selection',
-  'SELECT_MULTI' => 'Multiple Selection',
-  'FREETEXT' => 'Free Text',
-];
+require_once(app_file('include/question/types.php'));
 
-echo "<script>\n const typeLabels = " . json_encode($type_labels) . ";\n</script>\n";
+echo "<script>\n const typeLabels = " . json_encode(QuestionType::labels()) . ";\n</script>\n";
 
 $hints = [
   'section' => [
@@ -26,6 +20,10 @@ $hints = [
       'any of the questions or info text within this section.  The text can be stylized using markdown. '.
       "p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>"),
   ],
+  'group' => [
+    'name' => ( 
+      'Name used to identify this group. It will only be used in the Admin Dashboard'),
+  ],
   'question' => [
     'archive' => (
       'Adds an existing question into the survey.  This option should be used whenever possible as it '.
@@ -33,11 +31,11 @@ $hints = [
     ),
     'type' => (
        'Type of "question" entry in the survey. Possible values are: '.
-       '<p><b>'.$type_labels['INFO'].'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
-       '<p><b>'.$type_labels['BOOL'].'</b> - For use with Yes/No questions.</p>'.
-       '<p><b>'.$type_labels['SELECT_ONE'].'</b> - Participant can select no more than one option</p>'.
-       '<p><b>'.$type_labels['SELECT_MULTI'].'</b> - Participant can select as many options as apply</p>'.
-       '<p><b>'.$type_labels['FREETEXT'].'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
+       '<p><b>'.QuestionType::Info->label().'</b> - Not actually a question.  This is a block of information included in the survey.</p>'.
+       '<p><b>'.QuestionType::Bool->label().'</b> - For use with Yes/No questions.</p>'.
+       '<p><b>'.QuestionType::SelectOne->label().'</b> - Participant can select no more than one option</p>'.
+       '<p><b>'.QuestionType::SelectMulti->label().'</b> - Participant can select as many options as apply</p>'.
+       '<p><b>'.QuestionType::FreeText->label().'</b> - A text box is provided for participant to provide a response in their own words.</p>'),
     'infotag' => (
       '<b>This field is optional.</b> If provided, it will be shown in the structure layout tree (&larr;) '.
       'rather than a truncated version of the information text.'.
@@ -49,7 +47,6 @@ $hints = [
       'It can be used to provide additional information (background, context, whatever...) about the question. '.
       'The text can be stylized using markdown. '.
       "<p><a href='https://www.markdownguide.org/basic-syntax' target='_blank'>Markdown Reference</a></p>" ),
-    'grouped' => 'This field controls how adjacent items (questons or info blocks) are grouped in the survey',
     'options' => (
       'For multiple choice questions, this is the list of options available to choose from. '.
       'There must be at least one option provided for the question to be valid.  Ideally, there '.
@@ -84,6 +81,9 @@ $labels = [
     'collapsible' => 'Collapsible',
     'intro'       => 'Intro',
   ],
+  'group' => [
+    'name'        => 'Name',
+  ],
   'question' => [
     'archive'     => 'Archive',
     'type'        => 'Type',
@@ -91,7 +91,6 @@ $labels = [
     'wording'     => 'Wording',
     'layout'      => 'Layout',
     'intro'       => 'Intro',
-    'grouped'     => 'Grouping',
     'options'     => 'Options',
     'other'       => 'Other',
     'qualifier'   => 'Qualifier',
@@ -107,10 +106,11 @@ function add_viewer_entry($scope, $key)
 
   $label = $labels[$scope][$key];
   $hint = $hints[$scope][$key];
-  echo "<div class='$key label'><span>$label:</span></div>";
+  $hint_id = "$scope-$key-hint";
+  echo "<div class='$key label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='$key value'>";
   echo "  <div class='text'></div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -125,19 +125,20 @@ function add_editor_input($scope, $key, $kwargs=[])
   $required = $kwargs['required'] ?? false;
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
+  $hint_id = "$scope-$key-hint";
 
   $attributes = "name='$name' data-key='$key' placeholder='$placeholder'";
 
   $maxlen = $kwargs['maxlen'] ?? 0;
   if($maxlen) { $attributes .= " maxlength='$maxlen'"; }
 
-  echo "<div class='$key $extra label'><span>$label:</span></div>";
+  echo "<div class='$key $extra label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <div class='wrapper'>";
   echo "    <input class='$scope $key' $attributes></input>";
   echo "    <span class='error'></span>";
   echo "  </div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -155,6 +156,7 @@ function add_editor_textarea($scope, $key, $kwargs=[])
 
   $placeholder = $required ? '[required]' : '[optional]';
   $name = "$scope-$key";
+  $hint_id = "$scope-$key-hint";
 
   $class = "$scope $key";
   $attr = "name='$name' data-key='$key' placeholder='$placeholder' maxlength='$maxlen'";
@@ -164,14 +166,14 @@ function add_editor_textarea($scope, $key, $kwargs=[])
     $class .= " auto-resize";
   }
 
-  echo "<div class='$key $extra label'><span>$label:</span></div>";
+  echo "<div class='$key $extra label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <div class='textarea-wrapper'>";
   echo "    <textarea class='$class' $attr></textarea>";
   echo "    <div class='char-count'><span class='cur'>0</span>/<span class='max'>$maxlen</span></div>";
   echo "    <span class='error'></span>";
   echo "  </div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -187,17 +189,18 @@ function add_editor_select($scope, $key, $options, $kwargs=[])
   $type  = $kwargs['type'] ?? 'default';
 
   $name = "$scope-$key";
+  $hint_id = "$scope-$key-hint";
 
   $data = "data-key='$key' data-type='$type'";
 
-  echo "<div class='$key $extra label'><span>$label:</span></div>";
+  echo "<div class='$key $extra label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='$key $extra value'>";
   echo "  <select class='$scope $key' name='$name' $data>";
   foreach($options as [$value,$label]) {
     echo "    <option value=$value>$label</option>";
   }
   echo "  </select>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -209,12 +212,14 @@ function add_archive_select()
   $label = $labels['question']['archive'];
   $hint  = $hints['question']['archive'];
 
-  echo "<div class='archive label'><span>$label:</span></div>";
+  $hint_id = 'archive-select-hint';
+
+  echo "<div class='archive label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='archive value'>";
   echo "  <select class='question archive' name='question-archive' data-key='archive'>";
   echo "    <option value=''>Select Question...</option>";
   echo "  </select>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -227,18 +232,20 @@ function add_type_select()
   $label = $labels['question']['type'];
   $hint  = $hints['question']['type'];
 
-  echo "<div class='type label'><span>$label:</span></div>";
+  $hint_id = 'type-select-hint';
+
+  echo "<div class='type label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='type value'>";
   echo "  <div class='type-wrapper'>";
   echo "    <div class='text'></div>";
   echo "    <select class='question type' name='question-type' data-key='type'>";
   echo "      <option value=''>Required...</option>";
-  foreach($type_labels as $key => $value) {
+  foreach(QuestionType::labels() as $key => $value) {
     echo "    <option value='$key'>$value</option>";
   }
   echo "    </select>";
   echo "  </div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -250,12 +257,14 @@ function add_options_entry($kwargs=[])
   $label = $labels['question']['options'];
   $hint  = $hints['question']['options'];
 
-  echo "<div class='options label'><span>$label:</span></div>";
+  $hint_id = 'options-entry-hint';
+
+  echo "<div class='options label' data-hint='$hint_id'><span>$label:</span></div>";
   echo "<div class='options value'>";
   echo "  <div class='selected'></div>";
   echo "  <span class='error'></span>";
   echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -267,14 +276,16 @@ function add_other_input($wargs=[])
   $label = $labels['question']['other'];
   $hint  = $hints['question']['other'];
 
-  echo "<div class='other label'><span>$label:</span></div>";
-  echo "<div class='other other_flag value'>";
+  $hint_id = 'other-input-hint';
+
+  echo "<div class='other label' data-hint='$hint_id'><span>$label:</span></div>";
+  echo "<div class='other has_other value'>";
   echo "  <div class='wrapper'>";
-  echo "    <input class='question other_flag' type='checkbox' data-key='other_flag'>";
+  echo "    <input class='question has_other' type='checkbox' data-key='has_other'>";
   echo "    <input class='question other' type='text' data-key='other' placeholder='Other' maxlength=25>";
   echo "    <span class='error'></span>";
   echo "  </div>";
-  echo "  <div class='hint'>$hint</div>";
+  echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }
 
@@ -282,14 +293,12 @@ function add_other_input($wargs=[])
 // Start of the actual html generation
 //
 
-
 echo "<div id='editor-frame'>";
-echo "  <div class='content-header'>Section/Question Details</div>";
+echo "  <div class='content-header'></div>";
 echo "  <div class='hint-hint'>Click or hover on any of the entry labels for more info about that entry.</div>";
 
-
 // maxlen values for name and intro
-// must not exceed the varchar size in tlc_tts_survey_sections
+// must not exceed the varchar size in tlc_srv_sections
 echo "<!--Section Editor-->";
 echo "<div class='grid section editor'>";
 add_editor_input('section','name',['required'=>true, 'maxlen'=>128]);
@@ -305,8 +314,21 @@ add_viewer_entry('section','collapsible');
 echo "  </div>";
 
 
+// maxlen values for name
+// must not exceed the varchar size in tlc_srv_groups
+echo "<!--Group Editor-->";
+echo "<div class='grid group editor'>";
+add_editor_input('group','name',['required'=>true, 'maxlen'=>128]);
+echo "</div>";
+
+echo "<!--Group Viewer-->";
+echo "<div class='grid group viewer'>";
+add_viewer_entry('section','name');
+echo "  </div>";
+
+
 // maxlen values for wording/infotag, intro, other qualifier, and info 
-// must not exceed the varchar size in tlc_tts_survey_questions
+// must not exceed the varchar size in tlc_srv_questions
 echo "  <!--Question Editor-->";
 echo "  <div class='grid question editor'>";
 add_type_select();
@@ -316,7 +338,6 @@ add_archive_select();
 add_editor_input('question','infotag',['maxlen'=>128]);
 add_editor_input('question','wording',['required'=>true, 'maxlen'=>128]);
 add_editor_textarea('question','intro',['maxlen'=>'512']);
-add_editor_select('question','grouped',[]);
 add_editor_select('question','layout',[]);
 add_options_entry();
 add_other_input(['maxlen'=>45]);
@@ -331,7 +352,6 @@ echo "  <div class='grid question viewer'>";
 add_viewer_entry('question','type');
 add_viewer_entry('question','wording');
 add_viewer_entry('question','intro');
-add_viewer_entry('question','grouped');
 add_viewer_entry('question','layout');
 add_viewer_entry('question','options');
 add_viewer_entry('question','other');

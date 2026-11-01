@@ -16,23 +16,21 @@ class SummaryBoolBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
+   * @param BoolQuestion $question 
    * @param array $responses 
    * @param null|SummaryQuestionBox $prev 
-   * @return void 
    */
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
+    BoolQuestion $question,
     array $responses,
     ?SummaryQuestionBox $prev = null
   ) {
     parent::__construct($summaryPDF,$prev);
 
-    $qid       = $question['id'];
-    $wording   = $question['wording'];
-    $responses = $responses[$qid] ?? [];
+    $qid       = $question->id();
+    $wording   = $question->wording();
 
     $this->width = $width;
 
@@ -45,20 +43,16 @@ class SummaryBoolBox extends SummaryQuestionBox
     );
     $this->height = $this->label_box->getHeight();
 
+    $responders = [];
+    $qualifiers = [];
     if ($responses) {
-      $responders = [];
-      $qualifiers = [];
       foreach ($responses as $response) {
         $userid    = $response['userid'];
         $selected  = $response['selected'] ?? false;
         $qualifier = $response['qualifier'] ?? '';
 
-        if ($response['selected']) {
-          $responders[]        = $userid;
-        }
-        if ($qualifier) {
-          $qualifiers[$userid] = $qualifier;
-        }
+        if($selected)   { $responders[] = $userid; }
+        if ($qualifier) { $qualifiers[$userid] = $qualifier; }
       }
     }
 
@@ -79,7 +73,7 @@ class SummaryBoolBox extends SummaryQuestionBox
       $this->qualifiers_box = new SummaryQualifiersBox(
         $summaryPDF,
         $width - self::indent,
-        $question['qualifier'],
+        $question->qualifier(),
         $qualifiers
       );
       $this->height += $this->qualifiers_box->getHeight();
@@ -90,9 +84,8 @@ class SummaryBoolBox extends SummaryQuestionBox
    * Manages the layout of a bool box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);

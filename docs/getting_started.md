@@ -85,10 +85,10 @@ for this app.  It contains a number of tables and views.  If you use
 the same schema for this and other apps, it could quicky become 
 confusing as to what table/view goes with which app.  This is 
 somewhat mitigated by the fact that all of the tables and views used
-by this app are prefixed with `tlc_tts_`.  But it will be cleaner if
+by this app are prefixed with `tlc_srv_`.  But it will be cleaner if
 you create a dedicated schmea.  If you choose to (or cannot) create
 a new schema, make sure that you have no existing tables or views 
-that start with `tlc_tts_`.  You wouldn't want installing this app
+that start with `tlc_srv_`.  You wouldn't want installing this app
 to clobber those.
 
 When creating the schema, I suggest using the `utf8mb4` charset with the
@@ -112,7 +112,7 @@ local authentication.
 > mysql --login-path=local tlc_tt --verbose < configure_schema.sql
 ```
 
-This should create 19 tables and 18 view (all starting with `tlc_tts_`).
+This should create 19 tables and 18 view (all starting with `tlc_srv_`).
 
 *Note that future versions may require new tables/views or 
 modification to the existing ones.  In that case, a migration script

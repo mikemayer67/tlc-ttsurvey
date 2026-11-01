@@ -6,9 +6,9 @@ export default function init(ce)
 
   let _prior_id = null;
 
-  function validate_input(sender,event)
+  function validate_input($sender,event)
   {
-    if(_survey_name.is(sender)) {
+    if(_survey_name.is($sender)) {
       update_submit();
     }
   }
@@ -81,7 +81,7 @@ export default function init(ce)
 
     $.ajax({
       type: 'POST',
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       contentType: false,
       processData: false,
       dataType: 'json',

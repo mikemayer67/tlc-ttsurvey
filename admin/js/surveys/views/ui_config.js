@@ -1,3 +1,4 @@
+// Note that this object used to support many dropdown menus... but this dwindeled as the design matured
 export default 
 {
   layout : {
@@ -13,16 +14,4 @@ export default
     bool_default:   'LEFT',
     select_default: 'ROW',
   },
-  grouped: {
-    info_label: {
-      'YES':   'Group with previous',
-      'NEW': 'Start question box',
-      'NO':    'Not in question box',
-    },
-    label: {
-      'YES': 'Group with previous',
-      'NO':  'Start question box',
-    },
-    default_value: 'NO',
-  }
 };

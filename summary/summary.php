@@ -6,10 +6,11 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/cookiejar.php'));
 require_once(app_file('include/roles.php'));
 require_once(app_file('include/settings.php'));
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
+require_once(app_file('summary/summary_content.php'));
 require_once(app_file('summary/elements.php'));
-require_once(app_file('summary/sections.php'));
+require_once(app_file('summary/section_panel.php'));
 
 $admin_id = $_SESSION['admin-id'] ?? null;
 $userid = active_userid();
@@ -35,26 +36,34 @@ $summary_flags = (int)get_setting('summary_flags');
 if($summary_flags & 2) { // requires submit
   if(!$is_admin) {
     if($survey_id && ($survey_id === $active_id)) {
-      $responses = get_user_responses( $userid,$survey_id);
+      $responses = get_all_user_responses( $userid,$survey_id);
       $submitted = $responses['submitted'] ?? [];
       if(!$submitted) { $has_access = false; }
     }
   }
 }
 
-$content   = survey_content($survey_id);
-$responses = get_all_responses($survey_id);
-$sections  = summary_sections($content);
-
-$tab_ids = array_map( function($section) { return $section['section_id']; }, $sections );
+$title = null;
+$content = null;
+$section_ids = [];
 
 $info = survey_info($survey_id);
-$title = $info['title']??null;
+if($info) 
+{
+  $title = $info['title'];
+
+  $content = new SummaryContent(
+    SurveyContent::fromSurveyID($survey_id),
+    get_all_responses($survey_id),
+  );
+
+  $section_ids = $content->section_ids();
+}
 
 start_summary_page([
   'title' => $title,
   'userid' => $userid,
-  'tab_ids' => $tab_ids,
+  'tab_ids' => $section_ids,
 ]);
 
 if(!$info) {
@@ -70,24 +79,21 @@ if(!$has_access) {
 }
 
 echo "<div class='notebook'>";
-$first = true;
-foreach($sections as $section) {
-  $sid  = $section['section_id'];
-  $checked = $first ? 'checked' : '';
-  $first = false;
-  echo "<input id='tab-cb-$sid' class='tab-cb' type='radio' name='tab-cb' $checked>";
+$checked = 'checked'; // used to select the first tab
+foreach($section_ids as $section_id) {
+  echo "<input id='tab-cb-$section_id' class='tab-cb' type='radio' name='tab-cb' $checked>";
+  $checked = '';
 }
 
 echo "<div class='tabs'>";
-foreach($sections as $section) {
-  $sid  = $section['section_id'];
-  $name = $section['name'];
-  echo "<label for='tab-cb-$sid' class='tab tab-$sid'>$name</label>";
+foreach($section_ids as $section_id) {
+  $name = $content->section_name($section_id);
+  echo "<label for='tab-cb-$section_id' class='tab tab-$section_id'>$name</label>";
 }
 echo "</div>";
 
-foreach($tab_ids as $sid) {
-  add_section_panel($sid,$content,$responses);
+foreach($section_ids as $section_id) {
+  add_section_panel($section_id, $content);
 }
 
 echo "</div>"; // div.notebook

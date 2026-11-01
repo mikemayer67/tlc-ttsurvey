@@ -1,45 +1,5 @@
 var ce = {};
 
-function internal_error(jqXHR)
-{
-  alert(
-    "Internal error (#" + jqXHR.status + "): "
-    + jqXHR.statusText
-    + "\nPlease let the survey admin know something went wrong."
-  );
-}
-
-function ajax_error_handler(jqXHR,activity)
-{
-  if(jqXHR.status == 400) {
-    // bad request
-    //   do nothing other than to warn the user (should be an admin)
-    const log_id = jqXHR.responseJSON?.log_id || '121467';
-    alert(
-      'Failed to ' + activity + ".\n" + 
-      "Please let the survey admin something went wrong\n" +
-      "  and givem them logID=" + log_id
-    );
-  } 
-  else if(jqXHR.status == 401) {
-    // authentication error.
-    //   send them back to main entry point to reauthenticate
-    window.location.href = ce.ajaxuri;
-  } 
-  else if(jqXHR.status == 403) {
-    // forbidden
-    //   with the removal of nonces from this form, should never see this
-    //   ... but if we do, reload the page to refresh it
-    alert("Form timed out... reloading the survey");
-    location.reload();
-  } 
-  else { 
-    // not sure what went wrong
-    //   treat it as an internal error
-    internal_error(jqXHR);
-  }
-}
-
 function hide_status()
 {
   ce.status.removeClass().addClass('none');
@@ -152,7 +112,7 @@ function restore_cached_values()
   update_submit_buttons();
 }
 
-function has_changes()
+function is_dirty()
 {
   ce.dirty = false;
   ce.checkable.each( function() {
@@ -196,7 +156,7 @@ function handle_save()
 
 function handle_input_change(e)
 {
-  const dirty = has_changes();
+  const dirty = is_dirty();
   update_submit_buttons();
 }
 
@@ -309,7 +269,7 @@ function update_ui_cache(e)
 function heartbeat() {
   $.ajax({
     type: 'POST',
-    url: ce.ajaxuri,
+    url: window.location.pathname,
     dataType: 'json',
     data: {
       ajax: 'survey/heartbeat',
@@ -367,7 +327,6 @@ $(document).ready( function() {
 
   ce.checkable  = ce.form.find('input:is([type=checkbox],[type=radio])[name]').not('.hint-toggle');
   ce.inputs     = ce.form.find('input[name], textarea[name]').not('[type=hidden]').not('[type=checkbox]').not('[type=radio]');
-  ce.ajaxuri    = ce.form.find('input[name=ajaxuri]').val();
 
   ce.userid     = ce.form.find('input[name=userid]').val();
   ce.survey_id  = ce.form.find('input[name=survey_id]').val();

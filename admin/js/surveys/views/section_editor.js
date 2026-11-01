@@ -1,5 +1,4 @@
-import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
-
+import { update_character_count, validate_markdown } from '../../utils.js';
 
 function input_error(key,value) 
 {
@@ -28,7 +27,7 @@ function input_error(key,value)
   
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
-    if(invalid_char) { return `invalid char (${invalid_char})`; }
+    if(invalid_char) { return 'invalid char ('+invalid_char+')'; }
   }
 
   if(markdown) {
@@ -41,7 +40,8 @@ function input_error(key,value)
 
 export default function init(ce,controller)
 {
-  const _box = $('#editor-frame div.grid.section.editor');
+  const _frame             = $('#editor-frame');
+  const _box               = _frame.find('div.grid.section.editor');
 
   const _name              = _box.children('.name');
   const _name_value        = _name.find('input');
@@ -58,7 +58,7 @@ export default function init(ce,controller)
   let _cur_id = null;  // This is the current section ID displayed in the editor
   let _errors = {};
 
-  _intro_value.on('input change', update_character_count);
+  _intro_value.on('input change', (e) => update_character_count(e.currentTarget));
   _box.find('input,textarea').on('input',handle_input).on('blur',handle_input_change);
   _box.find('select').on('change', handle_change);
 
@@ -129,7 +129,7 @@ export default function init(ce,controller)
     }
 
     const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_section_error(_cur_id,has_error);
+    controller.toggle_content_error('section',_cur_id,has_error);
   }
 
 
@@ -137,6 +137,8 @@ export default function init(ce,controller)
   {
     _cur_id = id;
     _errors = {};
+
+    _frame.find('div.content-header').text('Section Editor');
 
     const name        = data.name || '';
     const collapsible = data.collapsible ? 1 : 0;
@@ -227,8 +229,6 @@ export default function init(ce,controller)
     }
   }
 
-  return {
-    show:show,
-  };
+  return { show };
 }
 

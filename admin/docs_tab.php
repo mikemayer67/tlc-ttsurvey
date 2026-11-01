@@ -11,7 +11,6 @@ $nonce = gen_nonce('admin-docs');
 $form_uri = app_uri('admin');
 echo "<form id='admin-docs' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','docs');
 
 $topic = 'admin_manual';
@@ -30,4 +29,4 @@ HTML;
 
 
 echo "</form>";
-echo "<script src='", js_uri('docs','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('docs','admin'), "'></script>";

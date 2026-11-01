@@ -37,7 +37,7 @@ class AJAXTest
     try {
       const data = await $.ajax({
         type: 'POST',
-        url: ce.ajaxuri,
+        url: window.location.pathname,
         dataType: 'json',
         data: this._input,
       });
@@ -209,7 +209,6 @@ function object_table(x)
 }
 
 $(document).ready( function() {
-  ce.ajaxuri = $('#ajaxuri').val();
   ce.table = $('table.results');
   ce.run_button = $('table.inputs button');
 

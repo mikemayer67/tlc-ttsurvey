@@ -18,16 +18,16 @@ class SurveySectionHeader extends PDFBox
    * constructor
    * @param SurveyPDF $surveyPDF 
    * @param float $width 
-   * @param array $section 
+   * @param SurveySection $section 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $width, array $section)
+  public function __construct(SurveyPDF $surveyPDF, float $width, SurveySection $section)
   {
     parent::__construct($surveyPDF);
 
-    $name        = $section['name'];
-    $collapsible = $section['collapsible'] ?? true;
-    $intro       = $section['intro'] ?? '';
+    $name        = $section->name();
+    $collapsible = $section->collapsible();
+    $intro       = $section->intro();
 
     $this->width = $width;
     $this->height = 0;
@@ -80,7 +80,7 @@ class SurveySectionHeader extends PDFBox
    * Section boxes increase the indent for subsequent boxes if it contains an intro box
    * @return float amount by which to incrment the indent
    */
-  public function incrementIndent(): float
+  public function indentDelta(): float
   {
     return $this->intro_box ? K_QUARTER_INCH : 0;
   }
@@ -89,9 +89,8 @@ class SurveySectionHeader extends PDFBox
    * Manages the layout of the section box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x,$y);
 

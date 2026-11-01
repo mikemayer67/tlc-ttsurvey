@@ -24,7 +24,11 @@ class SummaryOtherBox extends PDFBox
    * @param array $responses 
    * @return void 
    */
-  public function __construct(SummaryPDF $summaryPDF,float $width,string $label,array $responses)
+  public function __construct(
+    SummaryPDF $summaryPDF,
+    float $width,
+    string $label,
+    array $responses )
   {
     parent::__construct($summaryPDF);
     
@@ -45,9 +49,8 @@ class SummaryOtherBox extends PDFBox
    * Lays out the qualifier box and its children
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->label->position($x,$y);

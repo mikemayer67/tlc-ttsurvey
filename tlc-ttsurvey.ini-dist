@@ -40,6 +40,13 @@ admin_password = "admin"
 ;;     details: connection credentials with select and update permission
 ;;                to the survey database host/schema
 ;;
+;;   parameter: mysql_admin_username and mysql_admin_password (optional)
+;;        type: string
+;;     details: connection credentials with full permission (including
+;;                create and drop) to the survey database host/schema.
+;;                - only needed for database migrations
+;;                - only needed if mysql_username does not have full permission
+;;
 ;;   parameter: mysql_charset (optional)
 ;;        type: string
 ;;     default: "utf8mb4"

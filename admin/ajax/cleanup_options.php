@@ -6,19 +6,19 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/logger.php'));
 require_once(app_file('include/ajax.php'));
 
-validate_ajax_nonce('admin-cleanup');
+validate_ajax_nonce('admin-maintenance');
 $response = new AjaxResponse();
 
 start_ob_logging();
 
-$rows = MySQLSelectArrays('select survey_id, option_id from tlc_tts_view_unused_options');
+$rows = MySQLFetchAllIndexed('select survey_id, option_id from tlc_srv_view_unused_options');
 $response->add('count', count($rows));
 
 if($rows)
 {
-  $query = 'delete from tlc_tts_survey_options where survey_id=? and option_id=?';
+  $query = new MySQLPreparedExec('delete from tlc_srv_survey_options where survey_id=? and option_id=?','ii');
   foreach($rows as [$sid,$oid]) {
-    $rc = MySQLExecute($query,'ii',$sid,$oid);
+    $rc = $query->run($sid,$oid);
   }
 }
 

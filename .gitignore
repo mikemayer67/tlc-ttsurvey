@@ -14,12 +14,12 @@ tlc-ttsurvey.log
 *.log
 error_log
 
-sql/*.sql
-sql/live_backups
-!sql/configure_schema.sql
-!sql/backup_data.sql
-!sql/restore_data.sql
-!sql/drop_backup.sql
+sql/php
+sql/drop_1*sql
+sql/backup_dumps
+
+archive/*
+MAMP*
 
 .vscode/*
 vendor

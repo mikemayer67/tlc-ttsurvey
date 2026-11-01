@@ -12,14 +12,14 @@ function get_status_message()
   return $status;
 }
 
-function set_status_message($msg=null,$level='info')
+function set_status_message(?string $msg=null,?string $level='info')
 {
   if($msg) { $_SESSION['status'] = [$level,$msg]; }
   else     { $_SESSION['status'] = null;          }
 }
 
-function set_info_status($msg)    { set_status_message($msg,'info');    }
-function set_warning_status($msg) { set_status_message($msg,'warning'); }
-function set_error_status($msg)   { set_status_message($msg,'error');   }
-function clear_status()           { set_status_message('');             }
+function set_info_status(string $msg)    { set_status_message($msg,'info');    }
+function set_warning_status(string $msg) { set_status_message($msg,'warning'); }
+function set_error_status(string $msg)   { set_status_message($msg,'error');   }
+function clear_status()                  { set_status_message('');             }
 

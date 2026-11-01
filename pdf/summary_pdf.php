@@ -46,18 +46,16 @@ class SummaryPDF extends TTPDF
 
   /**
    * Renders the PDF file given the survey content and user responses
-   * @param array $info contains title, status, etc. about the survey being rendered
-   * @param array $content (not even going to attempt to define it here)
-   * @param array $responses (not even going to attempt to define it here)
+   * @param SummaryContent $content
    * @return void 
    */
-  public function render(array $info, array $content, array $responses)
+  public function render(SummaryContent $content)
   {
     $now = new DateTime('now');
     $generated = $now->format('M j, Y');
     $this->footer_config['timestamp'] = "generated: $generated";
 
-    $content_root = new SummaryRootBox($this,$content,$responses);
+    $content_root = new SummaryRootBox($this,$content);
     $content_root->layoutChildren($this);
     $this->page_count = PDFBox::numPages();
     $content_root->render($this);

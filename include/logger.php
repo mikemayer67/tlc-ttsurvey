@@ -3,9 +3,14 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
+require_once app_file('include/logger_trace.php');
 require_once app_file('include/settings.php');
 
-function log_file() 
+/**
+ * returns the path to the survey app log file
+ * @return string 
+ */
+function log_file() : string
 { 
   static $log_file = null;
   if(!$log_file) {
@@ -15,7 +20,11 @@ function log_file()
   return $log_file;
 }
 
-function logger()
+/**
+ * returns opened file pointer to the survey app log
+ * @return resource|false 
+ */
+function logger() 
 {
   static $_fp = null;
 
@@ -44,38 +53,28 @@ function logger()
   return $_fp;
 }
 
-// writes to the app log based on prefix and log level
-//   unrecognized prefixes will be ignored, but...
-//     if the log level includes warnings, a warning will be
-//     added to the log about the unknown prefix
-function write_to_logger($prefix,$msg,$trace_level=1)
+/**
+ * Conditionally writes to the app log based on prefix and log level
+ * @param string $prefix 
+ * @param string $msg 
+ * @param bool $includeTrace
+ * @return void 
+ */
+#[ExcludeFromLogTrace]
+function write_to_logger(string $prefix,string $msg,bool $includeTrace=true)
 {
   $prefix = strtoupper($prefix);
   switch($prefix)
   {
-  case "ERROR":
-    $prefix = "ERR";
-  case "ERR":     
-    $level = 0; 
-    break;
-
-  case "WARNING":
-    $prefix = "WARN";
-  case "WARN":    
-    $level = 1; 
-    break;
-
+  case "ERROR":   $level = 0; break;
+  case "WARNING": $level = 1; break;
   case "TODO":
-  case "INFO":    
-    $level = 2; 
-    break;
-
-  case "DEV":     
-    $level = 3; 
-    break;
-
+  case "INFO":    $level = 2; break;
+  case "MARKER":
+  case "DEV":     $level = 3; break;
   default:        
     log_warning("Invalid logging prefix: $prefix"); 
+    $level = 0;
     break;
   }
 
@@ -83,84 +82,128 @@ function write_to_logger($prefix,$msg,$trace_level=1)
   {
     $timestamp = date("d-M-y H:i:s T");
 
-    if($trace_level>0 && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
-      $trace = debug_backtrace();
-      $file = $trace[$trace_level]["file"] ?? "???";
-      $line = $trace[$trace_level]["line"] ?? "???";
-      if(str_starts_with($file,APP_DIR)) {
-        $file = substr($file,1+strlen(APP_DIR));
-      }
-      $msg .= " [$file:$line]";
+    $trace = '';
+    if($includeTrace && ! preg_match('/Exception\s+\d+\s+caught/',$msg) ) {
+      $trace = logTrace();
     }
 
     $prefix = str_pad($prefix,8);
-    fwrite(logger(), "[$timestamp] {$prefix} $msg\n");
+    fwrite(logger(), "[$timestamp] {$prefix} $msg $trace\n");
+
+    // also write ERROR level messages into the php error log
+    if($level === 0) {
+       error_log(PKG_NAME.": $msg $trace");
+    }
   }
 }
 
-function log_location()
-{
+/**
+ * Includes a TODO entry in the log file (at the INFO level)
+ * @param string $msg 
+ * @return void 
+ * @note this function serves as a good way to mark todos in code
+ */
+#[ExcludeFromLogTrace]
+function todo(string $msg) {
+  static $history = [];
   $trace = debug_backtrace();
-  $file = $trace[1]["file"];
-  $line = $trace[1]["line"];
-  if(str_starts_with($file,APP_DIR)) {
-    $file = substr($file,1+strlen(APP_DIR));
+  $key = $trace[0]['file'].'|'.$trace[0]['file'];
+  if(!array_key_exists($key,$history)) {
+    write_to_logger("TODO", $msg);
+    $history[$key]=true;
   }
-  return "$file[$line]";
 }
 
-// the todo function is both a way to mark the code and to include
-//   those todos in the log file at the INFO level
-function todo($msg,$trace=1) {
-  write_to_logger("TODO",$msg,$trace);
-}
+/**
+ * Adds a DEV level entry in the log file
+ *   Intended to only be useful during development/debugging
+ * @param mixed $msg 
+ * @return void 
+ * @note only adds entry if current logging level is development
+ */
+#[ExcludeFromLogTrace]
+function log_dev(string $msg) { write_to_logger("DEV",$msg); }
 
-// log_dev is intended to only be useful during development debugging
-function log_dev($msg,$trace=1) {
-  write_to_logger("DEV",$msg,$trace);
-}
+/**
+ * Adds a DEV level entry in the log file without trace logging
+ * @param mixed $msg 
+ * @return void 
+ * @note only adds entry if current logging level is development
+ */
+#[ExcludeFromLogTrace]
+function log_mark(string $msg) { write_to_logger("MARKER",$msg,includeTrace:false); }
 
-// log_info is intended to show normal flow through the plugin code
-function log_info($msg,$trace=1) {
-  write_to_logger("INFO",$msg,$trace);
-}
+/**
+ * Adds a INFO level entry in the log file
+ *   Intended to show normal flow through the survey app
+ * @param string $msg 
+ * @return void 
+ * @note only adds entry if current logging level is info or dev
+ */
+#[ExcludeFromLogTrace]
+function log_info(string $msg) { write_to_logger("INFO",$msg); }
 
-// log_warning is intended to show abnormal, but not necessarily
-//   critical flows through the plugin code
-function log_warning($msg,$trace=1) {
-  write_to_logger("WARNING",$msg,$trace);
-}
+/**
+ * Adds a WARNING level entry in the log file
+ *   Intended to show abnormal behavior, but not necessary critical errors
+ * @param string $msg 
+ * @return void 
+ * @note only adds entry if current logging level is warning, info, or dev
+ */
+#[ExcludeFromLogTrace]
+function log_warning(string $msg) { write_to_logger("WARNING",$msg); }
 
-// log_error is intended to show critical errors in the plugin code
-function log_error($msg,$trace=1) {
-  write_to_logger("ERROR",$msg,$trace);
-  error_log(PKG_NAME.": $msg");
-}
-
-function warning_handler($errno,$errstr,$errfile,$errline)
+/**
+ * Adds an ERROR level entry in the log file
+ *   Intended to show critical errors
+ * @param string $msg 
+ * @return void 
+ * @note error level entries are always written to the log
+ */
+#[ExcludeFromLogTrace]
+function log_error(string $msg) 
 {
-
-  if(str_starts_with($errfile,APP_DIR)) {
-    $errfile = substr($errfile,1+strlen(APP_DIR));
-  }
-  log_warning("$errstr [$errfile:$errline]",0);
-  return true;
+  write_to_logger("ERROR",$msg);
 }
 
+/**
+ * Sets up an error handler to write warnings and notices to the log
+ *   rather than standard out (where they end up in the DOM).
+ * It handles:
+ *   - E_WARNING
+ *   - E_NOTICE
+ *   - E_DEPRECATED
+ *   - E_USER_DEPRECATED
+ * @return void 
+ */
 function handle_warnings() 
 {
   set_error_handler(
-    'tlc\tts\warning_handler',
+    function($errno, $errstr, $errfile, $errline) {
+      if (str_starts_with($errfile, APP_DIR)) {
+        $errfile = substr($errfile, 1 + strlen(APP_DIR));
+      }
+      write_to_logger('WARNING', "$errstr [$errfile:$errline]", includeTrace:false);
+      return true;
+    },
     E_WARNING|E_NOTICE|E_DEPRECATED|E_USER_DEPRECATED
   );
 }
 
+/**
+ * Sets up output buffering of unhandled warnings
+ * @return void 
+ */
 function start_ob_logging()
 {
   handle_warnings();
   ob_start();
 }
 
+/**
+ * Ends output buffering of unhandled warnings and logs any caught warnings.
+ * @return void 
+ */
 function end_ob_logging()
 {
   $warning = ob_get_contents();

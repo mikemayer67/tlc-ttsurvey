@@ -1,3 +1,4 @@
+import {hide_status, show_status} from '../../admin.js'
 import {preview_handler} from './preview_handler.js';
 
 export default function init(ce)
@@ -7,7 +8,7 @@ export default function init(ce)
 
   async function block_survey_select()
   {
-    if( !has_changes() ) { return Promise.resolve(false); }
+    if( !is_dirty() ) { return Promise.resolve(false); }
 
     return new Promise((resolve) =>  {
       var tsm = $('#tab-switch-modal');
@@ -59,7 +60,7 @@ export default function init(ce)
 
     ce.controller.enable_edits();
     ce.controller.update_content(content);
-    _last_saved = current_values();
+    _saved_name = _survey_name.val().trim();
     validate_all();
   }
 
@@ -71,7 +72,7 @@ export default function init(ce)
 
   // Input Validation
   
-  function validate_input(sender,event)
+  function validate_input($sender,event)
   {
     hide_status();
     validate_all();
@@ -85,12 +86,11 @@ export default function init(ce)
 
   function update_submit_revert()
   {
-    const dirty = has_changes();
+    const dirty = is_dirty();
 
     const can_submit = (
       dirty &&
       ( ce.form.find('.invalid-value').length === 0) &&
-      ( ce.form.find('.incomplete').length    === 0) &&
       ( ce.controller.can_submit() )
     );
 
@@ -112,31 +112,11 @@ export default function init(ce)
   $(document).on('SurveyWasReordered',update_submit_revert);
   $(document).on('SurveyWasModified',update_submit_revert);
 
-
-  function current_values()
+  function is_dirty()
   {
-    var rval = {}
-    ce.form.find('.watch').each( function(index) {
-      const e = $(this);
-      rval[ e.attr('name') ] = e.val();
-    });
-    return rval;
-  }
-
-  function has_changes()
-  {
-    let found_change = false;
-    Object.entries(_last_saved).forEach(([key,value]) => {
-      const e = ce.form.find(`[name=${key}]`);
-      if( value !== e.val() ) {
-        found_change = true; 
-        return false;  // no need to continue loop
-      }
-    });
-    if(found_change) { return true; }
-
+    const cur_name = _survey_name.val().trim();
+    if( cur_name !== _saved_name )   { return true; }
     if( ce.undo_manager?.hasUndo() ) { return true; }
-
     return false;
   }
 
@@ -150,10 +130,8 @@ export default function init(ce)
 
   function handle_revert()
   {
-    for( let key in _last_saved ) {
-      ce.form.find(`[name="${key}"]`).val(_last_saved[key]);
-    }
-
+    _survey_name.val(_survey_name);
+    
     const content = ce.survey_data.content( ce.cur_survey.id );
     ce.controller.update_content(content);
 
@@ -163,8 +141,7 @@ export default function init(ce)
 
   function handle_submit()
   {
-    const cur_values = current_values();
-    var survey_name = cur_values.survey_name.trim();
+    var survey_name = _survey_name.val().trim();
     if( survey_name.length == 0 ) { survey_name = ce.cur_survey.title; }
 
     const content = ce.controller.content();
@@ -179,7 +156,7 @@ export default function init(ce)
 
     $.ajax( {
       type: 'POST',
-      url: ce.ajaxuri,
+      url: window.location.pathname,
       contentType: false,
       processData: false,
       dataType: 'json',
@@ -187,8 +164,7 @@ export default function init(ce)
     })
     .done( function(data,status,jqXHR) {
       if(data.success) {
-        _last_saved = cur_values;
-        _last_saved.survey_name = '';
+        _saved_name = '';
 
         ce.cur_survey.title = survey_name;
         ce.survey_data.content(ce.cur_survey.id,data.content);
@@ -201,7 +177,7 @@ export default function init(ce)
 
       } else {
         // should never get here...
-        internal_error(jqXHR);
+        ajax_internal_error(jqXHR);
       }
     } )
     .fail( function(jqXHR,textStatus,errorThrown) { 
@@ -218,12 +194,12 @@ export default function init(ce)
   }
 
 
-  var _last_saved = current_values();
+  var _saved_name = _survey_name.val().trim();
 
   return {
     state:'draft',
     block_survey_select, select_survey,
-    update_info, has_changes, validate_input,
+    update_info, is_dirty, validate_input,
     handle_revert, handle_submit, handle_preview,
   };
 };

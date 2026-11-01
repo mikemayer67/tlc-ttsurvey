@@ -4,9 +4,11 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('include/surveys.php'));
+require_once(app_file('include/question/group.php'));
 
 $nonce = gen_nonce('admin-surveys');
 
+$active_roles ??= [];
 $is_admin = in_array('admin',$active_roles);
 
 // survey data
@@ -28,7 +30,8 @@ if($all_surveys) {
     $index = 0;
     $id = $all_surveys[0]['survey_id'];
   }
-  $all_surveys[$index]['content'] = survey_content($id);
+  $content = SurveyContent::fromSurveyID($id);
+  $all_surveys[$index]['content'] = $content->for_js();
 }
 
 if(! ($all_surveys || $is_admin) ) {
@@ -46,7 +49,6 @@ $form_uri = app_uri('admin');
 echo "<form id='admin-surveys' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
 add_hidden_input('preview-nonce',gen_nonce('preview'));
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','surveys');
 
 
@@ -99,16 +101,18 @@ echo <<<HTML
 <div id='content-editor'>
 
   <div class='menubar'>
-    <button class='up' title='Move selection up'><span class=icon></span></button>
-    <button class='down' title='Move selection down'><span class=icon></span></button>
-    <button class='add section below' title='Insert new section below'><span class=icon></span></button>
-    <button class='add section above' title='Insert new section above'><span class=icon></span></button>
-    <button class='add question below' title='Insert new survey item below'><span class=icon></span></button>
-    <button class='add question above' title='Insert new survey item above'><span class=icon></span></button>
-    <button class='add question clone' title='Duplicate survey item'><span class=icon></span></button>
-    <button class='delete' title='Delete selection'><span class=icon></span></button>
-    <button class='undo' title='Undo edit'><span class=icon></span></button>
-    <button class='redo' title='Redo edit'><span class=icon></span></button>
+    <button class='up' data-hint='Move selection up'><span class=icon></span></button>
+    <button class='down' data-hint='Move selection down'><span class=icon></span></button>
+    <button class='add section below' data-hint='Insert new section below'><span class=icon></span></button>
+    <button class='add section above' data-hint='Insert new section above'><span class=icon></span></button>
+    <button class='add question below' data-hint='Insert new question below'><span class=icon></span></button>
+    <button class='add question above' data-hint='Insert new question above'><span class=icon></span></button>
+    <button class='add question clone' data-hint='Duplicate question'><span class=icon></span></button>
+    <button class='add group' data-hint='Start new grouping'><span class=icon></span></button>
+    <button class='remove group' data-hint='Remove grouping'><span class=icon></span></button>
+    <button class='delete' data-hint='Delete selection'><span class=icon></span></button>
+    <button class='undo' data-hint='Undo edit'><span class=icon></span></button>
+    <button class='redo' data-hint='Redo edit'><span class=icon></span></button>
   </div>
   
   <div class='body'>

@@ -14,21 +14,21 @@ class SummaryInfoBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
+   * @param InfoQuestion $question 
    * @param null|SummaryQuestionBox $prev 
    * @return void 
    */
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
-    ?SummaryQuestionBox $prev = null
-  ) {
+    InfoQuestion $question,
+    ?SummaryQuestionBox $prev = null) 
+  {
     parent::__construct($summaryPDF,$prev);
 
     $this->width = $width;
 
-    $info = strip_markdown($question['info']);
+    $info = strip_markdown($question->info_text());
     $this->text_box = new PDFTextBox(
       $summaryPDF, $width, $info, style:'I',size:K_SUMMARY_FONT_LARGE, multi:true
     );
@@ -49,7 +49,7 @@ class SummaryInfoBox extends SummaryQuestionBox
    * Indentation starts after an in-group info box
    * @return float 
    */
-  public function incrementIndent(): float
+  public function indentDelta(): float
   {
     return self::indent;
   }
@@ -97,9 +97,8 @@ class SummaryInfoBox extends SummaryQuestionBox
    * Manages the layout of the info text box
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position($x, $y)
+  protected function position($x, $y) : void
   {
     parent::position($x,$y);
     $this->text_box->position($x,$y);

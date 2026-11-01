@@ -3,14 +3,14 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/surveys.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('include/responses.php'));
 require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/submitted.php'));
 
 $action = $_POST['action'] ?? 'cancel';
 
-log_dev("-------------- Handle Submit: $action --------------");
+log_mark("-------------- Handle Submit: $action --------------");
 
 // Go ahead and handle the cancel button immediately by simply going back to the main entry point
 if($action === 'cancel')
@@ -50,7 +50,24 @@ if($modified) {
   die();
 }
 
-$result = update_user_responses($userid,$survey_id,$action,$_POST);
+unset($_SESSION['ui-cache-id']);
+
+switch($action) 
+{
+  case 'delete':
+    drop_user_draft_responses($userid,$survey_id);
+    break;
+  case 'save':
+    $_SESSION['ui-cache-id'] = $_POST['ui-cache-id'];
+    update_user_responses($userid,$survey_id,$_POST,draft:true);
+    break;
+  case 'submit':
+    update_user_responses($userid,$survey_id,$_POST,draft:false);
+    break;
+  default:
+    internal_error("Invalid update_user_responses action ($action)");
+    break;
+}
 
 if(empty($_POST['js_enabled'])) {
   // We cannot use javascript to send an async AJAX call to send the email, so we need
@@ -59,9 +76,7 @@ if(empty($_POST['js_enabled'])) {
   $active_user = User::from_userid($active_userid);
   $email = $active_user->email();
   if($email) {
-    $content = survey_content($survey_id);
-    $submitted = get_user_responses($userid,$survey_id,false);
-    send_confirmation_email($userid,$survey_id,$email,$content,$submitted);
+    send_confirmation_email($userid,$survey_id,$email);
   }
   $_SESSION['queued-confirmation-email']=false;
 } else {

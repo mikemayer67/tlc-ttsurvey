@@ -56,7 +56,7 @@ function start_fault_page($context)
   add_js_resources($context);
   end_header();
 
-  add_navbar($context); 
+  add_navbar(); 
 
   start_body();
 }
@@ -100,21 +100,35 @@ function start_header($title=null)
   echo "<title>$title</title>";
 }
 
-function add_js_resources($context, ...$extra_js)
+/**
+ * Adds jquery, jquery_helper, and optional context <script> to DOM
+ * @param string [$context]
+ * @param bool [$as_module]
+ * @return void 
+ */
+function add_js_resources($context="", $as_module=false)
 {
-  //  - always include jquery
-  //  - add any extra js that may have been provided
-  //  - add context specific URI if js file exists
-  $js_uris = array_merge(
-    [ js_uri('jquery-3.7.1.min') ],
-    $extra_js,
-    file_exists(app_file("$context/js/$context.js")) ? [js_uri($context,$context)] : [],
-    file_exists(app_file("js/$context.js")) ? [js_uri($context)] : [],
-  );
-  echo "<!-- Javascript -->";
-  foreach($js_uris as $js_uri) {
-    echo "<script src='$js_uri'></script>";
+  $script_uris = [ 
+    js_uri('jquery-3.7.1.min'), 
+    js_uri('jquery_helpers'),
+  ];
+  $module_uris = [];
+
+  if($context) {
+    if(file_exists(app_file("$context/js/$context.js"))) {
+      if($as_module) { $module_uris[] = js_uri($context,$context); }
+      else           { $script_uris[] = js_uri($context,$context); }
+    }
+    if(file_exists(app_file("js/$context.js"))) {
+      if($as_module) { $module_uris[] = js_uri($context); }
+      else           { $script_uris[] = js_uri($context); }
+    }
   }
+
+  echo "<!-- Javascript -->";
+  foreach($script_uris as $uri) { echo "<script src='$uri'></script>"; }
+  foreach($module_uris as $uri) { echo "<script type='module' src='$uri'></script>"; }
+  
   echo "<script>const ttt_menu_icon='".img_uri('icons8/menu.png')."';</script>";
 }
 
@@ -154,9 +168,46 @@ function start_body()
   echo "<div class='spacer' style='width:0; min-width:0;'></div>";
 }
 
-function add_navbar($context,$kwargs=[])
+/**
+ * Adds a customizable common navigation toolbar to the top of the page.
+ *   The customization comes through optional callback functions.
+ *   Additionally, an associated array of keyword arguments can be
+ *   provided that will be passed to each of the callbacks.
+ * 
+ * Common keyword arguments include:
+ *   - title : string   The survye title
+ *   - status : string  Status message
+ *   
+ * @param array{
+ *   add_navbar_left?:   callable(array): void,
+ *   add_navbar_right?:  callable(array): void,
+ *   add_navbar_center?: callable(array): void,
+ * } $callbacks 
+ * @param array<string,mixed> $kwargs 
+ * @param bool $include_nojs_user_menu
+ * @return void 
+ */
+function add_navbar(array $callbacks=[], array $kwargs=[], bool $include_nojs_user_menu=false)
 {
-  $userid = $kwargs['userid'] ?? null;
+  $callbacks += [
+    'add_navbar_left'   => function(array $kwargs) : void {
+      $logo_uri = ImageLibrary::app_logo_uri();
+      $missing = $logo_uri ? '' : 'missing';
+      $src     = $logo_uri ? "src='$logo_uri'" : '';
+
+      $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
+      $title = htmlspecialchars($title);
+
+      echo "<img class='ttt-logo $missing' $src alt='Logo'>";
+      echo "<span class='ttt-title'>$title</span>";
+    },
+    'add_navbar_right'  => function(array $kwargs) : void {
+      // common add_navbar_right does nothing
+    },
+    'add_navbar_center' => function(array $kwargs) : void {
+      echo $kwargs['status'] ?? '';
+    }
+  ];
 
   echo "<!-- Navbar -->";
   // include both a wrapper and the navbar itself for purpose of css layout of the user menu
@@ -165,46 +216,24 @@ function add_navbar($context,$kwargs=[])
 
   // left (title) box
   echo "<div class='left-box title-box'>";
-  $rc_left = call_context_function('add_navbar_left',$context,$kwargs);
+  $callbacks['add_navbar_left']($kwargs);
   echo "</div>";
 
   // center (status) box
   echo "<div class='center-box status'>";
-  $rc_center = call_context_function('add_navbar_center',$context,$kwargs);
+  $callbacks['add_navbar_center']($kwargs);
   echo "</div>";
 
   // right (username) box
-  $user = null;
   echo "<div class='right-box username'>";
-  $rc_right = call_context_function('add_navbar_right',$context,$kwargs);
+  $callbacks['add_navbar_right']($kwargs);
   echo "</div>"; // right-box
 
   echo "</div>"; // navbar
 
-  if($rc_right['user_menu'] ?? false) { add_nojs_user_menu(); }
+  if($include_nojs_user_menu) { add_nojs_user_menu(); }
 
   echo "</div>"; // wrapper
-}
-
-function add_navbar_left($kwargs)
-{
-  $logo_uri = ImageLibrary::app_logo_uri();
-
-  $missing = $logo_uri ? '' : 'missing';
-  $src     = $logo_uri ? "src='$logo_uri'" : '';
-  echo "<img class='ttt-logo $missing' $src alt='Logo'>";
-
-  $title = $kwargs['title']  ?? active_survey_title() ?? app_name();
-  echo "<span class='ttt-title'>$title</span>";
-}
-
-function add_navbar_center($kwargs)
-{
-  echo $kwargs['status'] ?? '';
-}
-
-function add_navbar_right($kwargs) 
-{
 }
 
 function add_return_to_survey()
@@ -341,11 +370,15 @@ function add_js_recommended($wrapper="noscript")
   echo "</$wrapper>";
 }
 
+function add_small_screen_warning()
+{
+  echo "<div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>";
+}
+
 function add_admin_lock()
 {
   require_once(app_file('admin/admin_lock.php'));
   $lock = json_encode(obtain_admin_lock());
-  echo "<div id='ttt-small-screen'>The Admin Dashboard is not intended for use on small screens</div>";
   echo "<script>var admin_lock = $lock;</script>";
 }
 

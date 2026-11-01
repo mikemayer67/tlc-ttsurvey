@@ -42,7 +42,7 @@ function input_error(key,value)
 
   if(invalid_char_regex) {
     const invalid_char = value.match(invalid_char_regex);
-    if(invalid_char) { return `invalid char (${invalid_char[0]})`; }
+    if(invalid_char) { return 'invalid char ('+invalid_char[0]+')'; }
   }
 
   if(markdown) {
@@ -55,7 +55,8 @@ function input_error(key,value)
 
 export default function init(ce,controller)
 {
-  const _box = $('#editor-frame div.grid.question.editor');
+  const _frame             = $('#editor-frame');
+  const _box               = _frame.find('div.grid.question.editor');
 
   const _inputs          = _box.find('input');
   const _textareas       = _box.find('textarea');
@@ -82,16 +83,13 @@ export default function init(ce,controller)
   const _intro           = _box.children('.intro');
   const _intro_value     = _intro.find('textarea');
 
-  const _grouped         = _box.children('.grouped');
-  const _grouped_value   = _grouped.find('select');
-
   const _info            = _box.children('.info');
   const _info_value      = _info.find('textarea');
   const _popup           = _box.children('.popup');
   const _popup_value     = _popup.find('textarea');
 
   const _other           = _box.children('.other');
-  const _other_flag      = _other.find('input.other_flag');
+  const _has_other      = _other.find('input.has_other');
   const _other_value     = _other.find('input.other');
 
   const _hints           = _box.find('div.hint');
@@ -102,16 +100,16 @@ export default function init(ce,controller)
   function set_error(key,msg)
   {
     _errors[key] = msg;
-    controller.toggle_question_error(_cur_id,true);
+    controller.toggle_content_error('question',_cur_id,true);
   }
   function clear_error(key) {
     delete _errors[key];
     const has_error = Object.keys(_errors).length > 0;
-    controller.toggle_question_error(_cur_id,has_error);
+    controller.toggle_content_error('question',_cur_id,has_error);
   }
   function reset_errors() {
     _errors = {}
-    controller.toggle_question_error(_cur_id,false);
+    controller.toggle_content_error('question',_cur_id,false);
   }
 
   const self = {
@@ -131,7 +129,7 @@ export default function init(ce,controller)
     SELECT_MULTI: show_select_multi,
   };
 
-  _textareas.on('input change', update_character_count);
+  _textareas.on('input change', (e) => update_character_count(e.currentTarget));
 
   _textareas.filter('.auto-resize').on('input change', function(e) {
     this.style.height = 'auto';
@@ -148,7 +146,6 @@ export default function init(ce,controller)
     .on('change',handle_checkbox);
 
   _layout_value.on('change', handle_select_change);
-  _grouped_value.on('change', handle_select_change);
 
   function handle_input(e) 
   {
@@ -242,6 +239,8 @@ export default function init(ce,controller)
 
     reset_errors();
 
+    _frame.find('div.content-header').text('Question Editor');
+
     // As the list of fields to show depend on question type, we start by hiding
     //   all of the fields and then turning back on those that are needed based on
     //   question type.
@@ -260,13 +259,6 @@ export default function init(ce,controller)
       _type_value.text( typeLabels[data.type] ).show();
       _type_select.hide();
 
-      _grouped_value.empty();
-      ["NO","YES"].forEach( (value) => {
-        const label = ui_config.grouped.label[value];
-        const opt   = $('<option></option>').attr('value',value).text(label);
-        _grouped_value.append(opt);
-      });
-
       _show_handlers[data.type]?.(data);
     } 
     else 
@@ -279,22 +271,12 @@ export default function init(ce,controller)
   {
     _infotag.show();
     _info.show();
-    _grouped.show();
 
     const infotag = data.infotag || '';
     const info    = data.info    || '';
-    const grouped = data.grouped || 'NO';
-
-    _grouped_value.empty();
-    ["NO","YES","NEW"].forEach( (value) => {
-      const label = ui_config.grouped.info_label[value];
-      const opt   = $('<option></option>').attr('value',value).text(label);
-      _grouped_value.append(opt);
-    });
 
     _infotag_value.val(infotag).trigger('change');
     _info_value.val(data.info).trigger('change');
-    _grouped_value.val(grouped);
 
     validate_input('infotag', infotag);
     validate_input('info', info);
@@ -306,8 +288,6 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
-    const grouped = data.grouped || 0;
-    _grouped.show();
     _popup.show();
 
     _layout_value.empty();
@@ -327,7 +307,6 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording'  , wording);
@@ -340,17 +319,14 @@ export default function init(ce,controller)
   {
     _wording.show();
     _intro.show();
-    _grouped.show();
     _popup.show();
 
     const wording = data.wording || '';
     const intro   = data.intro || '';
-    const grouped = data.grouped || 0;
     const popup   = data.popup || '';
 
     _wording_value.val(wording);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
     _popup_value.val(popup);
 
     validate_input('wording', wording);
@@ -364,7 +340,6 @@ export default function init(ce,controller)
     _layout.show();
     _qualifier.show();
     _intro.show();
-    _grouped.show();
     _other.show();
     _popup.show();
 
@@ -379,8 +354,7 @@ export default function init(ce,controller)
     const layout     = data.layout || ui_config.layout.select_default;
     const qualifier  = data.qualifier || '';
     const intro      = data.intro || '';
-    const grouped = data.grouped || 0;
-    const other_flag = data.other_flag || false;
+    const has_other = data.has_other || false;
     const other      = data.other || '';
     const popup      = data.popup || '';
 
@@ -388,8 +362,7 @@ export default function init(ce,controller)
     _layout_value.val(layout);
     _qualifier_value.val(qualifier);
     _intro_value.val(intro);
-    _grouped_value.val(grouped);
-    _other_flag.prop('checked',other_flag);
+    _has_other.prop('checked',has_other);
     _other_value.val(other);
     _popup_value.val(popup);
 
@@ -397,7 +370,7 @@ export default function init(ce,controller)
     validate_input('qualifier'  , qualifier);
     validate_input('intro'      , intro);
     validate_input('popup'      , popup);
-    if(other_flag) {
+    if(has_other) {
       validate_input('other'    , other);
     }
 
@@ -410,29 +383,29 @@ export default function init(ce,controller)
     show_select_one(data);
   }
 
-  function show_new(id,data)
+  function show_new(new_id,new_data)
   {
     const bullpen = controller.unused_questions();
-    if(Object.keys(bullpen).length) {
+    if(bullpen.size > 0) {
       _archive_select.find('option:not(:first)').remove();
-      Object.entries(bullpen).forEach( ([id,data]) => {
-        if(data.type) {
-          let wording = data.type === "INFO"
+      for(const [id,data] of bullpen) {
+        if(!data.type) { continue; }
+        
+        let wording = data.type === "INFO"
           ? data.infotag || data.info || ''
           : data.wording || '';
 
-          if(wording.length > 64) {
-            wording = wording.slice(0,64) + '...';
-          }
-          _archive_select.append(new Option( wording, id ));
+        if (wording.length > 64) {
+          wording = wording.slice(0, 64) + '...';
         }
-      });
-      _archive_select.val('').on('change',id,handle_archive);
+        _archive_select.append(new Option(wording, id));
+      }
+      _archive_select.val('').on('change',new_id,handle_archive);
       _archive.show();
     }
 
     _type_value.hide();
-    _type_select.val('').on('change',[id,data],handle_type).show();
+    _type_select.val('').on('change',[new_id,new_data],handle_type).show();
   }
 
   //
@@ -449,10 +422,12 @@ export default function init(ce,controller)
       redo() {
         const data = controller.replace_question(old_id,new_id);
         show(new_id,data);
+        $(document).trigger('SurveyWasModified');
       },
       undo() {
         const data = controller.replace_question(new_id,old_id);
         show(old_id,data);
+        $(document).trigger('SurveyWasModified');
       },
     });
   }
@@ -670,8 +645,5 @@ export default function init(ce,controller)
   // Finally, return the question editor public interface 
   //   (which is rather small considering all tht happens internally)
 
-  return {
-    show:show,
-  };
-
+  return { show };
 }

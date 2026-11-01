@@ -31,19 +31,11 @@ if($userid !== $active_userid) { send_ajax_bad_request('$userid is not the activ
 $email = $user->email();
 if(!$email) { send_ajax_failure('no email address in your profile'); }
 
-$content   = survey_content($active_id);
-if(!$content) { send_ajax_bad_request("No content data found for survey $active_id"); }
-
-require_once(app_file('include/responses.php'));
-
-$submitted = get_user_responses($userid,$active_id,0);
-if(!$submitted) { send_ajax_failure("No submitted responses found for $userid"); }
-
 $response = new AjaxResponse();
 $response->add('email',$email);
 
-$success = send_confirmation_email($userid,$active_id,$email,$content,$submitted);
-if(!$success) { $response->fail(); }
+$success = send_confirmation_email($userid,$active_id,$email);
+if(!$success) { $response->fail('unknown reason'); }
 
 end_ob_logging();
 

@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/table_response_box.php'));
 
-class SummaryFreetextBox extends SummaryQuestionBox
+class SummaryFreeTextBox extends SummaryQuestionBox
 {
   private PDFTextBox $label_box;
   private ?SummaryTableResponseBox $response_box = null;
@@ -15,7 +15,7 @@ class SummaryFreetextBox extends SummaryQuestionBox
   /**
    * @param SummaryPDF $summaryPDF 
    * @param float $width 
-   * @param array $question 
+   * @param FreeTextQuestion $question 
    * @param array $responses 
    * @param null|SummaryQuestionBox $prev 
    * @return void 
@@ -23,15 +23,13 @@ class SummaryFreetextBox extends SummaryQuestionBox
   public function __construct(
     SummaryPDF $summaryPDF,
     float $width,
-    array $question,
+    FreeTextQuestion $question,
     array $responses,
-    ?SummaryQuestionBox $prev = null
-  ) {
+    ?SummaryQuestionBox $prev = null )
+  {
     parent::__construct($summaryPDF,$prev);
 
-    $qid       = $question['id'];
-    $wording   = $question['wording'];
-    $responses = $responses[$qid] ?? [];
+    $wording = $question->wording();
 
     $this->width = $width;
     
@@ -41,7 +39,7 @@ class SummaryFreetextBox extends SummaryQuestionBox
     $this->height = $this->label_box->getHeight();
 
     if($responses) {
-      $responses = array_map(fn($a) => $a['free_text'], $responses);
+      $responses = array_map(fn($a) => $a['freetext'], $responses);
       $this->height += self::vgap;
       $this->response_box = new SummaryTableResponseBox(
         $summaryPDF, $width - self::indent, $responses
@@ -54,9 +52,8 @@ class SummaryFreetextBox extends SummaryQuestionBox
    * Manages the layout of a freetext box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->label_box->position($x,$y);

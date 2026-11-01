@@ -3,6 +3,7 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question/types.php'));
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/info_box.php'));
 require_once(app_file('pdf/survey/freetext_box.php'));
@@ -20,9 +21,14 @@ class SurveyGroupBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width
    * @param array $questions 
+   * @param SurveyContent $content
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $questions, array $content)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    array $questions, 
+    SurveyContent $content)
   {
     parent::__construct($surveyPDF);
 
@@ -34,21 +40,25 @@ class SurveyGroupBox extends PDFBox
 
     $aligned_width = 0;
     foreach($questions as $question) {
-      $type = $question['type'];
+      $type = $question->type();
 
+      $box = null;
       switch($type) {
-        case 'INFO':
+        case QuestionType::Info:
           $box = new SurveyInfoBox($surveyPDF,$max_width,$question);
           break;
-        case 'FREETEXT':
-          $box = new SurveyFreetextBox($surveyPDF,$max_width,$question);
+        case QuestionType::FreeText:
+          $box = new SurveyFreeTextBox($surveyPDF,$max_width,$question);
           break;
-        case 'BOOL':
+        case QuestionType::Bool:
           $box = new SurveyBoolBox($surveyPDF,$max_width,$question);
           break;
-        case 'SELECT_ONE':
-        case 'SELECT_MULTI':
-          $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content['options']);
+        case QuestionType::SelectOne:
+        case QuestionType::SelectMulti:
+          $box = new SurveySelectBox($surveyPDF,$max_width,$question,$content);
+          break;
+        default:
+          internal_error("Unrecognized question type: $type");
           break;
       }
       $this->height += $box->getHeight();
@@ -59,7 +69,7 @@ class SurveyGroupBox extends PDFBox
         $aligned_width = max($aligned_width, $box->getAlignedWidth());
       }
 
-      $max_width -= $box->incrementIndent();
+      $max_width -= $box->indentDelta();
     }
     foreach($this->child_boxes as $box) {
       if($box instanceof SurveyAlignableBox) {
@@ -70,12 +80,10 @@ class SurveyGroupBox extends PDFBox
 
   /**
    * Manages the layout of a group box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
 
@@ -83,7 +91,7 @@ class SurveyGroupBox extends PDFBox
     {
       $box->position($x,$y);
       $y += $box->getHeight();
-      $x += $box->incrementIndent();
+      $x += $box->indentDelta();
     }
   }
 

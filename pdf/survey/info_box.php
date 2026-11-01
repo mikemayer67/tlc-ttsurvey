@@ -14,16 +14,14 @@ class SurveyInfoBox extends PDFBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width
-   * @param array $question 
+   * @param InfoQuestion $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, InfoQuestion $question)
   {
     parent::__construct($surveyPDF);
 
-    $info = $question['info'];
-
-    $this->new_group = strtoupper($question['grouped']??"") === "NEW";
+    $info = $question->info_text();
 
     $this->width = $max_width;
     $this->height = 0;
@@ -41,19 +39,17 @@ class SurveyInfoBox extends PDFBox
    * starting a new question group
    * @return float 
    */
-  public function incrementIndent() : float
+  public function indentDelta() : float
   {
     return $this->new_group ? K_QUARTER_INCH : 0;
   }
 
   /**
    * Manages the layout of a info box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->box->position($x, $y);

@@ -54,6 +54,8 @@ user of the app (including changes specific to Trinity).
 - HTTP server (e.g. Apache)
 - PHP 8.1 or newer
 - MySQL 5.7 or newer
+  - MySQLi extension
+  - MySQL Native Driver (mysqlnd, for mysqli_stmt::get_result)
 
 ## Setup
 

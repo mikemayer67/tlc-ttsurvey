@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question/layout.php'));
+
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/option_box.php'));
 require_once(app_file('pdf/survey/other_box.php'));
@@ -11,8 +13,8 @@ require_once(app_file('pdf/survey/enums.php'));
 
 class SurveyOptionsBox extends PDFBox
 {
-  private bool         $inline = false;
-  private OptionLayout $layout;
+  private bool $inline = false;
+  private QuestionLayout $layout;
 
   /** @var SurveyAlignableBox[] */
   private array           $children = [];
@@ -46,43 +48,46 @@ class SurveyOptionsBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param float $inline_width 
-   * @param array $question 
-   * @param array $options 
-   * @param int $fontsize (default=k_SURVEY_FORM_MEDIUM)
+   * @param SelectQuestion $question 
+   * @param SurveyContent $content
+   * @param float $fontsize (default=k_SURVEY_FORM_MEDIUM)
    * @return void 
    */
   public function __construct(
-    SurveyPDF $surveyPDF, float $max_width, float $inline_width,
-    array $question, array $options, int $fontsize=K_SURVEY_FONT_MEDIUM)
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    float $inline_width,
+    SelectQuestion $question, 
+    SurveyContent $content, 
+    float $fontsize=K_SURVEY_FONT_MEDIUM )
   {
     parent::__construct($surveyPDF);
     
-    $type = $question['type'];
+    $type = $question->type();
     $shape = OptionShape::fromInput($type);
-    $question_layout = $question['layout'] ?? 'ROW';
-    $justification = SurveyJustification::fromInput($question_layout);
-    $layout = OptionLayout::fromInput($question_layout);
+    $layout = $question->layout();
+    $justification = SurveyJustification::fromInput($layout);
 
     $this->layout = $layout;
     
     $this->children = [];
-    foreach($question['options'] as $option) {
-      $label = $options[$option];
+    foreach($question->options() as $option_id) {
+      $label = $content->option_text($option_id);
       $this->children[] = new SurveyOptionBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize,
       );
     }
-    if($question['other_flag']) {
-      $label = $question['other'] ?? "Other";
+    if($question->has_other()) {
+      $label = $question->other_prompt();
       $this->children[] = new SurveyOtherBox(
         $surveyPDF, $max_width, $label, $shape, $justification, fontsize:$fontsize
       );
     }
 
-    if($layout === OptionLayout::ROW) {
-      $this->construct_rows($max_width,$inline_width);
-    } else {
+    if($layout->isColumn()) {
       $this->construct_column($max_width,$inline_width);
+    } else {
+      $this->construct_rows($max_width,$inline_width);
     }
   }
 
@@ -177,9 +182,8 @@ class SurveyOptionsBox extends PDFBox
    * Manages positioning of an options box and its children
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x,$y);
 

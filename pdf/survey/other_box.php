@@ -32,10 +32,10 @@ class SurveyOtherBox extends SurveyAlignableBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
-   * @param string $option_label 
-   * @param OptionShape $option_shape 
+   * @param string $label 
+   * @param OptionShape $shape 
    * @param SurveyJustification $justification 
-   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
+   * @param float $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
   public function __construct(
@@ -44,7 +44,7 @@ class SurveyOtherBox extends SurveyAlignableBox
     string $label,
     OptionShape $shape,
     SurveyJustification $justification,
-    int $fontsize=K_SURVEY_FONT_MEDIUM)
+    float $fontsize=K_SURVEY_FONT_MEDIUM)
   {
     parent::__construct($surveyPDF,$justification);
 
@@ -63,6 +63,7 @@ class SurveyOtherBox extends SurveyAlignableBox
   public function getAlignedWidth(): float {
     return $this->option->getAlignedWidth();
   }
+
   public function setAlignedWidth(float $w) {
     if($this->justification === SurveyJustification::RIGHT) {
       $dw = $w - $this->option->getAlignedWidth();
@@ -75,9 +76,8 @@ class SurveyOtherBox extends SurveyAlignableBox
    * Manages positioning of an other box and its children
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     

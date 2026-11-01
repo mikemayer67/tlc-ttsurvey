@@ -12,7 +12,6 @@ echo "<div class='ttt-splash'>";
 add_img_tag('coming_soon.png','','Coming Soon');
 
 echo "<form id='survey'>";
-add_hidden_input('ajaxuri',app_uri());
 
 echo "<div class='ttt-caption'>";
 echo "There is no active survey at this time";

@@ -4,6 +4,7 @@ namespace tlc\tts;
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
 require_once(app_file('pdf/ttpdf.php'));
+require_once(app_file('include/survey_content.php'));
 require_once(app_file('pdf/survey/root_box.php'));
 
 use DateTime;
@@ -39,18 +40,19 @@ class SurveyPDF extends TTPDF
 
   /** Renders the PDF file given the survey content
    * @param array $info contains title, status, etc. about the survey being rendered
-   * @param array $content (not even going to attempt to define it here)
+   * @param SurveyContent $content
+   * @return void 
    */
-  public function render(array $info,array $content)
+  public function render(array $info,SurveyContent $content)
   {
     $modified = new DateTime($info['modified']);
     $version  = $modified->format('Y.m.d');
     $this->footer_config['timestamp'] = "version: $version";
 
     $content_root = new SurveyRootBox($this, $content);
-    $content_root->layoutChildren($this);
+    $content_root->layoutChildren();
     $this->page_count = PDFBox::numPages();
     
-    $content_root->render($this);
+    $content_root->render();
   }
 }

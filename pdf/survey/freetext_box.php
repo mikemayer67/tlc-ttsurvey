@@ -7,7 +7,7 @@ require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/intro_box.php'));
 require_once(app_file('pdf/survey/config.php'));
 
-class SurveyFreetextBox extends PDFBox
+class SurveyFreeTextBox extends PDFBox
 {
   private ?SurveyIntroBox $intro_box = null;
   private PDFBox          $wording_box;
@@ -18,22 +18,22 @@ class SurveyFreetextBox extends PDFBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
-   * @param array $question 
+   * @param FreeTextQuestion $question 
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question)
+  public function __construct(SurveyPDF $surveyPDF, float $max_width, FreeTextQuestion $question)
   {
     parent::__construct($surveyPDF);
 
-    $wording = $question['wording'];
-    $intro   = $question['intro'] ?? null;
+    $wording = $question->wording();
+    $intro   = $question->intro();
 
     $this->width = $max_width;
     $this->height = 0;
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
-      $max_width     -= $this->intro_box->incrementIndent();
+      $max_width     -= $this->intro_box->indentDelta();
       $this->height += $this->intro_box->getHeight();
     }
 
@@ -46,19 +46,17 @@ class SurveyFreetextBox extends PDFBox
 
   /**
    * Manages positioning of a free text box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
 
     if($this->intro_box) {
       $this->intro_box->position($x, $y);
       $y += $this->intro_box->getHeight() + self::vgap;
-      $x += $this->intro_box->incrementIndent();
+      $x += $this->intro_box->indentDelta();
     }
 
     $this->wording_box->position($x, $y);

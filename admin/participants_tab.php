@@ -16,7 +16,6 @@ $active_survey_title = active_survey_title() ?? "No active survey";
 $form_uri = app_uri('admin');
 echo "<form id='admin-participants' method='post' action='$form_uri'>";
 add_hidden_input('nonce',$nonce);
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_submit('action','participants');
 
 $inactive = $active_survey_id ? '' : 'inactive';
@@ -27,18 +26,18 @@ if($active_survey_id) {
     SELECT userid,
            UNIX_TIMESTAMP(draft)      as draft,
            UNIX_TIMESTAMP(submitted)  as submitted
-      FROM tlc_tts_user_status 
+      FROM tlc_srv_user_status 
      WHERE survey_id=(?)
   SQL;
 
-  $rows = MySQLSelectRows($query,'i',$active_survey_id);
+  $rows = MySQLFetchAllAssoc($query,'i',$active_survey_id);
   foreach($rows as $row) {
     $user_status[$row['userid']] = ['draft'=>$row['draft'], 'submitted'=>$row['submitted']];
   }
 }
 
 $last_survey = [];
-$rows = MySQLSelectArrays('SELECT userid,survey_id,survey_name from tlc_tts_view_last_user_survey','');
+$rows = MySQLFetchAllIndexed('SELECT userid,survey_id,survey_name from tlc_srv_view_last_user_survey','');
 foreach($rows as $row) { $last_survey[$row[0]] = ['id'=>$row[1], 'name'=>$row[2]]; }
 
 echo "<div class='resizable boxed'>";
@@ -113,4 +112,4 @@ echo "</div>";
 
 echo "</form>";
 
-echo "<script src='", js_uri('participants','admin'), "'></script>";
+echo "<script type='module' src='", js_uri('participants','admin'), "'></script>";

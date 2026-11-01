@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-function adjust_and_validate_user_input($key,&$value,&$error=null)
+function adjust_and_validate_user_input(string $key,mixed &$value,?string &$error=null)
 {
   $value = adjust_user_input($key,$value);
   return validate_user_input($key,$value,$error);
@@ -15,11 +15,11 @@ function adjust_and_validate_user_input($key,&$value,&$error=null)
  *  - userid: converts to lower case (for database storage)
  *  - fullname: condenses multiple apostrophes, hyphens, or tildes
  *  - password: condenses multiple whitespace and converts all whitespce to ' '
- * @param mixed $key 
+ * @param string $key 
  * @param mixed $value 
  * @return string 
  */
-function adjust_user_input($key,$value) : string
+function adjust_user_input(string $key,mixed $value) : string
 {
   $value = trim(stripslashes($value??''));
 
@@ -42,7 +42,7 @@ function adjust_user_input($key,$value) : string
   return $value;
 }
 
-function validate_user_input($key,$value,&$error=null)
+function validate_user_input(string $key,mixed $value,?string &$error=null)
 {
   $error = '';
 

@@ -8,29 +8,35 @@ require_once(app_file('include/settings.php'));
 
 function survey_roles()
 {
-  return MySQLSelectRows('select * from tlc_tts_active_roles');
+  return MySQLFetchAllAssoc('select * from tlc_srv_active_roles');
 }
 
-function add_user_role($userid,$role)
+function add_user_role(string $userid,string $role)
 {
   $userid = strtolower($userid);
 
-  $query = "insert into tlc_tts_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
+  $query = "insert into tlc_srv_roles (userid,$role) values (?,1) on duplicate key update userid=?,$role=1";
   return MySQLExecute($query,'ss',$userid,$userid);
 }
 
-function drop_user_role($userid,$role)
+function drop_user_role(string $userid,string $role)
 {
-  $query = "update tlc_tts_roles set $role=0 where userid=?";
+  $query = "update tlc_srv_roles set $role=0 where userid=?";
   return MySQLExecute($query,'s',$userid);
 }
 
-function lookup_userids_by_role($role)
+function lookup_userids_by_role(string $role)
 {
   $roles = survey_roles();
   $rval = Array();
   foreach ($roles as $r) {
     if($r[$role]??false) { $rval[] = $r['userid']; }
+  }
+  if($role === 'admin') {
+    $primary = primary_admin();
+    if(!in_array($primary,$rval)) {
+      $rval[] = $primary;
+    }
   }
   return $rval;
 }
@@ -39,16 +45,16 @@ function survey_admins()  { return lookup_userids_by_role('admin'); }
 function content_admins() { return lookup_userids_by_role('content'); }
 function tech_admins()    { return lookup_userids_by_role('tech'); }
 
-function user_roles($userid)
+function user_roles(string $userid)
 {
   if( $userid === primary_admin() ) { return ['admin', 'content', 'tech', 'summary']; }
   return assigned_roles($userid);
 }
 
-function assigned_roles($userid)
+function assigned_roles(string $userid)
 {
-  $roles =  MySQLSelectRow(
-    'select admin,content,tech,summary from tlc_tts_roles where userid=?','s',$userid
+  $roles =  MySQLFetchOneAssoc(
+    'select admin,content,tech,summary from tlc_srv_roles where userid=?','s',$userid
   );
   $rval = [];
   if($roles) { 
@@ -60,7 +66,7 @@ function assigned_roles($userid)
   return $rval;
 }
 
-function has_summary_access($userid)
+function has_summary_access(string $userid)
 {
   if($userid===primary_admin()) { return true; }
 
@@ -78,7 +84,7 @@ function has_summary_access($userid)
 //  return in_array($userid, lookup_userids_by_role($role));
 //}
 
-function admin_contacts($role='admin')
+function admin_contacts(string $role='admin')
 {
   if($role == 'admin') {
     $contacts = array();

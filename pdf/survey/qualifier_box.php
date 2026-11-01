@@ -9,8 +9,8 @@ require_once(app_file('pdf/survey/config.php'));
 class SurveyQualifierBox extends PDFBox
 {
   private PDFBox $label;
-  private int    $label_width = 0;
-  private int    $label_height = 0;
+  private float  $label_width = 0;
+  private float  $label_height = 0;
   private bool   $multi_line = false;
 
   private array $entry_box = [0,0,0,K_QUARTER_INCH];
@@ -22,10 +22,14 @@ class SurveyQualifierBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $label 
-   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
+   * @param float $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF,float $max_width,string $label,int $fontsize=K_SURVEY_FONT_MEDIUM)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    string $label, 
+    float $fontsize = K_SURVEY_FONT_MEDIUM )
   {
     parent::__construct($surveyPDF);
 
@@ -46,12 +50,10 @@ class SurveyQualifierBox extends PDFBox
 
   /**
    * Manages positioning of a qualifer box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
 

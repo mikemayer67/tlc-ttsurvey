@@ -14,7 +14,7 @@ function start_admin_page($cur_tab=null)
   add_tab_name('ttt_admin');
   start_header();
 
-  add_js_resources($context);
+  add_js_resources();
   if($cur_tab) { // admin tab page
     add_css_resources($context, css_uri($cur_tab,'admin') );
   } else { // admin login page
@@ -23,17 +23,20 @@ function start_admin_page($cur_tab=null)
 
   end_header();
 
-  add_navbar($context);
+  add_navbar(
+    callbacks : [
+      'add_navbar_right' => function(array $kwargs) : void {
+        add_return_to_survey(); 
+      },
+    ]
+  );
+
   add_js_required();
   add_admin_lock();
+  add_small_screen_warning();
   add_status_bar();
 
   start_body();
-}
-
-function add_navbar_right_admin($kwarg)
-{
-  add_return_to_survey();
 }
 
 function add_input_section($label,$fields)

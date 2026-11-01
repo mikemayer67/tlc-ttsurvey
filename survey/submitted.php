@@ -55,7 +55,7 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
 
   $user       = User::from_userid($userid);
   $email      = $user->email();
-  $email_sent = confirmation_email_sent($userid,$survey_id);
+  $email_sent = get_confirmation_email_timestamp($userid,$survey_id);
 
   $queued_email = $_SESSION['queued-confirmation-email'] ?? false;
   if($queued_email && !$email) {
@@ -77,7 +77,6 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   {
     $needs_js = true;
     add_hidden_input('email-status','queued');
-    add_hidden_input('ajaxuri',app_uri());
     echo "A confirmation email will be sent to $email shortly";
   }
   elseif($email_sent) 
@@ -140,18 +139,20 @@ function show_submitted_page(string $userid,int $survey_id,int $timestamp)
   }
 }
 
-function send_confirmation_email($userid,$survey_id,$email,$content,$submitted)
+function send_confirmation_email(string $userid,int $survey_id,string $email) : bool
 {
   todo("Add summary info to confirmation email");
   $error = '';
-  sendmail_confirmation($email,$userid,'',$error);
-  if(empty($error)) {
-    confirmation_email_sent($userid,$survey_id,$email);
-    $_SESSION['queued-confirmation-email'] = false;
-  }
+  $sent = sendmail_confirmation($email,$userid,'',$error);
+  
+  if(!$sent) { return false; }
+
+  set_confirmation_email_timestamp($userid, $survey_id, $email);
+  $_SESSION['queued-confirmation-email'] = false;
+  return true;
 }
 
-function withdraw_responses($userid,$survey_id,$restart=false)
+function withdraw_responses(string $userid,int $survey_id,bool $restart=false)
 {
   if($restart) {
     $result = restart_user_responses($userid,$survey_id);
@@ -172,7 +173,7 @@ function withdraw_responses($userid,$survey_id,$restart=false)
   echo "</div></div>";
 }
 
-function withdraw_and_restart($userid,$survey_id)
+function withdraw_and_restart(string $userid,int $survey_id)
 {
   withdraw_responses($userid,$survey_id,true);
 }

@@ -1,0 +1,16 @@
+<?php
+namespace tlc\tts;
+
+if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
+
+require_once(app_file('admin/admin_lock.php'));
+require_once(app_file('include/ajax.php'));
+
+$nonce_key = $_POST['nonce_key'];
+validate_ajax_nonce($nonce_key);
+
+$status = check_admin_lock();
+
+// not using AjaxResponse here as js is keying off of 'has_lock', not 'success'
+send_ajax_response($status);
+die();

@@ -15,10 +15,14 @@ class SurveyIntroBox extends PDFBox
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
    * @param string $intro 
-   * @param int $fontsize (default = K_SURVEY_FONT_MEDIUM)
+   * @param float $fontsize (default = K_SURVEY_FONT_MEDIUM)
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, string $intro, int $fontsize=K_SURVEY_FONT_MEDIUM)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    string $intro, 
+    float $fontsize=K_SURVEY_FONT_MEDIUM)
   {
     parent::__construct($surveyPDF);
 
@@ -31,16 +35,14 @@ class SurveyIntroBox extends PDFBox
     $this->height = $this->box->getHeight();
   }
 
-  public function incrementIndent(): float { return K_QUARTER_INCH; }
+  public function indentDelta(): float { return K_QUARTER_INCH; }
 
   /**
    * Manages positioning of a intro box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $this->box->position($x,$y);

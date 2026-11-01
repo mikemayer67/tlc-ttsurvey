@@ -8,7 +8,7 @@ require_once(app_file('include/roles.php'));
 require_once(app_file('include/elements.php'));
 require_once(app_file('admin/elements.php'));
 
-log_dev("-------------- Start of Admin Dashboard --------------");
+log_mark("-------------- Start of Admin Dashboard --------------");
 
 // If an explicit request was made to login as site admin,
 //   handle that now.  No need to verify existing admin/user roles.
@@ -73,7 +73,7 @@ $tabs = [
   'surveys'      => ['label'=>'Surveys',      'roles'=>['admin','content']],
   'participants' => ['label'=>'Participants', 'roles'=>['admin']],
   'log'          => ['label'=>'App Log',      'roles'=>['admin','tech']],
-  'cleanup'      => ['label'=>'Maintenance',  'roles'=>[]],
+  'maintenance'  => ['label'=>'Maintenance',  'roles'=>[]],
   'docs'         => ['label'=>'Admin Docs',   'roles'=>['admin','content','tech']],
 ];
 
@@ -113,11 +113,10 @@ if(!in_array($cur_tab,$active_tabs)) {
 start_admin_page($cur_tab);
 
 $form_uri = app_uri('admin');
-$nonce = gen_nonce('admin-navbar');
+$nonce = gen_nonce('admin');
 
 echo "<!-- Admin Tabs -->";
 echo "<form id='admin-tabs' class='admin-navbar' method='post' action='$form_uri'>";
-add_hidden_input('ajaxuri',app_uri());
 add_hidden_input('nonce',$nonce);
 
 echo "<div class='tabs'>";
@@ -139,16 +138,29 @@ echo "</form>";
 $img=img_uri("icons8/info.png");
 echo <<<HTMLMODAL
 <!-- Tab Switch Modal -->
-<div id='tab-switch-modal'>
-  <div id='tab-switch-content'>
+<div class='admin modal' id='tab-switch-modal'>
+  <div class='content' id='tab-switch-content'>
     <img src='$img'>
     <div class='text-box'>
       <p>You have unsaved changes.</p>
       <p>If you switch <span class='tsm-type'>tabs</span>, you will lose your changes.</p>
     </div>
-    <div class='tab-switch-buttons'>
+    <div class='buttons'>
       <button class='confirm'>Switch Tabs</button>
       <button class='cancel'>Stay Here</button>
+    </div>
+  </div>
+</div>
+<!-- Admin Alert Modal -->
+<div class='admin modal' id='admin-alert-modal'>
+  <div class='content' id='admin-alert-content'>
+    <img src='$img'>
+    <div class='text-box'>
+      <p class='line one'></p>
+      <p class='line two'></p>
+    </div>
+    <div class='buttons'>
+      <button class='confirm'>OK</button>
     </div>
   </div>
 </div>

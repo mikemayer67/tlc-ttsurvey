@@ -8,7 +8,7 @@ require_once(app_file('pdf/ttpdf_utils.php'));
 require_once(app_file('survey/markdown.php'));
 
 /**
- * PDFBox is the baseclass for wrapping methods used to compute and render Boxes of content
+ * PDFBox is the base class for wrapping methods used to compute and render Boxes of content
  *   in a PDF file using the TTPDF package.  This class provides an abstract interface that must be
  *   subclassed for each flavor of box.  It provides common functionality applicable to each of
  *   the subclasses.  
@@ -97,15 +97,13 @@ abstract class PDFBox
    *   Subclasses which increment indent should override this method
    * @return float amount by which to increment the indent
    */
-  public function incrementIndent(): float { return 0; }
+  public function indentDelta(): float { return 0; }
 
   
   /**
    * Sets the page number on boxes that start a new page
-   * @param int $page 
-   * @return void 
    */
-  protected function startPage() 
+  protected function startPage() : void
   {
     self::$cur_page += 1;
     $this->page = self::$cur_page;
@@ -131,12 +129,10 @@ abstract class PDFBox
    * - Must be overridden in child classes
    *   - should include call to super::position($x,$y)
    * - Must be called before render()
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     $this->x = $x;
     $this->y = $y;
@@ -160,7 +156,7 @@ abstract class PDFBox
 
   /**
    * Constructor currently does nothing other than set the minimum required argument list
-   * @param TTPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF $ttpdf instances of a TCDPF class (or subclass)
    * @return void 
    */
   public function __construct(TTPDF $ttpdf) 
@@ -221,7 +217,7 @@ abstract class PDFRootBox extends PDFBox
    * Constructor does nothing but invokes the PDFBox constructor.
    *   While the existence of this method is not strictly necessary, it serves as
    *   a reminder that all subclasses of PDFRootBox should also invoke the parent constrctor
-   * @param TTPDF instances of a TCDPF class (or subclass)
+   * @param TTPDF $ttpdf instances of a TCDPF class (or subclass)
    * @param float $top margin (default=PDF_MARGIN_TOP)
    * @param float $right margin (default=PDF_MARGIN_RIGHT)
    * @param float $bottom margin (default=PDF_MARGIN_BOTTOM)
@@ -291,7 +287,7 @@ abstract class PDFRootBox extends PDFBox
       $box->position($this->_left + $indent, $cur_y);
 
       $cur_y  += $box->getHeight();
-      $indent += $box->incrementIndent();
+      $indent += $box->indentDelta();
     }
   }
 
@@ -362,7 +358,7 @@ class PDFTextBox extends PDFBox
 
     $this->family = $family ? $family : K_SANS_SERIF_FONT;
     $this->style = $style;
-    $this->size = $factor * ($size ? $size : K_DEFAULT_FONT_SIZE);
+    $this->size = $factor * ($size ?: K_DEFAULT_FONT_SIZE);
 
     $ttpdf->setFont($this->family, $this->style, $this->size);
 

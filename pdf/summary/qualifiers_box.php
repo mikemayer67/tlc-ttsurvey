@@ -11,7 +11,6 @@ class SummaryQualifiersBox extends PDFBox
 {
   private PDFTextBox $label;
   private SummaryTableResponseBox $responses;
-  /** @var float[4] $linebox [x1,y1,x2,y2]*/
   private array $linebox;
 
   private const vspace=0;
@@ -26,7 +25,11 @@ class SummaryQualifiersBox extends PDFBox
    * @param array $responses 
    * @return void 
    */
-  public function __construct(SummaryPDF $summaryPDF,float $width,string $label,array $responses)
+  public function __construct(
+    SummaryPDF $summaryPDF,
+    float $width,
+    string $label,
+    array $responses )
   {
     parent::__construct($summaryPDF);
     
@@ -47,9 +50,8 @@ class SummaryQualifiersBox extends PDFBox
    * Lays out the qualifier box and its children
    * @param float $x 
    * @param float $y 
-   * @return void 
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
 

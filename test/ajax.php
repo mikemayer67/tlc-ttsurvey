@@ -9,7 +9,7 @@ if( ($config['dev_env']??false) !== true ) {
 }
 
 $nonce_keys = [
-  'admin-navbar','admin-cleanup','admin-log','admin-login',
+  'admin','admin-maintenance','admin-log','admin-login',
   'admin-participants','admin-roles','admin-settings','admin-surveys',
   'preview','update-page','summary-download','survey-form',
   'login','pwreset','recover','register','updateprof','updatepw',
@@ -34,9 +34,6 @@ elseif($test === 'all')
   echo "<link rel='stylesheet' type='text/css' href='test/ajax.css?v=$vr'>";
   end_header();
 
-  $ajaxuri = app_uri();
-  echo "<input id='ajaxuri' type='hidden' value='$ajaxuri'>";
-
   $config = parse_ini_file(APP_DIR.'/'.PKG_NAME.'.ini',true);
   $admin_username = $config['admin_username'] ?? null;
   $admin_password = $config['admin_password'] ?? null;
@@ -46,7 +43,7 @@ elseif($test === 'all')
   $active_survey_id = active_survey_id();
   if($active_survey_id) { echo "<input id='survey-id' type='hidden' value='$active_survey_id'>"; }
 
-  $all_userids = MySQLSelectValues('select userid from tlc_tts_userids','');
+  $all_userids = MySQLFetchColumn('select userid from tlc_srv_userids','');
   $all_userids = json_encode($all_userids);
   echo "<input id='all-userids', type='hidden', value='$all_userids'>";
 

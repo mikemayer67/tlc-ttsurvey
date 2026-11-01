@@ -3,6 +3,8 @@ namespace tlc\tts;
 
 if (!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: " . __FILE__); die(); }
 
+require_once(app_file('include/question/layout.php'));
+
 require_once(app_file('pdf/pdf_boxes.php'));
 require_once(app_file('pdf/survey/alignable_box.php'));
 require_once(app_file('pdf/survey/options_box.php'));
@@ -26,28 +28,25 @@ class SurveySelectBox extends SurveyAlignableBox
   /**
    * @param SurveyPDF $surveyPDF 
    * @param float $max_width 
-   * @param array $question 
-   * @param array $options
+   * @param SelectQuestion $question 
+   * @param SurveyContent $content
    * @return void 
    */
-  public function __construct(SurveyPDF $surveyPDF, float $max_width, array $question, array $options)
+  public function __construct(
+    SurveyPDF $surveyPDF, 
+    float $max_width, 
+    SelectQuestion $question, 
+    SurveyContent $content)
   {
     parent::__construct($surveyPDF);
 
-    $type    = $question['type'];
-    $intro   = $question['intro'] ?? null;
-    $wording = $question['wording'];
-    $qual    = $question['qualifier'] ?? null;
-    $layout  = $question['layout'] ?? "ROW";
-
-    $justification = SurveyJustification::fromInput($layout);
-
-    $shape  = OptionShape::fromInput($type);
-    $layout = OptionLayout::fromInput($layout);
+    $intro   = $question->intro();
+    $wording = $question->wording();
+    $qual    = $question->qualifier();
 
     if($intro) {
       $this->intro_box = new SurveyIntroBox($surveyPDF,$max_width,$intro);
-      $max_width -= $this->intro_box->incrementIndent();
+      $max_width -= $this->intro_box->indentDelta();
       $this->height += $this->intro_box->getHeight();
       $this->vpad = 3;
     }
@@ -57,7 +56,7 @@ class SurveySelectBox extends SurveyAlignableBox
     $this->options = new SurveyOptionsBox(
       $surveyPDF, $max_width - self::opt_indent, 
       $max_width - ($this->wording->getWidth() + self::hgap),
-      $question, $options,
+      $question, $content,
       fontsize:K_SURVEY_FONT_MEDIUM,
     );
     $hw = $this->wording->getHeight();
@@ -80,12 +79,10 @@ class SurveySelectBox extends SurveyAlignableBox
 
   /**
    * Manages positioning of a bool box and its children
-   * @param int $page 
    * @param float $x 
    * @param float $y 
-   * @return void
    */
-  protected function position(float $x, float $y)
+  protected function position(float $x, float $y) : void
   {
     parent::position($x, $y);
     $y += $this->vpad;
@@ -94,7 +91,7 @@ class SurveySelectBox extends SurveyAlignableBox
     if($this->intro_box) {
       $this->intro_box->position($x,$y);
       $y += $this->intro_box->getHeight();
-      $x += $this->intro_box->incrementIndent();
+      $x += $this->intro_box->indentDelta();
     }
 
     // add the guts of the select box

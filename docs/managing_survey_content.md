@@ -186,15 +186,6 @@ The editor provides 2 fields for configuring how the info block is displayed
   start of the info text will be displayed, truncated to fit the width of the 
   navigation pane.
 
-- **Grouping**
-
-  This determines how the info block will be included when questions are grouped
-  together in the survey and response summaries.  The three possible options are
-
-  - *Not in question box:* the info text is never shown in a group
-  - *Group with previous:* the info text is included in the 'current' group
-  - *Start question box:* the info box begins a new group
-
 - **Info**
 
   This is the text that will displayed in the survey. It may contain
@@ -217,15 +208,6 @@ The editor provides 6 fields for configuring how the simple checkbox is displaye
 
   This provides optional information in the survey about the question.  It may contain 
   [markdown](https://markdownguide.offshoot.io/basic-syntax/) to format the text.
-
-- **Grouping**
-
-  All actual questionsi (*i.e., not info blocks*) always appear in question groups 
-  in the survey. This determines if this question starts a new question group or
-  continues in the currently open group.
-
-  - *Group with previous:* the info text is included in the 'current' group
-  - *Start question box:* the info box begins a new group
 
 - **Layout**
 
@@ -260,15 +242,6 @@ are displayed
 
   This provides optional information in the survey about the question.  It may contain 
   [markdown](https://markdownguide.offshoot.io/basic-syntax/) to format the text.
-
-- **Grouping**
-
-  All actual questionsi (*i.e., not info blocks*) always appear in question groups 
-  in the survey. This determines if this question starts a new question group or
-  continues in the currently open group.
-
-  - *Group with previous:* the info text is included in the 'current' group
-  - *Start question box:* the info box begins a new group
 
 - **Layout**
 
@@ -316,15 +289,6 @@ The editor provides 4 fields for configuring how the free text question is displ
 
   This provides optional information in the survey about the question.  It may contain 
   [markdown](https://markdownguide.offshoot.io/basic-syntax/) to format the text.
-
-- **Grouping**
-
-  All actual questionsi (*i.e., not info blocks*) always appear in question groups 
-  in the survey. This determines if this question starts a new question group or
-  continues in the currently open group.
-
-  - *Group with previous:* the info text is included in the 'current' group
-  - *Start question box:* the info box begins a new group
 
 - **Popup Info**
 

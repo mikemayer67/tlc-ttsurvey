@@ -1,3 +1,6 @@
+import admin_init from './admin.js';
+import {hide_status} from './admin.js'
+
 import survey_data  from './surveys/survey_data.js';
 import controls     from './surveys/controls.js';
 import metadata     from './surveys/metadata.js';
@@ -13,32 +16,37 @@ let validation_timer = null;
 
 // Survey status agnostic stuff
 
-function enforce_alphanum_only(event)
+function enforce_alphanum_only(e)
 {
-  var v = $(this).val();
+  const $tgt = $(e.currentTarget);
+  var v = $tgt.val();
   v = v.replace(/[^a-zA-Z0-9& ]/g,'');
-  $(this).val(v);
+  $tgt.val(v);
 }
 
 function handle_input(e)
 {
+  const $tgt = $(e.currentTarget);
+
   hide_status();
   clearTimeout(validation_timer);
-  $(this).removeClass('invalid-value');
-  validation_timer = setTimeout(validate_input,250,$(this),e);
+  $tgt.removeClass('invalid-value');
+  validation_timer = setTimeout(validate_input,250,$tgt,e);
 }
 
 function handle_change(e)
 {
+  const $tgt = $(e.currentTarget);
+
   hide_status()
   clearTimeout(validation_timer);
   validation_timer = null;
-  validate_input($(this),e);
+  validate_input($tgt,e);
 }
 
-function validate_input(sender,event)
+function validate_input($sender,event)
 {
-  ce.dispatch('validate_input',sender,event);
+  ce.dispatch('validate_input',$sender,event);
 }
 
 function handle_submit(e)
@@ -66,7 +74,7 @@ function handle_download_pdf(e)
 {
   e.preventDefault();
   // not really an ajax call, but channels through the same mechanism
-  const url = new URL(ce.ajaxuri, window.location.href);
+  const url = new URL(window.location.pathname, window.location.href);
   url.searchParams.set('download', 'survey');
   url.searchParams.set('sid',ce.cur_survey.id);
   url.searchParams.set('f','pdf');
@@ -103,20 +111,21 @@ async function dispatch_async(f,...args)
   return null;
 }
 
-function has_changes()
+function is_dirty()
 {
-  var rval = dispatch('has_changes');
+  var rval = dispatch('is_dirty');
   if( rval === null || rval === undefined ) { rval = false; }
   return rval;
 }
 
 // Entry point
 
-$(document).ready(
-  function($) {
+$(document).ready( function($) 
+{
+  admin_init( {is_dirty_fn:is_dirty} );
+
   // common form elements
   ce.form    = $('#admin-surveys');
-  ce.ajaxuri = $('#admin-surveys input[name=ajaxuri]').val();
   ce.nonce   = $('#admin-surveys input[name=nonce]').val()
   ce.status  = $('#ttt-status');
 
@@ -159,8 +168,5 @@ $(document).ready(
   ce.controls     = controls(ce);
   ce.undo_manager = undo_manager(ce);
 
-  // Support global form
-
-  has_change_cb = has_changes;
 });
 

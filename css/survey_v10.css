@@ -1,0 +1,737 @@
+:root {
+  --survey-background:#f0e8e0;
+  --question-background:#f2efec;
+  --hint-background:#6a5430;
+}
+
+body {
+  background-color:var(--survey-background);
+}
+
+em,i { font-style:italic; }
+strong, b { font-weight:bold; }
+
+/* Overall form/section/question blocking */
+
+#ttt-body {
+  margin: 1em clamp(3px, 1vw, 2em) 0;
+}
+
+#ttt-body:has( > form#survey ) {
+  display:grid;
+  grid-template-columns: 1fr minmax(0,1024px) 2fr;
+}
+
+#ttt-body div.spacer {
+  width:0;
+  min-width:0;
+}
+
+#ttt-body form#survey {
+  max-width:1024px;
+  width:100%;
+  margin-bottom:40px;
+}
+
+.section div.question-box
+{
+  padding:0.5rem 1rem;
+  background: var(--question-background);
+  border: solid #888 1.5px;
+  border-radius: 8px;
+  margin-top:5px;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,.15),0 2px 10px 0 rgba(0,0,0,0.12);
+}
+
+.section div.question
+{
+  background: var(--question-background);
+}
+
+.section .question * {
+  padding:0; 
+  margin:0;
+  background: inherit;
+}
+
+.section .question textarea {
+  padding:0 0.5em;
+  background: white;
+  min-height:calc(1rem + 0.5em);
+}
+
+
+/* Note that the markdown styling was primary driven by ChatGPT discussion */
+
+.markdown ul,
+.markdown ol {
+  padding-left: 2em !important;
+}
+
+.markdown hr {
+  width:50% !important;
+  margin:0.5em 0 !important;
+}
+
+.markdown blockquote {
+  margin: 1em 0 1em 1em !important;
+  padding: 0.5em 1em !important;
+  border-left: 4px solid #ccc !important;
+  background-color: #f9f9f9 !important;
+  color: #555 !important;
+  font-style: italic !important;
+}
+
+.markdown blockquote p {
+  margin: 0 !important;
+  font-style: italic !important;
+}
+
+.markdown code {
+  font-family: var(--monospace-font) !important;
+  background-color: #f0f0f0 !important;
+  padding: 0 0.2em !important;
+  border-radius: 3px !important;
+  font-size: 0.95em !important;
+}
+
+.markdown pre {
+  background-color: #f5f5f5 !important;
+  border: 1px solid #ddd !important;
+  margin: 1em 0 1em 1em !important;
+  padding: 0.5em 1em !important;
+  overflow-x: auto !important;
+  border-radius: 4px !important;
+  font-family: var(--monospace-font) !important;
+  font-size: 0.95em !important;
+  line-height: 1.4 !important;
+}
+
+.markdown pre code {
+  background: none !important;
+  padding: 0 !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+}
+
+.markdown p:not(:first-of-type) {
+  margin-top:0.5em !important;
+}
+
+/****************************************
+ * Sections
+ ****************************************/
+
+details.section summary {
+  font-size:175%;
+  cursor:pointer;
+}
+
+details.section summary:hover {
+  text-shadow:
+      2px 2px 3px rgba(0,0,0,0.4),
+      4px 4px 6px rgba(0,0,0,0.2);
+  color:#55d;
+}
+
+details.section:not(:first-of-type) {
+  margin-top:1.5em;
+}
+
+details.section summary span {
+  font-weight:700;
+}
+
+.section div.section.intro
+{
+  background:none;
+  border:none;
+  box-shadow:none;
+  font-size:110%;
+}
+
+.section div.section.intro {
+  margin: 0 1em 1em 1em;
+  padding: 0;
+}
+
+.section div.section.intro .markdown p
+{
+  margin:0;
+  padding:0;
+}
+
+/****************************************
+ * Questions
+ ****************************************/
+
+#survey .section .question {
+  position:relative;
+}
+
+#survey .section .question-box .follows-info {
+  margin-left: 1em;
+}
+
+#survey .section .question .intro {
+  margin: 0.25em 0;
+}
+
+#survey .section .question .qualifier {
+  display:flex;
+  flex-direction: row;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  margin: 0.25em auto 0 0.5em;
+}
+
+#survey .section .question-box .question .qualifier {
+  margin-bottom:0.25em;
+}
+
+#survey .section .question .qualifier label {
+  width:fit-content;
+  margin:0;
+}
+
+#survey .section .question .qualifier textarea {
+  margin:0 0 0 8px;
+  width:70%;
+}
+
+#survey .section .question .question-hint {
+  width:fit-content;
+  margin:0 1em 0 1em;
+  padding:0.25em 1em;
+}
+
+#survey .section .question.grid .question-hint {
+  margin:0;
+  padding:0;
+  grid-column: 1 / -1;
+  justify-self: center;
+}
+
+#survey .section .question .question-hint::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;            /* thickness of the line */
+  background-color: #ccc; /* line color */
+  margin-bottom: 0.25em;  /* space between line and div */
+}
+
+#survey .section .question .question-hint::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;             /* thickness of the line */
+  background-color: #ccc;  /* line color */
+  margin-top: 0.25em;      /* space between div and line */
+  margin-bottom: 0.5em;    /* space below line           */
+}
+
+#survey .section .question.grid .question-hint::after {
+  margin-bottom:0;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  #survey .section .question .qualifier {
+    margin: 0.25em auto 0 1em;
+  }
+  #survey .section .question-box .follows-info {
+    margin-left: 1.5em;
+  }
+}
+
+@media (min-width:1024px) { /* larger */
+  #survey .section .question .qualifier {
+    margin: 0.25em auto 0 2em;
+  }
+  #survey .section .question .qualifier textarea {
+    width:40%;
+  }
+  #survey .section .question-box .follows-info {
+    margin-left: 2em;
+  }
+}
+
+/****************************************
+ * info text
+ ****************************************/
+
+.section div.info.question
+{
+  background:none;
+  border:none;
+  box-shadow:none;
+  padding: 1rem 0.5rem;
+  font-size:110%;
+}
+
+.section div.info.question:first-child
+{
+  padding-top:0;
+}
+
+.section div.info.question *
+{
+  background:none;
+}
+
+/****************************************
+ * bool
+ ****************************************/
+
+.bool.question {
+  margin-top:1em;
+  margin-bottom:1em;
+}
+
+.question-box .bool.question {
+  margin-top:0;
+  margin-bottom:0;
+}
+
+.question-box .bool.question:last-of-type {
+  margin-bottom:1em;
+}
+
+.bool.question div.checkbox {
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.bool.question div.checkbox:not(:first-child) {
+  margin-left:0.5em;
+  margin-top:0.25em;
+}
+
+.bool.question div.checkbox.left {
+  flex-direction: row;
+}
+
+.bool.question div.checkbox.right {
+  flex-direction: row-reverse;
+}
+
+.bool.question div.checkbox label {
+  font-weight:600;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  .bool.question div.checkbox:not(:first-child) {
+    margin-left:0.5em;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .bool.question div.checkbox:not(:first-child) {
+    margin-left:1em;
+  }
+}
+
+/****************************************
+ * select
+ ****************************************/
+
+#survey .select.grid {
+  display:grid;
+  grid-template-columns: 1fr;
+  margin:0.5em 0;
+}
+
+#survey .select.grid .wording {
+  justify-self:start;
+  grid-column: 1 / 2;
+}
+
+#survey .select.grid .intro {
+  justify-self:start;
+  grid-column: 1 / 2;
+  margin: 0.25em 1em 0 0;
+  font-style:italic;
+}
+
+#survey .select.grid .qualifier {
+  grid-column: 1 / 2;
+  margin: 0 0 1em 3em;
+}
+
+.select.question div.options-box:not(:first-child) {
+  margin-left:0.5em;
+  margin-top:0.25em;
+}
+
+.select.question div.options-box {
+  position:relative;
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+}
+
+.select.question .options.wording {
+  font-weight:600;
+}
+
+.select.question .options.wrapper {
+  display:inline-flex;
+  flex-direction:row;
+  align-items:center;
+  padding-left:.5em;
+  margin-bottom:0.25em;
+}
+
+.select.question.grid .options.wrapper {
+  position:relative;
+}
+
+.select.question .options.wrapper.row {
+  flex-wrap:wrap;
+  column-gap:0.5em;
+}
+
+.select.question .options.wrapper.lcol {
+  flex-direction:column;
+  align-items:start;
+}
+
+.select.question .options.wrapper.rcol {
+  flex-direction:column;
+  align-items:end;
+}
+
+.select.question .options.wrapper .option {
+  display:inline-flex;
+  flex-direction:row;
+  align-items:center;
+  gap:0.25em;
+}
+
+.select.question .options.wrapper.rcol .option {
+  flex-direction:row-reverse;
+  column-gap:0.5em;
+}
+
+
+.select.question .options.wrapper textarea.other {
+  width:12em;
+  pointer-events: none;
+  background: var(--question-background);
+  margin:0 0.25em;
+  border-color:lightgray;
+}
+
+.select.question .options.wrapper .option input.has-other:checked ~ textarea.other {
+  pointer-events: auto;
+  background:white;
+  border-color:revert;
+}
+
+.select.question .options.wrapper.row textarea.other {
+  resize:horizontal;
+  max-width:min(500px,75vw);
+}
+
+.select.question .options.wrapper.lcol textarea.other {
+  resize:both;
+}
+
+.select.question .options.wrapper.rcol textarea.other {
+  resize:none;
+  width:6em;
+  text-align:right;
+}
+
+
+@media (min-width:768px) { /* tablets and larger */
+  .select.question div.options-box:not(:first-child) {
+    margin-left:0.5em;
+  }
+  .select.question .options.wrapper {
+    padding-left:1em;
+  }
+  .select.question .options.wrapper.row {
+    column-gap:1em;
+  }
+  #survey .select.grid {
+    grid-template-columns: fit-content(50%) 1fr;
+  }
+  #survey .select.grid .wording {
+    justify-self:end;
+    text-align:right;
+  }
+  #survey .select.grid .intro {
+    justify-self:start;
+    text-align:left;
+    grid-column: 1 / 3;
+  }
+  #survey .select.grid .qualifier {
+    grid-column: 2 / 3;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .select.question div.options-box:not(:first-child) {
+    margin-left:1em;
+  }
+  .select.question .options.wrapper {
+    padding-left:2em;
+  }
+  .select.question .options.wrapper.row {
+    column-gap:1.5em;
+  }
+}
+
+/****************************************
+ * freetext
+ ****************************************/
+
+.freetext.question {
+  margin-top:1em;
+  margin-bottom:1em;
+}
+
+.freetext.question div.input {
+  display:flex;
+  flex-direction:column;
+  margin-right:0.25em;
+}
+
+.freetext.question div.input label {
+  font-weight:600;
+}
+
+.freetext.question div.input.indent {
+  margin-left: 0.25em;
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  .freetext.question div.input {
+    margin-right:0.5em;
+  }
+  .freetext.question div.input.indent {
+    margin-left: 0.5em;
+  }
+}
+@media (min-width:1024px) { /* tablets and larger */
+  .freetext.question div.input {
+    margin-right:1em;
+  }
+  .freetext.question div.input.indent {
+    margin-left: 1em;
+  }
+}
+
+
+/****************************************
+ * hints
+ ****************************************/
+
+img.popup {
+  width:1em;
+  height:1em;
+}
+
+.question-hint {
+  display:none;
+}
+
+label.hint-toggle {
+  position:absolute;
+  top:8px;
+  right:8px;
+}
+
+.options.wrapper label.hint-toggle {
+  top:2px;
+}
+
+.question-hint.hovering,
+input.hint-toggle:checked ~ .question-hint {
+  display:block;
+}
+
+fieldset.select {
+  border:none;
+  margin:0;
+  padding:0;
+}
+
+fieldset.select legend {
+  padding: 0;
+  margin-right: 1rem;
+  font-weight: bold;
+}
+
+/****************************************
+ * submit bar
+ ****************************************/
+
+div.submit-bar {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  width:100%;
+  padding:5px 1em;
+  background:rgb(255 255 255 / 90%);
+
+  box-shadow: 0 -2px 5px 0 rgba(0,0,0,0.16),0 -2px 10px 0 rgba(0,0,0,0.12);
+
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  flex-direction: row-reverse;
+}
+
+div.submit-bar div {
+  display:flex;
+  flex-wrap:wrap;
+  flex-direction: row-reverse;
+  column-gap:5px;
+}
+
+@media (max-width: 480px), (max-height: 600px) {
+  div.submit-bar {
+    position: static;
+    margin-top: 1em;
+    padding: 1em 0 5px 0;
+    border-top: solid 1px gray;
+    background: inherit;
+    box-shadow:none;
+  }
+}
+
+div.submit-bar button {
+  color:black;
+  border: outset 2px #ccc;
+  background-color: var(--survey-background);
+}
+
+div.submit-bar button:disabled {
+  color:#ccc;
+  border: outset 2px #f0f0f0;
+}
+
+
+/****************************************
+ * Submitted Page/Form
+ ****************************************/
+
+.submitted-wrapper {
+  width:100%;
+  text-align:center;  /* works because .submitted-box is inline-block */
+}
+
+.submitted-box { 
+  display:inline-block;
+  max-width:calc(100% - 2em);
+  background:white;
+  margin: 2em auto;
+  padding:.5em 1em;
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);
+  border: solid 1px #aaa;
+  border-radius:10px;
+}
+
+.submitted-box * {
+  background:inherit;
+}
+
+.submitted-box div, .submitted-box a {
+  margin-left:auto;
+  margin-right:auto;
+  width:fit-content;
+  text-align:center;
+}
+
+.submitted-box div.message {
+  margin-top:0.5em;
+  font-size:130%;
+  font-weight:700;
+  color:#369;
+}
+
+.submitted-box div.error {
+  margin-top:0.5em;
+  font-size:130%;
+  font-weight:700;
+  color:darkred;
+}
+
+.submitted-box div.timestamp,
+.submitted-box div.contact,
+.submitted-box div.conflict
+{
+  margin-top:0.25em;
+  font-size:110%;
+}
+
+.submitted-box div.conflict
+{
+  font-weight: bold;
+}
+
+.submitted-box div.return
+{
+  margin-top:0.5em;
+  font-size:100%;
+}
+.submitted-box a,
+.submitted-box a:visited
+{
+  color: #06c;
+  text-decoration: underline;
+}
+.submitted-box a:hover
+{
+  color: #039;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.submitted-box div.email
+{
+  margin:1em auto;
+}
+
+.submitted-box div 
+{
+  margin-bottom:0.5em;
+}
+
+.submitted-box div:last-child
+{
+  margin-bottom:0.5em;
+}
+
+.submitted-box button.linkbutton {
+  background: none;
+  border: none;
+  color: #06c;
+  padding: 0;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.submitted-box button.linkbutton:hover,
+.submitted-box button.linkbutton:focus {
+  color: #039;            /* darker blue on hover */
+  text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* subtle lift */
+}
+
+@media (min-width:768px) { /* tablets and larger */
+  .submitted-box { 
+    padding:1.5em 2em;
+  }
+  .submitted-box div 
+  {
+    margin-bottom:0;
+  }
+}
+
+@media (min-width:1024px) { /* desktops and larger */
+  .submitted-box { 
+    padding:1.5em 4em;
+  }
+}

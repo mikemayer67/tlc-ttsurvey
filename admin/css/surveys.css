@@ -211,7 +211,7 @@
   background-color:#ccc;
   margin: 0.5em 0.5em 0 0.5em;;
   border: solid black 1px;
-  padding 0.2em 0.5em;
+  padding: 0.2em 0.5em;
 
   display:flex;
   flex-direction:row;
@@ -224,6 +224,9 @@
   height: 30px;
   margin: 3px 0;
 }
+#ttt-body #content-editor div.menubar button:hover {
+  background-color:rgb(200, 200, 200);
+}
 #ttt-body #content-editor div.menubar button:disabled {
   border: 1px solid black;
   box-shadow: none;
@@ -232,7 +235,50 @@
   cursor: not-allowed;
 }
 
+#ttt-body #content-editor div.menubar button {
+  position: relative;
+}
+
+#ttt-body #content-editor div.menubar button::after
+{
+  content: attr(data-hint);
+
+  position: absolute;
+  left: 15%;
+  top: 110%;
+  width: 90px;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition: opacity 0.15s;
+  transition-delay: 0s;
+
+  font-size: 75%;
+  white-space: wrap;
+  line-height:0.95;
+
+  padding: 1px 3px;
+
+  background: #6f6f6f;
+  color: white;
+  border: solid 1px black;
+  border-radius: 4px;
+
+  z-index: 1000;
+}
+
+
+#ttt-body #content-editor div.menubar button:hover::after,
+#ttt-body #content-editor div.menubar button:focus::after {
+  opacity: 1;
+  visibility: visible;
+
+  transition-delay: 0.5s;
+}
+
 #ttt-body #content-editor div.menubar button.up,
+#ttt-body #content-editor div.menubar button.add.group,
 #ttt-body #content-editor div.menubar button.add.below,
 #ttt-body #content-editor div.menubar button.delete
 {
@@ -257,8 +303,10 @@
 
 #ttt-body .menubar .up                 .icon {background-image:url('../../img/icons8/up.png');}
 #ttt-body .menubar .down               .icon {background-image:url('../../img/icons8/down.png');}
-#ttt-body .menubar .add.section.below  .icon {background-image:url('../../img/icons8/add_list.png');}
-#ttt-body .menubar .add.section.above  .icon {background-image:url('../../img/icons8/add_list_above.png');}
+#ttt-body .menubar .add.section.below  .icon {background-image:url('../../img/tlc/add_section.png');}
+#ttt-body .menubar .add.section.above  .icon {background-image:url('../../img/tlc/add_section_above.png');}
+#ttt-body .menubar .add.group          .icon {background-image:url('../../img/tlc/grouped.png');}
+#ttt-body .menubar .remove.group       .icon {background-image:url('../../img/tlc/ungrouped.png');}
 #ttt-body .menubar .add.question.below .icon {background-image:url('../../img/icons8/add_row.png');}
 #ttt-body .menubar .add.question.above .icon {background-image:url('../../img/icons8/add_row_above.png');}
 #ttt-body .menubar .add.question.clone .icon {background-image:url('../../img/tlc/duplicate_row.png');}
@@ -314,6 +362,7 @@
   background-color:#888;
   margin: 2px;
   padding: 2px 0.5em;
+  height: 1.75em;
 }
 #ttt-body #content-editor .hint-hint {
   float:right;
@@ -343,25 +392,19 @@
   padding-left:20px;
 }
 
-#ttt-body #survey-tree li.section {
+#ttt-body #survey-tree ul li.virtual.group ul {
+  padding-left:0;
+}
+
+#ttt-body #survey-tree li.section,
+#ttt-body #survey-tree li.section li.group
+ {
   list-style-type:none;
 }
 
 #ttt-body #survey-tree li.section div {
   display:flex;
   cursor:pointer;
-}
-
-#ttt-body #survey-tree li.section.selected div {
-  background-color:#ffe41f;  /* from TLC logo */
-}
-
-#ttt-body #survey-tree li.child-selected div {
-  background-color:#fff5b0;
-}
-
-#ttt-body #survey-tree li.question.selected {
-  background-color:#ffe41f;  /* from TLC logo */
 }
 
 #ttt-body #survey-tree li.section div button.toggle {
@@ -375,11 +418,11 @@
   line-height:1;
 }
 
-#ttt-body #survey-tree li.section div button.toggle::before {
+#ttt-body #survey-tree li button.toggle::before {
   content: "\25BC"; /* down arrow */
   display: inline-block;
 }
-#ttt-body #survey-tree li.section.closed div button.toggle::before {
+#ttt-body #survey-tree li.closed button.toggle::before {
   content: "\25B6"; /* right arrow */
   display: inline-block;
 }
@@ -395,7 +438,7 @@
   font-style:italic;
 }
 
-#ttt-body #survey-tree li.section.closed ul {
+#ttt-body #survey-tree li.closed ul {
   display:none;
 }
 
@@ -406,17 +449,16 @@
   overflow:hidden;
 }
 
-#ttt-body #survey-tree .incomplete {
-}
-
-#ttt-body #survey-tree li.section.needs-value div span,
+#ttt-body #survey-tree li.section.needs-value > div span,
+#ttt-body #survey-tree li.group.needs-value > div span,
 #ttt-body #survey-tree li.question.needs-value,
 #ttt-body #survey-tree li.question.needs-type
 {
   color:#b00;
   font-style:italic;
 }
-#ttt-body #survey-tree li.section.needs-value span::before {
+#ttt-body #survey-tree li.section.needs-value > div span::before,
+#ttt-body #survey-tree li.group.needs-value > div span::before {
   content:"[needs name]";
 }
 #ttt-body #survey-tree li.question.needs-value::after {
@@ -432,12 +474,13 @@
 /*
  * Section backgrounds
  *
- * section selected,       no error no child errors => dark yellow  ffe41f
- * section selected,          error or child errors => dark pink    ffc0c0
- * section child selected, no error no child errors => light yellow fff5b0
- * section child selected,    error or child errors => light pink   ffe0e0
- * section no selection,            no child errors => none
- * section no selection,               child errors => light pink
+ * (container here means section or group)
+ * container selected,       no error no child errors => dark yellow  ffe41f
+ * container selected,          error or child errors => dark pink    ffc0c0
+ * container child selected, no error no child errors => light yellow fff5b0
+ * container child selected,    error or child errors => light pink   ffe0e0
+ * container no selection,               child errors => light pink
+ * container no selection,            no child errors => none
  *   
  * Question backgrounds
  * question selected,      no errors => dark yellow
@@ -445,28 +488,35 @@
  * question not selected,            => none
  */
 
-#ttt-body #survey-tree li.section.selected div,
-#ttt-body #survey-tree li.question.selected div {
-  background-color:#ffe41f;  /* dark yellow */
+#ttt-body #survey-tree li.section.selected > div,
+#ttt-body #survey-tree li.group.selected > div 
+{
+  background-color:#ffe41f;  /* from TLC logo */
 }
 
-#ttt-body #survey-tree li.section.selected.error div,
-#ttt-body #survey-tree li.section.selected.child-error div,
-#ttt-body #survey-tree li.question.selected.error div {
+#ttt-body #survey-tree li.question.selected {
+  background-color:#ffe41f;  /* from TLC logo */
+}
+
+#ttt-body #survey-tree li.section.selected.error  > div,
+#ttt-body #survey-tree li.section.selected.child-error  > div,
+#ttt-body #survey-tree li.section.group.selected.child-error  > div,
+#ttt-body #survey-tree li.question.selected.error {
   background-color:#ffc0c0;  /* dark pink */
 }
 
-#ttt-body #survey-tree li.section.child-selected div {
+#ttt-body #survey-tree li.child-selected > div {
   background-color:#fff5b0;  /* light yellow */
 }
 
-#ttt-body #survey-tree li.section.child-error div,
-#ttt-body #survey-tree li.section.child-selected.error div,
-#ttt-body #survey-tree li.section.child-selectedild-error div {
+#ttt-body #survey-tree li.child-error > div,
+#ttt-body #survey-tree li.child-selected.error > div,
+#ttt-body #survey-tree li.child-selected.chiild-error > div {
   background-color:#ffe0e0;  /* light pink */
 }
 
-#ttt-body #survey-tree li.section.error div,
+#ttt-body #survey-tree li.section.error > div,
+#ttt-body #survey-tree li.group.error > div,
 #ttt-body #survey-tree li.question.error
 {
   color:#b00; 
@@ -524,8 +574,10 @@
 }
 
 #editor-frame.section.locked        div.grid.section.viewer  { display:grid; }
+#editor-frame.group.locked          div.grid.group.viewer    { display:grid; }
 #editor-frame.question.locked       div.grid.question.viewer { display:grid; }
 #editor-frame.section:not(.locked)  div.grid.section.editor  { display:grid; }
+#editor-frame.group:not(.locked)    div.grid.group.editor    { display:grid; }
 #editor-frame.question:not(.locked) div.grid.question.editor { display:grid; }
 
 #editor-frame .label span {
@@ -636,7 +688,7 @@
   align-items: center;
 }
 
-#editor-frame .grid.editor div.other.value input.other_flag {
+#editor-frame .grid.editor div.other.value input.has_other {
   width:min-content;
   margin-right:1em;
 }
@@ -646,7 +698,7 @@
   width:15em;
 }
 
-#editor-frame .grid.editor div.other.value input.other_flag:checked + input.other {
+#editor-frame .grid.editor div.other.value input.has_other:checked + input.other {
   visibility:visible;
 }
 
