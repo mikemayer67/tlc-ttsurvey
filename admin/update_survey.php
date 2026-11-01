@@ -130,8 +130,6 @@ function update_survey(int $survey_id, SurveyContent $content, string $title) : 
  */
 function validate_cache_table(string $table,string $cache) : void
 {
-  log_dev("...validating cache table $cache");
-
   $query = <<<SQL
     SELECT count(*) FROM (
       SELECT column_name,ordinal_position,data_type,count(*) AS test FROM ( 
@@ -157,7 +155,7 @@ function validate_cache_table(string $table,string $cache) : void
  */
 function cache_user_responses(int $survey_id) : bool
 {
-  log_dev("Backup responses before temporary drop of survey data");
+  log_info("Backup responses before temporary drop of survey data");
 
   $updated_lines = 0;
   $tables = ['user_status','responses','response_options'];
@@ -187,7 +185,7 @@ function cache_user_responses(int $survey_id) : bool
  */
 function restore_user_responses(int $survey_id) : void
 {
-  log_dev("Restore responses after temporary drop of survey data");
+  log_info("Restore responses after temporary drop of survey data");
 
   $query = <<<SQL
     INSERT INTO tlc_srv_user_status
