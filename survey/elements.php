@@ -126,8 +126,10 @@ function start_nosurvey_page()
   add_navbar(
     kwargs:['userid'=>$userid],
     callbacks:[
-      'add_navbar_center' => function(array $kwargs) : void {
-        add_navbar_center_preview($kwargs);
+      'add_navbar_center' => function(array $kwargs) : void {},
+      'add_navbar_right' => function(array $kwargs) : void {
+        $userid = $kwargs['userid'] ?? null;
+        if($userid) { add_user_menu($userid); }
       },
     ],
   );
