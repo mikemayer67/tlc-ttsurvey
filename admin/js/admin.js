@@ -32,7 +32,7 @@ export default function init(kwargs={})
 
   $_admin_status = $('#ttt-status');
   $_admin_navbar = $('#admin-tabs');
-  
+
   _admin_nonce = $_admin_navbar.find('input[name=nonce]').val();
 
   $_admin_navbar.find('button').each(
@@ -135,33 +135,42 @@ function handle_user_logout() {
 
 function handle_tab_change(event)
 {
-  if(_is_dirty_fn?.()) {
-    event.preventDefault();
+  // only need to provide special handling of a tab change if there are unsaved changes.
+  if(!_is_dirty_fn?.()) { return; }
 
-    var tgt_action = event.target.action
-    var new_tab = $(event.originalEvent.submitter).val();
-    var new_tab_uri = tgt_action + '&tab=' + new_tab;
+  event.preventDefault();
 
-    var tsm = $('#tab-switch-modal');
-    if (!tsm) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
-    tsm.find('.tsm-type').html('tabs');
-    tsm.find('button.cancel').off('click').on('click',function() { 
-      tsm.hide();
-    });
-    tsm.find('button.confirm').off('click').on('click',function() { 
-      tsm.hide();
-      window.location.replace(new_tab_uri);
-    }).html("Switch Tabs");
-    tsm.show();
-  }
+  const new_tab = $(event.originalEvent.submitter).val();
+  const new_tab_url = new URL(window.location.href);
+  new_tab_url.searchParams.set('tab', new_tab);
+
+  const tsm = $('#tab-switch-modal');
+  if (tsm.length === 0) { throw new Error('admin tab DOM is missing #tab-switch-modal <div>'); }
+
+  tsm.find('.tsm-type').html('tabs');
+
+  tsm.find('button.cancel').off('click').on('click',function() { 
+    tsm.hide();
+  });
+
+  tsm.find('button.confirm').off('click').on('click',function() { 
+    tsm.hide();
+    window.location.replace(new_tab_url);
+  }).html("Switch Tabs");
+
+  tsm.show();
 }
 
 function handle_lock_available() 
 {
+  const url = new URL(window.location.href);
+  if(_cur_tab.length > 0) {
+    url.searchParams.set('tab', _cur_tab);
+  }
   admin_alert(
     "Admin Dashboard lock has been released",
     "You are free to start making edits",
-    function () { window.location.reload(); }
+    function () { window.location.replace(url.toString()); },
   );
 }
 
@@ -188,10 +197,14 @@ function handle_expiring_lock()
 
 function handle_lost_lock(locked_by)
 {
+  const url = new URL(window.location.href);
+  if(_cur_tab.length > 0) {
+    url.searchParams.set('tab', _cur_tab);
+  }
   admin_alert(
     "While you were away, you lost your lock on the Admiin Dashboard.",
     "It was acquired by "+locked_by,
-    function() { window.location.reload(); }
+    function () { window.location.replace(url.toString()); },
   );
 }
 
