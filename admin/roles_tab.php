@@ -55,10 +55,9 @@ echo "</select></li>";
 echo "</ul></li>";
 
 
-$survey_admins = survey_admins();
 echo "<li class='role'>Survey Admins</li>";
 add_admin_select(
-  'admin',$users,survey_admins(),
+  'admin',$users,survey_admins(include_primary:false),
   'Can create, monitor, and change status of surveys, assign editor roles, plus anything an editor can do.'
 );
 
@@ -123,4 +122,6 @@ echo "</div>";
 
 echo "</form>";
 
+$active_userid = active_userid();
+echo "<script>const active_userid='$active_userid';</script>";
 echo "<script type='module' src='", js_uri('roles','admin'), "'></script>";

@@ -3,6 +3,7 @@ import {hide_status, show_status} from './admin.js'
 
 let ce = {};
 let saved_roles = {};
+let cur_primary = "";
 let saved_summary_flags = 0;
 
 function handle_roles_submit(event)
@@ -36,6 +37,14 @@ function handle_roles_submit(event)
   var cur_roles = current_roles();
   var summary_flags = current_summary_flags();
   var changes = role_changes(cur_roles);
+  
+  const primary = (cur_roles['primary'] ?? []).filter((userid) => userid.length > 0);
+  const survey_admins = (cur_roles['admin'] ?? []).filter((userid) => userid.length > 0);
+
+  if(primary.length + survey_admins.length < 1) {
+    alert("You cannot remove all admins.");
+    return;
+  }
 
   var data = {
     ...changes, 
@@ -68,6 +77,10 @@ function handle_roles_submit(event)
 
 function remove_role(role,userid)
 {
+  if(role === 'admin' && userid === active_userid) {
+    const response = confirm("Are you certain you want to remove yourself as admin?");
+    if(!response) { return; }
+  }
   var select = ce.add_selects[role];
   var tgt    = ce.form.find('li.user[userid="'+userid+'"][role="'+role+'"]');
   var name   = tgt.find('span').html();
@@ -172,7 +185,7 @@ function current_roles()
     // there should only be one primary-admin, but makes it easier
     //   to work with in an array as I don't need to do anything
     //   special with it when comparing new/saved values.
-    primary: [ce.form.find('#primary-admin-select').val()],
+    primary: [ce.primary.val()],
   }
 
   // admin roles
@@ -207,7 +220,7 @@ function revert_values()
 {
   // admin roles
 
-  ce.form.find('#primary-admin-select').val(saved_roles['primary'][0]);
+  ce.primary.val(saved_roles['primary'][0]);
 
   ce.form.find('li.user').not('.new').each( function() {
     var userid = $(this).attr('userid');
@@ -242,6 +255,20 @@ function revert_values()
   update_submit();
 }
 
+function handle_primary_change(e)
+{
+  const new_primary = ce.primary.val();
+  if(cur_primary === active_userid) {
+    const response = confirm("Are you certain you want to remove yourself as primary admin?");
+    if(!response) { 
+      ce.primary.val(cur_primary);
+      return; 
+    }
+  }
+  cur_primary = new_primary;
+  update_submit();
+}
+
 $(document).ready( function($) 
 {
   admin_init( {is_dirty_fn:is_dirty} );
@@ -251,6 +278,7 @@ $(document).ready( function($)
   ce.status          = $('#ttt-status');
   ce.submit          = $('#changes-submit');
   ce.revert          = $('#changes-revert');
+  ce.primary         = $('#primary-admin-select');
 
   ce.hidden = {}
   ce.form.find('input[type=hidden]').each(
@@ -277,7 +305,9 @@ $(document).ready( function($)
     e.on('change',handle_role_select);
   }
 
-  $('#primary-admin-select').on('change',update_submit);
+  ce.primary.on('change',handle_primary_change);
+  cur_primary = ce.primary.val();
+
   const inputs = ce.form.find('input[type=checkbox]');
   inputs.on('change',update_submit);
 

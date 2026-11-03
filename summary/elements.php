@@ -44,8 +44,10 @@ function start_summary_page(array $kwargs) : void
         add_hidden_input('ajaxurl', app_uri());
         add_hidden_input('survey_id', $survey_id);
         add_hidden_input('nonce', gen_nonce('summary-download'));
-        echo "<a id='download-pdf' class='js-only file-download'>Download PDF</a>";
-        echo "<a id='download-csv' class='js-only file-download'>Download CSV</a>";
+        if($kwargs['tab_ids'] ?? []) {
+          echo "<a id='download-pdf' class='js-only file-download'>Download PDF</a>";
+          echo "<a id='download-csv' class='js-only file-download'>Download CSV</a>";
+        }
       },
     ],
   );

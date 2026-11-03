@@ -25,14 +25,14 @@ function drop_user_role(string $userid,string $role)
   return MySQLExecute($query,'s',$userid);
 }
 
-function lookup_userids_by_role(string $role)
+function lookup_userids_by_role(string $role, bool $include_primary=true)
 {
   $roles = survey_roles();
   $rval = Array();
   foreach ($roles as $r) {
     if($r[$role]??false) { $rval[] = $r['userid']; }
   }
-  if($role === 'admin') {
+  if($role === 'admin' && $include_primary) {
     $primary = primary_admin();
     if(!in_array($primary,$rval)) {
       $rval[] = $primary;
@@ -41,7 +41,9 @@ function lookup_userids_by_role(string $role)
   return $rval;
 }
 
-function survey_admins()  { return lookup_userids_by_role('admin'); }
+function survey_admins(bool $include_primary=true) { 
+  return lookup_userids_by_role('admin',$include_primary); 
+}
 function content_admins() { return lookup_userids_by_role('content'); }
 function tech_admins()    { return lookup_userids_by_role('tech'); }
 
