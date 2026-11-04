@@ -14,6 +14,7 @@ function start_admin_page($cur_tab=null)
   add_tab_name('ttt_admin');
   start_header();
 
+  echo "<script>let _cur_tab = " . json_encode($cur_tab ?? "") . ";</script>";
   add_js_resources();
   if($cur_tab) { // admin tab page
     add_css_resources($context, css_uri($cur_tab,'admin') );
