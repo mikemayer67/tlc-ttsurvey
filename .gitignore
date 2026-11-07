@@ -1,6 +1,5 @@
 *~
 .*.swp
-
 *_hold.php
 
 .htaccess*
@@ -14,15 +13,10 @@ tlc-ttsurvey.log
 *.log
 error_log
 
-data/php
-data/drop_*.sql
-data/backup_dumps
-
 archive/*
 MAMP*
 
 .vscode/*
 vendor
-
 
 img/app_logo.jpg

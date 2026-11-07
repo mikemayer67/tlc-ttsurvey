@@ -1,0 +1,7 @@
+php
+
+backup_dumps
+backup_dumps/*
+
+admin_lock
+admin_lock/*

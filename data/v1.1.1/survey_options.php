@@ -103,10 +103,10 @@ class SurveyOptionMigration
     printf("\nThe following options will be mapped to a specfic question:\n");
     foreach($option_map as $question_id => $option_ids) {
       $question_str = $this->question_wording[$question_id];
-      printf("  %3d %s:\n",$question_id,$question_str);
+      printf("   $question_str\n");
       foreach($option_ids as $option_id) {
         $option_str = $this->all_options[$option_id];
-        printf("       %3d %s\n",$option_id,$option_str);
+        printf("    %3d %s\n",$option_id,$option_str);
       }
       printf("\n");
     }
@@ -129,58 +129,51 @@ class SurveyOptionMigration
    */
   private function gen_review_content() : string
   {
-    $review = [];
-    foreach($this->all_options as $option_id => $option_str) 
-    {
-      $option_str = trim($option_str);
-      $map_count  = count($this->question_map[$option_id]);
-
-      if($map_count !== 1)                    { $review['reqd_common'][] = $option_id; }
-      elseif( str_contains($option_str,' ') ) { $review['cand_mapped'][] = $option_id; } 
-      else                                    { $review['cand_common'][] = $option_id; }
+    // invert the question map, but only for options that map to a single question
+    $option_map = [];
+    foreach($this->question_map as $option_id => $question_ids) {
+      if(count($question_ids) === 1) {
+        $question_id = $question_ids[0];
+        $option_map[$question_id][]  = $option_id;
+      }
     }
 
-    $nl = "";
-    $hr = "#-------------------------------------------------------------------------------";
-
-    return implode("\n", [
-      "# Review the following guesses about which options should be available for common use",
-      "#  and which apply to a specific question.  Options which should apply to a specific",
-      "#  question should be marked with an [x] below.  Options which should be available",
-      "#  for general use should leave the box empty, (i.e., [ ]).",
-      $nl,
+    $content = implode("\n", [
+      "#-------------------------------------------------------------------------------",
+      "# Review the following mapping of multiple choice questions to the associated",
+      "#   options and mark which options are uniquely bound to that question.  All",
+      "#   unmarked options will be made available for general use across all multiple",
+      "#   choice questions.  Note that the only options shown below are those for",
+      "#   which the distinction between general use and question specific cannot be",
+      "#   inferred from existing usage.",
+      "#",
+      "# Options which should apply to a specific question should be marked with",
+      "#   an [x] below.  Options which should be available for general use should",
+      "#   leave the box empty, (i.e., [ ]).",
+      "#",
       "# Do not change anything else on the editable lines as doing so may result in the",
-      "#  migration being aborted.",
-      $nl,
+      "#   migration being aborted.",
+      "#",
       "# Close the editor when you have finished reviewing.  The migration will resume",
-      "#    automatically when the editor closes.",
-      $nl, $hr,
-      "# The following options appear to be question specifc.  Remove the x from the",
-      "#   box (i.e., [ ]) if you believe the should be available for common use.",
-      $hr, $nl,
-      ...array_map(
-        fn($oid) => sprintf("  [x]  %3d  %s", $oid, $this->all_options[$oid]),
-        $review['cand_mapped'] ?? []
-      ),
-      $nl, $hr,
-      "# The following options appear to be good candidates for common use.",
-      "#   Add an x to the box (i.e., [x]) if you believe they are question specific.",
-      $hr, $nl,
-      ...array_map(
-        fn($oid) => sprintf("  [ ]  %3d  %s", $oid, $this->all_options[$oid]),
-        $review['cand_common'] ?? []
-      ),
-      $nl, $hr,
-      "# The following options are currently either in use by multiple questions",
-      "#   or are not mapped to any question.  In either case, these must be",
-      "#   categorized as common use options.  Do not edit any of these.",
-      $hr, $nl,
-      ...array_map(
-        fn($oid) => sprintf("       %3d  %s", $oid, $this->all_options[$oid]),
-        $review['reqd_common'] ?? []
-      ),
-      $nl,
+      "#   automatically when the editor closes.",
+      "#-------------------------------------------------------------------------------",
+      "",
     ]);
+
+    $content .= "\n";
+
+    foreach($option_map as $question_id => $option_ids) {
+      $question_str = $this->question_wording[$question_id];
+      $content .= "   Q: $question_str\n";
+      foreach($option_ids as $option_id) {
+        $option_str = $this->all_options[$option_id];
+        $mark = str_contains($option_str," ") ? 'x' : ' ';
+        $content .= sprintf("      [$mark]  %3d: $option_str\n", $option_id);
+      }
+      $content .= "\n";
+    }
+
+    return $content;
   }
 
   /**
@@ -233,49 +226,45 @@ class SurveyOptionMigration
     foreach($file as $lineno => $line) 
     {
       $line = trim($line);
-      if(strlen($line) === 0 || str_starts_with($line,'#')) { continue; }
+      if(strlen($line) === 0)         { continue; } 
+      if(str_starts_with($line,'#'))  { continue; }
+      if(str_starts_with($line,'Q:')) { continue; }
 
       $err_note = sprintf("Please only edit the selection marks\n  [line %d] %s",$lineno,$line);
-      $warn_note = "Changes to opiton strings are ignored. Please only edit the selection marks.";
+      $warn_note = "Changes to option strings are ignored. Please only edit the selection marks.";
 
-      if( !preg_match('/^(\[\s*([*xX]?)\s*\]\s+)?(\d+)\s*(\w.*)$/',$line,$match) ) {
-        printf("Unrecognized line format. $err_note\n");
+      if( !preg_match('/^\[\s*([*xX]?)\s*\]\s+(\d+):\s+(\w.*)$/',$line,$match) )  {
+        printf("\nUnrecognized line format. $err_note\n");
         return false;
       }
 
-      $option_id  = $match[3];
-      $option_str = $match[4];
+      $mark       = $match[1];
+      $option_id  = $match[2];
+      $option_str = $match[3];
 
       if( !key_exists($option_id, $this->all_options) ) {
-        printf("Invalid option ID ($option_id). $err_note\n");
+        printf("\nInvalid option ID ($option_id). $err_note\n");
         return false;
       }
       if( trim($option_str) !== trim($this->all_options[$option_id]) ) {
         // not a failable error... no need to return false
         if($warn_note) {
           // only warn once
-          print("$warn_note\n");
+          print("\n$warn_note\n");
           $warn_note = null;
         }
       }
 
-      if( $match[1] )
-      {
-        if (count($this->question_map[$option_id]) !== 1) {
-          printf("Option $option_id should not be modified. $err_note\n");
-          return false;
-        }
-        if( $match[2] ) { $mapped_options[] = $option_id; } 
-        else            { $common_options[] = $option_id; }
-      } 
+      if($mark) { $mapped_options[] = $option_id; } 
+      else      { $common_options[] = $option_id; }
     }
 
-    $all_responses = array_merge($mapped_options,$common_options);
     foreach($this->all_options as $option_id => $option_str) {
       if(count($this->question_map[$option_id]) !== 1) { continue; }
-      if(in_array($option_id,$all_responses)) { continue; }
+      if(in_array($option_id,$mapped_options)) { continue; }
+      if(in_array($option_id,$common_options)) { continue; }
       printf("Cannot find response to option $option_id ($option_str).\n");
-      printf("   Please only edit the selection marks themselves, not the boxes.\n");
+      printf("   Please only edit the selection marks themselves, nothing else.\n");
       return false;
     }
     return $mapped_options;
