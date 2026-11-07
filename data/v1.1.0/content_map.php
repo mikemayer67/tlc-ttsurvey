@@ -9,10 +9,11 @@ if(!defined('IN_MIGRATION')) {
 
 /**
  * Populates the v1.1.0 structure map from the v1.0.0 question map and question grouping atttributes
+ *   This function must be named run_script to work with confiugre_database.php
  * @param PDO $pdo 
  * @return void 
  */
-function populate_content_map(PDO $pdo)
+$config_script = function(PDO $pdo)
 {
   $sections = [];
   $section_remap = [];
@@ -96,6 +97,4 @@ function populate_content_map(PDO $pdo)
       }
     }
   }
-}
-
-?>
+};

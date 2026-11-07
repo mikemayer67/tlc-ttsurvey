@@ -11,6 +11,7 @@ drop table if exists tlc_bkp_survey_options;
 drop table if exists tlc_bkp_group_content;
 drop table if exists tlc_bkp_section_content;
 drop table if exists tlc_bkp_sections;
+drop table if exists tlc_bkp_question_groups;
 drop table if exists tlc_bkp_groups;
 drop table if exists tlc_bkp_questions;
 drop table if exists tlc_bkp_surveys;

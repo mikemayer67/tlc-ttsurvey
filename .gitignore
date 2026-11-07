@@ -14,9 +14,9 @@ tlc-ttsurvey.log
 *.log
 error_log
 
-sql/php
-sql/drop_1*sql
-sql/backup_dumps
+data/php
+data/drop_*.sql
+data/backup_dumps
 
 archive/*
 MAMP*
