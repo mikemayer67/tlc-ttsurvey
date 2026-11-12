@@ -117,8 +117,8 @@ export default function init(ce,controller,editor)
     _selected.empty();
     _pool.find('.chip').remove();
 
-    for( const [id,label] of Object.entries(_all_options) ) {
-      const chip = create_chip(id,label);
+    for( const [id,opt] of Object.entries(_all_options) ) {
+      const chip = create_chip(id,opt.text);
       const selected = data.options.includes(Number(id));
       if( selected ) { _selected.append(chip); }
       else           { _pool.append(chip);     }

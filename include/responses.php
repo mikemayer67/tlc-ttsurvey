@@ -130,7 +130,7 @@ function get_all_responses(int $survey_id) : array
   }
 
   $query = <<<SQL
-    SELECT ro.question_id, ro. userid,ro.option_id
+    SELECT ro.question_id, ro.userid, ro.option_id
       FROM tlc_srv_response_options ro
       LEFT JOIN tlc_srv_survey_options so on so.survey_id=ro.survey_id and so.option_id=ro.option_id
       WHERE ro.draft=0 and ro.survey_id=?;

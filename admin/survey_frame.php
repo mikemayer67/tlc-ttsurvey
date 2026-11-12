@@ -251,6 +251,7 @@ function add_type_select()
 
 function add_options_entry($kwargs=[])
 {
+  // @@@ OPTIONS
   global $hints;
   global $labels;
 
@@ -263,7 +264,8 @@ function add_options_entry($kwargs=[])
   echo "<div class='options value'>";
   echo "  <div class='selected'></div>";
   echo "  <span class='error'></span>";
-  echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
+  echo "  <div class='common pool'><button class='add' type='button'>+</button></div>";
+  echo "  <div class='mapped pool'><button class='add' type='button'>+</button></div>";
   echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "</div>";
 }

@@ -10,9 +10,9 @@ require_once(app_file('include/survey_content.php'));
  */
 class SummaryContent
 {
-  private array $sections;
-  private array $options;
-  private array $responses;
+  private SurveyOptions $options;
+  private array         $sections;
+  private array         $responses;
 
   public function __construct(SurveyContent $content, array $responses)
   {
@@ -115,7 +115,11 @@ class SummaryContent
    * Returns all of the option strings indexed by option_id
    * @return array{int, string}
    */
-  public function all_options() : array { return $this->options; }
+  public function all_options() : array { 
+    $rval = [];
+    foreach( $this->options as $opt ) { $rval[$opt->id()] = $opt->text(); }
+    return $rval;
+  }
 
   /**
    * Return the text associated with the specified option ID
@@ -124,7 +128,7 @@ class SummaryContent
    */
   public function option(int $option_id) : string
   {
-    return $this->options[$option_id] ?? "???";
+    return $this->options->text($option_id) ?? "???";
   }
   
 }

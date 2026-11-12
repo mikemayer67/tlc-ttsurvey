@@ -8,6 +8,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 require_once(app_file('include/questions.php'));
 require_once(app_file('include/question/types.php'));
 require_once(app_file('include/question/flags.php'));
+require_once(app_file('include/survey_options.php'));
 require_once(app_file('include/survey_section.php'));
 require_once(app_file('include/question/group.php'));
 
@@ -32,7 +33,7 @@ require_once(app_file('include/question/group.php'));
  */
 class SurveyContent
 {
-  private array $_options = [];
+  private SurveyOptions $_options;
   private array $_sections = [];
   private array $_groups = [];
   private array $_questions = [];
@@ -75,9 +76,9 @@ class SurveyContent
   /**
    * Returns array of option strings common to all questions in the specified survey
    *
-   * @return array<string>
+   * @return SurveyOptions
    */
-  public function options() : array { 
+  public function options() : SurveyOptions { 
     return $this->_options; 
   }
 
@@ -86,8 +87,8 @@ class SurveyContent
    * @param int $id 
    * @return null|string 
    */
-  public function option_text(int $id) : ?string {
-    return $this->_options[$id] ?? null;
+  public function option_text(int $option_id) : ?string {
+    return $this->_options->text($option_id);
   }
 
   /**
@@ -156,7 +157,7 @@ class SurveyContent
   public function for_js() : array
   {
     return [
-      'options'   => $this->_options,
+      'options'   => $this->_options->for_js(),
       'sections'  => array_map(
         fn($section) => $section->for_js(),
         $this->_sections
@@ -184,7 +185,8 @@ class SurveyContent
     if(! $this->verify_id($survey_id)) {
       throw new \OutOfBoundsException("No survey content found for survey_id $survey_id");
     }
-    $this->add_options($survey_id);
+    $this->_options = SurveyOptions::fromSurveyID($survey_id);
+
     $this->add_sections($survey_id);
     $this->add_groups($survey_id);
     $this->add_questions($survey_id);
@@ -200,21 +202,6 @@ class SurveyContent
     SQL;
     $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
     return count($rows) === 1;
-  }
-
-  private function add_options(int $survey_id)
-  {
-    $query = <<<SQL
-      SELECT option_id, option_str as text
-        FROM tlc_srv_survey_options
-       WHERE survey_id=(?)
-       ORDER BY option_id;
-    SQL;
-    $rows = MySQLFetchAllAssoc($query, 'i', $survey_id);
-
-    if($rows) {
-      $this->_options = array_column($rows, 'text', 'option_id');
-    }
   }
 
   private function add_sections(int $survey_id)
@@ -343,7 +330,7 @@ class SurveyContent
   {
     $content = json_decode($json, true);
 
-    $this->_options   = $content['options'];
+    $this->_options   = SurveyOptions::from_js($content['options']);
     $this->_next_ids  = $content['next_ids'];
 
     $this->_sections  = [];

@@ -59,7 +59,7 @@ function clone_survey(int $child_id,int $parent_id) : void
 {
   $query = <<<SQL
     INSERT into tlc_srv_survey_options
-    SELECT ?, option_id, option_str
+    SELECT ?, option_id, option_str, question_id
       FROM tlc_srv_survey_options
      WHERE survey_id=?
   SQL;

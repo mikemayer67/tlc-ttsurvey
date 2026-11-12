@@ -95,7 +95,7 @@ export default function init(ce)
         if(data.options.length) {
           const ul = $('<ul>').addClass('options').prependTo(_options_value);
           data.options.map((id) => options[id])
-          .forEach((opt) => $('<li>').text(opt).appendTo(ul));
+          .forEach((opt) => $('<li>').text(opt.text).appendTo(ul));
         }
 
         if(data.has_other) {

@@ -260,23 +260,11 @@ function add_survey_details(int $survey_id,array $details) : void
  * Updates the option values shared across the survey
  * @param int $survey_id 
  * @param SurveyContent $content
- * @return void 
  * @throws FailedToUpdate on mysqli exception
  */
 function add_survey_options(int $survey_id,SurveyContent $content) : void
 {
-  $insert_option = new MySQLPreparedExec(
-    <<<SQL
-      INSERT into tlc_srv_survey_options (survey_id, option_id, option_str) 
-      VALUES (?,?,?)
-      ON DUPLICATE KEY UPDATE option_str = values(option_str)
-    SQL, 'iis',
-    build_exception_handler('update option %2$d for survey %1$d')
-  );
-  foreach($content->options() as $option_id => $option_str) 
-  {
-    $insert_option->run($survey_id, $option_id, $option_str);
-  }
+  $content->options()->updateDatabase($survey_id);
 }
 
 /**
