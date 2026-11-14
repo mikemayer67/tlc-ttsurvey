@@ -118,7 +118,12 @@ export default function init(ce,controller,editor)
     _pool.find('.chip').remove();
 
     for( const [id,opt] of Object.entries(_all_options) ) {
-      const chip = create_chip(id,opt.text);
+      let is_common = true;
+      if(opt.specific_to !== null) {
+        if(opt.specific_to !== _question_id) { continue; }
+        is_common = false;
+      }
+      const chip = create_chip(id,opt.text,is_common);
       const selected = data.options.includes(Number(id));
       if( selected ) { _selected.append(chip); }
       else           { _pool.append(chip);     }
@@ -130,9 +135,11 @@ export default function init(ce,controller,editor)
     _pool.hide();
   }
 
-  function create_chip(id,label)
+  function create_chip(id,label,is_common)
   {
     const chip = $("<div>").addClass('chip').data('id',id).attr('id',id);
+    if(is_common) { chip.addClass('common'); }
+    else          { chip.addClass('specifc'); }
     const span = $("<span>").text(label);
     const close = $("<button class='option' type='button'>x</button>");
     return chip.append(span).append(close);
@@ -145,6 +152,7 @@ export default function init(ce,controller,editor)
     const chips = _selected.children('.chip');
     const new_indices = chips.map( (i,e) => { return Number($(e).data('id')); }).get();
     controller.update_question_data(_question_id, 'options', new_indices);
+    $(document).trigger('SurveyWasModified');
   }
 
 
@@ -203,7 +211,8 @@ export default function init(ce,controller,editor)
     if( ! new_value )             { return; }
     if( new_value === old_value ) { return; }
 
-    const chip_sel = '.chip[id=' + chip.data('id') + ']';
+    const chip_id  = chip.data('id');
+    const chip_sel = '.chip[id=' + chip_id + ']';
     ce.undo_manager.add_and_exec({
       action:'chip-edit',
       question_id:_question_id,
@@ -211,8 +220,8 @@ export default function init(ce,controller,editor)
         const chip = _options.find(chip_sel);
         const span = chip.children('span');
         span.text(value);
-        // controller.update_option(chip_id,value);
-        // $(document).trigger('SurveyWasModified');
+        controller.update_option(chip_id,value);
+        $(document).trigger('SurveyWasModified');
       },
       redo() {
         controller.select_question(this.question_id);

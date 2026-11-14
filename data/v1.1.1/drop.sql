@@ -20,6 +20,7 @@ drop view if exists tlc_srv_view_responses_select_multi;
 drop view if exists tlc_srv_view_response_options;
 drop view if exists tlc_srv_view_last_user_survey;
 drop view if exists tlc_srv_view_unused_options;
+drop view if exists tlc_srv_view_survey_options;
 
 drop table if exists tlc_srv_response_options_cache;
 drop table if exists tlc_srv_responses_cache;

@@ -88,7 +88,7 @@ class SurveyContent
    * @return null|string 
    */
   public function option_text(int $option_id) : ?string {
-    return $this->_options->text($option_id);
+    return $this->_options->option($option_id)->text() ?? null;
   }
 
   /**
@@ -330,7 +330,7 @@ class SurveyContent
   {
     $content = json_decode($json, true);
 
-    $this->_options   = SurveyOptions::from_js($content['options']);
+    $this->_options   = SurveyOptions::from_js($content);
     $this->_next_ids  = $content['next_ids'];
 
     $this->_sections  = [];

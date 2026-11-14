@@ -51,9 +51,12 @@ $hints = [
       'For multiple choice questions, this is the list of options available to choose from. '.
       'There must be at least one option provided for the question to be valid.  Ideally, there '.
       'will be more than one option.  Otherwise, consider using a Simple Checkbox question.'.
-      '<p class="editor-only"><b>Click</b> in the option entry a list of available options</p>'.
+      '<p class="editor-only"><b>Click</b> in the box above to reveal/hide the lists of available options</p>'.
       '<p class="editor-only"><b>Drag/Drop</b> options to reorder how they will be displayed in the survey.</p>'.
-      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'
+      '<p class="editor-only"><b>Click</b> on the <b>x</b> next any given option to remove it from the list</p>'.
+      'Background'.
+      '<p style="pad-top:3px;"><b>White</b>: question specfic option</p>'.
+      '<p style="pad-top:3px;"><b>Gray</b>: general use option</p>'
     ),
     'other' => (
       '<b>This field is optional.</b> If the checkbox is selected, the survey will provide the participant ' .
@@ -264,9 +267,8 @@ function add_options_entry($kwargs=[])
   echo "<div class='options value'>";
   echo "  <div class='selected'></div>";
   echo "  <span class='error'></span>";
-  echo "  <div class='common pool'><button class='add' type='button'>+</button></div>";
-  echo "  <div class='mapped pool'><button class='add' type='button'>+</button></div>";
   echo "  <div id='$hint_id' class='hint'>$hint</div>";
+  echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
   echo "</div>";
 }
 

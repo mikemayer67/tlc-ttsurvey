@@ -861,6 +861,19 @@
   position:relative;
 }
 
+#editor-frame .grid.editor .options.value .common.chip 
+{
+  background: white;
+  color: black;
+}
+
+#editor-frame .grid.editor .options.value .specifc.chip 
+{
+  background: #ccc;
+  color: black;
+}
+
+
 #editor-frame .grid.editor .options.value .chip button
 {
   border :none;

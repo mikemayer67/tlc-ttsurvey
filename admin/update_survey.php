@@ -91,12 +91,14 @@ function update_survey(int $survey_id, SurveyContent $content, string $title) : 
     // survey details has no foreign keys
     add_survey_details($survey_id,$details);
 
-    // survey options has FK to survey_id
+    // survey questions has FK to survey_id
+    add_survey_questions($survey_id,$content);
+
+    // survey options has FK to survey_id and question_id
     add_survey_options($survey_id,$content);
 
-    // survey questions has FK to survey_id
-    //   question options has FK to survey_id, option_id
-    add_survey_questions($survey_id,$content);
+    // question options has FK to survey_id, question_id, and option_id
+    add_question_options($survey_id,$content);
 
     // survey sections has FK to survey_id
     //   sections have FK to survey_id
@@ -284,12 +286,6 @@ function add_survey_questions(int $survey_id,SurveyContent $content) : void
     build_exception_handler('update question %2$d for survey %1$d')
   );
 
-  $insert_option = new MySQLPreparedExec(
-    'INSERT into tlc_srv_question_options (survey_id,question_id,sequence,option_id) VALUES (?,?,?,?)',
-    'iiii',
-    build_exception_handler('add option %4$d as choice %3$d for question %2$d of survey %1$d') 
-  );
-
   foreach($content->questions() as $question) 
   {
     $data = $question->for_database();
@@ -304,6 +300,28 @@ function add_survey_questions(int $survey_id,SurveyContent $content) : void
       $data['intro'] ?? null,
       $data['info'] ?? $data['popup'] ?? null,
     );
+  }
+}
+
+/**
+ * Updates the question option data
+ * @param int $survey_id 
+ * @param SurveyContent $content
+ * @throws FailedToUpdate on mysqli exception
+ */
+function add_question_options(int $survey_id, SurveyContent $content) : void
+{
+  $insert_option = new MySQLPreparedExec(
+    'INSERT into tlc_srv_question_options (survey_id,question_id,sequence,option_id) VALUES (?,?,?,?)',
+    'iiii',
+    build_exception_handler('add option %4$d as choice %3$d for question %2$d of survey %1$d') 
+  );
+
+  foreach($content->questions() as $question) 
+  {
+    if(!method_exists($question,'options')) { continue; }
+
+    $data = $question->for_database();
 
     $options = $data['options'] ?? [];
     foreach($options as $index=>$option_id) {

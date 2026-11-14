@@ -130,7 +130,7 @@ export default function init(ce)
 
   function handle_revert()
   {
-    _survey_name.val(_survey_name);
+    _survey_name.val(_saved_name);
     
     const content = ce.survey_data.content( ce.cur_survey.id );
     ce.controller.update_content(content);

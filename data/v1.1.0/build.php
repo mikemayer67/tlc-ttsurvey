@@ -428,5 +428,4 @@ SELECT so.survey_id,so.option_id
        AND qo.option_id  = so.option_id
  WHERE qo.survey_id IS NULL;
 SQL ],
-
 ];
