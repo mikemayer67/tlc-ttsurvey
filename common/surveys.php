@@ -3,11 +3,11 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/db.php'));
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/question/flags.php'));
-require_once(app_file('include/question/types.php'));
-require_once(app_file('include/survey_content.php'));
+require_once(app_file('common/db.php'));
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/question/flags.php'));
+require_once(app_file('common/question/types.php'));
+require_once(app_file('common/survey_content.php'));
 
 /**
  * Returns the survey ID of the active survey

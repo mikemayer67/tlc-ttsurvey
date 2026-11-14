@@ -3,10 +3,10 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/cookiejar.php'));
-require_once(app_file('include/access_tokens.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/ajax.php'));
+require_once(app_file('common/cookiejar.php'));
+require_once(app_file('common/access_tokens.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/ajax.php'));
 
 // The active userid and token come from the cookies sent with the AJAX request
 //   Verify that these are still valid credentials.

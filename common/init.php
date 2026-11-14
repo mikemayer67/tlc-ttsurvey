@@ -41,7 +41,7 @@ function internal_error(string $msg)
   // avoid recursion if internal error occurred while rendering 500.php
   if(defined('RENDERING_ERR_PHP')) { return; }
 
-  require_once('include/logger.php');
+  require_once('common/logger.php');
   $errid = bin2hex(random_bytes(3));
   log_error("[$errid]: $msg");
   $_SESSION['internal-error'][$errid] = $msg . "  " .logTrace();
@@ -63,7 +63,7 @@ function validation_error(string $msg)
   // avoid recursion if internal error occurred while rendering 500.php
   if(defined('RENDERING_ERR_PHP')) { return; }
 
-  require_once('include/logger.php');
+  require_once('common/logger.php');
   $errid = bin2hex(random_bytes(3));
   log_warning("[$errid]: $msg");
   http_response_code(405);

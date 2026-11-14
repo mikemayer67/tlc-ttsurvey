@@ -3,10 +3,10 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/cookiejar.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/surveys.php'));
-require_once(app_file('include/ajax.php'));
+require_once(app_file('common/cookiejar.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/surveys.php'));
+require_once(app_file('common/ajax.php'));
 
 require_once(app_file('survey/submitted.php'));  // for send_confirmation_email
 

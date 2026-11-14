@@ -7,10 +7,10 @@ log_mark("-------------- Start of Preview --------------");
 
 validate_and_retain_nonce('preview');
 
-require_once(app_file('include/cookiejar.php'));
-require_once(app_file('include/survey_content.php'));
+require_once(app_file('common/cookiejar.php'));
+require_once(app_file('common/survey_content.php'));
 require_once(app_file('survey/elements.php'));
-require_once(app_file('include/elements.php'));
+require_once(app_file('common/elements.php'));
 require_once(app_file('survey/render.php'));
 
 $page_title = 'Survey Preview';

@@ -3,9 +3,9 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) {define('APP_DIR', dirname(__file__));}
 
-require_once(APP_DIR.'/include/init.php');
-require_once(app_file('include/elements.php'));
-require_once(app_file('include/logger.php'));
+require_once(APP_DIR.'/common/init.php');
+require_once(app_file('common/elements.php'));
+require_once(app_file('common/logger.php'));
 
 define('RENDERING_ERR_PHP',true);
 

@@ -17,13 +17,13 @@ namespace tlc\tts;
 //   api_die() will be called to immediately terminate the invocation of this app.
 
 define('APP_DIR',realpath(dirname(__FILE__)));
-require_once(APP_DIR.'/include/init.php');
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/redirect.php'));
-require_once(app_file('include/status.php'));
-require_once(app_file('include/login.php'));
+require_once(APP_DIR.'/common/init.php');
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/redirect.php'));
+require_once(app_file('common/status.php'));
+require_once(app_file('common/login.php'));
 
-require_once(app_file('include/db.php'));
+require_once(app_file('common/db.php'));
 verify_required_db_version('1.1.1');
 
 session_start();
@@ -36,7 +36,7 @@ try
 
   if(key_exists('bug-report',$_POST)) {
     if(($_POST['action']??'cancel') === 'submit') {
-      require(app_file('include/bug_report.php'));
+      require(app_file('common/bug_report.php'));
     }
   }
 
@@ -47,7 +47,7 @@ try
   // Handle logout and forget token requests
   //   Allow from get or post queries
   if(key_exists('logout',$_REQUEST)) {
-    require_once(app_file('include/login.php'));
+    require_once(app_file('common/login.php'));
     logout_active_user();
     header('Location: '.app_uri());
     die();
@@ -55,7 +55,7 @@ try
 
   // If ajax request, jump to ajax handling
   if(key_exists('ajax',$_POST)) {
-    require_once(app_file('include/ajax.php'));
+    require_once(app_file('common/ajax.php'));
     list($scope,$action) = explode('/',$_POST['ajax']);
     if(!isset($action)) { http_response_code(405); die(); }
     try {
@@ -94,7 +94,7 @@ try
   } 
   
   // If there is no active user, present the login page
-  require_once(app_file('include/cookiejar.php'));
+  require_once(app_file('common/cookiejar.php'));
   $active_user = active_userid();
 
   if(!$active_user) {

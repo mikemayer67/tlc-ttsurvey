@@ -7,7 +7,7 @@ require_once(app_file('pdf/summary/question_box.php'));
 require_once(app_file('pdf/summary/option_box.php'));
 require_once(app_file('pdf/summary/other_box.php'));
 require_once(app_file('pdf/summary/qualifiers_box.php'));
-require_once(app_file('include/question/types.php'));
+require_once(app_file('common/question/types.php'));
 
 class SummarySelectBox extends SummaryQuestionBox
 {

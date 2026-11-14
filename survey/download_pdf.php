@@ -3,8 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/surveys.php'));
-require_once(app_file('include/survey_content.php'));
+require_once(app_file('common/surveys.php'));
+require_once(app_file('common/survey_content.php'));
 require_once(app_file('pdf/survey_pdf.php'));
 
 log_mark("-------------- Start of Survey PDF Download --------------");

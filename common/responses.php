@@ -5,8 +5,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 use mysqli_sql_exception;
 
-require_once(app_file('include/db.php'));
-require_once(app_file('include/logger.php'));
+require_once(app_file('common/db.php'));
+require_once(app_file('common/logger.php'));
 
 /**
  * Get all of the specified user's survey responsees

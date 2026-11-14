@@ -3,9 +3,9 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/elements.php'));
-require_once(app_file('include/responses.php'));
-require_once(app_file('include/sendmail.php'));
+require_once(app_file('common/elements.php'));
+require_once(app_file('common/responses.php'));
+require_once(app_file('common/sendmail.php'));
 
 function show_submitted_page(string $userid,int $survey_id,int $timestamp)
 {

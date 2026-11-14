@@ -10,7 +10,7 @@ require_once(app_file('pdf/summary/info_box.php'));
 require_once(app_file('pdf/summary/bool_box.php'));
 require_once(app_file('pdf/summary/freetext_box.php'));
 require_once(app_file('pdf/summary/select_box.php'));
-require_once(app_file('include/question/types.php'));
+require_once(app_file('common/question/types.php'));
 
 /**
  * Responsible for parsing the survey responses into PDFBoxes

@@ -6,9 +6,9 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 $nonce = gen_nonce('admin-participants');
 
 require_once(app_file('admin/elements.php'));
-require_once(app_file('include/surveys.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/timestamps.php'));
+require_once(app_file('common/surveys.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('utils/timestamps.php'));
 
 $active_survey_id    = active_survey_id();
 $active_survey_title = active_survey_title() ?? "No active survey";

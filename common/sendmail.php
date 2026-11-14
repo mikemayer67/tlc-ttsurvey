@@ -8,10 +8,10 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require_once(app_file('vendor/autoload.php'));
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/settings.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/roles.php'));
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/settings.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/roles.php'));
 
 class SendmailFailure extends \Exception {}
 

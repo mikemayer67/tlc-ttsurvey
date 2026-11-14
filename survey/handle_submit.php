@@ -3,8 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/survey_content.php'));
-require_once(app_file('include/responses.php'));
+require_once(app_file('common/survey_content.php'));
+require_once(app_file('common/responses.php'));
 require_once(app_file('survey/elements.php'));
 require_once(app_file('survey/submitted.php'));
 
@@ -72,7 +72,7 @@ switch($action)
 if(empty($_POST['js_enabled'])) {
   // We cannot use javascript to send an async AJAX call to send the email, so we need
   // to handle that now.  Non-JS users will just have to deal with the lag this causes.
-  require_once(app_file('include/users.php'));
+  require_once(app_file('common/users.php'));
   $active_user = User::from_userid($active_userid);
   $email = $active_user->email();
   if($email) {

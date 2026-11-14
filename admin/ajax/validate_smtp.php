@@ -8,9 +8,9 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 require_once(app_file('vendor/autoload.php'));
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/ajax.php'));
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/ajax.php'));
 
 handle_warnings();
 

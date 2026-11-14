@@ -3,7 +3,7 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once('include/logger.php');
+require_once('common/logger.php');
 
 /**
  * Packages a response from AJAX call, sets it to the broswer, and then dies
@@ -70,7 +70,7 @@ function send_ajax_unauthorized(string $error) : never
 #[ExcludeFromLogTrace]
 function send_ajax_bad_nonce(string $error) : never
 {
-  require_once('include/cookiejar.php');
+  require_once('common/cookiejar.php');
   $userid = active_userid();
   log_warning("Bad nonce [$userid]: $error");
   send_ajax_response(['reason'=>"Invalid nonce"],403);

@@ -3,8 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once app_file('include/logger_trace.php');
-require_once app_file('include/settings.php');
+require_once app_file('common/logger_trace.php');
+require_once app_file('common/settings.php');
 
 /**
  * returns the path to the survey app log file

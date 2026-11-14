@@ -4,7 +4,7 @@ namespace tlc\tts;
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
 require_once(app_file('admin/admin_lock.php'));
-require_once(app_file('include/ajax.php'));
+require_once(app_file('common/ajax.php'));
 
 $nonce_key = $_POST['nonce_key'];
 validate_ajax_nonce($nonce_key);

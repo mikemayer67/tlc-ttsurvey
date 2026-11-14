@@ -1,7 +1,7 @@
 ;;==============================================================================
 ;; This file contains configuration parameters required for basic operation
 ;;   of the survey app.  All other configuration parameters are stored in
-;;   the database and are accessed via functions defined in include/settings.php
+;;   the database and are accessed via functions defined in common/settings.php
 ;;
 ;; You will need to copy (or rename) this file to 'tlc-ttsurvey.ini' and 
 ;;   fill in all of the required fields for the app to function.

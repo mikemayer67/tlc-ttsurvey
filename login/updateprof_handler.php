@@ -3,8 +3,8 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/users.php'));
-require_once(app_file('include/redirect.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/redirect.php'));
 
 clear_redirect();
 

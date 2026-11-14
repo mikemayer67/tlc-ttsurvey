@@ -8,7 +8,7 @@ use League\CommonMark\CommonMarkConverter;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 
-require_once(app_file('include/logger.php'));
+require_once(app_file('common/logger.php'));
 
 handle_warnings();
 

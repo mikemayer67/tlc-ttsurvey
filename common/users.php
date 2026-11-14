@@ -7,10 +7,10 @@ use mysqli_sql_exception;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file("include/db.php"));
-require_once(app_file("include/settings.php"));
-require_once(app_file("include/validation.php"));
-require_once(app_file("include/sort_keys.php"));
+require_once(app_file("common/db.php"));
+require_once(app_file("common/settings.php"));
+require_once(app_file("common/validation.php"));
+require_once(app_file("common/sort_keys.php"));
 /**
  * The survey participant information is stored in the tlc_srv_userids table
  * which contains the followinh columns:
@@ -257,7 +257,7 @@ class User {
     $changed = $this->update_profile($fullname,$email);
     if(!$changed) { return false; }
 
-    require_once app_file('include/sendmail.php');
+    require_once app_file('common/sendmail.php');
 
     // determine if this is a change to the user's email address
     $is_new_email = ($email !== $old_email);
@@ -275,7 +275,7 @@ class User {
     //   (if known) as well (just in case this change wasn't authorized)
     if($is_new_email && $old_email) {
       log_info("Sending updated profile to old address: $old_email");
-      require_once app_file('include/sendmail.php');
+      require_once app_file('common/sendmail.php');
       sendmail_profile($old_email, $this->userid(), [
         'name' =>[$old_fullname, $fullname],
         'email'=>[$old_email,$email]
@@ -312,7 +312,7 @@ class User {
     // Only one active reset request at a time
     MySQLExecute("delete from tlc_srv_reset_tokens where userid=?",'s',$this->_userid);
     if($from_wordlist) {
-      require_once(app_file('include/token_words.php'));
+      require_once(app_file('utils/token_words.php'));
       $adj  = $adj4_txt[array_rand($adj4_txt)];
       $noun = $noun6_txt[array_rand($noun6_txt)];
       $token = strtoupper($adj . $noun);
@@ -399,7 +399,7 @@ class User {
     if($rval) { 
       $email = $this->email();
       if($email) {
-        require_once app_file('include/sendmail.php');
+        require_once app_file('common/sendmail.php');
         sendmail_profile($email, $this->userid(), ['password']);
       }
     }

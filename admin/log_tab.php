@@ -6,7 +6,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 $nonce = gen_nonce('admin-log');
 
 require_once(app_file('admin/elements.php'));
-require_once(app_file('include/settings.php'));
+require_once(app_file('common/settings.php'));
 
 $form_uri = app_uri('admin');
 echo "<form id='admin-log' method='post' action='$form_uri'>";

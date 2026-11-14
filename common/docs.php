@@ -12,7 +12,7 @@ use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
 
 
-require_once(app_file('include/logger.php'));
+require_once(app_file('common/logger.php'));
 
 class DocsPage
 {

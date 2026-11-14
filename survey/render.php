@@ -7,10 +7,10 @@ log_mark("-------------- Start of Render --------------");
 
 handle_warnings();
 
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/survey_content.php'));
-require_once(app_file('include/questions.php'));
-require_once(app_file('include/question/types.php'));
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/survey_content.php'));
+require_once(app_file('common/questions.php'));
+require_once(app_file('common/question/types.php'));
 require_once(app_file('survey/markdown.php'));
 
 /**

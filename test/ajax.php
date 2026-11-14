@@ -25,7 +25,7 @@ if($test === 'get')
 }
 elseif($test === 'all') 
 {
-  require_once(app_file('include/elements.php'));
+  require_once(app_file('common/elements.php'));
 
   start_header('AJAX Testing');
   $vr = rand();

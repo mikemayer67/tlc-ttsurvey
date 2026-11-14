@@ -6,8 +6,8 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 $nonce = gen_nonce('admin-settings');
 
 require_once(app_file('admin/elements.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/issue_reporter.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/issue_reporter.php'));
 
 $users = ['' => "--nobody--"];
 foreach(User::all_users() as $user) {

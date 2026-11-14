@@ -3,12 +3,12 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('/include/cookiejar.php'));
-require_once(app_file('/include/redirect.php'));
-require_once(app_file('/include/status.php'));
-require_once(app_file('include/logger.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/login.php'));
+require_once(app_file('/common/cookiejar.php'));
+require_once(app_file('/common/redirect.php'));
+require_once(app_file('/common/status.php'));
+require_once(app_file('common/logger.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/login.php'));
 
 // Note that all the logic in this file is wrapped up in functions...
 //   the very last action in this file is execute the main entry point for 
@@ -77,7 +77,7 @@ function handle_login_with_token(string $userid_token)
   // try to resume with provided userid/token
   //   if not, raise an exception
   if(!resume_survey_as($userid,$token)) {
-    require_once(app_file('include/cookiejar.php'));
+    require_once(app_file('common/cookiejar.php'));
     CookieJar::forget_access_token($userid);
     throw new BadInput("Access token for $userid is no longer valid");
   } 

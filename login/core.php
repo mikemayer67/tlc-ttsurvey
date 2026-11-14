@@ -3,13 +3,13 @@ namespace tlc\tts;
 
 if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry attempt: ".__FILE__); die(); }
 
-require_once(app_file('include/redirect.php'));
+require_once(app_file('common/redirect.php'));
 
 // Handle special requests that use GET queries
 
 if(key_exists('forget',$_GET)) 
 {
-  require_once(app_file('include/cookiejar.php'));
+  require_once(app_file('common/cookiejar.php'));
   // nonce from get request, but don't drop it as this isn't an actual form submission
   validate_get_nonce('login',false);
 

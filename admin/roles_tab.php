@@ -6,10 +6,10 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 $nonce = gen_nonce('admin-roles');
 
 require_once(app_file('admin/elements.php'));
-require_once(app_file('include/users.php'));
-require_once(app_file('include/roles.php'));
-require_once(app_file('include/settings.php'));
-require_once(app_file('include/sort_keys.php'));
+require_once(app_file('common/users.php'));
+require_once(app_file('common/roles.php'));
+require_once(app_file('common/settings.php'));
+require_once(app_file('common/sort_keys.php'));
 
 $users = array();
 foreach(User::all_users() as $user) {

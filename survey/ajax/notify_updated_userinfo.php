@@ -5,7 +5,7 @@ if(!defined('APP_DIR')) { http_response_code(405); error_log("Invalid entry atte
 
 // perform all of the login valdation stuff
 require(app_file('survey/ajax/validate.php'));
-require_once(app_file('include/sendmail.php'));
+require_once(app_file('common/sendmail.php'));
 
 start_ob_logging();
 
