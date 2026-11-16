@@ -844,7 +844,7 @@ export default function init(ce)
    */
   self.add_option = function(new_value) {
     const new_id = _content.next_ids.option;
-    _content.options[new_id] = new_value;
+    _content.options[new_id] = {text:new_value, specific_to:null};
     _content.next_ids.option += 1;
     return new_id;
   }
@@ -856,7 +856,7 @@ export default function init(ce)
    * @returns {void}
    */
   self.update_option = function(id,value) {
-    _content.options[id] = value;
+    _content.options[id].text = value;
   }
 
   /**

@@ -238,7 +238,8 @@ export default function init(ce,controller,editor)
     const new_option = prompt('New option').trim();
     if(new_option) {
       const new_id = controller.add_option(new_option);
-      const chip = create_chip(new_id, new_option);
+      const is_common = true;
+      const chip = create_chip(new_id, new_option, is_common);
       insert_chip_at_end_of_pool(chip);
     }
   });
