@@ -30,7 +30,7 @@ if(!$page && key_exists('p',$_GET)) {
   $page = 'login/' . $_GET['p'] . '_page';
 }
 
-// If a specifc redirect page was specified, jump to that now
+// If a specific redirect page was specified, jump to that now
 
 if($page)
 {

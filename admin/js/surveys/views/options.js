@@ -1,15 +1,40 @@
 import Sortable from '../../../../js/sortable.esm.js';
+import OptionEditor from './option_editor.js';
 
+/// <reference path="../data-types.js" />
+
+/**
+ * OptionController used to manage the pool of available select question options
+ * @typedef {Object} OptionController
+ * @property {(data:QuestionInfo) => void } show
+ */
+
+/**
+ * Local typedefs
+ * @typedef {jQuery<HTMLDivElement} ChipElement
+ */
+
+/**
+ * Initializes a OptionController
+ * @param {RuntimeContext} ce 
+ * @param {SurveyViewController} controller 
+ * @param {QuestionEditor} editor 
+ * @returns 
+ */
 export default function init(ce,controller,editor)
 {
-  const _options    = editor.box.children('.options');
-  const _selected   = _options.find('.selected');
-  const _pool       = _options.find('.pool');
-  const _add_chip   = _pool.find('button.add');
+  const $_options       = editor.box.children('.options');
+  const $_selected      = $_options.find('.selected');
+  const $_pool          = $_options.find('.pool');
+  const $_add_chip      = $_pool.find('button.add');
+
+  const _option_editor = OptionEditor(ce,controller);
 
   let _question_id = null;
 
-  const _selected_sorter = new Sortable( _selected[0], 
+  const self = {};
+
+  const _selected_sorter = new Sortable( $_selected[0], 
     {
       group: {
         name:'selected', 
@@ -22,7 +47,7 @@ export default function init(ce,controller,editor)
     },
   );
 
-  const _pool_sorter = new Sortable( _pool[0], 
+  const _pool_sorter = new Sortable( $_pool[0], 
     {
       group: {
         name:'pool', 
@@ -34,13 +59,16 @@ export default function init(ce,controller,editor)
     },
   );
 
+  /**
+   * Callback when an option chip drag operation has ended
+   * @param {Event} e
+   */
   function handle_selected_drag_end(e)
   {
     if( e.oldIndex === e.newIndex ) { return; }
 
     const chip = $(e.item);
-    const chip_id = chip.data('id');
-    const chip_sel = '.chip[id=' + chip_id + ']';
+    const option_id = chip.data('id');
 
     const cur_undo = ce.undo_manager.head();
     const reverts_prior = (
@@ -59,15 +87,15 @@ export default function init(ce,controller,editor)
       ce.undo_manager.add({
         action:'chip-drag',
         question_id:_question_id,
-        chip_id:chip_id,
+        option_id:option_id,
         old_index:e.oldIndex,
         new_index:e.newIndex,
         apply(to_index,from_index) {
-          const chips = _selected.children('.chip');
-          const chip  = $(chips[from_index]);
-          const tgt   = $(chips[to_index]);
-          if(to_index > from_index) { chip.insertAfter(tgt);  }
-          else                      { chip.insertBefore(tgt); }
+          const $chips = $_selected.children('.chip');
+          const $chip  = $chips.eq(from_index);
+          const $tgt   = $chips.eq(to_index);
+          if(to_index > from_index) { $chip.insertAfter($tgt);  }
+          else                      { $chip.insertBefore($tgt); }
           update_options();
         },
         redo() { 
@@ -84,23 +112,36 @@ export default function init(ce,controller,editor)
     update_options();
   }
 
+  /**
+   * Callback when an option chip drag operation has ended with
+   *   the chip being added to the list of question options from
+   *   the pool of available options
+   * @param {Event} e
+   */
   function handle_selected_drag_add(e)
   {
-    const chip = $(e.item);
-    const chip_id = chip.data('id');
-    const chip_sel = '.chip[id=' + chip_id + ']';
+    const $chip = $(e.item);
+    const option_id = $chip.data('id');
+    const chip_sel = '.chip[id=' + option_id + ']';
     ce.undo_manager.add({
       action:'chip-from-pool',
+      question_id:_question_id,
       index:e.newIndex,
       redo() {
-        const chip = _pool.find(chip_sel);
-        insert_selected_chip_at(chip,this.index);
-        update_options();
+        controller.select_question(this.question_id);
+        setTimeout( () => {
+          const $chip = $_pool.find(chip_sel);
+          insert_selected_chip_at($chip,this.index);
+          update_options();
+        }, 100);
       },
       undo() {
-        const chip = _selected.find(chip_sel);
-        insert_chip_alphabetically_in_pool(chip);
-        update_options();
+        controller.select_question(this.question_id);
+        setTimeout( () => {
+          const $chip = $_selected.find(chip_sel);
+          insert_chip_alphabetically_in_pool($chip);
+          update_options();
+        }, 100);
       },
     });
     update_options();
@@ -108,14 +149,18 @@ export default function init(ce,controller,editor)
 
   let _all_options = {};
 
+  /**
+   * Adds the option fields to the question editor via the survey view controller
+   * @param {QuestionInfo} data 
+   */
   function show(data)
   {
     _question_id = data.id;
 
     _all_options = controller.all_options();
 
-    _selected.empty();
-    _pool.find('.chip').remove();
+    $_selected.empty();
+    $_pool.find('.chip').remove();
 
     for( const [id,opt] of Object.entries(_all_options) ) {
       let is_common = true;
@@ -123,46 +168,68 @@ export default function init(ce,controller,editor)
         if(opt.specific_to !== _question_id) { continue; }
         is_common = false;
       }
-      const chip = create_chip(id,opt.text,is_common);
+      const $chip = create_chip(id,opt.text,is_common);
       const selected = data.options.includes(Number(id));
-      if( selected ) { _selected.append(chip); }
-      else           { _pool.append(chip);     }
+      if( selected ) { $_selected.append($chip); }
+      else           { insert_chip_alphabetically_in_pool($chip); }
     }
 
     validate_options()
 
-    _options.show();
-    _pool.hide();
+    $_options.show();
+    $_pool.hide();
   }
 
+  /**
+   * constructs a new chip as an unattached DOM element
+   * @param {number} id the associated option ID
+   * @param {string} label 
+   * @param {boolean} is_common 
+   * @returns {ChipElement}
+   */
   function create_chip(id,label,is_common)
   {
     const chip = $("<div>").addClass('chip').data('id',id).attr('id',id);
     if(is_common) { chip.addClass('common'); }
-    else          { chip.addClass('specifc'); }
+    else          { chip.addClass('specific'); }
     const span = $("<span>").text(label);
     const close = $("<button class='option' type='button'>x</button>");
     return chip.append(span).append(close);
   };
 
+  /**
+   * Should be invoked whenever an event in the browser results in
+   *   a change to the mapping of options to questions or the pool.
+   * This function coordinates that change with the survey view controller
+   */
   function update_options()
   {
     validate_options()
 
-    const chips = _selected.children('.chip');
+    const chips = $_selected.children('.chip');
     const new_indices = chips.map( (i,e) => { return Number($(e).data('id')); }).get();
     controller.update_question_data(_question_id, 'options', new_indices);
     $(document).trigger('SurveyWasModified');
   }
 
 
+  /**
+   * Should be invoked whenever the option elements in the question editor
+   *   change, either because of new content or user interaction with them
+   *   via the browser.
+   * This function verifies that there is at least one option currently
+   *   selected.  If not, it updates the selected option field to show
+   *   the error and notifies the question editor of the error.  Otherwise,
+   *   it clears the error info from the selected option field and
+   *   notifies the question editor that there are no option errors.
+   */
   function validate_options()
   {
-    const has_options = _selected.children(':first').length > 0;
+    const has_options = $_selected.children(':first').length > 0;
 
-    _selected.toggleClass('error',!has_options);
+    $_selected.toggleClass('error',!has_options);
 
-    const span = _options.find('span.error');
+    const span = $_options.find('span.error');
     if(has_options) {
       span.text('');
       editor.clear_error('options');
@@ -172,108 +239,154 @@ export default function init(ce,controller,editor)
     }
   }
 
-  _options.on('mousedown', '.selected,.pool', function(e) {
+  /**
+   * MouseDown event handler in the selected option field or option pool
+   *   If event occured within a chip or the add button, do nothing (yet)
+   *   Otherwise toggle visibility of the option pool
+   */
+  $_options.on('mousedown', '.selected,.pool', function(e) {
     // We want to yield to SortableJS if the mouse down occured in a chip element.
     if( $(e.target).closest('.chip').length > 0) { return; }
     if( $(e.target).closest('.add').length > 0)  { return; }
-    _pool.toggle();
+    $_pool.toggle();
   });
 
-  _options.on('click','.selected .chip button', function(e) {
+  /**
+   * Click event handler on the chip 'dismiss' button (little x in the option chip).
+   * Returns the option chip from the selected option field to the option pool
+   */
+  $_options.on('click','.selected .chip button', function(e) {
     // remove a chip from the selected list and return to the pool
-    const chip = $(this).closest('.chip');
-    const chip_sel = '.chip[id=' + chip.data('id') + ']';
+    const $chip = $(this).closest('.chip');
+    const chip_sel = '.chip[id=' + $chip.data('id') + ']';
     ce.undo_manager.add_and_exec({
       action:'chip-to-pool',
-      old_index:chip.index(),
-      redo() {
-        const chip = _options.find(chip_sel);
-        insert_chip_alphabetically_in_pool(chip);
-        update_options();
-      },
-      undo() {
-        const chip = _options.find(chip_sel);
-        insert_selected_chip_at(chip,this.old_index);
-        update_options();
-      },
-    });
-  });
-
-  _options.on('dblclick','.chip', function(e) {
-    // present dialog box to edit the option label
-    const chip      = $(this).closest('.chip');
-    const span      = chip.children('span');
-    const old_value = span.text();
-    const raw_value = prompt('Edit option',old_value);
-    if( raw_value === null ) { return; }
-
-    const new_value = raw_value.trim();
-    if( ! new_value )             { return; }
-    if( new_value === old_value ) { return; }
-
-    const chip_id  = chip.data('id');
-    const chip_sel = '.chip[id=' + chip_id + ']';
-    ce.undo_manager.add_and_exec({
-      action:'chip-edit',
       question_id:_question_id,
-      apply(value) {
-        const chip = _options.find(chip_sel);
-        const span = chip.children('span');
-        span.text(value);
-        controller.update_option(chip_id,value);
-        $(document).trigger('SurveyWasModified');
-      },
+      old_index:$chip.index(),
       redo() {
         controller.select_question(this.question_id);
-        setTimeout( () => { this.apply(new_value); }, 100 );
+        setTimeout( () => {
+          const $chip = $_options.find(chip_sel);
+          insert_chip_alphabetically_in_pool($chip);
+          update_options();
+        }, 100);
       },
       undo() {
         controller.select_question(this.question_id);
-        setTimeout( () => { this.apply(old_value); }, 100 );
-      }
+        setTimeout( () => {
+          const $chip = $_options.find(chip_sel);
+          insert_selected_chip_at($chip,this.old_index);
+          update_options();
+        }, 100);
+      },
     });
   });
 
-  _add_chip.on('click',function(e) {
-    const new_option = prompt('New option').trim();
-    if(new_option) {
-      const new_id = controller.add_option(new_option);
-      const is_common = true;
-      const chip = create_chip(new_id, new_option, is_common);
-      insert_chip_at_end_of_pool(chip);
-    }
+  /**
+   * Double click event handler on an option chip
+   * Presents the option editor and coordinates the response from it
+   */
+  $_options.on('dblclick','.chip', function(e) {
+    // present dialog box to edit the option label
+    const $chip      = $(this).closest('.chip');
+    const $span      = $chip.children('span');
+    const option_id  = $chip.data('id');
+    const old_value  = $span.text();
+    const was_common = $chip.hasClass('common');
+
+    const used_by = controller.option_used_by(option_id);
+    const other_users = used_by.filter(id => id !== Number(_question_id));
+    const must_be_common = other_users.length>0;
+
+    const chip_sel = '.chip[id=' + $chip.data('id') + ']';
+
+    _option_editor.edit_option(old_value, was_common, must_be_common, 
+      function(value,is_common) {
+        if( value === old_value && is_common === was_common ) { return; }
+
+        ce.undo_manager.add_and_exec({
+          action:'chip-edit', 
+          question_id:_question_id,
+          apply(value,is_common) {
+            const $chip = $_options.find(chip_sel);
+            const $span = $chip.children('span');
+            $span.text(value);
+            $chip.toggleClass('common',is_common);
+            $chip.toggleClass('specific',!is_common);
+            controller.update_option(option_id,value,is_common?null:_question_id);
+            $(document).trigger('SurveyWasModified');
+          },
+          redo() {
+            controller.select_question(this.question_id);
+            setTimeout( () => { this.apply(value,is_common); }, 100 );
+          },
+          undo() {
+            controller.select_question(this.question_id);
+            setTimeout( () => { this.apply(old_value,was_common); }, 100 );
+          }
+        }
+      );
+    });
   });
 
-  function insert_selected_chip_at(chip,index)
+  /**
+   * Click event handler on the add option (+) button in the option pool
+   * Coordinates the creation of a new chip
+   */
+  $_add_chip.on('click',function(e) {
+    _option_editor.new_option( function(value,is_common) {
+      const new_id = controller.add_option(value, is_common?null:_question_id);
+      const $chip = create_chip(new_id, value, is_common);
+      const chip_sel = '.chip[id=' + new_id + ']';
+      $_selected.append($chip);
+      update_options();
+
+      ce.undo_manager.add({
+        action:'new-chip',
+        question_id:_question_id,
+        redo() {
+          controller.select_question(this.question_id);
+          setTimeout( () => {
+            const $chip = $_options.find(chip_sel);
+            $_selected.append($chip);
+            update_options();
+          }, 100);
+        },
+        undo() {
+          controller.select_question(this.question_id);
+          setTimeout( () => {
+            const $chip = $_options.find(chip_sel);
+            insert_chip_alphabetically_in_pool($chip);
+            update_options();
+          }, 100);
+        },
+      });
+    });
+  });
+
+  /**
+   * Adds the chip element to the selected options field in the DOM
+   *   at the specified position
+   * @param {ChipElement} $chip 
+   * @param {number} index 
+   */
+  function insert_selected_chip_at($chip,index)
   {
-    if( index >= _selected.children().length ) {
-      _selected.append(chip)
+    if( index >= $_selected.children().length ) {
+      $_selected.append($chip)
     } else {
-      chip.insertBefore(_selected.children().eq(index));
+      $chip.insertBefore($_selected.children().eq(index));
     }
   }
 
-  function insert_selected_chip_before(chip,id)
+  /**
+   * Adds the chip element alphabetically within the option pool
+   * @param {ChipElement} $chip 
+   */
+  function insert_chip_alphabetically_in_pool($chip)
   {
-    if(id) {
-      ref_chip = _selected.find('.chip[id='+id+']');
-      if(ref_chip) {
-        chip.insertBefore(ref_chip);
-        return;
-      }
-    }
-    _select.append(chip);
-  }
-
-  function insert_chip_at_end_of_pool(chip) 
-  {
-    chip.insertBefore(_add_chip);
-  }
-
-  function insert_chip_alphabetically_in_pool(chip)
-  {
-    chip.insertBefore(_add_chip);
-    const chips = _pool.children('.chip').get();
+    $chip.insertBefore($_add_chip);
+    const chips = $_pool.children('.chip').get();
 
     chips.sort((a,b) => {
       const label_a = $(a).find('span').text().toLowerCase();
@@ -281,11 +394,11 @@ export default function init(ce,controller,editor)
       return label_a.localeCompare(label_b);
     });
 
-    $(chips).insertBefore(_add_chip);
+    $(chips).insertBefore($_add_chip);
   }
 
-  return {
-    show:show,
-  };
+  self.show = show;
+  self.create_chip = create_chip;
+  return self;
 }
 

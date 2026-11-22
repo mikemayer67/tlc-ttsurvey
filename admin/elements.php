@@ -7,20 +7,27 @@ require_once(app_file('common/elements.php'));
 require_once(app_file('common/imagelib.php'));
 
 
-function start_admin_page($cur_tab=null)
+function start_admin_page($cur_tab='login')
 {
-  $context = 'admin';
-
   add_tab_name('ttt_admin');
   start_header();
 
   echo "<script>let _cur_tab = " . json_encode($cur_tab ?? "") . ";</script>";
   add_js_resources();
-  if($cur_tab) { // admin tab page
-    add_css_resources($context, css_uri($cur_tab,'admin') );
-  } else { // admin login page
-    add_css_resources($context, css_uri('login'), css_uri('login','admin') );
+
+  $css_uris = [];
+  if(file_exists(app_file("css/$cur_tab.css"))) {
+    $css_uris[] = css_uri($cur_tab);
   }
+  if(file_exists(app_file("admin/css/$cur_tab.css"))) {
+    $css_uris[] = css_uri($cur_tab,'admin');
+  }
+  $css_dir = app_file("admin/css/$cur_tab");
+  foreach(glob("$css_dir/*.css") as $css_file) {
+    $css_file = basename($css_file,'.css');
+    $css_uris[] = css_uri("$cur_tab/$css_file",'admin');
+  }
+  add_css_resources('admin',...$css_uris);
 
   end_header();
 

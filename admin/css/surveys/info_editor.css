@@ -1,0 +1,47 @@
+#ttt-body div.body form table#info-edit tr td {
+  padding: .25em;
+}
+
+#ttt-body div.body form table#info-edit td.input-box {
+  position:relative;
+}
+
+#ttt-body div.body form table#info-edit td div.error {
+  display:none;
+  color:darkred;
+  background:none;
+  font-style:italic;
+  font-size:0.85em;
+  position: absolute;
+  top:2px;
+  right:0.75em;
+}
+
+#ttt-body div.body form table#info-edit td select {
+  margin-right:0.5em;
+}
+
+#ttt-body div.body form table#info-edit tr.disabled td.label {
+  opacity:0.25;
+}
+
+#ttt-body div.body form table input[type=file] {
+  background-color:inherit;
+  padding:0;
+  margin:0;
+}
+
+#ttt-body div.body form .info-bar {
+  display: flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#ttt-body div.body form .info-bar label {
+  font-weight:bold;
+  margin-right:1em;
+}
+
+#ttt-body div.body form .info-bar .date {
+  margin-left:0.5em;
+}

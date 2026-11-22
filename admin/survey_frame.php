@@ -254,7 +254,6 @@ function add_type_select()
 
 function add_options_entry($kwargs=[])
 {
-  // @@@ OPTIONS
   global $hints;
   global $labels;
 
@@ -264,12 +263,42 @@ function add_options_entry($kwargs=[])
   $hint_id = 'options-entry-hint';
 
   echo "<div class='options label' data-hint='$hint_id'><span>$label:</span></div>";
+
   echo "<div class='options value'>";
   echo "  <div class='selected'></div>";
   echo "  <span class='error'></span>";
   echo "  <div id='$hint_id' class='hint'>$hint</div>";
   echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
   echo "</div>";
+}
+
+function add_option_editor($kwargs=[])
+{
+  echo "<dialog id='option-editor' class='modal'>";
+  echo "  <form method='dialog'>";
+  echo "    <div class='prompt'></div>";
+  echo "    <div class='label'>Wording</div>";
+  echo "    <input id='option-text' type='text' placeholder='how option will appear on the survey'></label>";
+  echo "    <div class='wordcount'>xxx/yyy</div>";
+  echo "    <div class='label'>Scope</div>";
+  echo "    <div class='locked scope'></div>";
+  echo "    <div class='radio scope'>";
+  echo "      <label class='radio'>";
+  echo "        <input type='radio' id='option-is-common' name='scope' value='common'>";
+  echo "        Common use <i>(available to multiple questions)</i>";
+  echo "      </label></div>";
+  echo "    <div class='radio scope'>";
+  echo "      <label class='radio'>";
+  echo "        <input type='radio' id='option-is-specific' name='scope' value='specific'>";
+  echo "        Question specific (intended for this question only)";
+  echo "      </label></div>";
+  echo "    <div class='submit-bar'>";
+  echo "      <button type='submit' id='option-ok' value='ok'>OK</button>";
+  echo "      <button type='submit' id='option-cancel' value='cancel' formnovalidate>Cancel</button>";
+  echo "    </div>";
+  echo "  </form>";
+
+  echo "</dialog>";
 }
 
 function add_other_input($wargs=[])

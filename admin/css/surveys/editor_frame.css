@@ -1,0 +1,343 @@
+#editor-frame div.grid  {
+  display:none;
+  margin:2em 1em 1em 1em;
+  grid-template-columns: max-content 1fr;
+  grid-column-gap:0.5em;
+  width: calc(100% - 2em);
+  max-width: calc(100% - 2em);
+}
+
+#editor-frame div.grid.viewer  {
+  grid-row-gap:0.5em;
+}
+
+#editor-frame div.grid.editor  {
+  grid-row-gap:1em;
+}
+
+#editor-frame.section.locked        div.grid.section.viewer  { display:grid; }
+#editor-frame.group.locked          div.grid.group.viewer    { display:grid; }
+#editor-frame.question.locked       div.grid.question.viewer { display:grid; }
+#editor-frame.section:not(.locked)  div.grid.section.editor  { display:grid; }
+#editor-frame.group:not(.locked)    div.grid.group.editor    { display:grid; }
+#editor-frame.question:not(.locked) div.grid.question.editor { display:grid; }
+
+#editor-frame .label span {
+  font-weight: bold;
+  float:right;
+}
+
+#editor-frame .or span {
+  float:right;
+}
+
+#editor-frame .value {
+  display: flex;
+  align-items: center;
+}
+
+#editor-frame div.grid .note {
+  color:#600;
+  margin-left:1em;
+}
+
+#editor-frame div.grid .value.note {
+  margin-left:0;
+}
+
+#editor-frame div.grid .note {
+  color:#888;
+  font-style:italic;
+  margin-left:1em;
+}
+
+#editor-frame b, 
+#editor-frame i {
+  font-weight:revert;
+  font-style:revert;
+}
+
+#editor-frame .grid.viewer .value:empty::before,
+#editor-frame .grid.viewer div.text:empty::before {
+  content: "— no value —";
+  color: #888;
+  font-style: italic;
+}
+
+#editor-frame .grid.editor div.value,
+#editor-frame .grid.viewer div.value {
+  display:flex;
+  flex-direction:column;
+  align-items:start;
+}
+
+#editor-frame .grid.editor div.value > *,
+#editor-frame .grid.viewer div.value > * {
+  width:100%;
+}
+
+#editor-frame .grid.editor div.hint,
+#editor-frame .grid.viewer div.hint {
+  display:none;
+  margin:0.5em 1em;
+  padding:0.5em 1em;
+  border: inset 1px;
+  border-radius: 5px;
+  width:max(600px, 85%);
+  font-size:85%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+#editor-frame .grid.editor div.hint.hover,
+#editor-frame .grid.editor div.hint.locked,
+#editor-frame .grid.viewer div.hint.hover,
+#editor-frame .grid.viewer div.hint.locked {
+  display:block;
+}
+
+#editor-frame .grid.editor .value .wrapper {
+  position:relative;
+  width:75%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor .value span.error {
+  position:absolute;
+  top:0;
+  right:2px;
+  width:fit-content;
+  font-size:80%;
+  font-style:italic;
+  color:darkred;
+  background:none;
+}
+#editor-frame .grid.editor .value .textarea-wrapper .error,
+#editor-frame .grid.editor .options.value .error
+{
+  margin:1px 1px 0 0;
+}
+
+#editor-frame .grid.editor ul.options,
+#editor-frame .grid.viewer ul.options {
+  margin:0;
+  list-style-type:none;
+  padding:0;
+}
+
+#editor-frame .grid.editor div.other.value .wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#editor-frame .grid.editor div.other.value input.has_other {
+  width:min-content;
+  margin-right:1em;
+}
+
+#editor-frame .grid.editor div.other.value input.other {
+  visibility:hidden;
+  width:15em;
+}
+
+#editor-frame .grid.editor div.other.value input.has_other:checked + input.other {
+  visibility:visible;
+}
+
+
+#editor-frame .grid.editor .hint p,
+#editor-frame .grid.viewer .hint p {
+  margin:0 0 0 2em;
+}
+
+#editor-frame .grid.editor .hint p.viewer-only,
+#editor-frame .grid.viewer .hint p.editor-only {
+  display:none;
+}
+
+#editor-frame .grid.editor .hint p:first-child,
+#editor-frame .grid.viewer .hint p:first-child {
+  margin-top:0.25em;
+}
+
+#editor-frame .grid.editor div.value input {
+  background:white;
+  width:100%;
+  border: solid 1px darkgray;
+}
+
+#editor-frame .grid.editor div.value input.section.error,
+#editor-frame .grid.editor div.value input.question.error,
+#editor-frame .grid.editor div.value textarea.question.error
+{
+  background:#ffe8e8;
+}
+
+
+#editor-frame .grid.editor .textarea-wrapper {
+  position:relative;
+  width:100%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor div.value textarea {
+  resize: vertical;
+  background:white;
+  width:100%;
+}
+
+#editor-frame .grid.editor div.value textarea.auto-resize {
+  resize: none;
+  overflow-y: hidden;
+  height: auto;
+  min-height: 1.5em;
+}
+
+#editor-frame .grid.editor div.value select {
+  background:white;
+  width:fit-content;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count {
+  position:absolute;
+  right:10px;
+  bottom:5px;
+  background:none;
+  color:green;
+  font-size:85%;
+  font-style:italic;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.warning {
+  color:orange;
+}
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.danger {
+  color:red;
+}
+
+#editor-frame .grid.editor div.options.value {
+  position:relative;
+}
+
+#editor-frame .grid.editor .textarea-wrapper {
+  position:relative;
+  width:100%;
+  min-width:300px;
+}
+
+#editor-frame .grid.editor div.value textarea {
+  resize: vertical;
+  background:white;
+  width:100%;
+}
+
+#editor-frame .grid.editor div.value textarea.auto-resize {
+  resize: none;
+  overflow-y: hidden;
+  height: auto;
+  min-height: 1.5em;
+}
+
+#editor-frame .grid.editor div.value select {
+  background:white;
+  width:fit-content;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count {
+  position:absolute;
+  right:10px;
+  bottom:5px;
+  background:none;
+  color:green;
+  font-size:85%;
+  font-style:italic;
+}
+
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.warning {
+  color:orange;
+}
+#editor-frame .grid.editor div.value .textarea-wrapper .char-count.danger {
+  color:red;
+}
+
+#editor-frame .grid.editor div.options.value {
+  position:relative;
+}
+
+#editor-frame .grid.editor div.options.value .selected {
+  min-height: 2em;
+  background: white;
+  border: solid 1px darkgray;
+}
+
+#editor-frame .grid.editor div.options.value .selected.error {
+  background:#ffe8e8;
+}
+
+
+
+#editor-frame .grid.editor div.options.value .pool {
+  min-height:2em;
+}
+
+#editor-frame .grid.editor .options.value .selected,
+#editor-frame .grid.editor .options.value .pool
+{
+  display:flex;
+  flex-direction:row;
+  flex-wrap:wrap;
+  padding: 2px 0.5em;
+  column-gap: 2px;
+  align-items:center;
+}
+
+#editor-frame .grid.editor .options.value .chip 
+{
+  background: white;
+  border: solid 1px black;
+  width: fit-content;
+  height: fit-content;
+  padding: 0 3px;
+  font-size: 90%;
+  border-radius: 5px;
+  position:relative;
+}
+
+#editor-frame .grid.editor .options.value .common.chip 
+{
+  background: white;
+  color: black;
+}
+
+#editor-frame .grid.editor .options.value .specific.chip 
+{
+  background: #ccc;
+  color: black;
+}
+
+
+#editor-frame .grid.editor .options.value .chip button
+{
+  border :none;
+  padding: 0;
+  margin-left: 4px;
+  position: relative;
+  top: -4px;
+  background:none;
+}
+
+#editor-frame .grid.editor .options.value .pool .chip button
+{
+  display:none;
+}
+
+#editor-frame .grid.editor .options.value .pool button.add 
+{
+  padding: 0;
+  width:1.25em;
+  height:1.25em;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-left:8px;
+}

@@ -64,7 +64,7 @@ function setup_hint_handler()
  * @property { () => void } disable_edits
  * @property { () => void } show_content Shows the content editor/viewer
  * @property { () => void } hide_content Hides the content editor/viewer
- * @property { (content:Object) => void } udpate_content 
+ * @property { (content:SurveyContent) => void } update_content 
  * @property { () => boolean } can_submit
  * @property { () => SurveyContent } content
  * @property { (section_id:number, key:string) => null|number|string } cur_section_data
@@ -73,14 +73,14 @@ function setup_hint_handler()
  * @property { (section_id:number, key:string, value:null|number|string) => void } update_section_data
  * @property { (group_id:number, key:string, value:null|number|string) => void } update_group_data
  * @property { (question_id:number, key:string, value:null|number|string) => void } update_question_data
- * @property { (content_type:ContentType, content_id:number, has_error:boolean) => void } toggle_content_error
+ * @property { (content_type:ItemType, content_id:number, has_error:boolean) => void } toggle_content_error
  * @property { (question_id:number, type:string, old_type:string) => void } update_question_type
- * @property { (where:{section_id:number, offset:number}) => void } add_new_section
+ * @property { (where:WhereRelativeToSection) => void } add_new_section
  * @property { (where:WhereToAddQuestion) => void } add_new_question
- * @property { (section_id:number) => void } add_group_to_section
- * @property { (question_id:number) => void } add_group_for_question
- * @property { (group_id:number) => void } ungroup
  * @property { (data:QuestionInfo) => void } clone_question
+ * @property { (section_id:number) => void } add_group_to_section
+ * @property { (question_id:number,section_id:number,section_index:number) => void } add_group_for_question
+ * @property { ($group_li:jQueryLIElement) => void } remove_group
  * @property { ($delete_li:jQueryLIElement) => void } delete_section
  * @property { ($delete_li:jQueryLIElement) => void } delete_group
  * @property { ($delete_li:jQueryLIElement) => void } delete_question
@@ -89,18 +89,20 @@ function setup_hint_handler()
  * @property { (question_id:number) => void } select_question
  * @property { () => void } clear_selection
  * @property { () => Map<number,QuestionInfo} } unused_questions
- * @property { (old_id:number, new_id:number) => void } replace_question
+ * @property { (old_id:number, new_id:number) => QuestionInfo } replace_question
+ * @property { () => IntStringMap } all_options
+ * @property { (option_id:number|string) => number[] } option_used_by
  * @property { (value:string) => number } add_option
- * @property { (id:number, value:string) => void } update_option
+ * @property { (id:number, value:string, specific_to:number) => void } update_option
  * @property { (section_id:number, to_index:number) => boolean } move_section
  * @property { (groupId:number, to_section_id:number, to_index:number) => boolean } move_group
- * @property { (question_id:number, to_type:"section"|"group", to_id:number, to_index:number) => void } move_question
+ * @property { (question_id:number, to_type:ContainerType, to_id:number, to_index:number) => void } move_question
  */
 
 /**
  * Initializes a SurveyViewController
  * @param {RuntimeContext} ce Container of shared "global" variables
- * @returns {SurveyViewCtontroller}
+ * @returns {SurveyViewController}
  */
 export default function init(ce)
 {
@@ -137,7 +139,7 @@ export default function init(ce)
 
   /**
    * Updates all of the survey views with new survey content
-   * @param {Object} content All the sruvey content and structure
+   * @param {SurveyContent} content All the survey content and structure
    */
   self.update_content = function(content) 
   {
@@ -379,7 +381,6 @@ export default function init(ce)
    * Adds a new question to the survey content, notifies the navigation tree
    *   of the new question, and registers the addition with the undo manager
    * @param {WhereToAddQuestion} where 
-   * @returns {void}
    */
   self.add_new_question = function(where)
   {
@@ -455,7 +456,6 @@ export default function init(ce)
   /**
    * Adds a new group to (end of) a section
    * @param {number} section_id
-   * @returns {void}
    */
   self.add_group_to_section = function(section_id) 
   {
@@ -483,12 +483,9 @@ export default function init(ce)
    * @param {number} question_id 
    * @param {number} section_id ID of the section currently containing the question
    * @param {number} section_index index of the question within the containing section
-   * @returns {void}
    */
   self.add_group_for_question = function(question_id,section_id,section_index)
   {
-    const cur_highlight = _tree.current_selection();
-
     const new_group = self._create_new_group()
     const group_id = new_group.group_id;
     const group_name = new_group.name;
@@ -518,7 +515,6 @@ export default function init(ce)
    * Removes a group.  Any questions that were in the group remain
    *   in the containing section, but no longer grouped
    * @param{jQueryLIElement} $group_li
-   * @returns {void}
    */
   self.remove_group = function($group_li)
   {
@@ -567,7 +563,6 @@ export default function init(ce)
    * Removes the specified section element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
    * @param {jQueryLIElement} $delete_li 
-   * @returns {void}
    */
   self.delete_section = function($delete_li) 
   {
@@ -638,7 +633,6 @@ export default function init(ce)
    * Removes the specified group element from the survey content and
    *   navigation tree and registers the deletion with the undo manager.
    * @param {jQueryLIElement} $delete_li 
-   * @returns {void}
    */
   self.delete_group = function($delete_li) 
   {
@@ -733,7 +727,6 @@ export default function init(ce)
    * Sets the specified section as the active selection in the navigation
    *   tree and notifies the menubar
    * @param {number} section_id 
-   * @returns {void}
    */
   self.select_section = function(section_id) 
   {
@@ -752,7 +745,6 @@ export default function init(ce)
    * Sets the specified group as the active selection in the navigation
    *   tree and notifies the menubar
    * @param {number} group_id 
-   * @returns {void}
    */
   self.select_group = function(group_id)
   {
@@ -771,7 +763,6 @@ export default function init(ce)
    * Sets the specified question as the active selection in the navigation
    *   tree and updates the menubar
    * @param {number} question_id 
-   * @returns {void}
    */
   self.select_question = function(question_id) 
   {
@@ -788,7 +779,6 @@ export default function init(ce)
 
   /**
    * Unset active selection
-   * @returns {void}
    */
   self.clear_selection = function()
   {
@@ -817,7 +807,7 @@ export default function init(ce)
    * Swaps out one question in the navigation tree for another
    * @param {number} old_id ID of the question to be replaced
    * @param {number} new_id ID of the question replacing it
-   * @returns 
+   * @returns {QuestionInfo} 
    */
   self.replace_question = function(old_id, new_id) 
   {
@@ -830,21 +820,37 @@ export default function init(ce)
   /**
    * Returns all option values defined for the current survey
    * @returns {IntStringMap} 
-   * 
    */
   self.all_options = function() {
     return _content.options;
   }
 
   /**
+   * Returns list of all question IDs currently using the specified option
+   * @param {number|string} option_id
+   * @returns {number[]}
+   */
+  self.option_used_by = function(option_id) {
+    const used_by = [];
+    for( const [question_id, info] of Object.entries(_content.questions) ) {
+      const option_ids = info.options ?? [];
+      if( option_ids.some( (id) => Number(id) === Number(option_id)) ) {
+        used_by.push(Number(question_id));
+      }
+    }
+    return used_by;
+  }
+
+  /**
    * Adds a new option string to the survey content and returns its
    *   option ID
    * @param {string} new_value 
+   * @param {number|null} specific_to
    * @returns {number} Option ID assigned to the new option 
    */
-  self.add_option = function(new_value) {
+  self.add_option = function(new_value, specific_to=null) {
     const new_id = _content.next_ids.option;
-    _content.options[new_id] = {text:new_value, specific_to:null};
+    _content.options[new_id] = {text:new_value, specific_to:specific_to};
     _content.next_ids.option += 1;
     return new_id;
   }
@@ -853,10 +859,12 @@ export default function init(ce)
    * Updates the option value for the specified option ID
    * @param {number} id 
    * @param {string} value 
+   * @param {number|null} specific_to
    * @returns {void}
    */
-  self.update_option = function(id,value) {
+  self.update_option = function(id,value,specific_to=null) {
     _content.options[id].text = value;
+    _content.options[id].specific_to = specific_to;
   }
 
   /**
@@ -870,7 +878,6 @@ export default function init(ce)
   self.move_section = function(section_id,to_index) {
     return _tree.move_section(section_id,to_index);
   }
-
 
   /**
    * Moves a group to a new location in a section
@@ -889,7 +896,7 @@ export default function init(ce)
    * Moves a question to a new location in a section or group 
    * 
    * @param {number} question_id 
-   * @param {"section"|"group"} toType
+   * @param {ContainerType} toType
    * @param {number} toId
    * @param {number} toIndex 
    */

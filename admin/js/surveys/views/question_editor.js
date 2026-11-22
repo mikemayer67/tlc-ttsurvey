@@ -1,6 +1,6 @@
 import { deepCopy, update_character_count, validate_markdown } from '../../utils.js';
 import ui_config         from './ui_config.js';
-import option_controller from './options.js'
+import OptionController from './options.js'
 
 function input_error(key,value) 
 {
@@ -118,7 +118,7 @@ export default function init(ce,controller)
     clear_error: clear_error,
   };
 
-  const _options = option_controller(ce,controller,self);
+  const _options = OptionController(ce,controller,self);
 
 
   const _show_handlers = {

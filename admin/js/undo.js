@@ -91,6 +91,13 @@ export default function undo_manager(ce)
   }
 
   function notify() {
+//    console.log("undo: " + String(_undo_stack.length) + "  redo: " + _redo_stack.length);
+//    if(_undo_stack.length>0 && Object.hasOwn(_undo_stack.at(-1),'action')) {
+//      console.log('  next undo: ' + _undo_stack.at(-1).action);
+//    }
+//    if(_redo_stack.length>0 && Object.hasOwn(_redo_stack.at(-1),'action')) {
+//      console.log('  next redo: ' + _redo_stack.at(-1).action);
+//    }
     $(document).trigger('UndoStackChanged',{
       undo_count: _undo_stack.length,
       redo_count: _redo_stack.length,

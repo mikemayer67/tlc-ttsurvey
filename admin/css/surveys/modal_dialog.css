@@ -1,0 +1,94 @@
+#ttt-body dialog.modal
+{
+  padding: 10px;
+  background:#f0f0f0;
+  border-width: 1px;
+  box-shadow: 4px 4px 6px #333;
+}
+
+#ttt-body dialog.modal::backdrop
+{
+  background-color:rgba(157,157,157,0.5);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#ttt-body dialog.modal div.prompt
+{
+  width:100%;
+  font-weight:bold;
+  font-size:110%;
+  border-bottom: black solid 1px;
+  margin-bottom: 10px;
+}
+
+#ttt-body dialog.modal div.label
+{
+  margin-top: 10px;
+  margin-left: 10px;
+  font-weight:bold;
+}
+
+#ttt-body dialog.modal input[type=text]
+{
+  width: 30em;
+  margin-left:20px;
+  margin-right:20px;
+  padding: 2px 5px;
+  background:white;
+  border-width:1px;
+}
+
+#ttt-body dialog.modal div.wordcount
+{
+  font-size:75%;
+  color:black;
+  margin-right:20px;
+  margin-left:20px;
+  text-align:right;
+  display:none;
+}
+#ttt-body dialog.modal div.wordcount.show
+{
+  display:block;
+}
+#ttt-body dialog.modal div.wordcount.warning { 
+  color:darkorange; 
+  font-weight:700;
+}
+#ttt-body dialog.modal div.wordcount.error   { 
+  color:darkred; 
+  font-weight:bold;
+}
+
+#ttt-body dialog.modal div.locked.scope
+{
+  font-size:95%;
+  font-style:italic;
+  margin-left:30px;
+}
+
+#ttt-body dialog.modal div.locked.scope.hidden
+{
+  display:none;
+}
+
+#ttt-body dialog.modal div.radio
+{
+  width: 30em;
+  margin-left:20px;
+  padding: 2px 5px;
+}
+
+#ttt-body dialog.modal label.radio:has(input:disabled)
+{
+  color:darkgray;
+}
+
+#ttt-body div.body dialog.modal div.submit-bar
+{
+  margin:10px 0 0 0;
+  border-top: black solid 1px;
+  padding:5px 0 0 0;
+  height:min-content;
+}

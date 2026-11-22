@@ -123,7 +123,9 @@ echo <<<HTML
     </div>
     <div class='resizer'></div>
 HTML;
+
 require(app_file('admin/survey_frame.php'));
+
 echo <<<HTML
   </div>
 
@@ -141,6 +143,8 @@ echo <<<HTML
 
 </form>
 HTML;
+
+add_option_editor();
 
 echo "<script type='module' src='", js_uri('surveys','admin'), "'></script>";
 echo "<script src='", js_uri('dayjs.min'), "'></script>";

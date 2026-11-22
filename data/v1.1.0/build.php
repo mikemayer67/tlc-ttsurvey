@@ -153,7 +153,6 @@ SQL ],
 //   To encourage reuse of options, they are defined to be associated with a survey
 //   but are then used by questions
 
-// @@@ TODO... enforce the string length for the option string
   [ __LINE__, <<<SQL
 CREATE TABLE tlc_srv_survey_options (
   survey_id  SMALLINT UNSIGNED NOT NULL,
