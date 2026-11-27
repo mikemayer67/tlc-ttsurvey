@@ -326,9 +326,14 @@
   background:none;
 }
 
-#editor-frame .grid.editor .options.value .pool .chip button
+#editor-frame .selected .chip button::before
 {
-  display:none;
+  content:'\00D7';
+}
+
+#editor-frame .grid.editor .options.value .pool .chip button::before
+{
+  content:'+';
 }
 
 #editor-frame .grid.editor .options.value .pool button.add 

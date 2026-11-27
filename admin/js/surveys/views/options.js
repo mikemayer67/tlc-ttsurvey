@@ -193,7 +193,7 @@ export default function init(ce,controller,editor)
     if(is_common) { chip.addClass('common'); }
     else          { chip.addClass('specific'); }
     const span = $("<span>").text(label);
-    const close = $("<button class='option' type='button'>x</button>");
+    const close = $("<button class='option' type='button'></button>");
     return chip.append(span).append(close);
   };
 
@@ -253,7 +253,10 @@ export default function init(ce,controller,editor)
 
   /**
    * Click event handler on the chip 'dismiss' button (little x in the option chip).
-   * Returns the option chip from the selected option field to the option pool
+   *   Returns the option chip from the selected option field to the option pool
+   * Note this is actually the same button as the 'add' button in the
+   *   next event handler.  The selector differentiates which handler
+   *   is invoked.
    */
   $_options.on('click','.selected .chip button', function(e) {
     // remove a chip from the selected list and return to the pool
@@ -276,6 +279,40 @@ export default function init(ce,controller,editor)
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
           insert_selected_chip_at($chip,this.old_index);
+          update_options();
+        }, 100);
+      },
+    });
+  });
+
+  /**
+   * Click event hanlder on the chip 'add to list' button (little + in the 
+   *   option chip)). Adds the option chip from the option pool to the selected
+   *   option field.  
+   * Note this is actually the same button as the 'dismiss' button in the
+   *   prior event handler.  The selector differentiates which handler
+   *   is invoked.
+   */
+  $_options.on('click','.pool .chip button', function(e) {
+    // remove a chip from the pool and add it to the end of the selected list
+    const $chip = $(this).closest('.chip');
+    const chip_sel = '.chip[id=' + $chip.data('id') + ']';
+    ce.undo_manager.add_and_exec({
+      action:'chip-to-selected',
+      question_id:_question_id,
+      redo() {
+        controller.select_question(this.question_id);
+        setTimeout( () => {
+          const $chip = $_options.find(chip_sel);
+          $_selected.append($chip);
+          update_options();
+        }, 100);
+      },
+      undo() {
+        controller.select_question(this.question_id);
+        setTimeout( () => {
+          const $chip = $_options.find(chip_sel);
+          insert_chip_alphabetically_in_pool($chip);
           update_options();
         }, 100);
       },
