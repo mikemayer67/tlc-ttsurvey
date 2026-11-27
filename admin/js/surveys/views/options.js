@@ -94,9 +94,11 @@ export default function init(ce,controller,editor)
           const $chips = $_selected.children('.chip');
           const $chip  = $chips.eq(from_index);
           const $tgt   = $chips.eq(to_index);
-          if(to_index > from_index) { $chip.insertAfter($tgt);  }
-          else                      { $chip.insertBefore($tgt); }
-          update_options();
+          animate_chip_move($chip, () => {
+            if(to_index > from_index) { $chip.insertAfter($tgt);  }
+            else                      { $chip.insertBefore($tgt); }
+            update_options();
+          });
         },
         redo() { 
           controller.select_question(this.question_id);
@@ -131,16 +133,20 @@ export default function init(ce,controller,editor)
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_pool.find(chip_sel);
-          insert_selected_chip_at($chip,this.index);
-          update_options();
+          animate_chip_move($chip, () => {
+            insert_selected_chip_at($chip,this.index);
+            update_options();
+          });
         }, 100);
       },
       undo() {
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_selected.find(chip_sel);
-          insert_chip_alphabetically_in_pool($chip);
-          update_options();
+          animate_chip_move($chip, () => {
+            insert_chip_alphabetically_in_pool($chip);
+            update_options();
+          });
         }, 100);
       },
     });
@@ -270,16 +276,20 @@ export default function init(ce,controller,editor)
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
-          insert_chip_alphabetically_in_pool($chip);
-          update_options();
+          animate_chip_move($chip, () => {
+            insert_chip_alphabetically_in_pool($chip);
+            update_options();
+          });
         }, 100);
       },
       undo() {
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
-          insert_selected_chip_at($chip,this.old_index);
-          update_options();
+          animate_chip_move($chip, () => {
+            insert_selected_chip_at($chip,this.old_index);
+            update_options();
+          });
         }, 100);
       },
     });
@@ -304,16 +314,20 @@ export default function init(ce,controller,editor)
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
-          $_selected.append($chip);
-          update_options();
+          animate_chip_move($chip, () => {
+            $_selected.append($chip);
+            update_options();
+          });
         }, 100);
       },
       undo() {
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
-          insert_chip_alphabetically_in_pool($chip);
-          update_options();
+          animate_chip_move($chip, () => {
+            insert_chip_alphabetically_in_pool($chip);
+            update_options();
+          });
         }, 100);
       },
     });
@@ -385,16 +399,20 @@ export default function init(ce,controller,editor)
           controller.select_question(this.question_id);
           setTimeout( () => {
             const $chip = $_options.find(chip_sel);
-            $_selected.append($chip);
-            update_options();
+            animate_chip_move($chip, () => {
+              $_selected.append($chip);
+              update_options();
+            });
           }, 100);
         },
         undo() {
           controller.select_question(this.question_id);
           setTimeout( () => {
             const $chip = $_options.find(chip_sel);
-            insert_chip_alphabetically_in_pool($chip);
-            update_options();
+            animate_chip_move($chip, () => {
+              insert_chip_alphabetically_in_pool($chip);
+              update_options();
+            });
           }, 100);
         },
       });
@@ -432,6 +450,35 @@ export default function init(ce,controller,editor)
     });
 
     $(chips).insertBefore($_add_chip);
+  }
+
+  /**
+   * Moves a chip in the DOM while animating its visual movement.
+   * @param {jQuery} $chip
+   * @param {Function} move_fn Performs the DOM move
+   */
+  function animate_chip_move($chip, move_fn) {
+    const chip = $chip[0];
+    const first = chip.getBoundingClientRect();
+    const old_z = chip.style.zIndex;
+    chip.style.zIndex = 1000;
+
+    move_fn();
+
+    const last = chip.getBoundingClientRect();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+
+    if (dx === 0 && dy === 0) return;
+
+    const animation = chip.animate([
+      { transform: `translate(${dx}px, ${dy}px)` },
+      { transform: 'translate(0, 0)' }
+    ], {
+      duration: 500,
+      easing: 'cubic-bezier(0.45, 0, 0.55, 1)'
+    });
+    animation.onfinish = () => { chip.style.xIndex = old_z; };
   }
 
   self.show = show;
