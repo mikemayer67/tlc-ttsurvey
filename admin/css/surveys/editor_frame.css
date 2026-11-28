@@ -280,10 +280,71 @@
   min-height:2em;
 }
 
+#editor-frame #option-entry-buttons {
+  display:flex;
+  margin-bottom:0.25em;
+}
+
+#editor-frame #add-new-option {
+  font-weight: bold;
+  font-size:90%;
+  border:none;
+  padding:0;
+  margin-left:1em;
+}
+#editor-frame #add-new-option::before {
+  content:'+ ';
+  font-size:110%;
+}
+
+#editor-frame .grid.editor .options.value .pool {
+  display:none;
+}
+#editor-frame .grid.editor .options.value .selected,
+#editor-frame .grid.editor .options.value:has(input.toggle-pool:checked) > div.pool {
+  display: flex;
+}
+
+#editor-frame label.toggle-pool::before { 
+  content:"\25Bc"; 
+  font-size:80%;
+}
+#editor-frame label.toggle-pool::after {
+  content: "";
+  font-size:80%;
+}
+#editor-frame label.toggle-pool:has(input:checked)::before { 
+  content: "";
+}
+#editor-frame label.toggle-pool:has(input:checked)::after { 
+  content:"\25B2"; 
+}
+
+#editor-frame label.toggle-pool {
+  font-weight: bold;
+  font-size:90%;
+  margin-left:2em;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 0.35em;
+}
+
+#editor-frame label.toggle-pool input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+#editor-frame label.toggle-pool span.show { display: inline; }
+#editor-frame label.toggle-pool span.hide { display: none; }
+#editor-frame label.toggle-pool input:checked ~ span.show { display: none; }
+#editor-frame label.toggle-pool input:checked ~ span.hide { display: inline; }
+
 #editor-frame .grid.editor .options.value .selected,
 #editor-frame .grid.editor .options.value .pool
 {
-  display:flex;
   flex-direction:row;
   flex-wrap:wrap;
   padding: 2px 0.5em;

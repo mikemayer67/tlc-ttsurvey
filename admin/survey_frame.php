@@ -268,7 +268,15 @@ function add_options_entry($kwargs=[])
   echo "  <div class='selected'></div>";
   echo "  <span class='error'></span>";
   echo "  <div id='$hint_id' class='hint'>$hint</div>";
-  echo "  <div class='pool'><button class='add' type='button'>+</button></div>";
+  echo "  <div id='option-entry-buttons'>";
+  echo "    <button id='add-new-option'>Create New Option</button>";
+  echo "    <label class='toggle-pool'>";
+  echo "      <input type='checkbox' class='toggle-pool'>";
+  echo "      <span class='show'>Show</span><span class='hide'>Hide</span>";
+  echo "      Available Options";
+  echo "    </label>";
+  echo "  </div>";
+  echo "  <div class='pool'></div>";
   echo "</div>";
 }
 

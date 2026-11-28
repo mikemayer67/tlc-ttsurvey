@@ -141,7 +141,7 @@ export default function init(ce,controller)
     .on('blur',handle_input_change)
     .on('change',handle_input_change);
 
-  _box.find('input[type=checkbox]')
+  _box.find('input[type=checkbox]').not('.toggle-pool')
     .on('blur',handle_checkbox)
     .on('change',handle_checkbox);
 

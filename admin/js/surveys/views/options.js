@@ -24,9 +24,10 @@ import OptionEditor from './option_editor.js';
 export default function init(ce,controller,editor)
 {
   const $_options       = editor.box.children('.options');
-  const $_selected      = $_options.find('.selected');
-  const $_pool          = $_options.find('.pool');
-  const $_add_chip      = $_pool.find('button.add');
+  const $_selected      = $_options.find('div.selected');
+  const $_pool          = $_options.find('div.pool');
+  const $_pool_toggle   = editor.box.find('input.toggle-pool');
+  const $_add_chip      = $('#add-new-option');
 
   const _option_editor = OptionEditor(ce,controller);
 
@@ -131,6 +132,7 @@ export default function init(ce,controller,editor)
       index:e.newIndex,
       redo() {
         controller.select_question(this.question_id);
+        $_pool_toggle.setChecked();
         setTimeout( () => {
           const $chip = $_pool.find(chip_sel);
           animate_chip_move($chip, () => {
@@ -141,6 +143,7 @@ export default function init(ce,controller,editor)
       },
       undo() {
         controller.select_question(this.question_id);
+        $_pool_toggle.setChecked();
         setTimeout( () => {
           const $chip = $_selected.find(chip_sel);
           animate_chip_move($chip, () => {
@@ -183,7 +186,7 @@ export default function init(ce,controller,editor)
     validate_options()
 
     $_options.show();
-    $_pool.hide();
+    $_pool_toggle.setUnchecked();
   }
 
   /**
@@ -246,15 +249,24 @@ export default function init(ce,controller,editor)
   }
 
   /**
-   * MouseDown event handler in the selected option field or option pool
-   *   If event occured within a chip or the add button, do nothing (yet)
-   *   Otherwise toggle visibility of the option pool
+   * MouseDown event handler in the selected option field
+   *   If event occured within a chip, do nothing (yet)
+   *   Otherwise show the option pool
    */
-  $_options.on('mousedown', '.selected,.pool', function(e) {
+  $_options.on('mousedown', '.selected', function(e) {
     // We want to yield to SortableJS if the mouse down occured in a chip element.
     if( $(e.target).closest('.chip').length > 0) { return; }
-    if( $(e.target).closest('.add').length > 0)  { return; }
-    $_pool.toggle();
+    $_pool_toggle.setChecked();
+  });
+  /**
+   * MouseDown event handler in the option pool
+   *   If event occured within a chip or the add button, do nothing (yet)
+   *   Otherwise hide the option pool
+   */
+  $_options.on('mousedown', '.pool', function(e) {
+    // We want to yield to SortableJS if the mouse down occured in a chip element.
+    if( $(e.target).closest('.chip').length > 0) { return; }
+    $_pool_toggle.setUnchecked();
   });
 
   /**
@@ -274,6 +286,7 @@ export default function init(ce,controller,editor)
       old_index:$chip.index(),
       redo() {
         controller.select_question(this.question_id);
+        $_pool_toggle.setChecked();
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
           animate_chip_move($chip, () => {
@@ -284,6 +297,7 @@ export default function init(ce,controller,editor)
       },
       undo() {
         controller.select_question(this.question_id);
+        $_pool_toggle.setChecked();
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
           animate_chip_move($chip, () => {
@@ -314,6 +328,7 @@ export default function init(ce,controller,editor)
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
+        $_pool_toggle.setChecked();
           animate_chip_move($chip, () => {
             $_selected.append($chip);
             update_options();
@@ -324,6 +339,7 @@ export default function init(ce,controller,editor)
         controller.select_question(this.question_id);
         setTimeout( () => {
           const $chip = $_options.find(chip_sel);
+        $_pool_toggle.setChecked();
           animate_chip_move($chip, () => {
             insert_chip_alphabetically_in_pool($chip);
             update_options();
@@ -397,6 +413,7 @@ export default function init(ce,controller,editor)
         question_id:_question_id,
         redo() {
           controller.select_question(this.question_id);
+          $_pool_toggle.setChecked();
           setTimeout( () => {
             const $chip = $_options.find(chip_sel);
             animate_chip_move($chip, () => {
@@ -407,6 +424,7 @@ export default function init(ce,controller,editor)
         },
         undo() {
           controller.select_question(this.question_id);
+          $_pool_toggle.setChecked();
           setTimeout( () => {
             const $chip = $_options.find(chip_sel);
             animate_chip_move($chip, () => {
@@ -440,7 +458,7 @@ export default function init(ce,controller,editor)
    */
   function insert_chip_alphabetically_in_pool($chip)
   {
-    $chip.insertBefore($_add_chip);
+    $_pool.append($chip);
     const chips = $_pool.children('.chip').get();
 
     chips.sort((a,b) => {
@@ -449,7 +467,7 @@ export default function init(ce,controller,editor)
       return label_a.localeCompare(label_b);
     });
 
-    $(chips).insertBefore($_add_chip);
+    $_pool.append($(chips));
   }
 
   /**
@@ -461,7 +479,7 @@ export default function init(ce,controller,editor)
     const chip = $chip[0];
     const first = chip.getBoundingClientRect();
     const old_z = chip.style.zIndex;
-    chip.style.zIndex = 1000;
+    chip.style.zIndex = 200;
 
     move_fn();
 
